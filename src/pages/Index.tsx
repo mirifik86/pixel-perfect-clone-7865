@@ -144,82 +144,84 @@ const Index = () => {
       backgroundAttachment: 'fixed'
     }} />
       
-      {/* Main content */}
-      <main className="relative z-10 flex flex-1 flex-col items-center px-4 py-16">
-        {/* Logo & branding */}
-        <div className="mb-10">
-          <LeenScoreLogo />
-        </div>
-
-        {/* Subtitle - prominent, strong visual */}
-        <p className="mb-3 text-xl font-medium text-foreground/95 md:text-2xl">
-          {t.tagline}
-        </p>
-        <p className="mb-12 text-sm font-semibold tracking-widest text-foreground/80">
-          {t.byLine}
-        </p>
-
-        {/* Language toggle */}
-        <div className="mb-10">
-          <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
-        </div>
-
-        {/* Score gauge */}
-        <div className="mb-4">
-          <ScoreGauge score={score} size={180} />
-        </div>
-
-        {/* Reset button - appears after analysis */}
-        {hasAnyAnalysis && (
-          <button
-            onClick={handleReset}
-            className="group mb-8 flex items-center gap-3 rounded-full border-2 border-primary/50 bg-gradient-to-r from-primary/30 to-primary/20 px-8 py-4 backdrop-blur-md transition-all duration-300 hover:border-primary hover:from-primary/50 hover:to-primary/30 hover:shadow-xl hover:shadow-primary/30"
-            style={{
-              boxShadow: '0 0 25px hsl(174 60% 45% / 0.3), 0 0 50px hsl(174 60% 45% / 0.15)'
-            }}
-          >
-            <RotateCcw className="h-5 w-5 text-primary transition-transform duration-300 group-hover:-rotate-180" />
-            <span className="text-base font-semibold tracking-wide text-primary group-hover:text-primary">
-              {t.newAnalysis}
-            </span>
-          </button>
-        )}
-
-        {/* Analysis form - hidden after first analysis */}
-        {!hasAnyAnalysis && (
-          <>
-            <div className="mb-10" />
-            <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
-          </>
-        )}
-
-        {/* Analysis result (per language) */}
-        {analysisData && <AnalysisResult data={analysisData} language={language} />}
-
-        {/* While switching languages, show a small placeholder until the new language result is ready */}
-        {hasAnyAnalysis && !analysisData && (
-          <div className="analysis-card mt-8 w-full max-w-2xl animate-fade-in">
-            <p className="text-center text-sm text-muted-foreground/90">
-              {language === 'fr' ? 'Traduction en cours…' : 'Translating…'}
-            </p>
+      {/* Main content - use min-h-screen and justify-between to fit everything without scrolling */}
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-6 md:py-16">
+        <div className="flex flex-col items-center">
+          {/* Logo & branding */}
+          <div className="mb-4 md:mb-10">
+            <LeenScoreLogo />
           </div>
-        )}
-      </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 pb-8 pt-12 text-center">
-        <p className="mb-4 text-lg">
-          <span className="font-serif italic text-primary">Leen</span>
-          <span className="font-serif text-foreground">Score</span>
-          <span className="ml-2 text-muted-foreground">{t.footer.split('LeenScore')[1]}</span>
-        </p>
-        <p className="text-xs font-semibold tracking-widest text-primary">
-          {t.developedBy}
-        </p>
-        <p className="mt-1 text-xs tracking-widest text-muted-foreground/60">
-          {t.version}
-        </p>
-      </footer>
+          {/* Subtitle - prominent, strong visual */}
+          <p className="mb-2 text-lg font-medium text-foreground/95 md:mb-3 md:text-2xl">
+            {t.tagline}
+          </p>
+          <p className="mb-4 text-xs font-semibold tracking-widest text-foreground/80 md:mb-12 md:text-sm">
+            {t.byLine}
+          </p>
+
+          {/* Language toggle */}
+          <div className="mb-4 md:mb-10">
+            <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
+          </div>
+
+          {/* Score gauge - smaller on mobile */}
+          <div className="mb-2 md:mb-4">
+            <ScoreGauge score={score} size={140} className="md:hidden" />
+            <ScoreGauge score={score} size={180} className="hidden md:block" />
+          </div>
+
+          {/* Reset button - appears after analysis */}
+          {hasAnyAnalysis && (
+            <button
+              onClick={handleReset}
+              className="group mb-4 flex items-center gap-2 rounded-full border-2 border-primary/50 bg-gradient-to-r from-primary/30 to-primary/20 px-6 py-3 backdrop-blur-md transition-all duration-300 hover:border-primary hover:from-primary/50 hover:to-primary/30 hover:shadow-xl hover:shadow-primary/30 md:mb-8 md:gap-3 md:px-8 md:py-4"
+              style={{
+                boxShadow: '0 0 25px hsl(174 60% 45% / 0.3), 0 0 50px hsl(174 60% 45% / 0.15)'
+              }}
+            >
+              <RotateCcw className="h-4 w-4 text-primary transition-transform duration-300 group-hover:-rotate-180 md:h-5 md:w-5" />
+              <span className="text-sm font-semibold tracking-wide text-primary group-hover:text-primary md:text-base">
+                {t.newAnalysis}
+              </span>
+            </button>
+          )}
+
+          {/* Analysis form - hidden after first analysis */}
+          {!hasAnyAnalysis && (
+            <div className="mt-2 w-full md:mt-10">
+              <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
+            </div>
+          )}
+
+          {/* Analysis result (per language) */}
+          {analysisData && <AnalysisResult data={analysisData} language={language} />}
+
+          {/* While switching languages, show a small placeholder until the new language result is ready */}
+          {hasAnyAnalysis && !analysisData && (
+            <div className="analysis-card mt-4 w-full max-w-2xl animate-fade-in md:mt-8">
+              <p className="text-center text-sm text-muted-foreground/90">
+                {language === 'fr' ? 'Traduction en cours…' : 'Translating…'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer - integrated into main for proper spacing */}
+        <footer className="mt-4 pb-4 pt-4 text-center md:mt-12 md:pb-8 md:pt-12">
+          <p className="mb-2 text-sm md:mb-4 md:text-lg">
+            <span className="font-serif italic text-primary">Leen</span>
+            <span className="font-serif text-foreground">Score</span>
+            <span className="ml-2 text-muted-foreground">{t.footer.split('LeenScore')[1]}</span>
+          </p>
+          <p className="text-[10px] font-semibold tracking-widest text-primary md:text-xs">
+            {t.developedBy}
+          </p>
+          <p className="mt-1 text-[10px] tracking-widest text-muted-foreground/60 md:text-xs">
+            {t.version}
+          </p>
+        </footer>
+      </main>
     </div>;
 };
 export default Index;
