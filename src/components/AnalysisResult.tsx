@@ -1,4 +1,5 @@
-import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
+import { forwardRef } from 'react';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 interface AnalysisBreakdown {
   sources: { points: number; reason: string };
@@ -61,7 +62,7 @@ const getPointsColor = (points: number) => {
   return 'text-yellow-400';
 };
 
-export const AnalysisResult = ({ data, language }: AnalysisResultProps) => {
+export const AnalysisResult = forwardRef<HTMLDivElement, AnalysisResultProps>(({ data, language }, ref) => {
   const t = translations[language];
 
   const criteriaLabels: Record<keyof AnalysisBreakdown, string> = {
@@ -85,7 +86,7 @@ export const AnalysisResult = ({ data, language }: AnalysisResultProps) => {
   };
 
   return (
-    <div className="mt-8 w-full max-w-2xl animate-fade-in">
+    <div ref={ref} className="mt-8 w-full max-w-2xl animate-fade-in">
       {/* Summary card */}
       <div className="analysis-card mb-6">
         <div className="mb-4 flex items-center justify-between">
@@ -122,4 +123,6 @@ export const AnalysisResult = ({ data, language }: AnalysisResultProps) => {
       </div>
     </div>
   );
-};
+});
+
+AnalysisResult.displayName = 'AnalysisResult';
