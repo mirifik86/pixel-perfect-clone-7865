@@ -3,7 +3,25 @@ import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisForm } from '@/components/AnalysisForm';
+import { AnalysisResult } from '@/components/AnalysisResult';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
+
+interface AnalysisBreakdown {
+  sources: { points: number; reason: string };
+  factual: { points: number; reason: string };
+  tone: { points: number; reason: string };
+  context: { points: number; reason: string };
+  transparency: { points: number; reason: string };
+}
+
+interface AnalysisData {
+  score: number;
+  breakdown: AnalysisBreakdown;
+  summary: string;
+  confidence: 'low' | 'medium' | 'high';
+}
 
 const translations = {
   en: {
@@ -14,6 +32,8 @@ const translations = {
     footer: 'LeenScore illuminates information, without orienting your opinion.',
     developedBy: 'TOOL DEVELOPED BY SOL&AIR.',
     version: 'VERSION 2.0',
+    analyzing: 'Analyzing...',
+    errorAnalysis: 'Analysis failed. Please try again.',
   },
   fr: {
     tagline: "Voir clair dans l'information.",
@@ -23,6 +43,8 @@ const translations = {
     footer: "LeenScore éclaire l'information, sans orienter votre opinion.",
     developedBy: 'OUTIL DÉVELOPPÉ PAR SOL&AIR.',
     version: 'VERSION 2.0',
+    analyzing: 'Analyse en cours...',
+    errorAnalysis: "L'analyse a échoué. Veuillez réessayer.",
   },
 };
 
@@ -30,20 +52,40 @@ const Index = () => {
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [score, setScore] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
 
   const t = translations[language];
 
   const handleAnalyze = async (input: string) => {
     setIsLoading(true);
     setScore(null);
+    setAnalysisData(null);
     
-    // Simulate analysis delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    // Generate a random score for demo purposes
-    const randomScore = Math.floor(Math.random() * 100);
-    setScore(randomScore);
-    setIsLoading(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze', {
+        body: { content: input, language }
+      });
+
+      if (error) {
+        console.error('Analysis error:', error);
+        toast.error(t.errorAnalysis);
+        return;
+      }
+
+      if (data.error) {
+        console.error('API error:', data.error);
+        toast.error(data.error);
+        return;
+      }
+
+      setAnalysisData(data);
+      setScore(data.score);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      toast.error(t.errorAnalysis);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -85,7 +127,7 @@ const Index = () => {
         <div className="mb-10 text-center">
           <p className="text-lg font-medium text-muted-foreground">{t.scoreLabel}</p>
           <p className="text-sm text-muted-foreground/70">
-            {score !== null ? score : t.pending}
+            {isLoading ? t.analyzing : (score !== null ? score : t.pending)}
           </p>
         </div>
 
@@ -95,6 +137,14 @@ const Index = () => {
           isLoading={isLoading}
           language={language}
         />
+
+        {/* Analysis result */}
+        {analysisData && (
+          <AnalysisResult
+            data={analysisData}
+            language={language}
+          />
+        )}
       </main>
 
       {/* Footer */}
