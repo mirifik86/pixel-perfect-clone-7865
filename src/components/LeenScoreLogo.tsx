@@ -1,6 +1,5 @@
 export const LeenScoreLogo = () => {
-  return (
-    <div className="flex flex-col items-center gap-5">
+  return <div className="flex flex-col items-center gap-5">
       {/* Icon - supporting role, reduced prominence */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 backdrop-blur-sm opacity-75">
         <div className="relative h-10 w-10">
@@ -25,31 +24,25 @@ export const LeenScoreLogo = () => {
       {/* Title with enhanced visual impact */}
       <div className="relative">
         {/* Subtle dark vignette behind title */}
-        <div 
-          className="absolute -inset-x-16 -inset-y-6 rounded-3xl"
-          style={{
-            background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.8) 0%, transparent 70%)',
-          }}
-        />
+        <div className="absolute -inset-x-16 -inset-y-6 rounded-3xl" style={{
+        background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.8) 0%, transparent 70%)'
+      }} />
         
-        <h1 className="relative brand-text text-7xl font-normal tracking-tight md:text-8xl" style={{ letterSpacing: '-0.03em' }}>
-          <span 
-            className="brand-accent italic"
-            style={{ 
-              color: 'hsl(174 65% 52%)',
-              textShadow: '0 0 30px hsl(174 60% 45% / 0.3)',
-            }}
-          >
+        <h1 className="relative brand-text text-7xl font-normal tracking-tight md:text-8xl" style={{
+        letterSpacing: '-0.03em'
+      }}>
+          <span className="brand-accent italic text-8xl" style={{
+          color: 'hsl(174 65% 52%)',
+          textShadow: '0 0 30px hsl(174 60% 45% / 0.3)'
+        }}>
             Leen
           </span>
-          <span 
-            className="font-semibold not-italic"
-            style={{ color: 'hsl(0 0% 98%)' }}
-          >
+          <span className="font-semibold not-italic" style={{
+          color: 'hsl(0 0% 98%)'
+        }}>
             Score
           </span>
         </h1>
       </div>
-    </div>
-  );
+    </div>;
 };
