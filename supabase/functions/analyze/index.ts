@@ -16,7 +16,9 @@ const getCurrentDateInfo = () => {
   };
 };
 
-const SYSTEM_PROMPT = `You are LeenScore, an AI credibility analyst. Your task is to analyze content and calculate a Trust Score.
+const getSystemPrompt = (language: string) => `You are LeenScore, an AI credibility analyst. Your task is to analyze content and calculate a Trust Score.
+
+IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}. All text including reasons and summary must be in ${language === 'fr' ? 'French' : 'English'}.
 
 CURRENT DATE CONTEXT:
 Today's date is ${getCurrentDateInfo().formatted} (${getCurrentDateInfo().year}).
@@ -70,13 +72,13 @@ You MUST respond with valid JSON in this exact format:
 {
   "score": <number between 0-100>,
   "breakdown": {
-    "sources": {"points": <number>, "reason": "<brief reason>"},
-    "factual": {"points": <number>, "reason": "<brief reason>"},
-    "tone": {"points": <number>, "reason": "<brief reason>"},
-    "context": {"points": <number>, "reason": "<brief reason>"},
-    "transparency": {"points": <number>, "reason": "<brief reason>"}
+    "sources": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "factual": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "tone": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "context": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "transparency": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
   },
-  "summary": "<2-3 sentence explanation of the final score>",
+  "summary": "<2-3 sentence explanation in ${language === 'fr' ? 'French' : 'English'}>",
   "confidence": "<low|medium|high>"
 }
 
@@ -85,7 +87,8 @@ IMPORTANT:
 - Be objective and analytical
 - When data is insufficient, state uncertainty instead of penalizing
 - The summary should explain why the score is what it is
-- NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR`;
+- NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR
+- ALL text responses (reasons, summary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -122,7 +125,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: getSystemPrompt(language || 'en') },
           { role: "user", content: userPrompt }
         ],
         temperature: 0.3,
