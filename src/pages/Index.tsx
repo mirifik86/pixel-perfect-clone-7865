@@ -6,7 +6,7 @@ import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import earthBg from '@/assets/earth-cosmic-bg.jpg';
+import earthBg from '@/assets/earth-sunrise-space.jpg';
 interface AnalysisBreakdown {
   sources: {
     points: number;
