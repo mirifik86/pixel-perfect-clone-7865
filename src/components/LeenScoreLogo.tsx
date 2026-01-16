@@ -1,18 +1,9 @@
 export const LeenScoreLogo = () => {
-  return (
-    <div className="flex flex-col items-center gap-4">
+  return <div className="flex flex-col items-center gap-4">
       <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 backdrop-blur-sm">
         <div className="relative h-12 w-12">
           {/* Feuille de news blanche */}
-          <svg
-            viewBox="0 0 24 24"
-            className="absolute inset-0 h-full w-full"
-            fill="none"
-            stroke="white"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             {/* Document */}
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="white" stroke="white" />
             <polyline points="14 2 14 8 20 8" fill="none" stroke="hsl(var(--muted))" />
@@ -22,15 +13,7 @@ export const LeenScoreLogo = () => {
           </svg>
           
           {/* Loupe couleur Leen - plus grosse et stylée */}
-          <svg
-            viewBox="0 0 24 24"
-            className="absolute -bottom-2 -right-3 h-11 w-11 drop-shadow-lg"
-            fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg viewBox="0 0 24 24" className="absolute -bottom-2 -right-3 h-11 w-11 drop-shadow-lg px-0 py-[2px] my-0 mx-[10px]" fill="none" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="10" cy="10" r="6" fill="hsl(var(--primary) / 0.25)" />
             <circle cx="10" cy="10" r="6" stroke="hsl(var(--primary))" strokeWidth="2" />
             {/* Reflet sur la loupe */}
@@ -44,6 +27,5 @@ export const LeenScoreLogo = () => {
         <span className="brand-accent italic">Leen</span>
         <span className="font-semibold not-italic text-foreground">Score</span>
       </h1>
-    </div>
-  );
+    </div>;
 };
