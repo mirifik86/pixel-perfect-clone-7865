@@ -45,8 +45,7 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
       <Button
         type="submit"
         disabled={isLoading || !input.trim()}
-        className="mt-4 w-full bg-[var(--gradient-button)] py-6 text-base font-medium text-accent-foreground transition-all hover:opacity-90 hover:shadow-lg disabled:opacity-50"
-        style={{ background: 'var(--gradient-button)' }}
+        className="mt-4 w-full bg-primary py-6 text-base font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
