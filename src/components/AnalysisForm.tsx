@@ -39,23 +39,23 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder={t.placeholder}
-        className="min-h-[120px] resize-none border-muted bg-transparent text-card-foreground placeholder:text-muted-foreground/60 focus-visible:ring-primary"
+        className="min-h-[80px] resize-none border-muted bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground/60 focus-visible:ring-primary md:min-h-[120px] md:text-base"
       />
       
       <Button
         type="submit"
         disabled={isLoading || !input.trim()}
-        className="mt-4 w-full bg-primary py-6 text-base font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50"
+        className="mt-3 w-full bg-primary py-4 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 md:mt-4 md:py-6 md:text-base"
       >
         {isLoading ? (
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          <Loader2 className="mr-2 h-4 w-4 animate-spin md:h-5 md:w-5" />
         ) : (
-          <Search className="mr-2 h-5 w-5" />
+          <Search className="mr-2 h-4 w-4 md:h-5 md:w-5" />
         )}
         {t.analyze}
       </Button>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground/80">
+      <p className="mt-2 text-center text-[10px] text-muted-foreground/80 md:mt-4 md:text-sm">
         {t.description}
       </p>
     </form>
