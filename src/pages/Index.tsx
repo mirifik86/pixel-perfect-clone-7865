@@ -109,9 +109,11 @@ const Index = () => {
           <LeenScoreLogo />
         </div>
 
-        {/* Subtitle - discreet, supportive */}
-        <p className="mb-2 text-base text-muted-foreground/80">{t.tagline}</p>
-        <p className="mb-12 text-xs font-medium tracking-widest text-primary/70">
+        {/* Subtitle - prominent, strong visual */}
+        <p className="mb-3 text-xl font-medium text-foreground/95 md:text-2xl">
+          {t.tagline}
+        </p>
+        <p className="mb-12 text-sm font-semibold tracking-widest text-foreground/80">
           {t.byLine}
         </p>
 
