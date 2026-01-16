@@ -75,7 +75,7 @@ export const ScoreGauge = ({
   // 40-60: Yellow
   'hsl(var(--score-green))',
   // 60-80: Green
-  'hsl(var(--primary))' // 80-100: Teal (Leen)
+  'hsl(var(--score-teal))' // 80-100: Teal (Leen) - more saturated
   ];
 
   // Get current color based on score
