@@ -142,31 +142,27 @@ const Index = () => {
           <ScoreGauge score={score} size={180} />
         </div>
 
-        <div className="mb-10 text-center">
-          
-          
-        </div>
+        {/* Reset button - appears after analysis */}
+        {analysisData && (
+          <button
+            onClick={handleReset}
+            className="group mb-8 flex items-center gap-3 rounded-full border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-3 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:from-primary/20 hover:to-primary/10 hover:shadow-lg hover:shadow-primary/10"
+          >
+            <RotateCcw className="h-4 w-4 text-primary transition-transform duration-300 group-hover:-rotate-180" />
+            <span className="text-sm font-medium tracking-wide text-primary/90 group-hover:text-primary">
+              {t.newAnalysis}
+            </span>
+          </button>
+        )}
+
+        {/* Empty spacer when no analysis */}
+        {!analysisData && <div className="mb-10" />}
 
         {/* Analysis form */}
         <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
 
         {/* Analysis result */}
-        {analysisData && (
-          <div className="flex flex-col items-center">
-            <AnalysisResult data={analysisData} language={language} />
-            
-            {/* Professional reset button */}
-            <button
-              onClick={handleReset}
-              className="group mt-8 flex items-center gap-3 rounded-full border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-3 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:from-primary/20 hover:to-primary/10 hover:shadow-lg hover:shadow-primary/10"
-            >
-              <RotateCcw className="h-4 w-4 text-primary transition-transform duration-300 group-hover:-rotate-180" />
-              <span className="text-sm font-medium tracking-wide text-primary/90 group-hover:text-primary">
-                {t.newAnalysis}
-              </span>
-            </button>
-          </div>
-        )}
+        {analysisData && <AnalysisResult data={analysisData} language={language} />}
       </main>
 
       {/* Footer */}
