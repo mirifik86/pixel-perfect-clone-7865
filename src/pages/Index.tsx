@@ -197,8 +197,13 @@ const Index = () => {
               {t.tagline}
             </p>
             <p 
-              className="mt-0.5 animate-fade-in text-[10px] font-semibold tracking-widest text-primary md:mt-1 md:text-sm"
-              style={{ animationDelay: '150ms', animationFillMode: 'both' }}
+              className="mt-1 animate-fade-in text-[10px] font-bold uppercase tracking-[0.3em] md:mt-2 md:text-sm md:tracking-[0.4em]"
+              style={{ 
+                animationDelay: '150ms', 
+                animationFillMode: 'both',
+                color: 'hsl(174 80% 65%)',
+                textShadow: '0 0 10px hsl(174 80% 55% / 0.6), 0 0 20px hsl(174 60% 45% / 0.4), 0 0 30px hsl(174 60% 45% / 0.2)'
+              }}
             >
               {t.byLine}
             </p>
