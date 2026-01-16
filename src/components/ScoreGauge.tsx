@@ -2,10 +2,12 @@ import { useEffect, useState, useRef } from 'react';
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
   size?: number;
+  className?: string;
 }
 export const ScoreGauge = ({
   score,
-  size = 160
+  size = 160,
+  className
 }: ScoreGaugeProps) => {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
@@ -103,7 +105,7 @@ export const ScoreGauge = ({
   const indicatorRad = indicatorAngle * (Math.PI / 180);
   const indicatorX = size / 2 + (radius - 2) * Math.cos(indicatorRad);
   const indicatorY = size / 2 + (radius - 2) * Math.sin(indicatorRad);
-  return <div className="relative" style={{
+  return <div className={`relative ${className || ''}`} style={{
     width: size,
     height: size
   }}>
