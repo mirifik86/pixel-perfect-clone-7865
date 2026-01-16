@@ -21,25 +21,31 @@ export const LeenScoreLogo = () => {
         </div>
       </div>
       
-      {/* Title with enhanced visual impact */}
+      {/* Title with solar halo reflection effect */}
       <div className="relative">
-        {/* Subtle dark vignette behind title */}
+        {/* Solar halo glow behind title */}
+        <div className="absolute -inset-x-24 -inset-y-12 rounded-full" style={{
+          background: 'radial-gradient(ellipse 80% 60% at center, hsl(40 100% 60% / 0.15) 0%, hsl(30 100% 50% / 0.08) 30%, transparent 70%)'
+        }} />
+        
+        {/* Subtle dark vignette for contrast */}
         <div className="absolute -inset-x-16 -inset-y-6 rounded-3xl" style={{
-        background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.8) 0%, transparent 70%)'
-      }} />
+          background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.6) 0%, transparent 70%)'
+        }} />
         
         <h1 className="relative brand-text text-7xl font-normal tracking-tight md:text-8xl" style={{
-        letterSpacing: '-0.03em'
-      }}>
-          <span className="brand-accent italic text-8xl" style={{
-          color: 'hsl(174 65% 52%)',
-          textShadow: '0 0 30px hsl(174 60% 45% / 0.3)'
+          letterSpacing: '-0.03em'
         }}>
+          <span className="brand-accent italic text-8xl" style={{
+            color: 'hsl(174 65% 52%)',
+            textShadow: '0 0 40px hsl(174 60% 45% / 0.4), 0 0 80px hsl(40 100% 60% / 0.2), 0 2px 20px hsl(30 90% 55% / 0.15)'
+          }}>
             Leen
           </span>
           <span className="font-semibold not-italic" style={{
-          color: 'hsl(0 0% 98%)'
-        }}>
+            color: 'hsl(0 0% 98%)',
+            textShadow: '0 0 30px hsl(40 100% 70% / 0.25), 0 2px 15px hsl(30 90% 55% / 0.1)'
+          }}>
             Score
           </span>
         </h1>
