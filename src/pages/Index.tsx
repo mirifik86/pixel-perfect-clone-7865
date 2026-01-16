@@ -6,6 +6,8 @@ import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { RotateCcw } from 'lucide-react';
 import earthBg from '@/assets/earth-sunrise-space.jpg';
 interface AnalysisBreakdown {
   sources: {
@@ -45,7 +47,8 @@ const translations = {
     developedBy: 'TOOL DEVELOPED BY SOL&AIR.',
     version: 'VERSION 2.0',
     analyzing: 'Analyzing...',
-    errorAnalysis: 'Analysis failed. Please try again.'
+    errorAnalysis: 'Analysis failed. Please try again.',
+    newAnalysis: 'New Analysis'
   },
   fr: {
     tagline: "Voir clair dans l'information.",
@@ -56,7 +59,8 @@ const translations = {
     developedBy: 'OUTIL DÉVELOPPÉ PAR SOL&AIR.',
     version: 'VERSION 2.0',
     analyzing: 'Analyse en cours...',
-    errorAnalysis: "L'analyse a échoué. Veuillez réessayer."
+    errorAnalysis: "L'analyse a échoué. Veuillez réessayer.",
+    newAnalysis: 'Faire autre analyse'
   }
 };
 const Index = () => {
@@ -65,6 +69,12 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const t = translations[language];
+
+  const handleReset = () => {
+    setScore(null);
+    setAnalysisData(null);
+  };
+
   const handleAnalyze = async (input: string) => {
     setIsLoading(true);
     setScore(null);
@@ -141,7 +151,19 @@ const Index = () => {
         <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
 
         {/* Analysis result */}
-        {analysisData && <AnalysisResult data={analysisData} language={language} />}
+        {analysisData && (
+          <>
+            <AnalysisResult data={analysisData} language={language} />
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              className="mt-6 gap-2 border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+            >
+              <RotateCcw className="h-4 w-4" />
+              {t.newAnalysis}
+            </Button>
+          </>
+        )}
       </main>
 
       {/* Footer */}
