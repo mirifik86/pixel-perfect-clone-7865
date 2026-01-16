@@ -8,8 +8,8 @@ export const LeenScoreLogo = () => {
       </div>
       
       <h1 className="brand-text text-6xl font-normal tracking-tight md:text-7xl">
-        <span className="italic text-foreground">Leen</span>
-        <span className="brand-accent font-semibold not-italic">Score</span>
+        <span className="brand-accent italic">Leen</span>
+        <span className="font-semibold not-italic text-foreground">Score</span>
       </h1>
     </div>
   );

@@ -100,8 +100,8 @@ const Index = () => {
       {/* Footer */}
       <footer className="relative z-10 pb-8 pt-12 text-center">
         <p className="mb-4 text-lg">
-          <span className="font-serif italic text-foreground">Leen</span>
-          <span className="font-serif text-primary">Score</span>
+          <span className="font-serif italic text-primary">Leen</span>
+          <span className="font-serif text-foreground">Score</span>
           <span className="ml-2 text-muted-foreground">{t.footer.split('LeenScore')[1]}</span>
         </p>
         <p className="text-xs font-semibold tracking-widest text-primary">
