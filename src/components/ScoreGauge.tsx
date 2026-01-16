@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
   size?: number;
@@ -8,6 +8,8 @@ export const ScoreGauge = ({
   size = 160
 }: ScoreGaugeProps) => {
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [displayScore, setDisplayScore] = useState(0);
+  const animationRef = useRef<number | null>(null);
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -17,10 +19,52 @@ export const ScoreGauge = ({
 
   useEffect(() => {
     if (score !== null) {
-      const timer = setTimeout(() => setAnimatedScore(score), 100);
-      return () => clearTimeout(timer);
+      // Cancel any existing animation
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      
+      const startValue = 0;
+      const endValue = score;
+      const duration = 1500; // 1.5 seconds
+      const startTime = performance.now();
+      
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function for speedometer effect (ease-out with overshoot)
+        const easeOutBack = (t: number) => {
+          const c1 = 1.70158;
+          const c3 = c1 + 1;
+          return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        };
+        
+        const easedProgress = easeOutBack(progress);
+        const currentValue = Math.round(startValue + (endValue - startValue) * Math.min(easedProgress, 1));
+        
+        setAnimatedScore(Math.min(currentValue, endValue));
+        setDisplayScore(Math.min(currentValue, endValue));
+        
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(animate);
+        }
+      };
+      
+      // Small delay before starting animation
+      const timer = setTimeout(() => {
+        animationRef.current = requestAnimationFrame(animate);
+      }, 100);
+      
+      return () => {
+        clearTimeout(timer);
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+      };
     } else {
       setAnimatedScore(0);
+      setDisplayScore(0);
     }
   }, [score]);
 
@@ -108,7 +152,7 @@ export const ScoreGauge = ({
         <span className="font-light transition-colors duration-500 text-6xl" style={{
         color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))'
       }}>
-          {score === null ? '?' : animatedScore}
+          {score === null ? '?' : displayScore}
         </span>
       </div>
     </div>;
