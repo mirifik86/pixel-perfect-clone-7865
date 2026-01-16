@@ -155,11 +155,13 @@ const Index = () => {
           </button>
         )}
 
-        {/* Empty spacer when no analysis */}
-        {!analysisData && <div className="mb-10" />}
-
-        {/* Analysis form */}
-        <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
+        {/* Analysis form - hidden after analysis */}
+        {!analysisData && (
+          <>
+            <div className="mb-10" />
+            <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
+          </>
+        )}
 
         {/* Analysis result */}
         {analysisData && <AnalysisResult data={analysisData} language={language} />}
