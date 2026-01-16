@@ -11,7 +11,9 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const arc = circumference * 0.75; // 270 degrees
+  const totalArc = circumference * 0.75; // 270 degrees
+  const segmentArc = totalArc / 5; // Each segment is 1/5 of the arc
+  const gap = 4; // Gap between segments
   
   useEffect(() => {
     if (score !== null) {
@@ -40,14 +42,23 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
     return colors[4];
   };
 
-  // Calculate indicator position (angle in degrees)
+  // Calculate which segments should be filled based on score
+  const getSegmentOpacity = (segmentIndex: number) => {
+    const segmentStart = segmentIndex * 20;
+    const segmentEnd = (segmentIndex + 1) * 20;
+    
+    if (score === null) return 0.2;
+    if (animatedScore >= segmentEnd) return 1;
+    if (animatedScore <= segmentStart) return 0.2;
+    // Partial fill
+    return 0.2 + 0.8 * ((animatedScore - segmentStart) / 20);
+  };
+
+  // Calculate indicator position
   const indicatorAngle = 135 + (animatedScore / 100) * 270;
   const indicatorRad = indicatorAngle * (Math.PI / 180);
   const indicatorX = size / 2 + (radius - 2) * Math.cos(indicatorRad);
   const indicatorY = size / 2 + (radius - 2) * Math.sin(indicatorRad);
-
-  // Calculate the filled portion
-  const filledArc = (arc * animatedScore) / 100;
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -56,16 +67,7 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
         height={size}
         viewBox={`0 0 ${size} ${size}`}
       >
-        {/* Gradient definition - 5 colors from red to teal */}
         <defs>
-          <linearGradient id="scoreGradient5" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--score-red))" />
-            <stop offset="25%" stopColor="hsl(var(--score-orange))" />
-            <stop offset="50%" stopColor="hsl(var(--score-yellow))" />
-            <stop offset="75%" stopColor="hsl(var(--score-green))" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" />
-          </linearGradient>
-          
           {/* Glow filter for indicator */}
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -76,49 +78,46 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
           </filter>
         </defs>
 
-        {/* Background arc */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="hsl(var(--muted))"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={`${arc} ${circumference}`}
-          style={{ transform: `rotate(135deg)`, transformOrigin: 'center' }}
-          opacity={0.3}
-        />
+        {/* 5 separate color segments */}
+        {colors.map((color, i) => {
+          const segmentLength = segmentArc - gap;
+          const rotation = 135 + (i * 270) / 5;
+          
+          return (
+            <circle
+              key={i}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={`${segmentLength} ${circumference}`}
+              style={{ 
+                transform: `rotate(${rotation}deg)`, 
+                transformOrigin: 'center',
+                opacity: getSegmentOpacity(i),
+                transition: 'opacity 0.3s ease-out'
+              }}
+            />
+          );
+        })}
 
-        {/* Score arc - fills from left to right with 5-color gradient */}
-        {score !== null && (
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="url(#scoreGradient5)"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={`${filledArc} ${circumference}`}
-            style={{ transform: `rotate(135deg)`, transformOrigin: 'center' }}
-            className="transition-all duration-1000 ease-out"
-          />
-        )}
-
-        {/* 5 Indicator dots - positioned from left (red) to right (teal) */}
-        {[0, 0.25, 0.5, 0.75, 1].map((pos, i) => {
+        {/* Indicator dots at segment boundaries */}
+        {[0, 0.2, 0.4, 0.6, 0.8, 1].map((pos, i) => {
           const angle = (135 + pos * 270) * (Math.PI / 180);
           const dotRadius = 3;
           const dotX = size / 2 + (radius + 18) * Math.cos(angle);
           const dotY = size / 2 + (radius + 18) * Math.sin(angle);
+          const colorIndex = Math.min(i, 4);
           return (
             <circle
               key={i}
               cx={dotX}
               cy={dotY}
               r={dotRadius}
-              fill={colors[i]}
+              fill={colors[colorIndex]}
               opacity={0.7}
             />
           );
