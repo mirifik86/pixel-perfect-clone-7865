@@ -143,8 +143,8 @@ export const ScoreGauge = ({
         return <circle key={i} cx={dotX} cy={dotY} r={dotRadius} fill={colors[colorIndex]} opacity={0.7} />;
       })}
 
-        {/* Precise position indicator */}
-        {score !== null && <circle cx={indicatorX} cy={indicatorY} r={8} fill={getCurrentColor(animatedScore)} stroke="hsl(var(--background))" strokeWidth={2} filter="url(#glow)" className="transition-all duration-1000 ease-out" />}
+        {/* Precise position indicator - follows arc smoothly */}
+        {score !== null && <circle cx={indicatorX} cy={indicatorY} r={8} fill={getCurrentColor(animatedScore)} stroke="hsl(var(--background))" strokeWidth={2} filter="url(#glow)" />}
       </svg>
 
       {/* Center content */}
