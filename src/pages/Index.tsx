@@ -103,14 +103,15 @@ const Index = () => {
       />
       
       {/* Main content */}
-      <main className="relative z-10 flex flex-1 flex-col items-center px-4 py-12">
+      <main className="relative z-10 flex flex-1 flex-col items-center px-4 py-16">
         {/* Logo & branding */}
-        <div className="mb-6">
+        <div className="mb-10">
           <LeenScoreLogo />
         </div>
 
-        <p className="mb-1 text-lg text-muted-foreground">{t.tagline}</p>
-        <p className="mb-8 text-sm font-semibold tracking-widest text-primary">
+        {/* Subtitle - discreet, supportive */}
+        <p className="mb-2 text-base text-muted-foreground/80">{t.tagline}</p>
+        <p className="mb-12 text-xs font-medium tracking-widest text-primary/70">
           {t.byLine}
         </p>
 
