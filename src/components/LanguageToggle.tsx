@@ -7,25 +7,35 @@ interface LanguageToggleProps {
 
 export const LanguageToggle = ({ language, onLanguageChange }: LanguageToggleProps) => {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-muted bg-secondary/50 p-0.5 backdrop-blur-sm md:p-1">
-      <Globe className="ml-1.5 h-3 w-3 text-muted-foreground md:ml-2 md:h-4 md:w-4" />
+    <div 
+      className="inline-flex items-center rounded-full border border-primary/30 bg-secondary/60 p-1 backdrop-blur-md md:p-1.5"
+      style={{
+        boxShadow: '0 0 15px hsl(174 60% 45% / 0.1), inset 0 1px 1px hsl(0 0% 100% / 0.05)'
+      }}
+    >
       <button
         onClick={() => onLanguageChange('en')}
-        className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all md:px-4 md:py-1.5 md:text-sm ${
+        className={`flex min-w-[44px] items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 md:min-w-[56px] md:px-4 md:py-2 md:text-sm ${
           language === 'en'
-            ? 'bg-card text-card-foreground shadow-sm'
+            ? 'bg-primary text-primary-foreground shadow-lg'
             : 'text-muted-foreground hover:text-foreground'
         }`}
+        style={language === 'en' ? {
+          boxShadow: '0 0 12px hsl(174 60% 45% / 0.5), 0 2px 8px hsl(0 0% 0% / 0.3)'
+        } : {}}
       >
         EN
       </button>
       <button
         onClick={() => onLanguageChange('fr')}
-        className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all md:px-4 md:py-1.5 md:text-sm ${
+        className={`flex min-w-[44px] items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 md:min-w-[56px] md:px-4 md:py-2 md:text-sm ${
           language === 'fr'
-            ? 'bg-card text-card-foreground shadow-sm'
+            ? 'bg-primary text-primary-foreground shadow-lg'
             : 'text-muted-foreground hover:text-foreground'
         }`}
+        style={language === 'fr' ? {
+          boxShadow: '0 0 12px hsl(174 60% 45% / 0.5), 0 2px 8px hsl(0 0% 0% / 0.3)'
+        } : {}}
       >
         FR
       </button>
