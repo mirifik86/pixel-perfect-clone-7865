@@ -112,9 +112,11 @@ const Index = () => {
     background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
   }}>
       {/* Earth background */}
-      <div className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-80" style={{
+      <div className="pointer-events-none fixed inset-0 opacity-80" style={{
       backgroundImage: `url(${earthBg})`,
-      backgroundPosition: 'center 40%'
+      backgroundPosition: 'center 40%',
+      backgroundSize: 'cover',
+      backgroundAttachment: 'fixed'
     }} />
       
       {/* Main content */}
