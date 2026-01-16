@@ -163,9 +163,35 @@ const Index = () => {
             
             <LeenScoreLogo />
             
+            {/* Premium light beam separator */}
+            <div className="relative my-2 flex w-full items-center justify-center md:my-3">
+              {/* Central glow dot */}
+              <div 
+                className="absolute h-1 w-1 rounded-full md:h-1.5 md:w-1.5"
+                style={{
+                  background: 'hsl(174 80% 60%)',
+                  boxShadow: '0 0 8px 2px hsl(174 80% 55% / 0.8), 0 0 20px 4px hsl(174 60% 45% / 0.4)'
+                }}
+              />
+              {/* Light beam left */}
+              <div 
+                className="h-px w-16 md:w-32"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.6) 100%)'
+                }}
+              />
+              {/* Light beam right */}
+              <div 
+                className="h-px w-16 md:w-32"
+                style={{
+                  background: 'linear-gradient(90deg, hsl(174 60% 50% / 0.6) 0%, transparent 100%)'
+                }}
+              />
+            </div>
+            
             {/* Subtitle - tighter spacing */}
             <p 
-              className="mt-1 animate-fade-in text-center text-sm font-medium text-foreground/95 md:mt-2 md:text-2xl"
+              className="animate-fade-in text-center text-sm font-medium text-foreground/95 md:text-2xl"
               style={{ animationDelay: '100ms', animationFillMode: 'both' }}
             >
               {t.tagline}
