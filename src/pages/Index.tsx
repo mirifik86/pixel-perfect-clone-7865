@@ -148,25 +148,37 @@ const Index = () => {
       <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-3 py-4 md:px-4 md:py-16">
         <div className="flex w-full flex-col items-center">
           {/* Logo & branding */}
-          <div className="mb-2 md:mb-10">
+          <div className="mb-2 animate-fade-in md:mb-10" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
             <LeenScoreLogo />
           </div>
 
           {/* Subtitle - prominent, strong visual */}
-          <p className="mb-1 text-center text-sm font-medium text-foreground/95 md:mb-3 md:text-2xl">
+          <p 
+            className="mb-1 animate-fade-in text-center text-sm font-medium text-foreground/95 md:mb-3 md:text-2xl"
+            style={{ animationDelay: '100ms', animationFillMode: 'both' }}
+          >
             {t.tagline}
           </p>
-          <p className="mb-3 text-[10px] font-semibold tracking-widest text-foreground/80 md:mb-12 md:text-sm">
+          <p 
+            className="mb-3 animate-fade-in text-[10px] font-semibold tracking-widest text-foreground/80 md:mb-12 md:text-sm"
+            style={{ animationDelay: '150ms', animationFillMode: 'both' }}
+          >
             {t.byLine}
           </p>
 
           {/* Language toggle */}
-          <div className="mb-3 md:mb-10">
+          <div 
+            className="mb-3 animate-fade-in md:mb-10"
+            style={{ animationDelay: '200ms', animationFillMode: 'both' }}
+          >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
           {/* Score gauge - smaller on mobile */}
-          <div className="mb-1 md:mb-4">
+          <div 
+            className="mb-1 animate-scale-in md:mb-4"
+            style={{ animationDelay: '300ms', animationFillMode: 'both' }}
+          >
             <ScoreGauge score={score} size={120} className="md:hidden" />
             <ScoreGauge score={score} size={180} className="hidden md:block" />
           </div>
@@ -175,7 +187,7 @@ const Index = () => {
           {hasAnyAnalysis && (
             <button
               onClick={handleReset}
-              className="group mb-3 flex items-center gap-1.5 rounded-full border-2 border-primary/50 bg-gradient-to-r from-primary/30 to-primary/20 px-4 py-2 backdrop-blur-md transition-all duration-300 hover:border-primary hover:from-primary/50 hover:to-primary/30 hover:shadow-xl hover:shadow-primary/30 md:mb-8 md:gap-3 md:px-8 md:py-4"
+              className="group mb-3 flex animate-fade-in items-center gap-1.5 rounded-full border-2 border-primary/50 bg-gradient-to-r from-primary/30 to-primary/20 px-4 py-2 backdrop-blur-md transition-all duration-300 hover:border-primary hover:from-primary/50 hover:to-primary/30 hover:shadow-xl hover:shadow-primary/30 md:mb-8 md:gap-3 md:px-8 md:py-4"
               style={{
                 boxShadow: '0 0 25px hsl(174 60% 45% / 0.3), 0 0 50px hsl(174 60% 45% / 0.15)'
               }}
@@ -189,7 +201,10 @@ const Index = () => {
 
           {/* Analysis form - hidden after first analysis */}
           {!hasAnyAnalysis && (
-            <div className="mt-1 w-full max-w-2xl md:mt-10">
+            <div 
+              className="mt-1 w-full max-w-2xl animate-fade-in md:mt-10"
+              style={{ animationDelay: '400ms', animationFillMode: 'both' }}
+            >
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
             </div>
           )}
@@ -208,7 +223,10 @@ const Index = () => {
         </div>
 
         {/* Footer - integrated into main for proper spacing */}
-        <footer className="mt-2 pb-2 pt-2 text-center md:mt-12 md:pb-8 md:pt-12">
+        <footer 
+          className="mt-2 animate-fade-in pb-2 pt-2 text-center md:mt-12 md:pb-8 md:pt-12"
+          style={{ animationDelay: '500ms', animationFillMode: 'both' }}
+        >
           <p className="mb-1 text-xs md:mb-4 md:text-lg">
             <span className="font-serif italic text-primary">Leen</span>
             <span className="font-serif text-foreground">Score</span>
