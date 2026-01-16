@@ -26,25 +26,23 @@ export const ScoreGauge = ({
       
       const startValue = 0;
       const endValue = score;
-      const duration = 1500; // 1.5 seconds
+      const duration = 2000; // 2 seconds for smoother animation
       const startTime = performance.now();
       
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
-        // Easing function for speedometer effect (ease-out with overshoot)
-        const easeOutBack = (t: number) => {
-          const c1 = 1.70158;
-          const c3 = c1 + 1;
-          return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        // Professional easing: cubic bezier for smooth acceleration/deceleration
+        const easeOutQuart = (t: number) => {
+          return 1 - Math.pow(1 - t, 4);
         };
         
-        const easedProgress = easeOutBack(progress);
-        const currentValue = Math.round(startValue + (endValue - startValue) * Math.min(easedProgress, 1));
+        const easedProgress = easeOutQuart(progress);
+        const currentValue = Math.round(startValue + (endValue - startValue) * easedProgress);
         
-        setAnimatedScore(Math.min(currentValue, endValue));
-        setDisplayScore(Math.min(currentValue, endValue));
+        setAnimatedScore(currentValue);
+        setDisplayScore(currentValue);
         
         if (progress < 1) {
           animationRef.current = requestAnimationFrame(animate);
@@ -54,7 +52,7 @@ export const ScoreGauge = ({
       // Small delay before starting animation
       const timer = setTimeout(() => {
         animationRef.current = requestAnimationFrame(animate);
-      }, 100);
+      }, 200);
       
       return () => {
         clearTimeout(timer);
@@ -111,13 +109,18 @@ export const ScoreGauge = ({
   }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
-          {/* Glow filter for indicator */}
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+          {/* Enhanced glow filter for indicator */}
+          <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
+              <feMergeNode in="coloredBlur" />
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
+          </filter>
+          {/* Subtle shadow for depth */}
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.3" />
           </filter>
         </defs>
 
@@ -125,11 +128,11 @@ export const ScoreGauge = ({
         {colors.map((color, i) => {
         const segmentLength = segmentArc - gap;
         const rotation = 135 + i * 270 / 5;
-        return <circle key={i} cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={`${segmentLength} ${circumference}`} style={{
+        return <circle key={i} cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={`${segmentLength} ${circumference}`} filter="url(#shadow)" style={{
           transform: `rotate(${rotation}deg)`,
           transformOrigin: 'center',
           opacity: getSegmentOpacity(i),
-          transition: 'opacity 0.3s ease-out'
+          transition: 'opacity 0.15s ease-out'
         }} />;
       })}
 
