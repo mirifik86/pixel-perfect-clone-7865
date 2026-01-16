@@ -146,10 +146,13 @@ const Index = () => {
         {analysisData && (
           <button
             onClick={handleReset}
-            className="group mb-8 flex items-center gap-3 rounded-full border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-3 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:from-primary/20 hover:to-primary/10 hover:shadow-lg hover:shadow-primary/10"
+            className="group mb-8 flex items-center gap-3 rounded-full border-2 border-primary/50 bg-gradient-to-r from-primary/30 to-primary/20 px-8 py-4 backdrop-blur-md transition-all duration-300 hover:border-primary hover:from-primary/50 hover:to-primary/30 hover:shadow-xl hover:shadow-primary/30"
+            style={{
+              boxShadow: '0 0 25px hsl(174 60% 45% / 0.3), 0 0 50px hsl(174 60% 45% / 0.15)'
+            }}
           >
-            <RotateCcw className="h-4 w-4 text-primary transition-transform duration-300 group-hover:-rotate-180" />
-            <span className="text-sm font-medium tracking-wide text-primary/90 group-hover:text-primary">
+            <RotateCcw className="h-5 w-5 text-primary transition-transform duration-300 group-hover:-rotate-180" />
+            <span className="text-base font-semibold tracking-wide text-primary group-hover:text-primary">
               {t.newAnalysis}
             </span>
           </button>
