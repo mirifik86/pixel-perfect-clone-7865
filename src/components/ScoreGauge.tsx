@@ -22,7 +22,31 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
     }
   }, [score]);
 
-  // Calculate the filled portion (from left to right, like a speedometer)
+  // 5 colors from red to teal (Leen color)
+  const colors = [
+    'hsl(var(--score-red))',      // 0-20: Red
+    'hsl(var(--score-orange))',   // 20-40: Orange
+    'hsl(var(--score-yellow))',   // 40-60: Yellow
+    'hsl(var(--score-green))',    // 60-80: Green
+    'hsl(var(--primary))',        // 80-100: Teal (Leen)
+  ];
+
+  // Get current color based on score
+  const getCurrentColor = (value: number) => {
+    if (value < 20) return colors[0];
+    if (value < 40) return colors[1];
+    if (value < 60) return colors[2];
+    if (value < 80) return colors[3];
+    return colors[4];
+  };
+
+  // Calculate indicator position (angle in degrees)
+  const indicatorAngle = 135 + (animatedScore / 100) * 270;
+  const indicatorRad = indicatorAngle * (Math.PI / 180);
+  const indicatorX = size / 2 + (radius - 2) * Math.cos(indicatorRad);
+  const indicatorY = size / 2 + (radius - 2) * Math.sin(indicatorRad);
+
+  // Calculate the filled portion
   const filledArc = (arc * animatedScore) / 100;
 
   return (
@@ -32,17 +56,27 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
         height={size}
         viewBox={`0 0 ${size} ${size}`}
       >
-        {/* Gradient definition - reversed for left-to-right */}
+        {/* Gradient definition - 5 colors from red to teal */}
         <defs>
-          <linearGradient id="scoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+          <linearGradient id="scoreGradient5" x1="0%" y1="100%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="hsl(var(--score-red))" />
-            <stop offset="33%" stopColor="hsl(var(--score-orange))" />
-            <stop offset="66%" stopColor="hsl(var(--score-yellow))" />
-            <stop offset="100%" stopColor="hsl(var(--score-green))" />
+            <stop offset="25%" stopColor="hsl(var(--score-orange))" />
+            <stop offset="50%" stopColor="hsl(var(--score-yellow))" />
+            <stop offset="75%" stopColor="hsl(var(--score-green))" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" />
           </linearGradient>
+          
+          {/* Glow filter for indicator */}
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
         </defs>
 
-        {/* Background arc - starts from bottom-left, goes clockwise to bottom-right */}
+        {/* Background arc */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -52,20 +86,18 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={`${arc} ${circumference}`}
-          strokeDashoffset={-arc / 2 - circumference * 0.25}
-          opacity={0.3}
-          transform={`rotate(0 ${size / 2} ${size / 2})`}
           style={{ transform: `rotate(135deg)`, transformOrigin: 'center' }}
+          opacity={0.3}
         />
 
-        {/* Score arc - fills from left to right */}
+        {/* Score arc - fills from left to right with 5-color gradient */}
         {score !== null && (
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="url(#scoreGradient)"
+            stroke="url(#scoreGradient5)"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={`${filledArc} ${circumference}`}
@@ -74,29 +106,45 @@ export const ScoreGauge = ({ score, size = 160 }: ScoreGaugeProps) => {
           />
         )}
 
-        {/* Indicator dots - positioned from left (red) to right (green) */}
-        {[0, 0.33, 0.66, 1].map((pos, i) => {
-          // Start at 135deg (bottom-left), end at 405deg (bottom-right) = 270deg arc
+        {/* 5 Indicator dots - positioned from left (red) to right (teal) */}
+        {[0, 0.25, 0.5, 0.75, 1].map((pos, i) => {
           const angle = (135 + pos * 270) * (Math.PI / 180);
-          const dotRadius = 4;
-          const dotX = size / 2 + (radius + 15) * Math.cos(angle);
-          const dotY = size / 2 + (radius + 15) * Math.sin(angle);
+          const dotRadius = 3;
+          const dotX = size / 2 + (radius + 18) * Math.cos(angle);
+          const dotY = size / 2 + (radius + 18) * Math.sin(angle);
           return (
             <circle
               key={i}
               cx={dotX}
               cy={dotY}
               r={dotRadius}
-              fill={['hsl(var(--score-red))', 'hsl(var(--score-orange))', 'hsl(var(--score-yellow))', 'hsl(var(--score-green))'][i]}
-              opacity={0.6}
+              fill={colors[i]}
+              opacity={0.7}
             />
           );
         })}
+
+        {/* Precise position indicator */}
+        {score !== null && (
+          <circle
+            cx={indicatorX}
+            cy={indicatorY}
+            r={8}
+            fill={getCurrentColor(animatedScore)}
+            stroke="hsl(var(--background))"
+            strokeWidth={2}
+            filter="url(#glow)"
+            className="transition-all duration-1000 ease-out"
+          />
+        )}
       </svg>
 
       {/* Center content */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-4xl font-light text-muted-foreground">
+        <span 
+          className="text-4xl font-light transition-colors duration-500"
+          style={{ color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))' }}
+        >
           {score === null ? '?' : animatedScore}
         </span>
       </div>
