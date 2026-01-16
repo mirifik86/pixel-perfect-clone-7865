@@ -5,7 +5,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Get current date for temporal context
+const getCurrentDateInfo = () => {
+  const now = new Date();
+  return {
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+    day: now.getDate(),
+    formatted: now.toISOString().split('T')[0]
+  };
+};
+
 const SYSTEM_PROMPT = `You are LeenScore, an AI credibility analyst. Your task is to analyze content and calculate a Trust Score.
+
+CURRENT DATE CONTEXT:
+Today's date is ${getCurrentDateInfo().formatted} (${getCurrentDateInfo().year}).
+You MUST use this as your temporal reference point for all date evaluations.
 
 SCORING METHOD:
 Start with a base score of 50/100 (neutral).
@@ -32,6 +47,19 @@ D. CONTEXT CLARITY:
 - Incomplete or misleading context: -15
 - Information presented outside its original context: -20
 
+TEMPORAL CONTEXT EVALUATION (CRITICAL):
+When evaluating publication dates:
+1. Compare detected dates against TODAY'S DATE (${getCurrentDateInfo().formatted})
+2. A date in ${getCurrentDateInfo().year} is CURRENT YEAR content - this is NORMAL and expected
+3. Apply NO penalty for:
+   - Same year and month as current date
+   - Dates within ±30 days of current date
+   - Content clearly labeled as forecasts, projections, or future-oriented
+4. Apply context penalty (-15 to -20) ONLY if:
+   - Date is more than 60 days in the future AND not clearly forward-looking content
+   - Date appears fabricated or contradicts the content narrative
+5. When uncertain about dates, state uncertainty - do NOT penalize
+
 E. TRANSPARENCY:
 - Sources clearly cited: +10
 - Identified author or organization: +5
@@ -55,8 +83,9 @@ You MUST respond with valid JSON in this exact format:
 IMPORTANT:
 - Score must be between 0 and 100
 - Be objective and analytical
-- When data is insufficient, state uncertainty
-- The summary should explain why the score is what it is`;
+- When data is insufficient, state uncertainty instead of penalizing
+- The summary should explain why the score is what it is
+- NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
