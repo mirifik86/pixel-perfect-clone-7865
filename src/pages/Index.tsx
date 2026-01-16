@@ -147,24 +147,36 @@ const Index = () => {
       {/* Main content - use min-h-screen and justify-between to fit everything without scrolling */}
       <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-3 py-4 md:px-4 md:py-16">
         <div className="flex w-full flex-col items-center">
-          {/* Logo & branding */}
-          <div className="mb-2 animate-fade-in md:mb-10" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
+          {/* Logo & branding with unified halo */}
+          <div 
+            className="relative mb-3 flex animate-fade-in flex-col items-center md:mb-12" 
+            style={{ animationDelay: '0ms', animationFillMode: 'both' }}
+          >
+            {/* Unified halo effect behind logo + subtitles */}
+            <div 
+              className="pointer-events-none absolute -inset-4 md:-inset-8"
+              style={{
+                background: 'radial-gradient(ellipse 60% 50% at 50% 40%, hsl(174 60% 45% / 0.15) 0%, transparent 70%)',
+                filter: 'blur(20px)'
+              }}
+            />
+            
             <LeenScoreLogo />
+            
+            {/* Subtitle - tighter spacing */}
+            <p 
+              className="mt-1 animate-fade-in text-center text-sm font-medium text-foreground/95 md:mt-2 md:text-2xl"
+              style={{ animationDelay: '100ms', animationFillMode: 'both' }}
+            >
+              {t.tagline}
+            </p>
+            <p 
+              className="mt-0.5 animate-fade-in text-[10px] font-semibold tracking-widest text-primary md:mt-1 md:text-sm"
+              style={{ animationDelay: '150ms', animationFillMode: 'both' }}
+            >
+              {t.byLine}
+            </p>
           </div>
-
-          {/* Subtitle - prominent, strong visual */}
-          <p 
-            className="mb-1 animate-fade-in text-center text-sm font-medium text-foreground/95 md:mb-3 md:text-2xl"
-            style={{ animationDelay: '100ms', animationFillMode: 'both' }}
-          >
-            {t.tagline}
-          </p>
-          <p 
-            className="mb-3 animate-fade-in text-[10px] font-semibold tracking-widest text-foreground/80 md:mb-12 md:text-sm"
-            style={{ animationDelay: '150ms', animationFillMode: 'both' }}
-          >
-            {t.byLine}
-          </p>
 
           {/* Language toggle */}
           <div 
