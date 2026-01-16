@@ -65,47 +65,72 @@ const translations = {
 };
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
-  const [score, setScore] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [lastInput, setLastInput] = useState<string | null>(null);
+  const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
+    en: null,
+    fr: null,
+  });
+
   const t = translations[language];
+  const analysisData = analysisByLanguage[language];
+  const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr);
+
+  // Keep a stable score visible during language re-generation
+  const score = (
+    analysisData ?? (language === 'en' ? analysisByLanguage.fr : analysisByLanguage.en)
+  )?.score ?? null;
 
   const handleReset = () => {
-    setScore(null);
-    setAnalysisData(null);
+    setLastInput(null);
+    setAnalysisByLanguage({ en: null, fr: null });
   };
 
-  const handleAnalyze = async (input: string) => {
+  const handleAnalyze = async (input: string, langOverride?: 'en' | 'fr') => {
+    const lang = langOverride ?? language;
+    const tLocal = translations[lang];
+
     setIsLoading(true);
-    setScore(null);
-    setAnalysisData(null);
+    setLastInput(input);
+
+    // Clear only the target language result; keep the other language cached
+    setAnalysisByLanguage((prev) => ({ ...prev, [lang]: null }));
+
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('analyze', {
+      const { data, error } = await supabase.functions.invoke('analyze', {
         body: {
           content: input,
-          language
-        }
+          language: lang,
+        },
       });
+
       if (error) {
         console.error('Analysis error:', error);
-        toast.error(t.errorAnalysis);
+        toast.error(tLocal.errorAnalysis);
         return;
       }
-      if (data.error) {
+
+      if (data?.error) {
         console.error('API error:', data.error);
         toast.error(data.error);
         return;
       }
-      setAnalysisData(data);
-      setScore(data.score);
+
+      setAnalysisByLanguage((prev) => ({ ...prev, [lang]: data }));
     } catch (err) {
       console.error('Unexpected error:', err);
-      toast.error(t.errorAnalysis);
+      toast.error(tLocal.errorAnalysis);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLanguageChange = (next: 'en' | 'fr') => {
+    setLanguage(next);
+
+    // If we already analyzed once, keep everything in sync with the selected language.
+    if (hasAnyAnalysis && lastInput && !analysisByLanguage[next] && !isLoading) {
+      void handleAnalyze(lastInput, next);
     }
   };
   return <div className="relative flex min-h-screen flex-col overflow-hidden" style={{
@@ -136,7 +161,7 @@ const Index = () => {
 
         {/* Language toggle */}
         <div className="mb-10">
-          <LanguageToggle language={language} onLanguageChange={setLanguage} />
+          <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
         </div>
 
         {/* Score gauge */}
@@ -145,7 +170,7 @@ const Index = () => {
         </div>
 
         {/* Reset button - appears after analysis */}
-        {analysisData && (
+        {hasAnyAnalysis && (
           <button
             onClick={handleReset}
             className="group mb-8 flex items-center gap-3 rounded-full border-2 border-primary/50 bg-gradient-to-r from-primary/30 to-primary/20 px-8 py-4 backdrop-blur-md transition-all duration-300 hover:border-primary hover:from-primary/50 hover:to-primary/30 hover:shadow-xl hover:shadow-primary/30"
@@ -160,16 +185,25 @@ const Index = () => {
           </button>
         )}
 
-        {/* Analysis form - hidden after analysis */}
-        {!analysisData && (
+        {/* Analysis form - hidden after first analysis */}
+        {!hasAnyAnalysis && (
           <>
             <div className="mb-10" />
             <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
           </>
         )}
 
-        {/* Analysis result */}
+        {/* Analysis result (per language) */}
         {analysisData && <AnalysisResult data={analysisData} language={language} />}
+
+        {/* While switching languages, show a small placeholder until the new language result is ready */}
+        {hasAnyAnalysis && !analysisData && (
+          <div className="analysis-card mt-8 w-full max-w-2xl animate-fade-in">
+            <p className="text-center text-sm text-muted-foreground/90">
+              {language === 'fr' ? 'Traduction en cours…' : 'Translating…'}
+            </p>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
