@@ -206,6 +206,15 @@ const Index = () => {
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
             >
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
+              {/* Tagline directly below the form */}
+              <p 
+                className="mt-3 animate-fade-in text-center text-xs md:mt-6 md:text-base"
+                style={{ animationDelay: '450ms', animationFillMode: 'both' }}
+              >
+                <span className="font-serif italic text-primary">Leen</span>
+                <span className="font-serif text-foreground">Score</span>
+                <span className="ml-1 text-muted-foreground md:ml-2">{t.footer.split('LeenScore')[1]}</span>
+              </p>
             </div>
           )}
 
@@ -227,11 +236,6 @@ const Index = () => {
           className="mt-2 animate-fade-in pb-2 pt-2 text-center md:mt-12 md:pb-8 md:pt-12"
           style={{ animationDelay: '500ms', animationFillMode: 'both' }}
         >
-          <p className="mb-1 text-xs md:mb-4 md:text-lg">
-            <span className="font-serif italic text-primary">Leen</span>
-            <span className="font-serif text-foreground">Score</span>
-            <span className="ml-1 text-muted-foreground md:ml-2">{t.footer.split('LeenScore')[1]}</span>
-          </p>
           <p className="text-[8px] font-semibold tracking-widest text-primary md:text-xs">
             {t.developedBy}
           </p>
