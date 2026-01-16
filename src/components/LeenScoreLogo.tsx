@@ -21,18 +21,21 @@ export const LeenScoreLogo = () => {
             <line x1="8" y1="17" x2="14" y2="17" stroke="hsl(var(--muted-foreground))" strokeWidth="1" />
           </svg>
           
-          {/* Loupe couleur Leen */}
+          {/* Loupe couleur Leen - plus grosse et stylée */}
           <svg
             viewBox="0 0 24 24"
-            className="absolute -bottom-1 -right-1 h-8 w-8"
+            className="absolute -bottom-2 -right-3 h-11 w-11 drop-shadow-lg"
             fill="none"
             stroke="hsl(var(--primary))"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <circle cx="11" cy="11" r="6" fill="hsl(var(--primary) / 0.2)" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <circle cx="10" cy="10" r="6" fill="hsl(var(--primary) / 0.25)" />
+            <circle cx="10" cy="10" r="6" stroke="hsl(var(--primary))" strokeWidth="2" />
+            {/* Reflet sur la loupe */}
+            <path d="M7 7 Q8 6 9 7" stroke="white" strokeWidth="1.5" opacity="0.6" fill="none" />
+            <line x1="22" y1="22" x2="15" y2="15" strokeWidth="3" />
           </svg>
         </div>
       </div>
