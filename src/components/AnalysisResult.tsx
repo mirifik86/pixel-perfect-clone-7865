@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, AlertCircle, Image } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 interface AnalysisBreakdown {
   // Core criteria
@@ -58,7 +58,7 @@ interface AnalysisData {
 interface AnalysisResultProps {
   data: AnalysisData;
   language: 'en' | 'fr';
-  isProUnlocked?: boolean; // Controls visibility of advanced image analysis
+  isProUnlocked?: boolean;
 }
 
 const translations = {
@@ -70,21 +70,19 @@ const translations = {
     tone: 'Tone & Language',
     context: 'Context Clarity',
     transparency: 'Transparency',
-    // Extended signals
-    freshness: 'Content Freshness',
-    prudence: 'Language Prudence',
-    density: 'Factual Density',
-    attribution: 'Attribution Clarity',
-    visualCoherence: 'Visual Alignment',
-    // Legacy
-    imageCoherence: 'Image Coherence',
     // UI
     confidence: 'Confidence',
     confidenceLow: 'Low',
     confidenceMedium: 'Medium',
     confidenceHigh: 'High',
     summary: 'Analysis Summary',
-    extendedSignals: 'Credibility Signals',
+    // Credibility signals badges
+    signalsTitle: 'Credibility signals reviewed',
+    signalSource: 'Source reliability',
+    signalFactual: 'Factual coherence',
+    signalContext: 'Context clarity',
+    signalPrudence: 'Language prudence',
+    signalVisual: 'Visual coherence',
   },
   fr: {
     breakdown: 'Détail du Score',
@@ -94,21 +92,19 @@ const translations = {
     tone: 'Ton & Langage',
     context: 'Clarté du Contexte',
     transparency: 'Transparence',
-    // Extended signals
-    freshness: 'Fraîcheur du Contenu',
-    prudence: 'Prudence du Langage',
-    density: 'Densité Factuelle',
-    attribution: 'Clarté des Attributions',
-    visualCoherence: 'Cohérence Visuelle',
-    // Legacy
-    imageCoherence: 'Cohérence Image',
     // UI
     confidence: 'Niveau de confiance',
     confidenceLow: 'Faible',
     confidenceMedium: 'Moyen',
     confidenceHigh: 'Élevé',
     summary: "Résumé de l'Analyse",
-    extendedSignals: 'Signaux de Crédibilité',
+    // Credibility signals badges
+    signalsTitle: 'Signaux de crédibilité évalués',
+    signalSource: 'Fiabilité des sources',
+    signalFactual: 'Cohérence factuelle',
+    signalContext: 'Clarté du contexte',
+    signalPrudence: 'Prudence du langage',
+    signalVisual: 'Cohérence visuelle',
   },
 };
 
@@ -124,6 +120,33 @@ const getPointsColor = (points: number) => {
   return 'text-yellow-400';
 };
 
+// Map points to badge level (1-5 scale matching gauge segments)
+// Returns: 1=Red, 2=Orange, 3=Yellow, 4=Teal, 5=Leen Blue
+const getBadgeLevel = (points: number): number => {
+  if (points <= -4) return 1; // Very weak - Red
+  if (points <= -2) return 2; // Limited - Orange
+  if (points <= 1) return 3;  // Moderate - Yellow
+  if (points <= 3) return 4;  // Good - Teal
+  return 5;                   // Strong - Leen Blue
+};
+
+// Badge colors matching score gauge segments exactly
+const badgeStyles: Record<number, string> = {
+  1: 'bg-[hsl(0_72%_51%)]/20 border-[hsl(0_72%_51%)]/40', // Red - Very weak
+  2: 'bg-[hsl(25_95%_53%)]/20 border-[hsl(25_95%_53%)]/40', // Orange - Limited
+  3: 'bg-[hsl(48_96%_53%)]/20 border-[hsl(48_96%_53%)]/40', // Yellow - Moderate
+  4: 'bg-[hsl(160_60%_45%)]/20 border-[hsl(160_60%_45%)]/40', // Teal - Good
+  5: 'bg-[hsl(174_65%_52%)]/20 border-[hsl(174_65%_52%)]/40', // Leen Blue - Strong
+};
+
+const badgeDotStyles: Record<number, string> = {
+  1: 'bg-[hsl(0_72%_51%)]', // Red
+  2: 'bg-[hsl(25_95%_53%)]', // Orange
+  3: 'bg-[hsl(48_96%_53%)]', // Yellow
+  4: 'bg-[hsl(160_60%_45%)]', // Teal
+  5: 'bg-[hsl(174_65%_52%)]', // Leen Blue
+};
+
 export const AnalysisResult = ({ data, language, isProUnlocked = false }: AnalysisResultProps) => {
   const t = translations[language];
 
@@ -134,15 +157,6 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
     tone: t.tone,
     context: t.context,
     transparency: t.transparency,
-  };
-
-  // Extended signal labels
-  const extendedSignalLabels: Record<string, string> = {
-    freshness: t.freshness,
-    prudence: t.prudence,
-    density: t.density,
-    attribution: t.attribution,
-    visualCoherence: t.visualCoherence,
   };
 
   const confidenceLabels = {
@@ -157,14 +171,34 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
     high: 'bg-green-500/20 text-green-400',
   };
 
-  // Separate core criteria from extended signals
+  // Get core criteria keys
   const coreKeys = Object.keys(data.breakdown).filter((key) => 
     coreCriteriaLabels[key] !== undefined
   );
 
-  const extendedKeys = Object.keys(data.breakdown).filter((key) => 
-    extendedSignalLabels[key] !== undefined && data.breakdown[key as keyof AnalysisBreakdown]
-  );
+  // Compute badge data for 5 fixed signals
+  const signalBadges = [
+    { 
+      label: t.signalSource, 
+      level: getBadgeLevel(data.breakdown.sources?.points ?? 0) 
+    },
+    { 
+      label: t.signalFactual, 
+      level: getBadgeLevel(data.breakdown.factual?.points ?? 0) 
+    },
+    { 
+      label: t.signalContext, 
+      level: getBadgeLevel(data.breakdown.context?.points ?? 0) 
+    },
+    { 
+      label: t.signalPrudence, 
+      level: getBadgeLevel(data.breakdown.prudence?.points ?? data.breakdown.tone?.points ?? 0) 
+    },
+    { 
+      label: t.signalVisual, 
+      level: getBadgeLevel(data.breakdown.visualCoherence?.points ?? 0) 
+    },
+  ];
 
   return (
     <div className="mt-8 w-full max-w-2xl animate-fade-in">
@@ -179,7 +213,23 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
         <p className="text-muted-foreground">{data.summary}</p>
       </div>
 
-      {/* Breakdown - Core criteria */}
+      {/* Credibility Signals Badges - Visual overview */}
+      <div className="analysis-card mb-6">
+        <h3 className="mb-4 font-serif text-lg text-foreground">{t.signalsTitle}</h3>
+        <div className="flex flex-wrap gap-2">
+          {signalBadges.map((signal, index) => (
+            <div
+              key={index}
+              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
+            >
+              <span className={`h-2 w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
+              <span className="text-xs font-medium text-foreground/90">{signal.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Breakdown - Core criteria with details */}
       <div className="analysis-card">
         <h3 className="mb-4 font-serif text-lg text-foreground">{t.breakdown}</h3>
         <div className="space-y-4">
@@ -187,7 +237,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
             const item = data.breakdown[key as keyof AnalysisBreakdown];
             if (!item) return null;
             return (
-              <div key={key} className="border-b border-border/30 pb-4">
+              <div key={key} className="border-b border-border/30 pb-4 last:border-0 last:pb-0">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getPointsIcon(item.points)}
@@ -202,38 +252,6 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
             );
           })}
         </div>
-
-        {/* Extended Credibility Signals - displayed separately */}
-        {extendedKeys.length > 0 && (
-          <div className="mt-6 border-t border-border/30 pt-4">
-            <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Image className="h-4 w-4" />
-              {t.extendedSignals}
-            </h4>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {extendedKeys.map((key) => {
-                const item = data.breakdown[key as keyof AnalysisBreakdown];
-                if (!item) return null;
-                return (
-                  <div 
-                    key={key} 
-                    className="rounded-lg border border-border/20 bg-background/30 p-3"
-                  >
-                    <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs font-medium text-foreground/90">
-                        {extendedSignalLabels[key]}
-                      </span>
-                      <span className={`font-mono text-xs font-semibold ${getPointsColor(item.points)}`}>
-                        {item.points > 0 ? '+' : ''}{item.points}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground/80 line-clamp-2">{item.reason}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
