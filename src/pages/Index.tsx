@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
@@ -73,6 +74,7 @@ const translations = {
   }
 };
 const Index = () => {
+  const isMobile = useIsMobile();
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [isLoading, setIsLoading] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
@@ -208,11 +210,11 @@ const Index = () => {
     }} />
       
       {/* Main content - mobile-first: fit everything above fold */}
-      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-4 md:py-6">
-        <div className="flex w-full flex-col items-center pt-4 md:pt-8">
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-2 md:py-6">
+        <div className="flex w-full flex-col items-center pt-2 md:pt-8">
           {/* Logo & branding with unified halo */}
           <div 
-            className="relative mb-4 md:mb-8 flex animate-fade-in flex-col items-center" 
+            className="relative mb-2 md:mb-8 flex animate-fade-in flex-col items-center" 
             style={{ animationDelay: '0ms', animationFillMode: 'both' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
@@ -227,7 +229,7 @@ const Index = () => {
             <LeenScoreLogo />
             
             {/* Premium light beam separator */}
-            <div className="relative my-1.5 md:my-2 flex w-full items-center justify-center">
+            <div className="relative my-1 md:my-2 flex w-full items-center justify-center">
               {/* Central glow dot */}
               <div 
                 className="absolute h-1.5 w-1.5 rounded-full"
@@ -260,7 +262,7 @@ const Index = () => {
               {t.tagline}
             </p>
             <p 
-              className="mt-1 md:mt-1.5 animate-fade-in text-xs font-bold uppercase tracking-[0.35em]"
+              className="mt-0.5 md:mt-1.5 animate-fade-in text-[10px] md:text-xs font-bold uppercase tracking-[0.35em]"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
@@ -274,7 +276,7 @@ const Index = () => {
 
           {/* Language toggle - perfectly centered */}
           <div 
-            className="flex w-full justify-center mb-4 md:mb-8 animate-fade-in"
+            className="flex w-full justify-center mb-2 md:mb-8 animate-fade-in"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
@@ -282,15 +284,15 @@ const Index = () => {
 
           {/* Score gauge - clean, instrument-like design */}
           <div 
-            className="relative mb-2 md:mb-4 animate-scale-in"
+            className="relative mb-1 md:mb-4 animate-scale-in"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
             <div className="relative flex justify-center">
-              {/* Show loader during analysis, gauge otherwise */}
+              {/* Show loader during analysis, gauge otherwise - smaller on mobile */}
               {isLoading ? (
-                <AnalysisLoader size={200} language={language} />
+                <AnalysisLoader size={isMobile ? 150 : 200} language={language} />
               ) : (
-                <ScoreGauge score={score} size={200} language={language} />
+                <ScoreGauge score={score} size={isMobile ? 150 : 200} language={language} />
               )}
             </div>
           </div>
@@ -334,7 +336,7 @@ const Index = () => {
           {/* Analysis form - hidden after first analysis */}
           {!hasAnyAnalysis && (
             <div 
-              className="mt-1 md:mt-2 w-full max-w-2xl animate-fade-in"
+              className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
             >
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
