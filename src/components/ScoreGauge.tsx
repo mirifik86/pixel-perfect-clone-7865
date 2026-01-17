@@ -204,28 +204,31 @@ export const ScoreGauge = ({
       </div>
 
       {/* Status label - seamlessly connected to gauge */}
-      <div className="relative w-full flex justify-center mt-1">
+      <div className="relative w-full flex justify-center mt-2">
         {/* Pulse effect for ready state */}
         {score === null && (
           <div 
-            className="absolute -inset-x-4 -inset-y-2 rounded-full"
+            className="absolute -inset-x-6 -inset-y-3 rounded-full"
             style={{
-              background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.4), hsl(174 60% 55% / 0.2), hsl(174 60% 45% / 0.4))',
+              background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 70% 55% / 0.3), hsl(174 70% 50% / 0.5))',
               animation: 'ready-pulse 2s ease-in-out infinite',
               animationDelay: '0s',
-              filter: 'blur(8px)',
+              filter: 'blur(10px)',
             }}
           />
         )}
         <span
-          className="relative text-center"
+          className="relative text-center px-4 py-1.5 rounded-full"
           style={{
-            fontSize: labelFontSize,
-            color: currentLabelColor,
-            fontWeight: 500, // Semi-bold for authoritative but not heavy
-            letterSpacing: '0.15em', // Increased letter spacing
+            fontSize: size * 0.095,
+            color: score === null ? 'hsl(174 80% 55%)' : currentLabelColor,
+            fontWeight: 600,
+            letterSpacing: '0.18em',
             fontFamily: 'var(--font-sans)',
-            transition: 'color 0.3s ease-out'
+            transition: 'color 0.3s ease-out',
+            textShadow: score === null ? '0 0 20px hsl(174 80% 50% / 0.6), 0 0 40px hsl(174 80% 50% / 0.3)' : 'none',
+            background: score === null ? 'hsl(174 60% 45% / 0.1)' : 'transparent',
+            border: score === null ? '1px solid hsl(174 60% 45% / 0.3)' : 'none',
           }}
         >
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
@@ -235,8 +238,8 @@ export const ScoreGauge = ({
         {score === null && (
           <style>{`
             @keyframes ready-pulse {
-              0%, 100% { opacity: 0.5; transform: scale(0.98); }
-              50% { opacity: 0.9; transform: scale(1.02); }
+              0%, 100% { opacity: 0.4; transform: scale(0.96); }
+              50% { opacity: 1; transform: scale(1.04); }
             }
           `}</style>
         )}
