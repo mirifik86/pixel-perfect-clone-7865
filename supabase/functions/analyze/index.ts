@@ -67,6 +67,13 @@ E. TRANSPARENCY:
 - Identified author or organization: +5
 - Total anonymity: -10
 
+F. IMAGE COHERENCE (Standard Analysis):
+When the content includes or references images/visuals:
+- Coherent or purely illustrative image (matches the text context): 0 points (no impact)
+- Clearly misleading or unrelated image (misrepresents the content): -2 points maximum
+- If no image is present or referenced: 0 points (no impact)
+Note: In Standard Analysis, only evaluate basic contextual coherence. Do NOT analyze image origin, AI generation, or metadata.
+
 RESPONSE FORMAT:
 You MUST respond with valid JSON in this exact format:
 {
@@ -76,11 +83,13 @@ You MUST respond with valid JSON in this exact format:
     "factual": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
     "tone": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
     "context": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "transparency": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
+    "transparency": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "imageCoherence": {"points": <number between -2 and 0>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
   },
   "summary": "<2-3 sentence explanation in ${language === 'fr' ? 'French' : 'English'}>",
   "articleSummary": "<2-3 sentence FACTUAL summary of what the article is about - ONLY describe the main topic and key reported facts. Use neutral, journalistic tone with verbs like 'reports', 'states', 'outlines', 'describes'. NO opinions, NO conclusions, NO mention of credibility or score. This must be in ${language === 'fr' ? 'French' : 'English'}>",
-  "confidence": "<low|medium|high>"
+  "confidence": "<low|medium|high>",
+  "visualNote": "${language === 'fr' ? 'Les éléments visuels ont été examinés pour leur cohérence contextuelle.' : 'Visual elements were reviewed for contextual coherence.'}"
 }
 
 IMPORTANT:
@@ -90,7 +99,8 @@ IMPORTANT:
 - The "summary" field should explain why the score is what it is (analysis conclusion)
 - The "articleSummary" field should ONLY describe what the content is about factually - it must NOT influence or mention the score
 - NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR
-- ALL text responses (reasons, summary, articleSummary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
+- ALL text responses (reasons, summary, articleSummary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}
+- Image analysis must remain secondary to text and sources - maximum -2 points impact`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
