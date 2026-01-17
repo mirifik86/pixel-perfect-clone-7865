@@ -40,6 +40,12 @@ interface AnalysisData {
   articleSummary?: string;
   confidence: 'low' | 'medium' | 'high';
 }
+
+// Bilingual summaries stored at analysis time - no translation calls on toggle
+interface BilingualSummaries {
+  en: { summary: string; articleSummary: string } | null;
+  fr: { summary: string; articleSummary: string } | null;
+}
 const translations = {
   en: {
     tagline: 'See clearly through information.',
@@ -77,9 +83,12 @@ const Index = () => {
     fr: null,
   });
   
-  // Article summary is stored separately and remains IDENTICAL across languages
-  // It's generated once in the user's selected language and never changes
-  const [masterArticleSummary, setMasterArticleSummary] = useState<string | null>(null);
+  // BILINGUAL SUMMARIES: Both languages stored at analysis time for instant switching
+  // No translation calls, no async operations on language toggle
+  const [summariesByLanguage, setSummariesByLanguage] = useState<BilingualSummaries>({
+    en: null,
+    fr: null,
+  });
 
   const t = translations[language];
   const analysisData = analysisByLanguage[language];
@@ -87,10 +96,14 @@ const Index = () => {
 
   // Score is consistent across both languages (same analysis, different text)
   const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score ?? null;
+  
+  // INSTANT SUMMARY ACCESS: Pure synchronous lookup, no async operations
+  const currentSummaries = summariesByLanguage[language];
+  const displayArticleSummary = currentSummaries?.articleSummary || null;
 
   const handleReset = () => {
     setAnalysisByLanguage({ en: null, fr: null });
-    setMasterArticleSummary(null);
+    setSummariesByLanguage({ en: null, fr: null });
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -99,9 +112,10 @@ const Index = () => {
 
     setIsLoading(true);
     setAnalysisByLanguage({ en: null, fr: null });
+    setSummariesByLanguage({ en: null, fr: null });
 
     try {
-      // Fetch both languages in parallel
+      // Fetch both languages in parallel - summaries generated for BOTH languages upfront
       const [enResult, frResult] = await Promise.all([
         supabase.functions.invoke('analyze', {
           body: { content: input, language: 'en' },
@@ -129,11 +143,17 @@ const Index = () => {
       const masterConfidence = language === 'fr' ? frResult.data.confidence : enResult.data.confidence;
       const masterBreakdownPoints = language === 'fr' ? frResult.data.breakdown : enResult.data.breakdown;
       
-      // Store the article summary from the primary language - this stays IDENTICAL across language switches
-      const primaryArticleSummary = language === 'fr' 
-        ? frResult.data.articleSummary 
-        : enResult.data.articleSummary;
-      setMasterArticleSummary(primaryArticleSummary || null);
+      // STORE BILINGUAL SUMMARIES: Both languages cached for instant toggle
+      setSummariesByLanguage({
+        en: {
+          summary: enResult.data.summary || '',
+          articleSummary: enResult.data.articleSummary || '',
+        },
+        fr: {
+          summary: frResult.data.summary || '',
+          articleSummary: frResult.data.articleSummary || '',
+        },
+      });
 
       // Ensure both languages have IDENTICAL numerical values
       const normalizedEn: AnalysisData = {
@@ -311,11 +331,11 @@ const Index = () => {
           </div>
 
           {/* Post-Analysis: Summary + CTA immediately after score (above the fold) */}
-          {masterArticleSummary && (
+          {displayArticleSummary && (
             <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-              {/* Short factual article summary */}
+              {/* Short factual article summary - INSTANT language switch, no async */}
               <p className="text-center text-sm leading-relaxed text-foreground/80">
-                {masterArticleSummary}
+                {displayArticleSummary}
               </p>
               
               {/* Action buttons row - premium dual CTA */}
