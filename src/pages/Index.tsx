@@ -66,7 +66,13 @@ const translations = {
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [lastInput, setLastInput] = useState<string | null>(null);
+  
+  // Master analysis stores the original result with fixed numerical values
+  const [masterAnalysis, setMasterAnalysis] = useState<{ data: AnalysisData; sourceLanguage: 'en' | 'fr' } | null>(null);
+  
+  // Translated versions cache - numerical values are always copied from master
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
     en: null,
     fr: null,
@@ -74,33 +80,75 @@ const Index = () => {
 
   const t = translations[language];
   const analysisData = analysisByLanguage[language];
-  const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr);
+  const hasAnyAnalysis = Boolean(masterAnalysis);
 
-  // Keep a stable score visible during language re-generation
-  const score = (
-    analysisData ?? (language === 'en' ? analysisByLanguage.fr : analysisByLanguage.en)
-  )?.score ?? null;
+  // Score is ALWAYS from the master analysis - never recalculated
+  const score = masterAnalysis?.data.score ?? null;
 
   const handleReset = () => {
     setLastInput(null);
+    setMasterAnalysis(null);
     setAnalysisByLanguage({ en: null, fr: null });
   };
 
-  const handleAnalyze = async (input: string, langOverride?: 'en' | 'fr') => {
-    const lang = langOverride ?? language;
-    const tLocal = translations[lang];
+  // Translate analysis text while preserving all numerical values from master
+  const translateAnalysis = async (targetLanguage: 'en' | 'fr') => {
+    if (!masterAnalysis || analysisByLanguage[targetLanguage]) return;
+    
+    setIsTranslating(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('translate-analysis', {
+        body: {
+          analysisData: masterAnalysis.data,
+          targetLanguage,
+        },
+      });
+
+      if (error || data?.error) {
+        console.error('Translation error:', error || data?.error);
+        // Fallback: use master data with original text
+        setAnalysisByLanguage((prev) => ({ ...prev, [targetLanguage]: masterAnalysis.data }));
+        return;
+      }
+
+      // Ensure numerical values match master (defensive)
+      const translatedWithFixedNumbers: AnalysisData = {
+        ...data,
+        score: masterAnalysis.data.score,
+        confidence: masterAnalysis.data.confidence,
+        breakdown: {
+          sources: { ...data.breakdown.sources, points: masterAnalysis.data.breakdown.sources.points },
+          factual: { ...data.breakdown.factual, points: masterAnalysis.data.breakdown.factual.points },
+          tone: { ...data.breakdown.tone, points: masterAnalysis.data.breakdown.tone.points },
+          context: { ...data.breakdown.context, points: masterAnalysis.data.breakdown.context.points },
+          transparency: { ...data.breakdown.transparency, points: masterAnalysis.data.breakdown.transparency.points },
+        },
+      };
+
+      setAnalysisByLanguage((prev) => ({ ...prev, [targetLanguage]: translatedWithFixedNumbers }));
+    } catch (err) {
+      console.error('Unexpected translation error:', err);
+      // Fallback: use master data
+      setAnalysisByLanguage((prev) => ({ ...prev, [targetLanguage]: masterAnalysis.data }));
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleAnalyze = async (input: string) => {
+    const tLocal = translations[language];
 
     setIsLoading(true);
     setLastInput(input);
-
-    // Clear only the target language result; keep the other language cached
-    setAnalysisByLanguage((prev) => ({ ...prev, [lang]: null }));
+    setMasterAnalysis(null);
+    setAnalysisByLanguage({ en: null, fr: null });
 
     try {
       const { data, error } = await supabase.functions.invoke('analyze', {
         body: {
           content: input,
-          language: lang,
+          language: language,
         },
       });
 
@@ -116,7 +164,9 @@ const Index = () => {
         return;
       }
 
-      setAnalysisByLanguage((prev) => ({ ...prev, [lang]: data }));
+      // Store as master analysis - this score is now FIXED
+      setMasterAnalysis({ data, sourceLanguage: language });
+      setAnalysisByLanguage((prev) => ({ ...prev, [language]: data }));
     } catch (err) {
       console.error('Unexpected error:', err);
       toast.error(tLocal.errorAnalysis);
@@ -129,9 +179,9 @@ const Index = () => {
     // Instant language switch - UI updates synchronously
     setLanguage(next);
 
-    // Silently fetch the other language in the background if needed (no visible loading state)
-    if (hasAnyAnalysis && lastInput && !analysisByLanguage[next] && !isLoading) {
-      void handleAnalyze(lastInput, next);
+    // If we have analysis but not in the new language, translate (not re-analyze)
+    if (hasAnyAnalysis && !analysisByLanguage[next] && !isTranslating) {
+      void translateAnalysis(next);
     }
   };
   return <div className="relative flex min-h-screen flex-col overflow-hidden" style={{
