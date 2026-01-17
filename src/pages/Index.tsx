@@ -364,7 +364,7 @@ const Index = () => {
 
         {/* Footer - integrated into main for proper spacing */}
         <footer 
-          className="mt-2 animate-fade-in pb-2 pt-2 text-center md:mt-12 md:pb-8 md:pt-12"
+          className="-mt-8 animate-fade-in pb-2 pt-2 text-center md:-mt-4 md:pb-8 md:pt-8"
           style={{ animationDelay: '500ms', animationFillMode: 'both' }}
         >
           <p className="text-[8px] font-semibold tracking-widest text-primary md:text-xs">
