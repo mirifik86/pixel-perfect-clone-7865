@@ -122,15 +122,19 @@ export const ScoreGauge = ({
 
   // Responsive font sizes based on gauge size
   const scoreFontSize = size * 0.32;
-  const labelFontSize = size * 0.075;
+  const labelFontSize = size * 0.08;
 
   // Get current credibility label
   const currentLabel = score !== null 
     ? credibilityLabels[getSegmentIndex(animatedScore)][language]
     : null;
 
+  // Calculate vertical offset to perfectly center content in the visible arc area
+  // The arc spans 270° starting at 135°, so the visual center is slightly above geometric center
+  const verticalOffset = size * 0.02;
+
   return (
-    <div className={`relative ${className || ''}`} style={{ width: size, height: size + 24 }}>
+    <div className={`relative ${className || ''}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
           {/* Subtle shadow for depth - no glow */}
@@ -178,33 +182,40 @@ export const ScoreGauge = ({
         )}
       </svg>
 
-      {/* Center content - score number and label */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ height: size }}>
+      {/* Center content - score number and label - perfectly centered */}
+      <div 
+        className="absolute inset-0 flex flex-col items-center justify-center"
+        style={{ 
+          marginTop: -verticalOffset
+        }}
+      >
+        {/* Score number */}
         <span
-          className="font-medium tabular-nums"
+          className="font-semibold tabular-nums"
           style={{
             fontSize: scoreFontSize,
             lineHeight: 1,
             color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
-            letterSpacing: '-0.02em'
+            letterSpacing: '-0.02em',
+            textShadow: score !== null ? '0 2px 8px hsl(0 0% 0% / 0.3)' : 'none'
           }}
         >
           {score === null ? '—' : displayScore}
         </span>
-        {/* Credibility label below score */}
-        {currentLabel && (
-          <span
-            className="text-center mt-1"
-            style={{
-              fontSize: labelFontSize,
-              color: 'hsl(var(--muted-foreground))',
-              fontWeight: 400,
-              letterSpacing: '0.01em'
-            }}
-          >
-            {currentLabel}
-          </span>
-        )}
+        
+        {/* Credibility label - premium styling */}
+        <span
+          className="text-center mt-1.5 uppercase tracking-wider"
+          style={{
+            fontSize: labelFontSize,
+            color: score !== null ? 'hsl(var(--foreground) / 0.7)' : 'hsl(var(--muted-foreground) / 0.5)',
+            fontWeight: 500,
+            letterSpacing: '0.08em',
+            opacity: currentLabel ? 1 : 0.6
+          }}
+        >
+          {currentLabel || (language === 'fr' ? 'En attente' : 'Pending')}
+        </span>
       </div>
     </div>
   );
