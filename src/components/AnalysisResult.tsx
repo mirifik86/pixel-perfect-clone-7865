@@ -205,17 +205,17 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
       {/* Summary card */}
       <div className="analysis-card mb-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-serif text-lg text-foreground">{t.summary}</h3>
+          <h3 className="font-serif text-lg font-semibold text-white">{t.summary}</h3>
           <span className={`rounded-full px-3 py-1 text-xs font-medium ${confidenceColors[data.confidence]}`}>
             {t.confidence}: {confidenceLabels[data.confidence]}
           </span>
         </div>
-        <p className="text-muted-foreground">{data.summary}</p>
+        <p className="font-medium leading-relaxed text-foreground/90">{data.summary}</p>
       </div>
 
       {/* Credibility Signals Badges - Visual overview */}
       <div className="analysis-card mb-6">
-        <h3 className="mb-4 font-serif text-lg text-foreground">{t.signalsTitle}</h3>
+        <h3 className="mb-4 font-serif text-lg font-semibold text-white">{t.signalsTitle}</h3>
         <div className="flex flex-wrap gap-2">
           {signalBadges.map((signal, index) => (
             <div
@@ -223,7 +223,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
               className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
             >
               <span className={`h-2 w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
-              <span className="text-xs font-medium text-foreground/90">{signal.label}</span>
+              <span className="text-xs font-semibold text-white">{signal.label}</span>
             </div>
           ))}
         </div>
@@ -231,7 +231,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
 
       {/* Breakdown - Core criteria with details */}
       <div className="analysis-card">
-        <h3 className="mb-4 font-serif text-lg text-foreground">{t.breakdown}</h3>
+        <h3 className="mb-4 font-serif text-lg font-semibold text-white">{t.breakdown}</h3>
         <div className="space-y-4">
           {coreKeys.map((key) => {
             const item = data.breakdown[key as keyof AnalysisBreakdown];
@@ -241,13 +241,13 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getPointsIcon(item.points)}
-                    <span className="font-medium text-foreground">{coreCriteriaLabels[key]}</span>
+                    <span className="font-semibold text-white">{coreCriteriaLabels[key]}</span>
                   </div>
                   <span className={`font-mono text-sm font-semibold ${getPointsColor(item.points)}`}>
                     {item.points > 0 ? '+' : ''}{item.points}
                   </span>
                 </div>
-                <p className="ml-6 text-sm text-muted-foreground">{item.reason}</p>
+                <p className="ml-6 text-sm font-medium text-foreground/80">{item.reason}</p>
               </div>
             );
           })}
