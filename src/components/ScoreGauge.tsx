@@ -204,18 +204,20 @@ export const ScoreGauge = ({
         </div>
       </div>
 
-      {/* Credibility label - below the gauge */}
-      <span
-        className="text-center mt-2 uppercase tracking-wider"
-        style={{
-          fontSize: labelFontSize,
-          color: score !== null ? 'hsl(var(--foreground) / 0.75)' : 'hsl(var(--muted-foreground) / 0.5)',
-          fontWeight: 500,
-          letterSpacing: '0.1em'
-        }}
-      >
-        {currentLabel || (language === 'fr' ? 'En attente' : 'Pending')}
-      </span>
+      {/* Credibility label - below the gauge, perfectly centered */}
+      <div className="w-full flex justify-center mt-2">
+        <span
+          className="text-center uppercase tracking-wider"
+          style={{
+            fontSize: labelFontSize,
+            color: score !== null ? 'hsl(var(--foreground) / 0.75)' : 'hsl(var(--muted-foreground) / 0.5)',
+            fontWeight: 500,
+            letterSpacing: '0.1em'
+          }}
+        >
+          {currentLabel || (language === 'fr' ? 'En attente' : 'Pending')}
+        </span>
+      </div>
     </div>
   );
 };
