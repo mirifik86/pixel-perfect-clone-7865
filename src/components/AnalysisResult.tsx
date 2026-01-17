@@ -67,7 +67,7 @@ const translations = {
     confidenceMedium: 'Medium',
     confidenceHigh: 'High',
     summary: 'Analysis Summary',
-    visualNote: 'Visual elements analyzed as contextual signals. Images may influence the score only when reinforcing other credibility factors.',
+    visualSignal: 'Visual elements reviewed for contextual coherence.',
   },
   fr: {
     breakdown: 'Détail du Score',
@@ -82,7 +82,7 @@ const translations = {
     confidenceMedium: 'Moyen',
     confidenceHigh: 'Élevé',
     summary: "Résumé de l'Analyse",
-    visualNote: "Éléments visuels analysés comme signaux contextuels. Les images n'influencent le score que lorsqu'elles renforcent d'autres facteurs de crédibilité.",
+    visualSignal: 'Éléments visuels examinés pour leur cohérence contextuelle.',
   },
 };
 
@@ -155,7 +155,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
             const item = data.breakdown[key as keyof AnalysisBreakdown];
             if (!item) return null;
             return (
-              <div key={key} className="border-b border-border/30 pb-4 last:border-0 last:pb-0">
+              <div key={key} className="border-b border-border/30 pb-4">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getPointsIcon(item.points)}
@@ -169,14 +169,12 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
               </div>
             );
           })}
-        </div>
-        
-        {/* Visual note - neutral statement only, no advanced details */}
-        <div className="mt-4 border-t border-border/30 pt-4">
-          <p className="flex items-center gap-2 text-xs text-muted-foreground/70">
-            <Image className="h-3 w-3" />
-            {t.visualNote}
-          </p>
+          
+          {/* Visual signal - informational, non-evaluative line in breakdown */}
+          <div className="flex items-center gap-2 pt-1">
+            <Image className="h-4 w-4 text-muted-foreground/60" />
+            <span className="text-sm text-muted-foreground/80">{t.visualSignal}</span>
+          </div>
         </div>
       </div>
     </div>
