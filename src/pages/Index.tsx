@@ -258,13 +258,50 @@ const Index = () => {
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - smaller on mobile */}
+          {/* Score gauge with premium halo effect */}
           <div 
-            className="mb-1 animate-scale-in md:mb-4"
+            className="relative mb-1 animate-scale-in md:mb-4"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
-            <ScoreGauge score={score} size={120} className="md:hidden" language={language} />
-            <ScoreGauge score={score} size={180} className="hidden md:block" language={language} />
+            {/* Saturated halo beam effect behind score */}
+            {hasAnyAnalysis && (
+              <>
+                {/* Primary radial glow - Leen brand color */}
+                <div 
+                  className="absolute inset-0 -inset-x-16 -inset-y-8 md:-inset-x-24 md:-inset-y-12"
+                  style={{
+                    background: 'radial-gradient(ellipse 100% 80% at center, hsl(174 80% 50% / 0.35) 0%, hsl(174 70% 45% / 0.15) 40%, transparent 70%)',
+                    filter: 'blur(20px)',
+                    animation: 'fade-in 0.8s ease-out forwards'
+                  }}
+                />
+                {/* Secondary warm accent glow */}
+                <div 
+                  className="absolute inset-0 -inset-x-12 -inset-y-6 md:-inset-x-20 md:-inset-y-10"
+                  style={{
+                    background: 'radial-gradient(ellipse 70% 60% at center, hsl(40 100% 60% / 0.12) 0%, transparent 60%)',
+                    filter: 'blur(15px)',
+                    animation: 'fade-in 1s ease-out 0.2s forwards',
+                    opacity: 0
+                  }}
+                />
+                {/* Central bright core */}
+                <div 
+                  className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 md:h-24 md:w-24"
+                  style={{
+                    background: 'radial-gradient(circle, hsl(174 90% 60% / 0.4) 0%, transparent 70%)',
+                    filter: 'blur(10px)',
+                    animation: 'fade-in 0.6s ease-out 0.3s forwards',
+                    opacity: 0
+                  }}
+                />
+              </>
+            )}
+            
+            <div className="relative">
+              <ScoreGauge score={score} size={120} className="md:hidden" language={language} />
+              <ScoreGauge score={score} size={180} className="hidden md:block" language={language} />
+            </div>
           </div>
 
           {/* Pre-analysis method statement - institutional, fades after analysis */}
