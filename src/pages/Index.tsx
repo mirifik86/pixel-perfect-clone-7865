@@ -318,70 +318,46 @@ const Index = () => {
                 {masterArticleSummary}
               </p>
               
-              {/* Primary CTA - Run another analysis */}
-              <div className="flex justify-center mt-5">
+              {/* CTA Pairing - Primary + Premium PRO */}
+              <div className="flex justify-center items-start gap-4 mt-5">
+                {/* Primary: Run another analysis */}
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-2 rounded-full bg-primary px-7 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                  className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
                   style={{
                     boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
                   }}
                 >
-                  {language === 'fr' ? 'Faire une autre analyse' : 'Run another analysis'}
+                  {language === 'fr' ? 'Nouvelle analyse' : 'Run another analysis'}
                 </button>
+
+                {/* Premium: Analyze PRO with subtle highlight */}
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={() => setIsProModalOpen(true)}
+                    className="group relative overflow-hidden rounded-full border border-primary/30 bg-gradient-to-r from-muted/40 to-muted/20 px-6 py-2.5 text-sm font-medium text-foreground/90 transition-all hover:border-primary/50 hover:from-muted/50 hover:to-muted/30"
+                    style={{
+                      boxShadow: '0 2px 8px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)'
+                    }}
+                  >
+                    {/* Subtle reflective highlight - activates on hover */}
+                    <span 
+                      className="pointer-events-none absolute inset-0 -translate-x-full opacity-0 transition-none group-hover:animate-[shimmer_1.5s_ease-in-out] group-hover:opacity-100"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 70% / 0.15) 50%, transparent 100%)'
+                      }}
+                    />
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      {language === 'fr' ? 'Analyser PRO' : 'Analyze PRO'}
+                    </span>
+                  </button>
+                  <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
+                    {language === 'fr' 
+                      ? "Analyse avancée d'images et de sources"
+                      : "Advanced analysis of images and sources"}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Pre-analysis method statement - institutional, fades after analysis */}
-          {!hasAnyAnalysis && (
-            <p 
-              className="mb-4 max-w-lg animate-fade-in text-center text-xs leading-relaxed text-foreground/75"
-              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
-            >
-              {language === 'fr' 
-                ? "Ce score est produit par une analyse structurée des sources, des signaux linguistiques et de la cohérence contextuelle."
-                : "This score is produced through a structured analysis of sources, linguistic signals, and contextual consistency."}
-            </p>
-          )}
-
-
-          {/* Analysis form - hidden after first analysis */}
-          {!hasAnyAnalysis && (
-            <div 
-              className="mt-2 w-full max-w-2xl animate-fade-in"
-              style={{ animationDelay: '400ms', animationFillMode: 'both' }}
-            >
-              <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
-              {/* Ethical positioning tagline - improved readability */}
-              <p 
-                className="mt-4 animate-fade-in text-center text-xs leading-relaxed"
-                style={{ animationDelay: '450ms', animationFillMode: 'both' }}
-              >
-                <span className="font-serif italic text-primary">Leen</span>
-                <span className="font-serif text-foreground">Score</span>
-                <span className="ml-1.5 text-foreground/70">{t.footer.split('LeenScore')[1]}</span>
-              </p>
-            </div>
-          )}
-
-          {/* Analysis result - detailed breakdown below */}
-          {analysisData && <AnalysisResult data={analysisData} language={language} />}
-
-          {/* Pro Analysis CTA - visible after standard analysis */}
-          {hasAnyAnalysis && (
-            <div className="mt-6 flex w-full max-w-xl animate-fade-in flex-col items-center" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-              <button
-                onClick={() => setIsProModalOpen(true)}
-                className="rounded-full border border-border/50 bg-muted/30 px-6 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
-              >
-                {language === 'fr' ? 'Analyser PRO' : 'Analyze PRO'}
-              </button>
-              <p className="mt-2 text-center text-[10px] text-muted-foreground">
-                {language === 'fr' 
-                  ? "Analyse avancée d'images et de sources (bientôt disponible)"
-                  : "Advanced image and source analysis (coming soon)"}
-              </p>
             </div>
           )}
 
