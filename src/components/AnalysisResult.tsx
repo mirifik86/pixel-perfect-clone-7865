@@ -67,7 +67,7 @@ const translations = {
     confidenceMedium: 'Medium',
     confidenceHigh: 'High',
     summary: 'Analysis Summary',
-    visualNote: 'Visual elements were reviewed for contextual coherence.',
+    visualNote: 'Visual elements analyzed as contextual signals. Images may influence the score only when reinforcing other credibility factors.',
   },
   fr: {
     breakdown: 'Détail du Score',
@@ -82,7 +82,7 @@ const translations = {
     confidenceMedium: 'Moyen',
     confidenceHigh: 'Élevé',
     summary: "Résumé de l'Analyse",
-    visualNote: 'Les éléments visuels ont été examinés pour leur cohérence contextuelle.',
+    visualNote: "Éléments visuels analysés comme signaux contextuels. Les images n'influencent le score que lorsqu'elles renforcent d'autres facteurs de crédibilité.",
   },
 };
 
