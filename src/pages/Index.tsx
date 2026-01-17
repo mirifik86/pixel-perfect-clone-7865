@@ -4,10 +4,9 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
-import { ArticleSummary } from '@/components/ArticleSummary';
+import { PostAnalysisCard } from '@/components/PostAnalysisCard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { RotateCcw } from 'lucide-react';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
 
 interface AnalysisBreakdown {
@@ -280,21 +279,6 @@ const Index = () => {
             </p>
           )}
 
-          {/* Reset button - appears after analysis */}
-          {hasAnyAnalysis && (
-            <button
-              onClick={handleReset}
-              className="group mb-3 flex animate-fade-in items-center gap-1.5 rounded-full border-2 border-primary/50 bg-gradient-to-r from-primary/30 to-primary/20 px-4 py-2 backdrop-blur-md transition-all duration-300 hover:border-primary hover:from-primary/50 hover:to-primary/30 hover:shadow-xl hover:shadow-primary/30 md:mb-8 md:gap-3 md:px-8 md:py-4"
-              style={{
-                boxShadow: '0 0 25px hsl(174 60% 45% / 0.3), 0 0 50px hsl(174 60% 45% / 0.15)'
-              }}
-            >
-              <RotateCcw className="h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:-rotate-180 md:h-5 md:w-5" />
-              <span className="text-xs font-semibold tracking-wide text-primary group-hover:text-primary md:text-base">
-                {t.newAnalysis}
-              </span>
-            </button>
-          )}
 
           {/* Analysis form - hidden after first analysis */}
           {!hasAnyAnalysis && (
@@ -315,11 +299,17 @@ const Index = () => {
             </div>
           )}
 
-          {/* Article summary - displayed first below score with lower visual priority */}
-          {masterArticleSummary && <ArticleSummary summary={masterArticleSummary} language={language} />}
-          
           {/* Analysis result - instant switch, both languages preloaded */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
+          
+          {/* Post-Analysis Card: Article summary + Reset button */}
+          {masterArticleSummary && (
+            <PostAnalysisCard 
+              articleSummary={masterArticleSummary} 
+              onReset={handleReset} 
+              language={language} 
+            />
+          )}
         </div>
 
         {/* Footer - integrated into main for proper spacing */}
