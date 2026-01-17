@@ -208,7 +208,7 @@ export const ScoreGauge = ({
         </div>
       </div>
 
-      {/* Credibility label - below the gauge, color-matched to segment */}
+      {/* Status label - below the gauge */}
       <div className="w-full flex justify-center mt-3 md:mt-4">
         <span
           className="text-center tracking-wider"
@@ -220,7 +220,7 @@ export const ScoreGauge = ({
             fontFamily: 'var(--font-sans)'
           }}
         >
-          {currentLabel || (language === 'fr' ? 'EN ATTENTE' : 'PENDING')}
+          {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
         </span>
       </div>
     </div>
