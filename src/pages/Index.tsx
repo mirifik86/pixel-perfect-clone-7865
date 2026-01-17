@@ -331,14 +331,19 @@ const Index = () => {
                   {language === 'fr' ? 'Nouvelle analyse' : 'New analysis'}
                 </button>
                 
-                {/* Secondary CTA - Pro Analysis */}
+                {/* Secondary CTA - Pro Analysis (Visible but locked) */}
                 <button
                   onClick={() => setIsProModalOpen(true)}
-                  className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2.5 text-sm font-medium text-primary backdrop-blur-sm transition-all hover:border-primary/60 hover:bg-primary/20"
+                  className="group flex flex-col items-center gap-1"
                 >
-                  <span className="text-[10px] font-bold tracking-wider opacity-70">PRO</span>
-                  <span className="h-3 w-px bg-primary/30" />
-                  <span>{language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}</span>
+                  <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2.5 text-sm font-medium text-primary backdrop-blur-sm transition-all group-hover:border-primary/60 group-hover:bg-primary/20">
+                    <span className="text-[10px] font-bold tracking-wider opacity-70">PRO</span>
+                    <span className="h-3 w-px bg-primary/30" />
+                    <span>{language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground/60">
+                    {language === 'fr' ? 'Analyse image et sources avancée (bientôt)' : 'Advanced image and source analysis (coming soon)'}
+                  </span>
                 </button>
               </div>
             </div>
