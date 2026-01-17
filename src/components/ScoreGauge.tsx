@@ -74,13 +74,13 @@ export const ScoreGauge = ({
     }
   }, [score]);
 
-  // 5 colors from red to Leen Blue (brand color for highest)
+  // 5 colors from red to Leen (brand color for highest - matches "Leen" in logo)
   const colors = [
     'hsl(var(--score-red))',
     'hsl(var(--score-orange))',
     'hsl(var(--score-yellow))',
     'hsl(var(--score-green))',
-    'hsl(var(--score-leen-blue))'
+    'hsl(var(--score-leen))'
   ];
 
   // Credibility labels for each segment
