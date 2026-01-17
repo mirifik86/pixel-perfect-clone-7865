@@ -298,18 +298,12 @@ const Index = () => {
               </>
             )}
             
-            <div className="relative">
+            <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise */}
               {isLoading ? (
-                <>
-                  <AnalysisLoader size={120} language={language} className="md:hidden" />
-                  <AnalysisLoader size={180} language={language} className="hidden md:block" />
-                </>
+                <AnalysisLoader size={160} language={language} />
               ) : (
-                <>
-                  <ScoreGauge score={score} size={120} className="md:hidden" language={language} />
-                  <ScoreGauge score={score} size={180} className="hidden md:block" language={language} />
-                </>
+                <ScoreGauge score={score} size={160} language={language} />
               )}
             </div>
           </div>
