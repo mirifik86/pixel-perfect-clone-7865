@@ -179,6 +179,24 @@ IMPORTANT SCORING NOTES:
 - AI-generated image ALONE does not trigger penalties - only penalize when combined with misleading factual claims
 - Calculate total imageImpact as sum of applicable penalties, but CAP at -10 maximum
 
+===== CONTEXTUAL IMAGE SEVERITY (Amplification Rule) =====
+
+ACTIVATION CONDITION:
+Apply an additional -2 point penalty ONLY when AT LEAST TWO of the following risk factors are SIMULTANEOUSLY present:
+1. Probable AI-generated image (origin.classification = "probable_ai_generated")
+2. Weak or unreliable source (sources.points < 0)
+3. Lack of corroboration (no independent verification of claims)
+4. Misleading or manipulative visual usage (coherence.classification = "potentially_misleading")
+
+EFFECT:
+- When 2+ conditions are met: Apply additional -2 points (contextualSeverity)
+- This penalty is INCLUDED in the -10 point cap
+
+SAFEGUARDS:
+- This rule NEVER activates in isolation (requires 2+ conditions)
+- Image-related penalties CANNOT downgrade a credibility category alone
+- If image penalties would push score across a category boundary (e.g., 60→59), and NO other criteria support the downgrade, do NOT apply the crossing penalty
+
 CONSTRAINTS:
 - Image signals are CONTEXTUAL INDICATORS only
 - Image analysis does NOT determine truth or falsity
@@ -217,6 +235,8 @@ You MUST respond with valid JSON in this exact format:
       "imageAsProof": <0 or -4>,
       "aiWithClaims": <0 to -6>,
       "metadataIssues": <0 or -2>,
+      "contextualSeverity": <0 or -2>,
+      "severityConditionsMet": ["<list which conditions triggered severity, if any>"],
       "totalImpact": <sum capped at -10>,
       "reasoning": "<brief explanation of scoring decisions in ${language === 'fr' ? 'French' : 'English'}>"
     },
