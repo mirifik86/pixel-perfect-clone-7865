@@ -226,6 +226,18 @@ const Index = () => {
             <ScoreGauge score={score} size={180} className="hidden md:block" />
           </div>
 
+          {/* Pre-analysis explanation - fades after analysis */}
+          {!hasAnyAnalysis && (
+            <p 
+              className="mb-2 max-w-md animate-fade-in text-center text-[10px] leading-relaxed text-muted-foreground/70 md:mb-4 md:text-xs"
+              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
+            >
+              {language === 'fr' 
+                ? "Le score est généré après analyse des sources, des schémas linguistiques et du contexte."
+                : "The score is generated after analyzing sources, language patterns, and context."}
+            </p>
+          )}
+
           {/* Reset button - appears after analysis */}
           {hasAnyAnalysis && (
             <button
@@ -249,14 +261,14 @@ const Index = () => {
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
             >
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
-              {/* Tagline directly below the form */}
+              {/* Ethical positioning tagline - improved readability */}
               <p 
-                className="mt-3 animate-fade-in text-center text-xs md:mt-6 md:text-base"
+                className="mt-3 animate-fade-in text-center text-xs leading-relaxed md:mt-6 md:text-base"
                 style={{ animationDelay: '450ms', animationFillMode: 'both' }}
               >
                 <span className="font-serif italic text-primary">Leen</span>
                 <span className="font-serif text-foreground">Score</span>
-                <span className="ml-1 text-muted-foreground md:ml-2">{t.footer.split('LeenScore')[1]}</span>
+                <span className="ml-1.5 text-foreground/70 md:ml-2">{t.footer.split('LeenScore')[1]}</span>
               </p>
             </div>
           )}

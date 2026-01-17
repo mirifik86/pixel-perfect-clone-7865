@@ -45,7 +45,10 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
       <Button
         type="submit"
         disabled={isLoading || !input.trim()}
-        className="mt-3 w-full bg-primary py-4 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 md:mt-4 md:py-6 md:text-base"
+        className="mt-3 w-full bg-primary py-4 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50 md:mt-4 md:py-6 md:text-base"
+        style={{
+          boxShadow: '0 0 20px hsl(174 60% 45% / 0.35), 0 4px 12px hsl(0 0% 0% / 0.25)',
+        }}
       >
         {isLoading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin md:h-5 md:w-5" />
