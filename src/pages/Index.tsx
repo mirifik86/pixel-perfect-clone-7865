@@ -333,8 +333,8 @@ const Index = () => {
 
 
 
-          {/* Analysis form - hidden after first analysis */}
-          {!hasAnyAnalysis && (
+          {/* Analysis form - hidden during loading and after analysis */}
+          {!hasAnyAnalysis && !isLoading && (
             <div 
               className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
