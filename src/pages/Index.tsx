@@ -323,40 +323,53 @@ const Index = () => {
           {!hasAnyAnalysis && !isLoading && (
             <form 
               onSubmit={handleSubmit}
-              className="mt-5 w-full max-w-xl animate-fade-in"
+              className="mt-6 w-full max-w-xl animate-fade-in"
               style={{ animationDelay: '300ms', animationFillMode: 'both' }}
             >
-              {/* Premium input container */}
+              {/* Premium input container - Enhanced visibility */}
               <div 
-                className="relative rounded-2xl border border-primary/20 bg-muted/20 p-1 backdrop-blur-sm transition-all focus-within:border-primary/40"
+                className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-b from-muted/30 to-muted/10 p-1.5 backdrop-blur-md transition-all focus-within:border-primary/70"
                 style={{
-                  boxShadow: '0 4px 20px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.03)'
+                  boxShadow: '0 0 40px hsl(174 60% 45% / 0.2), 0 8px 32px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
                 }}
               >
-                <div className="flex items-center gap-2">
+                {/* Subtle glow effect behind input */}
+                <div 
+                  className="pointer-events-none absolute -inset-1 opacity-50"
+                  style={{
+                    background: 'radial-gradient(ellipse 80% 50% at 50% 100%, hsl(174 60% 50% / 0.15) 0%, transparent 70%)'
+                  }}
+                />
+                
+                <div className="relative flex items-center gap-3">
+                  {/* Search icon indicator */}
+                  <div className="flex items-center justify-center pl-3">
+                    <Search className="h-5 w-5 text-primary/60" />
+                  </div>
+                  
                   <input
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={language === 'fr' ? 'Collez un lien ou un texte à analyser' : 'Paste a link or text to analyze'}
-                    className="flex-1 bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+                    placeholder={language === 'fr' ? 'Collez un lien ou un texte à analyser...' : 'Paste a link or text to analyze...'}
+                    className="flex-1 bg-transparent py-4 text-base text-foreground placeholder:text-foreground/40 focus:outline-none"
                   />
+                  
                   <button
                     type="submit"
                     disabled={!inputValue.trim()}
-                    className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                     style={{
-                      boxShadow: '0 0 15px hsl(174 60% 45% / 0.3), 0 2px 8px hsl(0 0% 0% / 0.2)'
+                      boxShadow: '0 0 20px hsl(174 60% 45% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.25)'
                     }}
                   >
-                    <Search className="h-4 w-4" />
                     {language === 'fr' ? 'Analyser' : 'Analyze'}
                   </button>
                 </div>
               </div>
               
               {/* Methodology statement */}
-              <p className="mt-4 text-center text-xs leading-relaxed text-foreground/60">
+              <p className="mt-4 text-center text-xs leading-relaxed text-foreground/50">
                 {language === 'fr' 
                   ? "Ce score est produit par une analyse structurée des sources, des signaux linguistiques et de la cohérence contextuelle."
                   : "This score is produced through a structured analysis of sources, linguistic signals, and contextual consistency."}
