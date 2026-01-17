@@ -226,15 +226,15 @@ const Index = () => {
             <ScoreGauge score={score} size={180} className="hidden md:block" />
           </div>
 
-          {/* Pre-analysis explanation - fades after analysis */}
+          {/* Pre-analysis method statement - institutional, fades after analysis */}
           {!hasAnyAnalysis && (
             <p 
-              className="mb-2 max-w-md animate-fade-in text-center text-[10px] leading-relaxed text-muted-foreground/70 md:mb-4 md:text-xs"
+              className="mb-3 max-w-lg animate-fade-in text-center text-xs leading-relaxed text-foreground/75 md:mb-6 md:text-sm"
               style={{ animationDelay: '350ms', animationFillMode: 'both' }}
             >
               {language === 'fr' 
-                ? "Le score est généré après analyse des sources, des schémas linguistiques et du contexte."
-                : "The score is generated after analyzing sources, language patterns, and context."}
+                ? "Ce score est produit par une analyse structurée des sources, des signaux linguistiques et de la cohérence contextuelle."
+                : "This score is produced through a structured analysis of sources, linguistic signals, and contextual consistency."}
             </p>
           )}
 
