@@ -330,16 +330,11 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Post-Analysis: Summary + CTA immediately after score (above the fold) */}
-          {displayArticleSummary && (
+          {/* Post-Analysis: CTA buttons only (summary moved to AnalysisResult card) */}
+          {hasAnyAnalysis && (
             <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-              {/* Short factual article summary - INSTANT language switch, no async */}
-              <p className="text-center text-sm leading-relaxed text-foreground/80">
-                {displayArticleSummary}
-              </p>
-              
               {/* Action buttons row - premium dual CTA */}
-              <div className="mt-6 flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-3">
                 {/* Primary CTA - Run another analysis */}
                 <button
                   onClick={handleReset}
