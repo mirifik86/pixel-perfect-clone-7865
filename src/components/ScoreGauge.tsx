@@ -17,13 +17,13 @@ export const ScoreGauge = ({
   const [displayScore, setDisplayScore] = useState(0);
   const animationRef = useRef<number | null>(null);
   
-  // Increased stroke width for better readability
-  const strokeWidth = 14;
+  // Professional, thinner stroke for instrument-like precision
+  const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const totalArc = circumference * 0.75; // 270 degrees
   const segmentArc = totalArc / 5; // Each segment is 1/5 of the arc
-  const gap = 3; // Smaller gap for cleaner look
+  const gap = 4; // Crisp gap between segments
 
   useEffect(() => {
     if (score !== null) {
@@ -74,13 +74,14 @@ export const ScoreGauge = ({
     }
   }, [score]);
 
-  // 5 colors from red to Leen (brand color for highest - matches "Leen" in logo)
+  // Professional muted colors - reduced saturation for serious, instrument-like feel
+  // Leen Blue reserved ONLY for highest category
   const colors = [
-    'hsl(var(--score-red))',
-    'hsl(var(--score-orange))',
-    'hsl(var(--score-yellow))',
-    'hsl(var(--score-green))',
-    'hsl(var(--score-leen))'
+    'hsl(0 65% 48%)',      // Red - Very Low (desaturated)
+    'hsl(25 80% 50%)',     // Orange - Low (desaturated)
+    'hsl(45 75% 48%)',     // Yellow - Moderate (desaturated)
+    'hsl(145 50% 42%)',    // Green - Good (desaturated)
+    'hsl(174 55% 45%)'     // Leen Blue - High (reserved for top tier only)
   ];
 
   // Credibility labels for each segment (uppercase for institutional authority)
@@ -120,9 +121,9 @@ export const ScoreGauge = ({
   const indicatorX = size / 2 + radius * Math.cos(indicatorRad);
   const indicatorY = size / 2 + radius * Math.sin(indicatorRad);
 
-  // Responsive font sizes based on gauge size
-  const scoreFontSize = size * 0.32;
-  const labelFontSize = size * 0.09; // Slightly larger for visibility
+  // Slightly smaller score for professional feel
+  const scoreFontSize = size * 0.30;
+  const labelFontSize = size * 0.085;
 
   // Get current credibility label and color
   const segmentIndex = score !== null ? getSegmentIndex(animatedScore) : null;
@@ -142,14 +143,9 @@ export const ScoreGauge = ({
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <defs>
-            {/* Subtle shadow for depth - no glow */}
-            <filter id="arcShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25" />
-            </filter>
-          </defs>
+          {/* No filters/shadows - clean instrument look */}
 
-          {/* 5 separate color segments with uniform thickness */}
+          {/* 5 equal color segments with crisp separation */}
           {colors.map((color, i) => {
             const segmentLength = segmentArc - gap;
             const rotation = 135 + i * 270 / 5;
@@ -164,7 +160,6 @@ export const ScoreGauge = ({
                 strokeWidth={strokeWidth}
                 strokeLinecap="butt"
                 strokeDasharray={`${segmentLength} ${circumference}`}
-                filter="url(#arcShadow)"
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center',
@@ -175,15 +170,15 @@ export const ScoreGauge = ({
             );
           })}
 
-          {/* Discreet position indicator - small, precise mark */}
+          {/* Position indicator - smaller, no shadow, off-white for premium look */}
           {score !== null && (
             <circle
               cx={indicatorX}
               cy={indicatorY}
-              r={4}
-              fill="hsl(var(--foreground))"
-              stroke="hsl(var(--background))"
-              strokeWidth={1.5}
+              r={3}
+              fill="hsl(220 10% 90%)"
+              stroke="hsl(220 10% 70%)"
+              strokeWidth={1}
             />
           )}
         </svg>
@@ -223,12 +218,12 @@ export const ScoreGauge = ({
           />
         )}
         <span
-          className="relative text-center tracking-wider"
+          className="relative text-center"
           style={{
             fontSize: labelFontSize,
             color: currentLabelColor,
-            fontWeight: 600,
-            letterSpacing: '0.12em',
+            fontWeight: 500, // Semi-bold for authoritative but not heavy
+            letterSpacing: '0.15em', // Increased letter spacing
             fontFamily: 'var(--font-sans)',
             transition: 'color 0.3s ease-out'
           }}

@@ -280,46 +280,11 @@ const Index = () => {
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge with premium halo effect */}
+          {/* Score gauge - clean, instrument-like design */}
           <div 
             className="relative mb-2 md:mb-4 animate-scale-in"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
-            {/* Saturated halo beam effect behind score */}
-            {hasAnyAnalysis && (
-              <>
-                {/* Primary radial glow - Leen brand color */}
-                <div 
-                  className="absolute inset-0 -inset-x-20 -inset-y-10"
-                  style={{
-                    background: 'radial-gradient(ellipse 100% 80% at center, hsl(174 80% 50% / 0.35) 0%, hsl(174 70% 45% / 0.15) 40%, transparent 70%)',
-                    filter: 'blur(20px)',
-                    animation: 'fade-in 0.8s ease-out forwards'
-                  }}
-                />
-                {/* Secondary warm accent glow */}
-                <div 
-                  className="absolute inset-0 -inset-x-16 -inset-y-8"
-                  style={{
-                    background: 'radial-gradient(ellipse 70% 60% at center, hsl(40 100% 60% / 0.12) 0%, transparent 60%)',
-                    filter: 'blur(15px)',
-                    animation: 'fade-in 1s ease-out 0.2s forwards',
-                    opacity: 0
-                  }}
-                />
-                {/* Central bright core */}
-                <div 
-                  className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    background: 'radial-gradient(circle, hsl(174 90% 60% / 0.4) 0%, transparent 70%)',
-                    filter: 'blur(10px)',
-                    animation: 'fade-in 0.6s ease-out 0.3s forwards',
-                    opacity: 0
-                  }}
-                />
-              </>
-            )}
-            
             <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise */}
               {isLoading ? (
