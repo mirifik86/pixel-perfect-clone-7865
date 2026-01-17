@@ -59,6 +59,7 @@ interface AnalysisResultProps {
   data: AnalysisData;
   language: 'en' | 'fr';
   isProUnlocked?: boolean;
+  articleSummary?: string; // Factual summary of the article content
 }
 
 const translations = {
@@ -148,7 +149,7 @@ const badgeDotStyles: Record<number, string> = {
   5: 'bg-cyan-500', // Leen Blue
 };
 
-export const AnalysisResult = ({ data, language, isProUnlocked = false }: AnalysisResultProps) => {
+export const AnalysisResult = ({ data, language, isProUnlocked = false, articleSummary }: AnalysisResultProps) => {
   const t = translations[language];
 
   // Core criteria labels
@@ -204,7 +205,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
 
   return (
     <div className="mt-8 w-full max-w-2xl animate-fade-in">
-      {/* Summary card */}
+      {/* Summary card - displays the factual article summary */}
       <div className="analysis-card mb-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
@@ -212,7 +213,9 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
             {t.confidence}: {confidenceLabels[data.confidence]}
           </span>
         </div>
-        <p className="text-base font-medium leading-relaxed text-slate-700">{data.summary}</p>
+        <p className="text-base font-medium leading-relaxed text-slate-700">
+          {articleSummary || data.summary}
+        </p>
       </div>
 
       {/* Credibility Signals Badges - Visual overview */}
