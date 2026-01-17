@@ -326,13 +326,22 @@ const Index = () => {
               className="mt-6 w-full max-w-xl animate-fade-in"
               style={{ animationDelay: '300ms', animationFillMode: 'both' }}
             >
-              {/* Premium input container - Enhanced visibility */}
+              {/* Premium input container - Enhanced visibility with pulse */}
               <div 
-                className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-b from-muted/30 to-muted/10 p-1.5 backdrop-blur-md transition-all focus-within:border-primary/70"
+                className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-b from-muted/30 to-muted/10 p-1.5 backdrop-blur-md transition-all focus-within:border-primary/70 animate-[border-pulse_3s_ease-in-out_infinite]"
                 style={{
                   boxShadow: '0 0 40px hsl(174 60% 45% / 0.2), 0 8px 32px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
                 }}
               >
+                {/* Animated glow ring */}
+                <div 
+                  className="pointer-events-none absolute -inset-[2px] rounded-2xl opacity-0 animate-[glow-pulse_3s_ease-in-out_infinite]"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, hsl(174 60% 50% / 0.3), transparent)',
+                    filter: 'blur(4px)'
+                  }}
+                />
+                
                 {/* Subtle glow effect behind input */}
                 <div 
                   className="pointer-events-none absolute -inset-1 opacity-50"
