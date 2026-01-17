@@ -15,42 +15,44 @@ export const ProAnalysisModal = ({ open, onOpenChange, language }: ProAnalysisMo
   const content = {
     en: {
       title: "Pro Analysis",
-      subtitle: "Advanced context for informed decisions",
+      subtitle: "Additional context for informed judgment",
       features: [
         {
           title: "Image Signal Analysis",
-          description: "Detection of metadata, AI-generated indicators, and visual manipulation markers."
+          description: "Contextual assessment of image origin, metadata indicators, and visual-textual coherence."
         },
         {
-          title: "Deep Source Corroboration",
-          description: "Cross-referencing with verified databases and institutional records."
+          title: "Enhanced Source Verification",
+          description: "Deeper cross-referencing with institutional records and verified databases."
         },
         {
-          title: "Contextual Risk Mapping",
-          description: "Identification of amplification patterns and propagation dynamics."
+          title: "Contextual Risk Indicators",
+          description: "Identification of patterns that may amplify or reduce credibility concerns."
         }
       ],
-      disclaimer: "Pro Analysis does not provide absolute truth. It adds additional context to support your own judgment.",
+      disclaimer: "Pro Analysis provides additional context to support your own judgment. It does not determine absolute truth or falsity.",
+      note: "This feature adds depth to the standard analysis. Your current results remain unchanged.",
       status: "Coming soon"
     },
     fr: {
       title: "Analyse Pro",
-      subtitle: "Contexte avancé pour des décisions éclairées",
+      subtitle: "Contexte supplémentaire pour un jugement éclairé",
       features: [
         {
           title: "Analyse des signaux image",
-          description: "Détection des métadonnées, indicateurs d'images générées par IA et marqueurs de manipulation visuelle."
+          description: "Évaluation contextuelle de l'origine des images, indicateurs de métadonnées et cohérence visuelle-textuelle."
         },
         {
-          title: "Corroboration approfondie des sources",
-          description: "Recoupement avec des bases de données vérifiées et des registres institutionnels."
+          title: "Vérification approfondie des sources",
+          description: "Recoupement élargi avec des registres institutionnels et des bases de données vérifiées."
         },
         {
-          title: "Cartographie des risques contextuels",
-          description: "Identification des schémas d'amplification et des dynamiques de propagation."
+          title: "Indicateurs de risque contextuel",
+          description: "Identification des schémas pouvant amplifier ou réduire les préoccupations de crédibilité."
         }
       ],
-      disclaimer: "L'Analyse Pro ne fournit pas de vérité absolue. Elle apporte un contexte supplémentaire pour éclairer votre propre jugement.",
+      disclaimer: "L'Analyse Pro apporte un contexte supplémentaire pour éclairer votre propre jugement. Elle ne détermine pas la vérité ou la fausseté absolue.",
+      note: "Cette fonctionnalité enrichit l'analyse standard. Vos résultats actuels restent inchangés.",
       status: "Bientôt disponible"
     }
   };
@@ -74,7 +76,7 @@ export const ProAnalysisModal = ({ open, onOpenChange, language }: ProAnalysisMo
           </p>
         </DialogHeader>
 
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-3">
           {t.features.map((feature, index) => (
             <div 
               key={index}
@@ -90,7 +92,15 @@ export const ProAnalysisModal = ({ open, onOpenChange, language }: ProAnalysisMo
           ))}
         </div>
 
-        <div className="mt-5 rounded-lg border border-primary/20 bg-primary/5 p-3">
+        {/* Informational note - neutral tone */}
+        <div className="mt-4 rounded-lg border border-border/20 bg-muted/10 p-3">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {t.note}
+          </p>
+        </div>
+
+        {/* Disclaimer - institutional tone */}
+        <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
           <p className="text-xs leading-relaxed text-foreground/70">
             {t.disclaimer}
           </p>
