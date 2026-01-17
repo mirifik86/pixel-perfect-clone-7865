@@ -4,12 +4,14 @@ interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
   size?: number;
   className?: string;
+  language?: 'en' | 'fr';
 }
 
 export const ScoreGauge = ({
   score,
   size = 160,
-  className
+  className,
+  language = 'fr'
 }: ScoreGaugeProps) => {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
@@ -72,23 +74,34 @@ export const ScoreGauge = ({
     }
   }, [score]);
 
-  // 5 colors from red to teal
+  // 5 colors from red to Leen Blue (brand color for highest)
   const colors = [
     'hsl(var(--score-red))',
     'hsl(var(--score-orange))',
     'hsl(var(--score-yellow))',
-    'hsl(var(--score-green))',
-    'hsl(var(--score-teal))'
+    'hsl(var(--score-teal))',
+    'hsl(var(--score-leen-blue))'
   ];
 
-  // Get current color based on score
-  const getCurrentColor = (value: number) => {
-    if (value < 20) return colors[0];
-    if (value < 40) return colors[1];
-    if (value < 60) return colors[2];
-    if (value < 80) return colors[3];
-    return colors[4];
+  // Credibility labels for each segment
+  const credibilityLabels = [
+    { en: 'Very low credibility', fr: 'Crédibilité très faible' },
+    { en: 'Low credibility', fr: 'Crédibilité faible' },
+    { en: 'Moderate credibility', fr: 'Crédibilité modérée' },
+    { en: 'Good credibility', fr: 'Bonne crédibilité' },
+    { en: 'High credibility', fr: 'Haute crédibilité' }
+  ];
+
+  // Get current color and label index based on score
+  const getSegmentIndex = (value: number) => {
+    if (value < 20) return 0;
+    if (value < 40) return 1;
+    if (value < 60) return 2;
+    if (value < 80) return 3;
+    return 4;
   };
+
+  const getCurrentColor = (value: number) => colors[getSegmentIndex(value)];
 
   // Calculate which segments should be filled based on score
   const getSegmentOpacity = (segmentIndex: number) => {
@@ -107,11 +120,17 @@ export const ScoreGauge = ({
   const indicatorX = size / 2 + radius * Math.cos(indicatorRad);
   const indicatorY = size / 2 + radius * Math.sin(indicatorRad);
 
-  // Responsive font size based on gauge size
-  const scoreFontSize = size * 0.35;
+  // Responsive font sizes based on gauge size
+  const scoreFontSize = size * 0.32;
+  const labelFontSize = size * 0.075;
+
+  // Get current credibility label
+  const currentLabel = score !== null 
+    ? credibilityLabels[getSegmentIndex(animatedScore)][language]
+    : null;
 
   return (
-    <div className={`relative ${className || ''}`} style={{ width: size, height: size }}>
+    <div className={`relative ${className || ''}`} style={{ width: size, height: size + 24 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
           {/* Subtle shadow for depth - no glow */}
@@ -133,7 +152,7 @@ export const ScoreGauge = ({
               fill="none"
               stroke={color}
               strokeWidth={strokeWidth}
-              strokeLinecap="round"
+              strokeLinecap="butt"
               strokeDasharray={`${segmentLength} ${circumference}`}
               filter="url(#arcShadow)"
               style={{
@@ -151,7 +170,7 @@ export const ScoreGauge = ({
           <circle
             cx={indicatorX}
             cy={indicatorY}
-            r={5}
+            r={4}
             fill="hsl(var(--foreground))"
             stroke="hsl(var(--background))"
             strokeWidth={1.5}
@@ -159,8 +178,8 @@ export const ScoreGauge = ({
         )}
       </svg>
 
-      {/* Center content - score number */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      {/* Center content - score number and label */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ height: size }}>
         <span
           className="font-medium tabular-nums"
           style={{
@@ -172,6 +191,20 @@ export const ScoreGauge = ({
         >
           {score === null ? '—' : displayScore}
         </span>
+        {/* Credibility label below score */}
+        {currentLabel && (
+          <span
+            className="text-center mt-1"
+            style={{
+              fontSize: labelFontSize,
+              color: 'hsl(var(--muted-foreground))',
+              fontWeight: 400,
+              letterSpacing: '0.01em'
+            }}
+          >
+            {currentLabel}
+          </span>
+        )}
       </div>
     </div>
   );
