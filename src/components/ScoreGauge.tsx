@@ -223,51 +223,8 @@ export const ScoreGauge = ({
         </div>
       </div>
 
-      {/* Premium light beam separator - connects gauge to label */}
-      <div className="relative my-1.5 flex w-full items-center justify-center">
-        {/* Central glow dot - color matches current score segment */}
-        <div 
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            background: score !== null ? currentLabelColor : 'hsl(174 80% 60%)',
-            boxShadow: score !== null 
-              ? `0 0 6px 2px ${currentLabelColor.replace(')', ' / 0.7)')}, 0 0 15px 3px ${currentLabelColor.replace(')', ' / 0.4)')}`
-              : '0 0 6px 2px hsl(174 80% 55% / 0.7), 0 0 15px 3px hsl(174 60% 45% / 0.4)',
-            transition: 'background 0.3s ease-out, box-shadow 0.3s ease-out'
-          }}
-        />
-        {/* Light beam left */}
-        <div 
-          className="absolute h-px"
-          style={{
-            width: 40,
-            right: '50%',
-            marginRight: 6,
-            background: score !== null 
-              ? `linear-gradient(90deg, transparent 0%, ${currentLabelColor.replace(')', ' / 0.5)')} 100%)`
-              : 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.5) 100%)',
-            transition: 'background 0.3s ease-out'
-          }}
-        />
-        {/* Light beam right */}
-        <div 
-          className="absolute h-px"
-          style={{
-            width: 40,
-            left: '50%',
-            marginLeft: 6,
-            background: score !== null 
-              ? `linear-gradient(90deg, ${currentLabelColor.replace(')', ' / 0.5)')} 0%, transparent 100%)`
-              : 'linear-gradient(90deg, hsl(174 60% 50% / 0.5) 0%, transparent 100%)',
-            transition: 'background 0.3s ease-out'
-          }}
-        />
-      </div>
-
       {/* Status label - seamlessly connected to gauge */}
-      <div className="relative w-full flex justify-center">
+      <div className="relative w-full flex justify-center mt-1">
         {/* Pulse effect for ready state */}
         {score === null && (
           <div 
