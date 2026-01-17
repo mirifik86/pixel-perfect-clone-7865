@@ -42,17 +42,38 @@ export const AnalysisLoader = ({
   const labelFontSize = size * 0.085;
 
   return (
-    <div className={`flex flex-col items-center ${className || ''}`}>
-      {/* Rotating ring container */}
-      <div className="relative" style={{ width: size, height: size }}>
+    <div className={`flex flex-col items-center justify-center ${className || ''}`} style={{ width: size }}>
+      {/* Rotating ring container - centered */}
+      <div 
+        className="relative flex items-center justify-center" 
+        style={{ width: size, height: size }}
+      >
+        {/* Background static ring */}
         <svg 
           width={size} 
           height={size} 
           viewBox={`0 0 ${size} ${size}`}
-          className="animate-spin"
-          style={{ animationDuration: '8s' }}
+          className="absolute inset-0"
         >
-          {/* Single continuous ring - thin, elegant */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="hsl(var(--muted-foreground))"
+            strokeWidth={strokeWidth}
+            opacity={0.15}
+          />
+        </svg>
+        
+        {/* Rotating arc */}
+        <svg 
+          width={size} 
+          height={size} 
+          viewBox={`0 0 ${size} ${size}`}
+          className="absolute inset-0 animate-spin"
+          style={{ animationDuration: '6s', animationTimingFunction: 'linear' }}
+        >
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -61,23 +82,12 @@ export const AnalysisLoader = ({
             stroke="hsl(var(--primary))"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
-            strokeDasharray={`${radius * Math.PI * 0.6} ${radius * Math.PI * 2}`}
-            opacity={0.8}
-          />
-          
-          {/* Secondary subtle ring for depth */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="hsl(var(--muted-foreground))"
-            strokeWidth={strokeWidth / 2}
-            opacity={0.15}
+            strokeDasharray={`${radius * Math.PI * 0.5} ${radius * Math.PI * 2}`}
+            opacity={0.9}
           />
         </svg>
         
-        {/* Center dash indicator */}
+        {/* Center dash indicator - perfectly centered */}
         <div className="absolute inset-0 flex items-center justify-center">
           <span
             className="font-medium tabular-nums text-muted-foreground"
@@ -92,17 +102,17 @@ export const AnalysisLoader = ({
         </div>
       </div>
 
-      {/* Methodological loading text */}
-      <div className="w-full flex justify-center mt-3 md:mt-4">
+      {/* Methodological loading text - centered below */}
+      <div className="flex w-full justify-center mt-3 md:mt-4">
         <span
-          className="text-center tracking-wide transition-opacity duration-500"
+          className="text-center tracking-wide transition-opacity duration-700"
           style={{
             fontSize: labelFontSize,
             color: 'hsl(var(--muted-foreground))',
             fontWeight: 500,
             letterSpacing: '0.02em',
             fontFamily: 'var(--font-sans)',
-            maxWidth: size * 1.8
+            maxWidth: size * 2
           }}
         >
           {loadingTexts[language][textIndex]}
