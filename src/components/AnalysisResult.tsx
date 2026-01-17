@@ -1,11 +1,19 @@
 import { CheckCircle, XCircle, AlertCircle, Image } from 'lucide-react';
 
 interface AnalysisBreakdown {
+  // Core criteria
   sources: { points: number; reason: string };
   factual: { points: number; reason: string };
   tone: { points: number; reason: string };
   context: { points: number; reason: string };
   transparency: { points: number; reason: string };
+  // Extended credibility signals
+  freshness?: { points: number; reason: string };
+  prudence?: { points: number; reason: string };
+  density?: { points: number; reason: string };
+  attribution?: { points: number; reason: string };
+  visualCoherence?: { points: number; reason: string };
+  // Legacy (for Pro analysis)
   imageCoherence?: { points: number; reason: string };
 }
 
@@ -56,33 +64,51 @@ interface AnalysisResultProps {
 const translations = {
   en: {
     breakdown: 'Score Breakdown',
+    // Core criteria
     sources: 'Sources & Corroboration',
     factual: 'Factual Consistency',
     tone: 'Tone & Language',
     context: 'Context Clarity',
     transparency: 'Transparency',
+    // Extended signals
+    freshness: 'Content Freshness',
+    prudence: 'Language Prudence',
+    density: 'Factual Density',
+    attribution: 'Attribution Clarity',
+    visualCoherence: 'Visual Alignment',
+    // Legacy
     imageCoherence: 'Image Coherence',
+    // UI
     confidence: 'Confidence',
     confidenceLow: 'Low',
     confidenceMedium: 'Medium',
     confidenceHigh: 'High',
     summary: 'Analysis Summary',
-    visualSignal: 'Visual elements reviewed for contextual coherence.',
+    extendedSignals: 'Credibility Signals',
   },
   fr: {
     breakdown: 'Détail du Score',
+    // Core criteria
     sources: 'Sources & Corroboration',
     factual: 'Cohérence Factuelle',
     tone: 'Ton & Langage',
     context: 'Clarté du Contexte',
     transparency: 'Transparence',
-    imageCoherence: 'Cohérence Visuelle',
+    // Extended signals
+    freshness: 'Fraîcheur du Contenu',
+    prudence: 'Prudence du Langage',
+    density: 'Densité Factuelle',
+    attribution: 'Clarté des Attributions',
+    visualCoherence: 'Cohérence Visuelle',
+    // Legacy
+    imageCoherence: 'Cohérence Image',
+    // UI
     confidence: 'Niveau de confiance',
     confidenceLow: 'Faible',
     confidenceMedium: 'Moyen',
     confidenceHigh: 'Élevé',
     summary: "Résumé de l'Analyse",
-    visualSignal: 'Éléments visuels examinés pour leur cohérence contextuelle.',
+    extendedSignals: 'Signaux de Crédibilité',
   },
 };
 
@@ -101,13 +127,22 @@ const getPointsColor = (points: number) => {
 export const AnalysisResult = ({ data, language, isProUnlocked = false }: AnalysisResultProps) => {
   const t = translations[language];
 
-  // Core criteria labels (excludes image-related criteria for standard display)
-  const criteriaLabels: Record<string, string> = {
+  // Core criteria labels
+  const coreCriteriaLabels: Record<string, string> = {
     sources: t.sources,
     factual: t.factual,
     tone: t.tone,
     context: t.context,
     transparency: t.transparency,
+  };
+
+  // Extended signal labels
+  const extendedSignalLabels: Record<string, string> = {
+    freshness: t.freshness,
+    prudence: t.prudence,
+    density: t.density,
+    attribution: t.attribution,
+    visualCoherence: t.visualCoherence,
   };
 
   const confidenceLabels = {
@@ -122,17 +157,14 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
     high: 'bg-green-500/20 text-green-400',
   };
 
-  // VISIBILITY CONTROL: 
-  // - Never show imageCoherence in breakdown for Standard Analysis
-  // - Never show image details while Pro is locked
-  // - Image analysis runs silently, results stored for future Pro display
-  const breakdownKeys = Object.keys(data.breakdown).filter((key) => {
-    // Always exclude imageCoherence from standard display
-    if (key === 'imageCoherence') {
-      return false; // Hidden until Pro is unlocked and active
-    }
-    return criteriaLabels[key] !== undefined;
-  });
+  // Separate core criteria from extended signals
+  const coreKeys = Object.keys(data.breakdown).filter((key) => 
+    coreCriteriaLabels[key] !== undefined
+  );
+
+  const extendedKeys = Object.keys(data.breakdown).filter((key) => 
+    extendedSignalLabels[key] !== undefined && data.breakdown[key as keyof AnalysisBreakdown]
+  );
 
   return (
     <div className="mt-8 w-full max-w-2xl animate-fade-in">
@@ -147,11 +179,11 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
         <p className="text-muted-foreground">{data.summary}</p>
       </div>
 
-      {/* Breakdown - Core criteria only, no image details in standard mode */}
+      {/* Breakdown - Core criteria */}
       <div className="analysis-card">
         <h3 className="mb-4 font-serif text-lg text-foreground">{t.breakdown}</h3>
         <div className="space-y-4">
-          {breakdownKeys.map((key) => {
+          {coreKeys.map((key) => {
             const item = data.breakdown[key as keyof AnalysisBreakdown];
             if (!item) return null;
             return (
@@ -159,7 +191,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getPointsIcon(item.points)}
-                    <span className="font-medium text-foreground">{criteriaLabels[key]}</span>
+                    <span className="font-medium text-foreground">{coreCriteriaLabels[key]}</span>
                   </div>
                   <span className={`font-mono text-sm font-semibold ${getPointsColor(item.points)}`}>
                     {item.points > 0 ? '+' : ''}{item.points}
@@ -169,13 +201,39 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
               </div>
             );
           })}
-          
-          {/* Visual signal - informational, non-evaluative line in breakdown */}
-          <div className="flex items-center gap-2 pt-1">
-            <Image className="h-4 w-4 text-muted-foreground/60" />
-            <span className="text-sm text-muted-foreground/80">{t.visualSignal}</span>
-          </div>
         </div>
+
+        {/* Extended Credibility Signals - displayed separately */}
+        {extendedKeys.length > 0 && (
+          <div className="mt-6 border-t border-border/30 pt-4">
+            <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Image className="h-4 w-4" />
+              {t.extendedSignals}
+            </h4>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {extendedKeys.map((key) => {
+                const item = data.breakdown[key as keyof AnalysisBreakdown];
+                if (!item) return null;
+                return (
+                  <div 
+                    key={key} 
+                    className="rounded-lg border border-border/20 bg-background/30 p-3"
+                  >
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-xs font-medium text-foreground/90">
+                        {extendedSignalLabels[key]}
+                      </span>
+                      <span className={`font-mono text-xs font-semibold ${getPointsColor(item.points)}`}>
+                        {item.points > 0 ? '+' : ''}{item.points}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground/80 line-clamp-2">{item.reason}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

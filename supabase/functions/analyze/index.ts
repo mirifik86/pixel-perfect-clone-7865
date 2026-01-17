@@ -28,6 +28,8 @@ SCORING METHOD:
 Start with a base score of 50/100 (neutral).
 Apply the following criteria by adding or subtracting points:
 
+===== CORE CRITERIA (A-E) =====
+
 A. SOURCES & CORROBORATION:
 - Multiple independent sources confirm the information: +20
 - Recognized or reputable source: +15
@@ -67,12 +69,44 @@ E. TRANSPARENCY:
 - Identified author or organization: +5
 - Total anonymity: -10
 
-F. IMAGE COHERENCE (Standard Analysis):
-When the content includes or references images/visuals:
-- Coherent or purely illustrative image (matches the text context): 0 points (no impact)
-- Clearly misleading or unrelated image (misrepresents the content): -2 points maximum
-- If no image is present or referenced: 0 points (no impact)
-Note: In Standard Analysis, only evaluate basic contextual coherence. Do NOT analyze image origin, AI generation, or metadata.
+===== EXTENDED CREDIBILITY SIGNALS (F-J) =====
+Each signal has LIMITED IMPACT: maximum +5 or -5 points per signal.
+These signals create score differentiation without dominating the overall assessment.
+
+F. CONTENT FRESHNESS RELEVANCE:
+Evaluate if the content's age aligns with its purpose and claims.
+- Fresh, timely content on current events: +3 to +5
+- Content appropriately dated for its topic (historical, evergreen): 0 (neutral)
+- Outdated information presented as current: -3 to -5
+- Unable to assess freshness: 0 (neutral)
+
+G. LANGUAGE PRUDENCE:
+Assess whether claims are stated with appropriate caution or speculation.
+- Uses measured language ("suggests", "indicates", "according to"): +3 to +5
+- Balanced mix of firm and qualified statements: 0 (neutral)
+- Overconfident assertions without justification: -3 to -5
+- Speculative claims presented as facts: -5
+
+H. FACTUAL DENSITY:
+Evaluate the ratio of verifiable facts to opinions/claims.
+- High density of specific, verifiable facts (names, dates, figures): +3 to +5
+- Average mix of facts and analysis: 0 (neutral)
+- Vague claims lacking specific details: -3 to -5
+- Almost no verifiable factual content: -5
+
+I. ATTRIBUTION CLARITY:
+Assess how clearly claims are attributed to their sources.
+- Direct quotes with clear attribution: +3 to +5
+- Named sources referenced generally: +1 to +3
+- Vague attributions ("experts say", "sources claim"): -2 to -4
+- No attribution for major claims: -5
+
+J. VISUAL-TEXTUAL COHERENCE:
+Evaluate alignment between images and text content.
+- Images directly support and match the text narrative: +2 to +3
+- Neutral, illustrative images (stock, decorative): 0 (neutral)
+- Misleading or unrelated images: -3 to -5
+- No images present: 0 (neutral)
 
 RESPONSE FORMAT:
 You MUST respond with valid JSON in this exact format:
@@ -84,23 +118,26 @@ You MUST respond with valid JSON in this exact format:
     "tone": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
     "context": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
     "transparency": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "imageCoherence": {"points": <number between -2 and 0>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
+    "freshness": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "prudence": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "density": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "attribution": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "visualCoherence": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
   },
   "summary": "<2-3 sentence explanation in ${language === 'fr' ? 'French' : 'English'}>",
   "articleSummary": "<2-3 sentence FACTUAL summary of what the article is about - ONLY describe the main topic and key reported facts. Use neutral, journalistic tone with verbs like 'reports', 'states', 'outlines', 'describes'. NO opinions, NO conclusions, NO mention of credibility or score. This must be in ${language === 'fr' ? 'French' : 'English'}>",
-  "confidence": "<low|medium|high>",
-  "visualNote": "${language === 'fr' ? 'Les éléments visuels ont été examinés pour leur cohérence contextuelle.' : 'Visual elements were reviewed for contextual coherence.'}"
+  "confidence": "<low|medium|high>"
 }
 
 IMPORTANT:
 - Score must be between 0 and 100
 - Be objective and analytical
 - When data is insufficient, state uncertainty instead of penalizing
+- Extended signals (F-J) are CAPPED at ±5 points each - they refine the score, not dominate it
 - The "summary" field should explain why the score is what it is (analysis conclusion)
 - The "articleSummary" field should ONLY describe what the content is about factually - it must NOT influence or mention the score
 - NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR
-- ALL text responses (reasons, summary, articleSummary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}
-- Image analysis must remain secondary to text and sources - maximum -2 points impact`;
+- ALL text responses (reasons, summary, articleSummary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
 
 // PRO ANALYSIS PROMPT - Includes advanced Image Signals Module
 const getProSystemPrompt = (language: string) => `You are LeenScore Pro, an advanced AI credibility analyst. Your task is to perform a comprehensive Pro Analysis including advanced Image Signals analysis.
