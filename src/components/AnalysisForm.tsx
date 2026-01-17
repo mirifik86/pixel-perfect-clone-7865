@@ -80,13 +80,13 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t.placeholder}
-            className="min-h-[80px] resize-none border-0 bg-transparent pl-10 text-sm text-white placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="min-h-[60px] md:min-h-[80px] resize-none border-0 bg-transparent pl-10 text-sm text-white placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
       </div>
       
       {/* Analyze Button with premium pulse effect */}
-      <div className="relative mt-4">
+      <div className="relative mt-3 md:mt-4">
         {/* Outer pulse ring - more prominent, delayed for wave effect */}
         <div 
           className="absolute -inset-1 rounded-lg"
@@ -115,7 +115,7 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
         </Button>
       </div>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground/80">
+      <p className="mt-3 md:mt-4 text-center text-xs md:text-sm text-muted-foreground/80">
         {t.description}
       </p>
       
