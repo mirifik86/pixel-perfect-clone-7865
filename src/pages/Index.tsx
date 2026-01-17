@@ -189,10 +189,10 @@ const Index = () => {
       
       {/* Main content - use min-h-screen and justify-between to fit everything without scrolling */}
       <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-6">
-        <div className="flex w-full flex-col items-center">
+        <div className="flex w-full flex-col items-center pt-8">
           {/* Logo & branding with unified halo */}
           <div 
-            className="relative mb-6 flex animate-fade-in flex-col items-center" 
+            className="relative mb-8 flex animate-fade-in flex-col items-center" 
             style={{ animationDelay: '0ms', animationFillMode: 'both' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
@@ -254,7 +254,7 @@ const Index = () => {
 
           {/* Language toggle - perfectly centered */}
           <div 
-            className="flex w-full justify-center mb-6 animate-fade-in"
+            className="flex w-full justify-center mb-8 animate-fade-in"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
