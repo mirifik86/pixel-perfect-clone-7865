@@ -209,9 +209,20 @@ export const ScoreGauge = ({
       </div>
 
       {/* Status label - below the gauge */}
-      <div className="w-full flex justify-center mt-3 md:mt-4">
+      <div className="relative w-full flex justify-center mt-3 md:mt-4">
+        {/* Pulse effect for ready state */}
+        {score === null && (
+          <div 
+            className="absolute -inset-x-4 -inset-y-2 rounded-full"
+            style={{
+              background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.2), transparent, hsl(174 60% 45% / 0.15))',
+              animation: 'ready-pulse 2.5s ease-in-out infinite',
+              filter: 'blur(6px)',
+            }}
+          />
+        )}
         <span
-          className="text-center tracking-wider"
+          className="relative text-center tracking-wider"
           style={{
             fontSize: labelFontSize,
             color: currentLabelColor,
@@ -222,6 +233,16 @@ export const ScoreGauge = ({
         >
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
         </span>
+        
+        {/* CSS for pulse animation */}
+        {score === null && (
+          <style>{`
+            @keyframes ready-pulse {
+              0%, 100% { opacity: 0.4; transform: scale(0.95); }
+              50% { opacity: 0.8; transform: scale(1.05); }
+            }
+          `}</style>
+        )}
       </div>
     </div>
   );

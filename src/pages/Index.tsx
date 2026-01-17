@@ -344,17 +344,6 @@ const Index = () => {
             </div>
           )}
 
-          {/* Pre-analysis method statement - institutional, fades after analysis */}
-          {!hasAnyAnalysis && (
-            <p 
-              className="mb-4 max-w-lg animate-fade-in text-center text-xs leading-relaxed text-foreground/75"
-              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
-            >
-              {language === 'fr' 
-                ? "Ce score est produit par une analyse structurée des sources, des signaux linguistiques et de la cohérence contextuelle."
-                : "This score is produced through a structured analysis of sources, linguistic signals, and contextual consistency."}
-            </p>
-          )}
 
 
           {/* Analysis form - hidden after first analysis */}
