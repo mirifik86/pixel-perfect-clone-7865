@@ -11,13 +11,13 @@ interface AnalysisFormProps {
 
 const translations = {
   en: {
-    placeholder: 'Paste a link or text to analyze',
+    placeholder: 'Please paste a link to analyze',
     analyze: 'Analyze',
     description: 'We analyze source credibility, linguistic patterns, and context to help you understand online information.',
     urlDetected: 'URL detected',
   },
   fr: {
-    placeholder: 'Collez un lien ou un texte à analyser',
+    placeholder: 'Veuillez coller un lien pour analyse',
     analyze: 'Analyser',
     description: 'Nous analysons la crédibilité des sources, les modèles linguistiques et le contexte pour vous aider à comprendre les informations en ligne.',
     urlDetected: 'URL détectée',
@@ -87,7 +87,7 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t.placeholder}
-            className="min-h-[50px] md:min-h-[80px] resize-none border-0 bg-transparent pl-10 text-sm text-white placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="min-h-[50px] md:min-h-[80px] resize-none border-0 bg-transparent pl-10 text-sm text-white placeholder:text-white/60 placeholder:font-medium placeholder:tracking-wide focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
       </div>
