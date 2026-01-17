@@ -134,89 +134,88 @@ export const ScoreGauge = ({
   const verticalOffset = size * 0.02;
 
   return (
-    <div className={`relative ${className || ''}`} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <defs>
-          {/* Subtle shadow for depth - no glow */}
-          <filter id="arcShadow" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25" />
-          </filter>
-        </defs>
+    <div className={`flex flex-col items-center ${className || ''}`}>
+      {/* Gauge container */}
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <defs>
+            {/* Subtle shadow for depth - no glow */}
+            <filter id="arcShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25" />
+            </filter>
+          </defs>
 
-        {/* 5 separate color segments with uniform thickness */}
-        {colors.map((color, i) => {
-          const segmentLength = segmentArc - gap;
-          const rotation = 135 + i * 270 / 5;
-          return (
+          {/* 5 separate color segments with uniform thickness */}
+          {colors.map((color, i) => {
+            const segmentLength = segmentArc - gap;
+            const rotation = 135 + i * 270 / 5;
+            return (
+              <circle
+                key={i}
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                fill="none"
+                stroke={color}
+                strokeWidth={strokeWidth}
+                strokeLinecap="butt"
+                strokeDasharray={`${segmentLength} ${circumference}`}
+                filter="url(#arcShadow)"
+                style={{
+                  transform: `rotate(${rotation}deg)`,
+                  transformOrigin: 'center',
+                  opacity: getSegmentOpacity(i),
+                  transition: 'opacity 0.1s ease-out'
+                }}
+              />
+            );
+          })}
+
+          {/* Discreet position indicator - small, precise mark */}
+          {score !== null && (
             <circle
-              key={i}
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              fill="none"
-              stroke={color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="butt"
-              strokeDasharray={`${segmentLength} ${circumference}`}
-              filter="url(#arcShadow)"
-              style={{
-                transform: `rotate(${rotation}deg)`,
-                transformOrigin: 'center',
-                opacity: getSegmentOpacity(i),
-                transition: 'opacity 0.1s ease-out'
-              }}
+              cx={indicatorX}
+              cy={indicatorY}
+              r={4}
+              fill="hsl(var(--foreground))"
+              stroke="hsl(var(--background))"
+              strokeWidth={1.5}
             />
-          );
-        })}
+          )}
+        </svg>
 
-        {/* Discreet position indicator - small, precise mark */}
-        {score !== null && (
-          <circle
-            cx={indicatorX}
-            cy={indicatorY}
-            r={4}
-            fill="hsl(var(--foreground))"
-            stroke="hsl(var(--background))"
-            strokeWidth={1.5}
-          />
-        )}
-      </svg>
+        {/* Center content - score number only */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ marginTop: -verticalOffset }}
+        >
+          <span
+            className="font-semibold tabular-nums"
+            style={{
+              fontSize: scoreFontSize,
+              lineHeight: 1,
+              color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
+              letterSpacing: '-0.02em',
+              textShadow: score !== null ? '0 2px 8px hsl(0 0% 0% / 0.3)' : 'none'
+            }}
+          >
+            {score === null ? '—' : displayScore}
+          </span>
+        </div>
+      </div>
 
-      {/* Center content - score number and label - perfectly centered */}
-      <div 
-        className="absolute inset-0 flex flex-col items-center justify-center"
-        style={{ 
-          marginTop: -verticalOffset
+      {/* Credibility label - below the gauge */}
+      <span
+        className="text-center mt-2 uppercase tracking-wider"
+        style={{
+          fontSize: labelFontSize,
+          color: score !== null ? 'hsl(var(--foreground) / 0.75)' : 'hsl(var(--muted-foreground) / 0.5)',
+          fontWeight: 500,
+          letterSpacing: '0.1em'
         }}
       >
-        {/* Score number */}
-        <span
-          className="font-semibold tabular-nums"
-          style={{
-            fontSize: scoreFontSize,
-            lineHeight: 1,
-            color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
-            letterSpacing: '-0.02em',
-            textShadow: score !== null ? '0 2px 8px hsl(0 0% 0% / 0.3)' : 'none'
-          }}
-        >
-          {score === null ? '—' : displayScore}
-        </span>
-        
-        {/* Credibility label - premium styling */}
-        <span
-          className="text-center mt-1.5 uppercase tracking-wider"
-          style={{
-            fontSize: labelFontSize,
-            color: score !== null ? 'hsl(var(--foreground) / 0.7)' : 'hsl(var(--muted-foreground) / 0.5)',
-            fontWeight: 500,
-            letterSpacing: '0.08em',
-            opacity: currentLabel ? 1 : 0.6
-          }}
-        >
-          {currentLabel || (language === 'fr' ? 'En attente' : 'Pending')}
-        </span>
-      </div>
+        {currentLabel || (language === 'fr' ? 'En attente' : 'Pending')}
+      </span>
     </div>
   );
 };
