@@ -63,11 +63,11 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
               : '0 8px 32px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.1)',
           }}
         >
-        {/* URL Detection Badge - bottom right */}
+        {/* URL Detection indicator - bottom right corner */}
         {hasValidUrl && (
-          <div className="absolute -bottom-3 right-4 flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/20 px-3 py-1 backdrop-blur-sm animate-fade-in">
-            <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs font-medium text-primary">{t.urlDetected}</span>
+          <div className="absolute bottom-2 right-3 flex items-center gap-1 animate-fade-in">
+            <CheckCircle2 className="h-3 w-3 text-primary" />
+            <span className="text-xs text-primary">{t.urlDetected}</span>
           </div>
         )}
           
