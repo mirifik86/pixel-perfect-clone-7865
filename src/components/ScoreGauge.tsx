@@ -138,7 +138,19 @@ export const ScoreGauge = ({
   const verticalOffset = size * 0.02;
 
   return (
-    <div className={`flex flex-col items-center ${className || ''}`}>
+    <div className={`relative flex flex-col items-center ${className || ''}`}>
+      {/* Unified halo effect behind gauge + label ensemble */}
+      <div 
+        className="pointer-events-none absolute -inset-4"
+        style={{
+          background: score !== null 
+            ? `radial-gradient(ellipse 70% 60% at 50% 45%, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
+            : 'radial-gradient(ellipse 70% 60% at 50% 45%, hsl(174 60% 50% / 0.1) 0%, transparent 70%)',
+          filter: 'blur(25px)',
+          transition: 'background 0.5s ease-out'
+        }}
+      />
+      
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -200,7 +212,10 @@ export const ScoreGauge = ({
               lineHeight: 1,
               color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
               letterSpacing: '-0.02em',
-              textShadow: score !== null ? '0 2px 8px hsl(0 0% 0% / 0.3)' : 'none'
+              textShadow: score !== null 
+                ? `0 2px 12px ${getCurrentColor(animatedScore).replace(')', ' / 0.4)')}, 0 4px 20px hsl(0 0% 0% / 0.3)` 
+                : 'none',
+              transition: 'color 0.3s ease-out, text-shadow 0.3s ease-out'
             }}
           >
             {score === null ? '—' : displayScore}
@@ -208,7 +223,7 @@ export const ScoreGauge = ({
         </div>
       </div>
 
-      {/* Status label - below the gauge */}
+      {/* Status label - seamlessly connected to gauge */}
       <div className="relative w-full flex justify-center mt-1">
         {/* Pulse effect for ready state */}
         {score === null && (
@@ -229,7 +244,11 @@ export const ScoreGauge = ({
             color: currentLabelColor,
             fontWeight: 600,
             letterSpacing: '0.12em',
-            fontFamily: 'var(--font-sans)'
+            fontFamily: 'var(--font-sans)',
+            textShadow: score !== null 
+              ? `0 0 20px ${currentLabelColor.replace(')', ' / 0.5)')}, 0 2px 8px hsl(0 0% 0% / 0.3)`
+              : 'none',
+            transition: 'color 0.3s ease-out, text-shadow 0.3s ease-out'
           }}
         >
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
