@@ -34,11 +34,6 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
   const t = translations[language];
   
   const hasValidUrl = useMemo(() => isValidUrl(input), [input]);
-  const hasInvalidUrl = useMemo(() => {
-    const trimmed = input.trim();
-    // Check if it looks like a URL attempt but is invalid
-    return trimmed.length > 0 && (trimmed.includes('.') || trimmed.startsWith('http')) && !isValidUrl(input);
-  }, [input]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,9 +78,7 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
               style={{
                 color: hasValidUrl 
                   ? 'hsl(174 80% 45%)' // Leen blue saturated
-                  : hasInvalidUrl 
-                    ? 'hsl(0 70% 55%)' // Red for invalid
-                    : 'hsl(var(--muted-foreground) / 0.4)'
+                  : 'hsl(var(--muted-foreground) / 0.4)'
               }}
             />
           </div>
