@@ -87,12 +87,13 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
       
       {/* Analyze Button with premium pulse effect */}
       <div className="relative mt-4">
-        {/* Outer pulse ring - more prominent */}
+        {/* Outer pulse ring - more prominent, delayed for wave effect */}
         <div 
           className="absolute -inset-1 rounded-lg"
           style={{
             background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.4), hsl(174 60% 55% / 0.2), hsl(174 60% 45% / 0.4))',
             animation: 'button-pulse 2s ease-in-out infinite',
+            animationDelay: '0.5s',
             filter: 'blur(8px)',
           }}
         />
