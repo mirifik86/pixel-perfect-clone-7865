@@ -302,16 +302,46 @@ const Index = () => {
             <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               {/* Action buttons row - premium dual CTA */}
               <div className="flex items-center justify-center gap-3">
-                {/* Primary CTA - Run another analysis */}
-                <button
-                  onClick={handleReset}
-                  className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
-                  style={{
-                    boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
-                  }}
-                >
-                  {language === 'fr' ? 'Nouvelle analyse' : 'New analysis'}
-                </button>
+                {/* Primary CTA - Run another analysis with premium container */}
+                <div className="relative inline-flex">
+                  {/* Outer glow effect */}
+                  <div 
+                    className="absolute -inset-[1px] rounded-full"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(174 60% 50% / 0.3), hsl(174 60% 40% / 0.1), hsl(174 60% 50% / 0.2))',
+                      filter: 'blur(1px)',
+                    }}
+                  />
+                  
+                  {/* Premium border container with shimmer */}
+                  <div 
+                    className="relative overflow-hidden rounded-full"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(174 50% 45% / 0.4), hsl(174 40% 35% / 0.2), hsl(174 50% 45% / 0.3))',
+                      padding: '1px',
+                    }}
+                  >
+                    {/* Shimmer animation overlay */}
+                    <div 
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 0%, hsl(174 70% 60% / 0.4) 50%, transparent 100%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmer 3s ease-in-out infinite',
+                      }}
+                    />
+                    
+                    <button
+                      onClick={handleReset}
+                      className="relative flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                      style={{
+                        boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
+                      }}
+                    >
+                      {language === 'fr' ? 'Nouvelle analyse' : 'New analysis'}
+                    </button>
+                  </div>
+                </div>
                 
                 {/* Secondary CTA - Pro Analysis (Visible but locked) */}
                 <button
