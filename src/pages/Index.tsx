@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { Search, Loader2 } from 'lucide-react';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
-import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,6 +70,7 @@ const Index = () => {
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [isLoading, setIsLoading] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
   
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
@@ -91,6 +92,14 @@ const Index = () => {
   const handleReset = () => {
     setAnalysisByLanguage({ en: null, fr: null });
     setMasterArticleSummary(null);
+    setInputValue('');
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      handleAnalyze(inputValue.trim());
+    }
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -309,6 +318,51 @@ const Index = () => {
               )}
             </div>
           </div>
+
+          {/* Pre-Analysis: Premium URL Input Field */}
+          {!hasAnyAnalysis && !isLoading && (
+            <form 
+              onSubmit={handleSubmit}
+              className="mt-5 w-full max-w-xl animate-fade-in"
+              style={{ animationDelay: '300ms', animationFillMode: 'both' }}
+            >
+              {/* Premium input container */}
+              <div 
+                className="relative rounded-2xl border border-primary/20 bg-muted/20 p-1 backdrop-blur-sm transition-all focus-within:border-primary/40"
+                style={{
+                  boxShadow: '0 4px 20px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.03)'
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder={language === 'fr' ? 'Collez un lien ou un texte à analyser' : 'Paste a link or text to analyze'}
+                    className="flex-1 bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!inputValue.trim()}
+                    className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                      boxShadow: '0 0 15px hsl(174 60% 45% / 0.3), 0 2px 8px hsl(0 0% 0% / 0.2)'
+                    }}
+                  >
+                    <Search className="h-4 w-4" />
+                    {language === 'fr' ? 'Analyser' : 'Analyze'}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Methodology statement */}
+              <p className="mt-4 text-center text-xs leading-relaxed text-foreground/60">
+                {language === 'fr' 
+                  ? "Ce score est produit par une analyse structurée des sources, des signaux linguistiques et de la cohérence contextuelle."
+                  : "This score is produced through a structured analysis of sources, linguistic signals, and contextual consistency."}
+              </p>
+            </form>
+          )}
 
           {/* Post-Analysis: Summary + CTA immediately after score (above the fold) */}
           {masterArticleSummary && (
