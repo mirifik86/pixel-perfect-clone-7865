@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Search, Loader2, Link2 } from 'lucide-react';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
@@ -88,6 +88,12 @@ const Index = () => {
 
   // Score is consistent across both languages (same analysis, different text)
   const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score ?? null;
+
+  // URL detection
+  const isValidUrl = useMemo(() => {
+    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+    return urlPattern.test(inputValue.trim());
+  }, [inputValue]);
 
   const handleReset = () => {
     setAnalysisByLanguage({ en: null, fr: null });
@@ -323,19 +329,19 @@ const Index = () => {
           {!hasAnyAnalysis && !isLoading && (
             <form 
               onSubmit={handleSubmit}
-              className="mt-6 w-full max-w-xl animate-fade-in"
+              className="mt-6 w-full max-w-2xl animate-fade-in"
               style={{ animationDelay: '300ms', animationFillMode: 'both' }}
             >
               {/* Premium input container - Enhanced visibility with pulse */}
               <div 
-                className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-b from-muted/30 to-muted/10 p-1.5 backdrop-blur-md transition-all focus-within:border-primary/70 animate-[border-pulse_3s_ease-in-out_infinite]"
+                className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-gradient-to-b from-muted/30 to-muted/10 p-2 backdrop-blur-md transition-all focus-within:border-primary/70 animate-[border-pulse_3s_ease-in-out_infinite]"
                 style={{
                   boxShadow: '0 0 40px hsl(174 60% 45% / 0.2), 0 8px 32px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
                 }}
               >
                 {/* Animated glow ring */}
                 <div 
-                  className="pointer-events-none absolute -inset-[2px] rounded-2xl opacity-0 animate-[glow-pulse_3s_ease-in-out_infinite]"
+                  className="pointer-events-none absolute -inset-[2px] rounded-3xl opacity-0 animate-[glow-pulse_3s_ease-in-out_infinite]"
                   style={{
                     background: 'linear-gradient(90deg, transparent, hsl(174 60% 50% / 0.3), transparent)',
                     filter: 'blur(4px)'
@@ -351,25 +357,38 @@ const Index = () => {
                 />
                 
                 <div className="relative flex items-center gap-3">
-                  {/* Search icon indicator */}
-                  <div className="flex items-center justify-center pl-3">
-                    <Search className="h-5 w-5 text-primary/60" />
+                  {/* Search/Link icon indicator */}
+                  <div className="flex items-center justify-center pl-4">
+                    {isValidUrl ? (
+                      <Link2 className="h-6 w-6 text-primary" />
+                    ) : (
+                      <Search className="h-6 w-6 text-primary/50" />
+                    )}
                   </div>
                   
-                  <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={language === 'fr' ? 'Collez un lien ou un texte à analyser...' : 'Paste a link or text to analyze...'}
-                    className="flex-1 bg-transparent py-4 text-base text-foreground placeholder:text-foreground/40 focus:outline-none"
-                  />
+                  <div className="flex flex-1 flex-col py-1">
+                    {/* URL detected badge */}
+                    {isValidUrl && (
+                      <span className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                        {language === 'fr' ? 'URL détectée' : 'URL detected'}
+                      </span>
+                    )}
+                    
+                    <input
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={language === 'fr' ? 'Collez un lien ou un texte à analyser...' : 'Paste a link or text to analyze...'}
+                      className="w-full bg-transparent py-3 text-lg text-foreground placeholder:text-foreground/35 focus:outline-none"
+                    />
+                  </div>
                   
                   <button
                     type="submit"
                     disabled={!inputValue.trim()}
-                    className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                     style={{
-                      boxShadow: '0 0 20px hsl(174 60% 45% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.25)'
+                      boxShadow: '0 0 25px hsl(174 60% 45% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.25)'
                     }}
                   >
                     {language === 'fr' ? 'Analyser' : 'Analyze'}
