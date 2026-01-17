@@ -46,7 +46,7 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
     <form onSubmit={handleSubmit} className="w-full max-w-2xl animate-fade-in">
       {/* Unified container with premium border */}
       <div className="relative">
-        {/* Outer glow effect */}
+      {/* Outer glow effect */}
         <div 
           className="absolute -inset-[1px] rounded-2xl"
           style={{
@@ -55,7 +55,7 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
           }}
         />
         
-        {/* Premium border container */}
+        {/* Premium border container with shimmer */}
         <div 
           className="relative overflow-hidden rounded-2xl"
           style={{
@@ -63,6 +63,15 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
             padding: '1px',
           }}
         >
+          {/* Shimmer animation overlay */}
+          <div 
+            className="absolute inset-0 rounded-2xl"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, hsl(174 70% 60% / 0.4) 50%, transparent 100%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 3s ease-in-out infinite',
+            }}
+          />
           {/* Inner content container */}
           <div 
             className="rounded-2xl bg-gradient-to-b from-black/80 to-black/90 backdrop-blur-xl"
@@ -136,3 +145,16 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
     </form>
   );
 };
+
+// CSS for shimmer animation
+const shimmerStyle = document.createElement('style');
+shimmerStyle.textContent = `
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+`;
+if (!document.getElementById('shimmer-style')) {
+  shimmerStyle.id = 'shimmer-style';
+  document.head.appendChild(shimmerStyle);
+}
