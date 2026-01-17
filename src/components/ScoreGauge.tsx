@@ -209,7 +209,7 @@ export const ScoreGauge = ({
       </div>
 
       {/* Status label - below the gauge */}
-      <div className="relative w-full flex justify-center mt-3 md:mt-4">
+      <div className="relative w-full flex justify-center mt-1">
         {/* Pulse effect for ready state */}
         {score === null && (
           <div 
