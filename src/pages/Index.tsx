@@ -4,7 +4,6 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
-import { PostAnalysisCard } from '@/components/PostAnalysisCard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
@@ -304,6 +303,29 @@ const Index = () => {
             </div>
           </div>
 
+          {/* Post-Analysis: Summary + CTA immediately after score (above the fold) */}
+          {masterArticleSummary && (
+            <div className="w-full max-w-xl animate-fade-in mt-4 md:mt-6" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+              {/* Short factual article summary */}
+              <p className="text-center text-sm leading-relaxed text-foreground/80 md:text-base">
+                {masterArticleSummary}
+              </p>
+              
+              {/* Primary CTA - Run another analysis */}
+              <div className="flex justify-center mt-4 md:mt-6">
+                <button
+                  onClick={handleReset}
+                  className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 md:px-8 md:py-3 md:text-base"
+                  style={{
+                    boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
+                  }}
+                >
+                  {language === 'fr' ? 'Faire une autre analyse' : 'Run another analysis'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Pre-analysis method statement - institutional, fades after analysis */}
           {!hasAnyAnalysis && (
             <p 
@@ -336,17 +358,8 @@ const Index = () => {
             </div>
           )}
 
-          {/* Analysis result - instant switch, both languages preloaded */}
+          {/* Analysis result - detailed breakdown below */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
-          
-          {/* Post-Analysis Card: Article summary + Reset button */}
-          {masterArticleSummary && (
-            <PostAnalysisCard 
-              articleSummary={masterArticleSummary} 
-              onReset={handleReset} 
-              language={language} 
-            />
-          )}
         </div>
 
         {/* Footer - integrated into main for proper spacing */}
