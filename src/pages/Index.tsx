@@ -318,16 +318,27 @@ const Index = () => {
                 {masterArticleSummary}
               </p>
               
-              {/* Primary CTA - Run another analysis */}
-              <div className="flex justify-center mt-5">
+              {/* Action buttons row - premium dual CTA */}
+              <div className="mt-6 flex items-center justify-center gap-3">
+                {/* Primary CTA - Run another analysis */}
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-2 rounded-full bg-primary px-7 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                  className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
                   style={{
                     boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
                   }}
                 >
-                  {language === 'fr' ? 'Faire une autre analyse' : 'Run another analysis'}
+                  {language === 'fr' ? 'Nouvelle analyse' : 'New analysis'}
+                </button>
+                
+                {/* Secondary CTA - Pro Analysis */}
+                <button
+                  onClick={() => setIsProModalOpen(true)}
+                  className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2.5 text-sm font-medium text-primary backdrop-blur-sm transition-all hover:border-primary/60 hover:bg-primary/20"
+                >
+                  <span className="text-[10px] font-bold tracking-wider opacity-70">PRO</span>
+                  <span className="h-3 w-px bg-primary/30" />
+                  <span>{language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}</span>
                 </button>
               </div>
             </div>
@@ -358,23 +369,6 @@ const Index = () => {
 
           {/* Analysis result - detailed breakdown below */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
-
-          {/* Pro Analysis CTA - visible after standard analysis */}
-          {hasAnyAnalysis && (
-            <div className="mt-6 flex w-full max-w-xl animate-fade-in flex-col items-center" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-              <button
-                onClick={() => setIsProModalOpen(true)}
-                className="rounded-full border border-border/50 bg-muted/30 px-6 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
-              >
-                {language === 'fr' ? 'Analyser PRO' : 'Analyze PRO'}
-              </button>
-              <p className="mt-2 text-center text-[10px] text-muted-foreground">
-                {language === 'fr' 
-                  ? "Analyse avancée d'images et de sources (bientôt disponible)"
-                  : "Advanced image and source analysis (coming soon)"}
-              </p>
-            </div>
-          )}
 
           {/* Pro Analysis Modal */}
           <ProAnalysisModal 
