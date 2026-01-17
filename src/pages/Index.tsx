@@ -323,9 +323,9 @@ const Index = () => {
             <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise */}
               {isLoading ? (
-                <AnalysisLoader size={160} language={language} />
+                <AnalysisLoader size={200} language={language} />
               ) : (
-                <ScoreGauge score={score} size={160} language={language} />
+                <ScoreGauge score={score} size={200} language={language} />
               )}
             </div>
           </div>
@@ -382,7 +382,13 @@ const Index = () => {
           )}
 
           {/* Analysis result - detailed breakdown below */}
-          {analysisData && <AnalysisResult data={analysisData} language={language} />}
+          {analysisData && (
+            <AnalysisResult 
+              data={analysisData} 
+              language={language} 
+              articleSummary={displayArticleSummary}
+            />
+          )}
 
           {/* Pro Analysis Modal */}
           <ProAnalysisModal 
