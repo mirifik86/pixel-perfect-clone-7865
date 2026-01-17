@@ -250,9 +250,9 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle */}
+          {/* Language toggle - perfectly centered */}
           <div 
-            className="mb-3 animate-fade-in md:mb-10"
+            className="flex w-full justify-center mb-3 animate-fade-in md:mb-10"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
