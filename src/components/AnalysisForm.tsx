@@ -11,12 +11,12 @@ interface AnalysisFormProps {
 
 const translations = {
   en: {
-    placeholder: 'Paste a URL or text from a news article or social media post...',
+    placeholder: 'Paste a link or text to analyze',
     analyze: 'Analyze',
     description: 'We analyze source credibility, linguistic patterns, and context to help you understand online information.',
   },
   fr: {
-    placeholder: "Collez une URL ou du texte d'un article de presse ou d'une publication de réseau social...",
+    placeholder: 'Collez un lien ou un texte à analyser',
     analyze: 'Analyser',
     description: 'Nous analysons la crédibilité des sources, les modèles linguistiques et le contexte pour vous aider à comprendre les informations en ligne.',
   },
