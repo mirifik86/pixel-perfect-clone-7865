@@ -87,7 +87,7 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t.placeholder}
-            className="min-h-[50px] md:min-h-[80px] resize-none border-0 bg-transparent pl-10 text-sm text-white placeholder:text-white/60 placeholder:font-medium placeholder:tracking-wide focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="min-h-[50px] md:min-h-[80px] resize-none border-0 bg-transparent pl-10 text-sm text-white placeholder:text-white placeholder:font-medium placeholder:tracking-wide focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
       </div>
