@@ -315,11 +315,11 @@ const Index = () => {
             </div>
           )}
 
+          {/* Article summary - displayed first below score with lower visual priority */}
+          {masterArticleSummary && <ArticleSummary summary={masterArticleSummary} language={language} />}
+          
           {/* Analysis result - instant switch, both languages preloaded */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
-          
-          {/* Article summary - displayed below score/analysis with lower visual priority */}
-          {masterArticleSummary && <ArticleSummary summary={masterArticleSummary} language={language} />}
         </div>
 
         {/* Footer - integrated into main for proper spacing */}
