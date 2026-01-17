@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
-import { Search, Loader2, Link2 } from 'lucide-react';
+import { useState } from 'react';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
+import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,7 +70,6 @@ const Index = () => {
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [isLoading, setIsLoading] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
-  const [inputValue, setInputValue] = useState('');
   
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
@@ -89,23 +88,9 @@ const Index = () => {
   // Score is consistent across both languages (same analysis, different text)
   const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score ?? null;
 
-  // URL detection
-  const isValidUrl = useMemo(() => {
-    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
-    return urlPattern.test(inputValue.trim());
-  }, [inputValue]);
-
   const handleReset = () => {
     setAnalysisByLanguage({ en: null, fr: null });
     setMasterArticleSummary(null);
-    setInputValue('');
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputValue.trim()) {
-      handleAnalyze(inputValue.trim());
-    }
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -325,86 +310,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Pre-Analysis: Premium URL Input Field */}
-          {!hasAnyAnalysis && !isLoading && (
-            <form 
-              onSubmit={handleSubmit}
-              className="mt-6 w-full max-w-2xl animate-fade-in"
-              style={{ animationDelay: '300ms', animationFillMode: 'both' }}
-            >
-              {/* Premium input container - Enhanced visibility with pulse */}
-              <div 
-                className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-gradient-to-b from-muted/30 to-muted/10 p-2 backdrop-blur-md transition-all focus-within:border-primary/70 animate-[border-pulse_3s_ease-in-out_infinite]"
-                style={{
-                  boxShadow: '0 0 40px hsl(174 60% 45% / 0.2), 0 8px 32px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
-                }}
-              >
-                {/* Animated glow ring */}
-                <div 
-                  className="pointer-events-none absolute -inset-[2px] rounded-3xl opacity-0 animate-[glow-pulse_3s_ease-in-out_infinite]"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent, hsl(174 60% 50% / 0.3), transparent)',
-                    filter: 'blur(4px)'
-                  }}
-                />
-                
-                {/* Subtle glow effect behind input */}
-                <div 
-                  className="pointer-events-none absolute -inset-1 opacity-50"
-                  style={{
-                    background: 'radial-gradient(ellipse 80% 50% at 50% 100%, hsl(174 60% 50% / 0.15) 0%, transparent 70%)'
-                  }}
-                />
-                
-                <div className="relative flex items-center gap-3">
-                  {/* Search/Link icon indicator */}
-                  <div className="flex items-center justify-center pl-4">
-                    {isValidUrl ? (
-                      <Link2 className="h-6 w-6 text-primary" />
-                    ) : (
-                      <Search className="h-6 w-6 text-primary/50" />
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-1 flex-col py-1">
-                    {/* URL detected badge */}
-                    {isValidUrl && (
-                      <span className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                        {language === 'fr' ? 'URL détectée' : 'URL detected'}
-                      </span>
-                    )}
-                    
-                    <input
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder={language === 'fr' ? 'Collez un lien ou un texte à analyser...' : 'Paste a link or text to analyze...'}
-                      className="w-full bg-transparent py-3 text-lg text-foreground placeholder:text-foreground/35 focus:outline-none"
-                    />
-                  </div>
-                  
-                  <button
-                    type="submit"
-                    disabled={!inputValue.trim()}
-                    className="flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    style={{
-                      boxShadow: '0 0 25px hsl(174 60% 45% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.25)'
-                    }}
-                  >
-                    {language === 'fr' ? 'Analyser' : 'Analyze'}
-                  </button>
-                </div>
-              </div>
-              
-              {/* Methodology statement */}
-              <p className="mt-4 text-center text-xs leading-relaxed text-foreground/50">
-                {language === 'fr' 
-                  ? "Ce score est produit par une analyse structurée des sources, des signaux linguistiques et de la cohérence contextuelle."
-                  : "This score is produced through a structured analysis of sources, linguistic signals, and contextual consistency."}
-              </p>
-            </form>
-          )}
-
           {/* Post-Analysis: Summary + CTA immediately after score (above the fold) */}
           {masterArticleSummary && (
             <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
@@ -413,46 +318,70 @@ const Index = () => {
                 {masterArticleSummary}
               </p>
               
-              {/* CTA Pairing - Primary + Premium PRO */}
-              <div className="flex justify-center items-start gap-4 mt-5">
-                {/* Primary: Run another analysis */}
+              {/* Primary CTA - Run another analysis */}
+              <div className="flex justify-center mt-5">
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                  className="flex items-center gap-2 rounded-full bg-primary px-7 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
                   style={{
                     boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
                   }}
                 >
-                  {language === 'fr' ? 'Nouvelle analyse' : 'Run another analysis'}
+                  {language === 'fr' ? 'Faire une autre analyse' : 'Run another analysis'}
                 </button>
-
-                {/* Premium: Analyze PRO with subtle highlight */}
-                <div className="flex flex-col items-center">
-                  <button
-                    onClick={() => setIsProModalOpen(true)}
-                    className="group relative overflow-hidden rounded-full border border-primary/30 bg-gradient-to-r from-muted/40 to-muted/20 px-6 py-2.5 text-sm font-medium text-foreground/90 transition-all hover:border-primary/50 hover:from-muted/50 hover:to-muted/30"
-                    style={{
-                      boxShadow: '0 2px 8px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)'
-                    }}
-                  >
-                    {/* Subtle reflective highlight - activates on hover */}
-                    <span 
-                      className="pointer-events-none absolute inset-0 -translate-x-full opacity-0 transition-none group-hover:animate-[shimmer_1.5s_ease-in-out] group-hover:opacity-100"
-                      style={{
-                        background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 70% / 0.15) 50%, transparent 100%)'
-                      }}
-                    />
-                    <span className="relative z-10 flex items-center gap-1.5">
-                      {language === 'fr' ? 'Analyser PRO' : 'Analyze PRO'}
-                    </span>
-                  </button>
-                  <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
-                    {language === 'fr' 
-                      ? "Analyse avancée d'images et de sources"
-                      : "Advanced analysis of images and sources"}
-                  </p>
-                </div>
               </div>
+            </div>
+          )}
+
+          {/* Pre-analysis method statement - institutional, fades after analysis */}
+          {!hasAnyAnalysis && (
+            <p 
+              className="mb-4 max-w-lg animate-fade-in text-center text-xs leading-relaxed text-foreground/75"
+              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
+            >
+              {language === 'fr' 
+                ? "Ce score est produit par une analyse structurée des sources, des signaux linguistiques et de la cohérence contextuelle."
+                : "This score is produced through a structured analysis of sources, linguistic signals, and contextual consistency."}
+            </p>
+          )}
+
+
+          {/* Analysis form - hidden after first analysis */}
+          {!hasAnyAnalysis && (
+            <div 
+              className="mt-2 w-full max-w-2xl animate-fade-in"
+              style={{ animationDelay: '400ms', animationFillMode: 'both' }}
+            >
+              <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
+              {/* Ethical positioning tagline - improved readability */}
+              <p 
+                className="mt-4 animate-fade-in text-center text-xs leading-relaxed"
+                style={{ animationDelay: '450ms', animationFillMode: 'both' }}
+              >
+                <span className="font-serif italic text-primary">Leen</span>
+                <span className="font-serif text-foreground">Score</span>
+                <span className="ml-1.5 text-foreground/70">{t.footer.split('LeenScore')[1]}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Analysis result - detailed breakdown below */}
+          {analysisData && <AnalysisResult data={analysisData} language={language} />}
+
+          {/* Pro Analysis CTA - visible after standard analysis */}
+          {hasAnyAnalysis && (
+            <div className="mt-6 flex w-full max-w-xl animate-fade-in flex-col items-center" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+              <button
+                onClick={() => setIsProModalOpen(true)}
+                className="rounded-full border border-border/50 bg-muted/30 px-6 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
+              >
+                {language === 'fr' ? 'Analyser PRO' : 'Analyze PRO'}
+              </button>
+              <p className="mt-2 text-center text-[10px] text-muted-foreground">
+                {language === 'fr' 
+                  ? "Analyse avancée d'images et de sources (bientôt disponible)"
+                  : "Advanced image and source analysis (coming soon)"}
+              </p>
             </div>
           )}
 
