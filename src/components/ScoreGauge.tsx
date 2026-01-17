@@ -221,12 +221,12 @@ export const ScoreGauge = ({
           className="relative text-center px-4 py-1.5 rounded-full"
           style={{
             fontSize: size * 0.095,
-            color: score === null ? 'hsl(174 80% 55%)' : currentLabelColor,
+            color: score === null ? 'hsl(0 0% 100%)' : currentLabelColor,
             fontWeight: 600,
             letterSpacing: '0.18em',
             fontFamily: 'var(--font-sans)',
             transition: 'color 0.3s ease-out',
-            textShadow: score === null ? '0 0 20px hsl(174 80% 50% / 0.6), 0 0 40px hsl(174 80% 50% / 0.3)' : 'none',
+            textShadow: score === null ? '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)' : 'none',
             background: score === null ? 'hsl(174 60% 45% / 0.1)' : 'transparent',
             border: score === null ? '1px solid hsl(174 60% 45% / 0.3)' : 'none',
           }}
