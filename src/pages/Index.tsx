@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
+import { AnalysisLoader } from '@/components/AnalysisLoader';
 import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { supabase } from '@/integrations/supabase/client';
@@ -298,8 +299,18 @@ const Index = () => {
             )}
             
             <div className="relative">
-              <ScoreGauge score={score} size={120} className="md:hidden" language={language} />
-              <ScoreGauge score={score} size={180} className="hidden md:block" language={language} />
+              {/* Show loader during analysis, gauge otherwise */}
+              {isLoading ? (
+                <>
+                  <AnalysisLoader size={120} language={language} className="md:hidden" />
+                  <AnalysisLoader size={180} language={language} className="hidden md:block" />
+                </>
+              ) : (
+                <>
+                  <ScoreGauge score={score} size={120} className="md:hidden" language={language} />
+                  <ScoreGauge score={score} size={180} className="hidden md:block" language={language} />
+                </>
+              )}
             </div>
           </div>
 
