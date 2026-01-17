@@ -37,9 +37,9 @@ export const LanguageToggle = ({ language, onLanguageChange }: LanguageTogglePro
         
         {/* Inner content container */}
         <div 
-          className="relative flex items-center rounded-full bg-gradient-to-b from-black/80 to-black/90 p-1 backdrop-blur-xl md:p-1.5"
+          className="relative flex items-center rounded-full bg-gradient-to-b from-black/40 to-black/50 p-1 backdrop-blur-md md:p-1.5"
           style={{
-            boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.08), inset 0 -1px 0 hsl(0 0% 0% / 0.3)',
+            boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 -1px 0 hsl(0 0% 0% / 0.2)',
           }}
         >
           <button
