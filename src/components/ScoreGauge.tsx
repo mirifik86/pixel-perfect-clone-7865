@@ -83,13 +83,13 @@ export const ScoreGauge = ({
     'hsl(var(--score-leen))'
   ];
 
-  // Credibility labels for each segment
+  // Credibility labels for each segment (uppercase for institutional authority)
   const credibilityLabels = [
-    { en: 'Very low credibility', fr: 'Crédibilité très faible' },
-    { en: 'Low credibility', fr: 'Crédibilité faible' },
-    { en: 'Moderate credibility', fr: 'Crédibilité modérée' },
-    { en: 'Good credibility', fr: 'Bonne crédibilité' },
-    { en: 'High credibility', fr: 'Haute crédibilité' }
+    { en: 'VERY LOW CREDIBILITY', fr: 'CRÉDIBILITÉ TRÈS FAIBLE' },
+    { en: 'LOW CREDIBILITY', fr: 'CRÉDIBILITÉ FAIBLE' },
+    { en: 'MODERATE CREDIBILITY', fr: 'CRÉDIBILITÉ MODÉRÉE' },
+    { en: 'GOOD CREDIBILITY', fr: 'BONNE CRÉDIBILITÉ' },
+    { en: 'HIGH CREDIBILITY', fr: 'HAUTE CRÉDIBILITÉ' }
   ];
 
   // Get current color and label index based on score
@@ -122,12 +122,16 @@ export const ScoreGauge = ({
 
   // Responsive font sizes based on gauge size
   const scoreFontSize = size * 0.32;
-  const labelFontSize = size * 0.08;
+  const labelFontSize = size * 0.09; // Slightly larger for visibility
 
-  // Get current credibility label
-  const currentLabel = score !== null 
-    ? credibilityLabels[getSegmentIndex(animatedScore)][language]
+  // Get current credibility label and color
+  const segmentIndex = score !== null ? getSegmentIndex(animatedScore) : null;
+  const currentLabel = segmentIndex !== null 
+    ? credibilityLabels[segmentIndex][language]
     : null;
+  const currentLabelColor = segmentIndex !== null 
+    ? colors[segmentIndex] 
+    : 'hsl(var(--muted-foreground))';
 
   // Calculate vertical offset to perfectly center content in the visible arc area
   // The arc spans 270° starting at 135°, so the visual center is slightly above geometric center
@@ -204,18 +208,19 @@ export const ScoreGauge = ({
         </div>
       </div>
 
-      {/* Credibility label - below the gauge, perfectly centered */}
-      <div className="w-full flex justify-center mt-2">
+      {/* Credibility label - below the gauge, color-matched to segment */}
+      <div className="w-full flex justify-center mt-3 md:mt-4">
         <span
-          className="text-center uppercase tracking-wider"
+          className="text-center tracking-wider"
           style={{
             fontSize: labelFontSize,
-            color: score !== null ? 'hsl(var(--foreground) / 0.75)' : 'hsl(var(--muted-foreground) / 0.5)',
-            fontWeight: 500,
-            letterSpacing: '0.1em'
+            color: currentLabelColor,
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            fontFamily: 'var(--font-sans)'
           }}
         >
-          {currentLabel || (language === 'fr' ? 'En attente' : 'Pending')}
+          {currentLabel || (language === 'fr' ? 'EN ATTENTE' : 'PENDING')}
         </span>
       </div>
     </div>
