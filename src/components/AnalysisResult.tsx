@@ -109,15 +109,15 @@ const translations = {
 };
 
 const getPointsIcon = (points: number) => {
-  if (points > 0) return <CheckCircle className="h-4 w-4 text-green-400" />;
-  if (points < 0) return <XCircle className="h-4 w-4 text-red-400" />;
-  return <AlertCircle className="h-4 w-4 text-yellow-400" />;
+  if (points > 0) return <CheckCircle className="h-4 w-4 text-emerald-600" />;
+  if (points < 0) return <XCircle className="h-4 w-4 text-red-600" />;
+  return <AlertCircle className="h-4 w-4 text-amber-600" />;
 };
 
 const getPointsColor = (points: number) => {
-  if (points > 0) return 'text-green-400';
-  if (points < 0) return 'text-red-400';
-  return 'text-yellow-400';
+  if (points > 0) return 'text-emerald-600';
+  if (points < 0) return 'text-red-600';
+  return 'text-amber-600';
 };
 
 // Map points to badge level (1-5 scale matching gauge segments)
@@ -130,21 +130,22 @@ const getBadgeLevel = (points: number): number => {
   return 5;                   // Strong - Leen Blue
 };
 
-// Badge colors matching score gauge segments exactly
+// Badge styles: light solid backgrounds, darker borders, no transparency
 const badgeStyles: Record<number, string> = {
-  1: 'bg-[hsl(0_72%_51%)]/20 border-[hsl(0_72%_51%)]/40', // Red - Very weak
-  2: 'bg-[hsl(25_95%_53%)]/20 border-[hsl(25_95%_53%)]/40', // Orange - Limited
-  3: 'bg-[hsl(48_96%_53%)]/20 border-[hsl(48_96%_53%)]/40', // Yellow - Moderate
-  4: 'bg-[hsl(160_60%_45%)]/20 border-[hsl(160_60%_45%)]/40', // Teal - Good
-  5: 'bg-[hsl(174_65%_52%)]/20 border-[hsl(174_65%_52%)]/40', // Leen Blue - Strong
+  1: 'bg-red-100 border-red-300', // Red - Very weak
+  2: 'bg-orange-100 border-orange-300', // Orange - Limited
+  3: 'bg-amber-100 border-amber-300', // Yellow - Moderate
+  4: 'bg-teal-100 border-teal-300', // Teal - Good
+  5: 'bg-cyan-100 border-cyan-300', // Leen Blue - Strong
 };
 
+// Badge dot colors - saturated and visible
 const badgeDotStyles: Record<number, string> = {
-  1: 'bg-[hsl(0_72%_51%)]', // Red
-  2: 'bg-[hsl(25_95%_53%)]', // Orange
-  3: 'bg-[hsl(48_96%_53%)]', // Yellow
-  4: 'bg-[hsl(160_60%_45%)]', // Teal
-  5: 'bg-[hsl(174_65%_52%)]', // Leen Blue
+  1: 'bg-red-500', // Red
+  2: 'bg-orange-500', // Orange
+  3: 'bg-amber-500', // Yellow
+  4: 'bg-teal-500', // Teal
+  5: 'bg-cyan-500', // Leen Blue
 };
 
 export const AnalysisResult = ({ data, language, isProUnlocked = false }: AnalysisResultProps) => {
@@ -165,10 +166,11 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
     high: t.confidenceHigh,
   };
 
+  // Confidence badge colors - solid backgrounds with dark readable text
   const confidenceColors = {
-    low: 'bg-red-500/20 text-red-400',
-    medium: 'bg-yellow-500/20 text-yellow-400',
-    high: 'bg-green-500/20 text-green-400',
+    low: 'bg-red-100 text-red-800 border border-red-200',
+    medium: 'bg-amber-100 text-amber-800 border border-amber-200',
+    high: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
   };
 
   // Get core criteria keys
@@ -205,17 +207,17 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
       {/* Summary card */}
       <div className="analysis-card mb-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-serif text-lg font-semibold text-white">{t.summary}</h3>
-          <span className={`rounded-full px-3 py-1 text-xs font-medium ${confidenceColors[data.confidence]}`}>
+          <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
             {t.confidence}: {confidenceLabels[data.confidence]}
           </span>
         </div>
-        <p className="font-medium leading-relaxed text-foreground/90">{data.summary}</p>
+        <p className="text-base font-medium leading-relaxed text-slate-700">{data.summary}</p>
       </div>
 
       {/* Credibility Signals Badges - Visual overview */}
       <div className="analysis-card mb-6">
-        <h3 className="mb-4 font-serif text-lg font-semibold text-white">{t.signalsTitle}</h3>
+        <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">{t.signalsTitle}</h3>
         <div className="flex flex-wrap gap-2">
           {signalBadges.map((signal, index) => (
             <div
@@ -223,7 +225,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
               className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
             >
               <span className={`h-2 w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
-              <span className="text-xs font-semibold text-white">{signal.label}</span>
+              <span className="text-xs font-semibold text-slate-800">{signal.label}</span>
             </div>
           ))}
         </div>
@@ -231,23 +233,23 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false }: Analys
 
       {/* Breakdown - Core criteria with details */}
       <div className="analysis-card">
-        <h3 className="mb-4 font-serif text-lg font-semibold text-white">{t.breakdown}</h3>
+        <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">{t.breakdown}</h3>
         <div className="space-y-4">
           {coreKeys.map((key) => {
             const item = data.breakdown[key as keyof AnalysisBreakdown];
             if (!item) return null;
             return (
-              <div key={key} className="border-b border-border/30 pb-4 last:border-0 last:pb-0">
+              <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getPointsIcon(item.points)}
-                    <span className="font-semibold text-white">{coreCriteriaLabels[key]}</span>
+                    <span className="font-semibold text-slate-800">{coreCriteriaLabels[key]}</span>
                   </div>
-                  <span className={`font-mono text-sm font-semibold ${getPointsColor(item.points)}`}>
+                  <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
                     {item.points > 0 ? '+' : ''}{item.points}
                   </span>
                 </div>
-                <p className="ml-6 text-sm font-medium text-foreground/80">{item.reason}</p>
+                <p className="ml-6 text-sm font-medium text-slate-600">{item.reason}</p>
               </div>
             );
           })}
