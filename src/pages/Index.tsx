@@ -126,9 +126,10 @@ const Index = () => {
   };
 
   const handleLanguageChange = (next: 'en' | 'fr') => {
+    // Instant language switch - UI updates synchronously
     setLanguage(next);
 
-    // If we already analyzed once, keep everything in sync with the selected language.
+    // Silently fetch the other language in the background if needed (no visible loading state)
     if (hasAnyAnalysis && lastInput && !analysisByLanguage[next] && !isLoading) {
       void handleAnalyze(lastInput, next);
     }
@@ -276,13 +277,12 @@ const Index = () => {
           {/* Analysis result (per language) */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
 
-          {/* While switching languages, show a small placeholder until the new language result is ready */}
+          {/* When switching languages, show the other language's result until the new one is ready */}
           {hasAnyAnalysis && !analysisData && (
-            <div className="analysis-card mt-3 w-full max-w-2xl animate-fade-in md:mt-8">
-              <p className="text-center text-xs text-muted-foreground/90 md:text-sm">
-                {language === 'fr' ? 'Traduction en cours…' : 'Translating…'}
-              </p>
-            </div>
+            <AnalysisResult 
+              data={(language === 'en' ? analysisByLanguage.fr : analysisByLanguage.en)!} 
+              language={language} 
+            />
           )}
         </div>
 
