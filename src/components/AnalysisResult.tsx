@@ -9,17 +9,48 @@ interface AnalysisBreakdown {
   imageCoherence?: { points: number; reason: string };
 }
 
+interface ImageSignals {
+  origin?: {
+    classification: string;
+    confidence: string;
+    indicators: string[];
+  };
+  metadata?: {
+    exifPresence: string;
+    dateConsistency: string;
+    softwareIndicators: string[];
+  };
+  coherence?: {
+    classification: string;
+    explanation: string;
+  };
+  scoring?: {
+    imageAsProof: number;
+    aiWithClaims: number;
+    metadataIssues: number;
+    contextualSeverity?: number;
+    severityConditionsMet?: string[];
+    totalImpact: number;
+    reasoning: string;
+  };
+  disclaimer?: string;
+}
+
 interface AnalysisData {
   score: number;
+  analysisType?: 'standard' | 'pro';
   breakdown: AnalysisBreakdown;
   summary: string;
   confidence: 'low' | 'medium' | 'high';
   visualNote?: string;
+  imageSignals?: ImageSignals;
+  proNote?: string;
 }
 
 interface AnalysisResultProps {
   data: AnalysisData;
   language: 'en' | 'fr';
+  isProUnlocked?: boolean; // Controls visibility of advanced image analysis
 }
 
 const translations = {
@@ -55,8 +86,7 @@ const translations = {
   },
 };
 
-const getPointsIcon = (points: number, isImageCriteria?: boolean) => {
-  if (isImageCriteria) return <Image className="h-4 w-4 text-muted-foreground" />;
+const getPointsIcon = (points: number) => {
   if (points > 0) return <CheckCircle className="h-4 w-4 text-green-400" />;
   if (points < 0) return <XCircle className="h-4 w-4 text-red-400" />;
   return <AlertCircle className="h-4 w-4 text-yellow-400" />;
@@ -68,16 +98,16 @@ const getPointsColor = (points: number) => {
   return 'text-yellow-400';
 };
 
-export const AnalysisResult = ({ data, language }: AnalysisResultProps) => {
+export const AnalysisResult = ({ data, language, isProUnlocked = false }: AnalysisResultProps) => {
   const t = translations[language];
 
+  // Core criteria labels (excludes image-related criteria for standard display)
   const criteriaLabels: Record<string, string> = {
     sources: t.sources,
     factual: t.factual,
     tone: t.tone,
     context: t.context,
     transparency: t.transparency,
-    imageCoherence: t.imageCoherence,
   };
 
   const confidenceLabels = {
@@ -92,13 +122,16 @@ export const AnalysisResult = ({ data, language }: AnalysisResultProps) => {
     high: 'bg-green-500/20 text-green-400',
   };
 
-  // Filter out imageCoherence if points are 0 (no visual impact)
+  // VISIBILITY CONTROL: 
+  // - Never show imageCoherence in breakdown for Standard Analysis
+  // - Never show image details while Pro is locked
+  // - Image analysis runs silently, results stored for future Pro display
   const breakdownKeys = Object.keys(data.breakdown).filter((key) => {
+    // Always exclude imageCoherence from standard display
     if (key === 'imageCoherence') {
-      const imageData = data.breakdown.imageCoherence;
-      return imageData && imageData.points !== 0;
+      return false; // Hidden until Pro is unlocked and active
     }
-    return true;
+    return criteriaLabels[key] !== undefined;
   });
 
   return (
@@ -114,19 +147,18 @@ export const AnalysisResult = ({ data, language }: AnalysisResultProps) => {
         <p className="text-muted-foreground">{data.summary}</p>
       </div>
 
-      {/* Breakdown */}
+      {/* Breakdown - Core criteria only, no image details in standard mode */}
       <div className="analysis-card">
         <h3 className="mb-4 font-serif text-lg text-foreground">{t.breakdown}</h3>
         <div className="space-y-4">
           {breakdownKeys.map((key) => {
             const item = data.breakdown[key as keyof AnalysisBreakdown];
             if (!item) return null;
-            const isImageCriteria = key === 'imageCoherence';
             return (
               <div key={key} className="border-b border-border/30 pb-4 last:border-0 last:pb-0">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {getPointsIcon(item.points, isImageCriteria)}
+                    {getPointsIcon(item.points)}
                     <span className="font-medium text-foreground">{criteriaLabels[key]}</span>
                   </div>
                   <span className={`font-mono text-sm font-semibold ${getPointsColor(item.points)}`}>
@@ -139,11 +171,11 @@ export const AnalysisResult = ({ data, language }: AnalysisResultProps) => {
           })}
         </div>
         
-        {/* Visual note - always shown */}
+        {/* Visual note - neutral statement only, no advanced details */}
         <div className="mt-4 border-t border-border/30 pt-4">
           <p className="flex items-center gap-2 text-xs text-muted-foreground/70">
             <Image className="h-3 w-3" />
-            {data.visualNote || t.visualNote}
+            {t.visualNote}
           </p>
         </div>
       </div>
