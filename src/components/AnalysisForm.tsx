@@ -74,9 +74,9 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
           />
           {/* Inner content container */}
           <div 
-            className="rounded-2xl bg-gradient-to-b from-black/80 to-black/90 backdrop-blur-xl"
+            className="rounded-2xl bg-gradient-to-b from-black/40 to-black/50 backdrop-blur-md"
             style={{
-              boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.08), inset 0 -1px 0 hsl(0 0% 0% / 0.3)',
+              boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 -1px 0 hsl(0 0% 0% / 0.2)',
             }}
           >
             {/* Input section */}
