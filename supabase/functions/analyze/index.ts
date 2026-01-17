@@ -163,7 +163,23 @@ Assess the likely origin category:
 - "demonstrative": Image directly supports or documents the claims (positive indicator)
 - "potentially_misleading": Image may misrepresent the content or be used out of context (warning indicator)
 
-IMPORTANT CONSTRAINTS:
+===== PRO ANALYSIS: IMAGE SCORING RULES =====
+
+CRITICAL: Image analysis cannot dominate the score. Image signals act as RISK MODIFIERS, not evidence.
+TOTAL IMAGE-RELATED IMPACT IS CAPPED AT -10 POINTS MAXIMUM.
+
+IMAGE SCORING LOGIC:
+- Coherent, illustrative image: 0 points (no impact)
+- Image used as factual proof without corroboration: -4 points
+- Probable AI-generated image combined with factual claims: -3 to -6 points (scale based on severity)
+- Metadata inconsistencies (date mismatch, edited indicators): -2 points
+
+IMPORTANT SCORING NOTES:
+- Absence of metadata is NEUTRAL (0 points) - do not penalize missing metadata
+- AI-generated image ALONE does not trigger penalties - only penalize when combined with misleading factual claims
+- Calculate total imageImpact as sum of applicable penalties, but CAP at -10 maximum
+
+CONSTRAINTS:
 - Image signals are CONTEXTUAL INDICATORS only
 - Image analysis does NOT determine truth or falsity
 - Present findings as observations, not verdicts
@@ -180,7 +196,7 @@ You MUST respond with valid JSON in this exact format:
     "tone": {"points": <number>, "reason": "<brief reason>"},
     "context": {"points": <number>, "reason": "<brief reason>"},
     "transparency": {"points": <number>, "reason": "<brief reason>"},
-    "imageCoherence": {"points": <number between -2 and 0>, "reason": "<brief reason>"}
+    "imageCoherence": {"points": <number between -10 and 0>, "reason": "<brief reason explaining the image scoring>"}
   },
   "imageSignals": {
     "origin": {
@@ -197,12 +213,19 @@ You MUST respond with valid JSON in this exact format:
       "classification": "<illustrative|demonstrative|potentially_misleading>",
       "explanation": "<brief explanation in ${language === 'fr' ? 'French' : 'English'}>"
     },
+    "scoring": {
+      "imageAsProof": <0 or -4>,
+      "aiWithClaims": <0 to -6>,
+      "metadataIssues": <0 or -2>,
+      "totalImpact": <sum capped at -10>,
+      "reasoning": "<brief explanation of scoring decisions in ${language === 'fr' ? 'French' : 'English'}>"
+    },
     "disclaimer": "${language === 'fr' ? 'Ces signaux sont des indicateurs contextuels uniquement. Ils ne déterminent pas la véracité du contenu.' : 'These signals are contextual indicators only. They do not determine content truthfulness.'}"
   },
   "summary": "<2-3 sentence explanation>",
   "articleSummary": "<2-3 sentence FACTUAL summary of the article content>",
   "confidence": "<low|medium|high>",
-  "proNote": "${language === 'fr' ? 'Analyse Pro : signaux visuels avancés évalués avec indicateurs contextuels.' : 'Pro Analysis: advanced visual signals evaluated with contextual indicators.'}"
+  "proNote": "${language === 'fr' ? 'Analyse Pro : signaux visuels avancés évalués avec indicateurs contextuels. Impact image plafonné à -10 points.' : 'Pro Analysis: advanced visual signals evaluated with contextual indicators. Image impact capped at -10 points.'}"
 }
 
 ALL responses must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
