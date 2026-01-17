@@ -76,7 +76,7 @@ const translations = {
     confidenceLow: 'Low',
     confidenceMedium: 'Medium',
     confidenceHigh: 'High',
-    summary: 'Analysis Summary',
+    summary: 'Summary',
     // Credibility signals badges
     signalsTitle: 'Credibility signals reviewed',
     signalSource: 'Source reliability',
@@ -98,7 +98,7 @@ const translations = {
     confidenceLow: 'Faible',
     confidenceMedium: 'Moyen',
     confidenceHigh: 'Élevé',
-    summary: "Résumé de l'Analyse",
+    summary: 'Résumé',
     // Credibility signals badges
     signalsTitle: 'Signaux de crédibilité évalués',
     signalSource: 'Fiabilité des sources',
