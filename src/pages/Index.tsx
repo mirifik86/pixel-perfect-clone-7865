@@ -66,13 +66,8 @@ const translations = {
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [isLoading, setIsLoading] = useState(false);
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [lastInput, setLastInput] = useState<string | null>(null);
   
-  // Master analysis stores the original result with fixed numerical values
-  const [masterAnalysis, setMasterAnalysis] = useState<{ data: AnalysisData; sourceLanguage: 'en' | 'fr' } | null>(null);
-  
-  // Translated versions cache - numerical values are always copied from master
+  // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
     en: null,
     fr: null,
@@ -80,93 +75,80 @@ const Index = () => {
 
   const t = translations[language];
   const analysisData = analysisByLanguage[language];
-  const hasAnyAnalysis = Boolean(masterAnalysis);
+  const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr);
 
-  // Score is ALWAYS from the master analysis - never recalculated
-  const score = masterAnalysis?.data.score ?? null;
+  // Score is consistent across both languages (same analysis, different text)
+  const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score ?? null;
 
   const handleReset = () => {
-    setLastInput(null);
-    setMasterAnalysis(null);
     setAnalysisByLanguage({ en: null, fr: null });
   };
 
-  // Translate analysis text while preserving all numerical values from master
-  const translateAnalysis = async (targetLanguage: 'en' | 'fr') => {
-    if (!masterAnalysis || analysisByLanguage[targetLanguage]) return;
-    
-    setIsTranslating(true);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('translate-analysis', {
-        body: {
-          analysisData: masterAnalysis.data,
-          targetLanguage,
-        },
-      });
-
-      if (error || data?.error) {
-        console.error('Translation error:', error || data?.error);
-        // Fallback: use master data with original text
-        setAnalysisByLanguage((prev) => ({ ...prev, [targetLanguage]: masterAnalysis.data }));
-        return;
-      }
-
-      // Ensure numerical values match master (defensive)
-      const translatedWithFixedNumbers: AnalysisData = {
-        ...data,
-        score: masterAnalysis.data.score,
-        confidence: masterAnalysis.data.confidence,
-        breakdown: {
-          sources: { ...data.breakdown.sources, points: masterAnalysis.data.breakdown.sources.points },
-          factual: { ...data.breakdown.factual, points: masterAnalysis.data.breakdown.factual.points },
-          tone: { ...data.breakdown.tone, points: masterAnalysis.data.breakdown.tone.points },
-          context: { ...data.breakdown.context, points: masterAnalysis.data.breakdown.context.points },
-          transparency: { ...data.breakdown.transparency, points: masterAnalysis.data.breakdown.transparency.points },
-        },
-      };
-
-      setAnalysisByLanguage((prev) => ({ ...prev, [targetLanguage]: translatedWithFixedNumbers }));
-    } catch (err) {
-      console.error('Unexpected translation error:', err);
-      // Fallback: use master data
-      setAnalysisByLanguage((prev) => ({ ...prev, [targetLanguage]: masterAnalysis.data }));
-    } finally {
-      setIsTranslating(false);
-    }
-  };
-
+  // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
   const handleAnalyze = async (input: string) => {
     const tLocal = translations[language];
 
     setIsLoading(true);
-    setLastInput(input);
-    setMasterAnalysis(null);
     setAnalysisByLanguage({ en: null, fr: null });
 
     try {
-      const { data, error } = await supabase.functions.invoke('analyze', {
-        body: {
-          content: input,
-          language: language,
-        },
-      });
+      // Fetch both languages in parallel
+      const [enResult, frResult] = await Promise.all([
+        supabase.functions.invoke('analyze', {
+          body: { content: input, language: 'en' },
+        }),
+        supabase.functions.invoke('analyze', {
+          body: { content: input, language: 'fr' },
+        }),
+      ]);
 
-      if (error) {
-        console.error('Analysis error:', error);
+      // Check for errors
+      if (enResult.error || frResult.error) {
+        console.error('Analysis error:', enResult.error || frResult.error);
         toast.error(tLocal.errorAnalysis);
         return;
       }
 
-      if (data?.error) {
-        console.error('API error:', data.error);
-        toast.error(data.error);
+      if (enResult.data?.error || frResult.data?.error) {
+        console.error('API error:', enResult.data?.error || frResult.data?.error);
+        toast.error(enResult.data?.error || frResult.data?.error);
         return;
       }
 
-      // Store as master analysis - this score is now FIXED
-      setMasterAnalysis({ data, sourceLanguage: language });
-      setAnalysisByLanguage((prev) => ({ ...prev, [language]: data }));
+      // Use the primary language score as the master score for both
+      const masterScore = language === 'fr' ? frResult.data.score : enResult.data.score;
+      const masterConfidence = language === 'fr' ? frResult.data.confidence : enResult.data.confidence;
+      const masterBreakdownPoints = language === 'fr' ? frResult.data.breakdown : enResult.data.breakdown;
+
+      // Ensure both languages have IDENTICAL numerical values
+      const normalizedEn: AnalysisData = {
+        ...enResult.data,
+        score: masterScore,
+        confidence: masterConfidence,
+        breakdown: {
+          sources: { ...enResult.data.breakdown.sources, points: masterBreakdownPoints.sources.points },
+          factual: { ...enResult.data.breakdown.factual, points: masterBreakdownPoints.factual.points },
+          tone: { ...enResult.data.breakdown.tone, points: masterBreakdownPoints.tone.points },
+          context: { ...enResult.data.breakdown.context, points: masterBreakdownPoints.context.points },
+          transparency: { ...enResult.data.breakdown.transparency, points: masterBreakdownPoints.transparency.points },
+        },
+      };
+
+      const normalizedFr: AnalysisData = {
+        ...frResult.data,
+        score: masterScore,
+        confidence: masterConfidence,
+        breakdown: {
+          sources: { ...frResult.data.breakdown.sources, points: masterBreakdownPoints.sources.points },
+          factual: { ...frResult.data.breakdown.factual, points: masterBreakdownPoints.factual.points },
+          tone: { ...frResult.data.breakdown.tone, points: masterBreakdownPoints.tone.points },
+          context: { ...frResult.data.breakdown.context, points: masterBreakdownPoints.context.points },
+          transparency: { ...frResult.data.breakdown.transparency, points: masterBreakdownPoints.transparency.points },
+        },
+      };
+
+      // Store both - language toggle is now purely local state
+      setAnalysisByLanguage({ en: normalizedEn, fr: normalizedFr });
     } catch (err) {
       console.error('Unexpected error:', err);
       toast.error(tLocal.errorAnalysis);
@@ -175,14 +157,9 @@ const Index = () => {
     }
   };
 
+  // INSTANT language switch - pure local state change, zero API calls
   const handleLanguageChange = (next: 'en' | 'fr') => {
-    // Instant language switch - UI updates synchronously
     setLanguage(next);
-
-    // If we have analysis but not in the new language, translate (not re-analyze)
-    if (hasAnyAnalysis && !analysisByLanguage[next] && !isTranslating) {
-      void translateAnalysis(next);
-    }
   };
   return <div className="relative flex min-h-screen flex-col overflow-hidden" style={{
     background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
@@ -324,16 +301,8 @@ const Index = () => {
             </div>
           )}
 
-          {/* Analysis result (per language) */}
+          {/* Analysis result - instant switch, both languages preloaded */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
-
-          {/* When switching languages, show the other language's result until the new one is ready */}
-          {hasAnyAnalysis && !analysisData && (
-            <AnalysisResult 
-              data={(language === 'en' ? analysisByLanguage.fr : analysisByLanguage.en)!} 
-              language={language} 
-            />
-          )}
         </div>
 
         {/* Footer - integrated into main for proper spacing */}
