@@ -4,11 +4,12 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
+import { ArticleSummary } from '@/components/ArticleSummary';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
+
 interface AnalysisBreakdown {
   sources: {
     points: number;
@@ -31,10 +32,12 @@ interface AnalysisBreakdown {
     reason: string;
   };
 }
+
 interface AnalysisData {
   score: number;
   breakdown: AnalysisBreakdown;
   summary: string;
+  articleSummary?: string;
   confidence: 'low' | 'medium' | 'high';
 }
 const translations = {
@@ -72,6 +75,10 @@ const Index = () => {
     en: null,
     fr: null,
   });
+  
+  // Article summary is stored separately and remains IDENTICAL across languages
+  // It's generated once in the user's selected language and never changes
+  const [masterArticleSummary, setMasterArticleSummary] = useState<string | null>(null);
 
   const t = translations[language];
   const analysisData = analysisByLanguage[language];
@@ -82,6 +89,7 @@ const Index = () => {
 
   const handleReset = () => {
     setAnalysisByLanguage({ en: null, fr: null });
+    setMasterArticleSummary(null);
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -119,6 +127,12 @@ const Index = () => {
       const masterScore = language === 'fr' ? frResult.data.score : enResult.data.score;
       const masterConfidence = language === 'fr' ? frResult.data.confidence : enResult.data.confidence;
       const masterBreakdownPoints = language === 'fr' ? frResult.data.breakdown : enResult.data.breakdown;
+      
+      // Store the article summary from the primary language - this stays IDENTICAL across language switches
+      const primaryArticleSummary = language === 'fr' 
+        ? frResult.data.articleSummary 
+        : enResult.data.articleSummary;
+      setMasterArticleSummary(primaryArticleSummary || null);
 
       // Ensure both languages have IDENTICAL numerical values
       const normalizedEn: AnalysisData = {
@@ -303,6 +317,9 @@ const Index = () => {
 
           {/* Analysis result - instant switch, both languages preloaded */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
+          
+          {/* Article summary - displayed below score/analysis with lower visual priority */}
+          {masterArticleSummary && <ArticleSummary summary={masterArticleSummary} language={language} />}
         </div>
 
         {/* Footer - integrated into main for proper spacing */}

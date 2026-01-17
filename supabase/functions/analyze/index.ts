@@ -79,6 +79,7 @@ You MUST respond with valid JSON in this exact format:
     "transparency": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
   },
   "summary": "<2-3 sentence explanation in ${language === 'fr' ? 'French' : 'English'}>",
+  "articleSummary": "<2-3 sentence FACTUAL summary of what the article is about - ONLY describe the main topic and key reported facts. Use neutral, journalistic tone with verbs like 'reports', 'states', 'outlines', 'describes'. NO opinions, NO conclusions, NO mention of credibility or score. This must be in ${language === 'fr' ? 'French' : 'English'}>",
   "confidence": "<low|medium|high>"
 }
 
@@ -86,9 +87,10 @@ IMPORTANT:
 - Score must be between 0 and 100
 - Be objective and analytical
 - When data is insufficient, state uncertainty instead of penalizing
-- The summary should explain why the score is what it is
+- The "summary" field should explain why the score is what it is (analysis conclusion)
+- The "articleSummary" field should ONLY describe what the content is about factually - it must NOT influence or mention the score
 - NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR
-- ALL text responses (reasons, summary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
+- ALL text responses (reasons, summary, articleSummary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
