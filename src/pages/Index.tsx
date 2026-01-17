@@ -353,15 +353,6 @@ const Index = () => {
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
             >
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
-              {/* Ethical positioning tagline - improved readability */}
-              <p 
-                className="mt-4 animate-fade-in text-center text-xs leading-relaxed"
-                style={{ animationDelay: '450ms', animationFillMode: 'both' }}
-              >
-                <span className="font-serif italic text-primary">Leen</span>
-                <span className="font-serif text-foreground">Score</span>
-                <span className="ml-1.5 text-foreground/70">{t.footer.split('LeenScore')[1]}</span>
-              </p>
             </div>
           )}
 
@@ -393,15 +384,25 @@ const Index = () => {
           />
         </div>
 
-        {/* Footer - integrated into main for proper spacing */}
+        {/* Footer - premium styling */}
         <footer 
-          className="-mt-6 animate-fade-in pb-4 pt-4 text-center"
+          className="animate-fade-in pb-6 pt-8 text-center"
           style={{ animationDelay: '500ms', animationFillMode: 'both' }}
         >
-          <p className="text-[10px] font-semibold tracking-widest text-primary">
+          {/* Ethical positioning - premium institutional style */}
+          <p className="mx-auto max-w-md border-t border-white/10 pt-6 text-xs tracking-wide text-foreground/50">
+            <span 
+              className="font-serif italic"
+              style={{ color: 'hsl(174 65% 55%)' }}
+            >Leen</span>
+            <span className="font-serif text-foreground/70">Score</span>
+            <span className="ml-1">{t.footer.split('LeenScore')[1]}</span>
+          </p>
+          
+          <p className="mt-4 text-[10px] font-medium tracking-[0.2em] text-primary/70">
             {t.developedBy}
           </p>
-          <p className="mt-0.5 text-[10px] tracking-widest text-muted-foreground/60">
+          <p className="mt-1 text-[10px] tracking-[0.15em] text-muted-foreground/40">
             {t.version}
           </p>
         </footer>
