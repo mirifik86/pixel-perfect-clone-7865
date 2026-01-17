@@ -55,7 +55,7 @@ const translations = {
     pending: 'Pending',
     footer: 'LeenScore illuminates information, without orienting your opinion.',
     developedBy: 'TOOL DEVELOPED BY SOL&AIR.',
-    version: 'VERSION 2.0',
+    version: 'VERSION 1',
     analyzing: 'Analyzing...',
     errorAnalysis: 'Analysis failed. Please try again.',
     newAnalysis: 'New Analysis'
@@ -67,7 +67,7 @@ const translations = {
     pending: 'En attente',
     footer: "LeenScore éclaire l'information, sans orienter votre opinion.",
     developedBy: 'OUTIL DÉVELOPPÉ PAR SOL&AIR.',
-    version: 'VERSION 2.0',
+    version: 'VERSION 1',
     analyzing: 'Analyse en cours...',
     errorAnalysis: "L'analyse a échoué. Veuillez réessayer.",
     newAnalysis: 'Faire autre analyse'
