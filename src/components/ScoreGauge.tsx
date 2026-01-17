@@ -79,7 +79,7 @@ export const ScoreGauge = ({
     'hsl(var(--score-red))',
     'hsl(var(--score-orange))',
     'hsl(var(--score-yellow))',
-    'hsl(var(--score-teal))',
+    'hsl(var(--score-green))',
     'hsl(var(--score-leen-blue))'
   ];
 
