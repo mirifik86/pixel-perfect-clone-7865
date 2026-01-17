@@ -218,7 +218,7 @@ export const ScoreGauge = ({
           />
         )}
         <span
-          className="relative text-center px-4 py-1.5 rounded-full"
+          className="relative text-center"
           style={{
             fontSize: size * 0.095,
             color: score === null ? 'hsl(0 0% 100%)' : currentLabelColor,
@@ -227,8 +227,6 @@ export const ScoreGauge = ({
             fontFamily: 'var(--font-sans)',
             transition: 'color 0.3s ease-out',
             textShadow: score === null ? '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)' : 'none',
-            background: score === null ? 'hsl(174 60% 45% / 0.1)' : 'transparent',
-            border: score === null ? '1px solid hsl(174 60% 45% / 0.3)' : 'none',
           }}
         >
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
