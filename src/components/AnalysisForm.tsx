@@ -34,6 +34,11 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
   const t = translations[language];
   
   const hasValidUrl = useMemo(() => isValidUrl(input), [input]);
+  const hasInvalidUrl = useMemo(() => {
+    const trimmed = input.trim();
+    // Check if it looks like a URL attempt but is invalid
+    return trimmed.length > 0 && (trimmed.includes('.') || trimmed.startsWith('http')) && !isValidUrl(input);
+  }, [input]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +78,16 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
           
           {/* Input Icon */}
           <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
-            <Link2 className={`h-5 w-5 transition-colors duration-300 ${hasValidUrl ? 'text-primary' : 'text-muted-foreground/40'}`} />
+            <Link2 
+              className="h-5 w-5 transition-colors duration-300" 
+              style={{
+                color: hasValidUrl 
+                  ? 'hsl(174 80% 45%)' // Leen blue saturated
+                  : hasInvalidUrl 
+                    ? 'hsl(0 70% 55%)' // Red for invalid
+                    : 'hsl(var(--muted-foreground) / 0.4)'
+              }}
+            />
           </div>
           
           <Textarea
