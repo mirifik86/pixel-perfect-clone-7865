@@ -217,6 +217,7 @@ export const ScoreGauge = ({
             style={{
               background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.4), hsl(174 60% 55% / 0.2), hsl(174 60% 45% / 0.4))',
               animation: 'ready-pulse 2s ease-in-out infinite',
+              animationDelay: '0s',
               filter: 'blur(8px)',
             }}
           />
