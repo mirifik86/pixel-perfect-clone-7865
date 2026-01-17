@@ -186,16 +186,16 @@ const Index = () => {
     }} />
       
       {/* Main content - use min-h-screen and justify-between to fit everything without scrolling */}
-      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-3 py-4 md:px-4 md:py-16">
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-6">
         <div className="flex w-full flex-col items-center">
           {/* Logo & branding with unified halo */}
           <div 
-            className="relative mb-3 flex animate-fade-in flex-col items-center md:mb-12" 
+            className="relative mb-6 flex animate-fade-in flex-col items-center" 
             style={{ animationDelay: '0ms', animationFillMode: 'both' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
-              className="pointer-events-none absolute -inset-4 md:-inset-8"
+              className="pointer-events-none absolute -inset-6"
               style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 40%, hsl(174 60% 45% / 0.15) 0%, transparent 70%)',
                 filter: 'blur(20px)'
@@ -205,10 +205,10 @@ const Index = () => {
             <LeenScoreLogo />
             
             {/* Premium light beam separator */}
-            <div className="relative my-2 flex w-full items-center justify-center md:my-3">
+            <div className="relative my-2 flex w-full items-center justify-center">
               {/* Central glow dot */}
               <div 
-                className="absolute h-1 w-1 rounded-full md:h-1.5 md:w-1.5"
+                className="absolute h-1.5 w-1.5 rounded-full"
                 style={{
                   background: 'hsl(174 80% 60%)',
                   boxShadow: '0 0 8px 2px hsl(174 80% 55% / 0.8), 0 0 20px 4px hsl(174 60% 45% / 0.4)'
@@ -216,29 +216,29 @@ const Index = () => {
               />
               {/* Light beam left */}
               <div 
-                className="h-px w-16 md:w-32"
+                className="h-px w-24"
                 style={{
                   background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.6) 100%)'
                 }}
               />
               {/* Light beam right */}
               <div 
-                className="h-px w-16 md:w-32"
+                className="h-px w-24"
                 style={{
                   background: 'linear-gradient(90deg, hsl(174 60% 50% / 0.6) 0%, transparent 100%)'
                 }}
               />
             </div>
             
-            {/* Subtitle - tighter spacing */}
+            {/* Subtitle - unified styling */}
             <p 
-              className="animate-fade-in text-center text-sm font-medium text-foreground/95 md:text-2xl"
+              className="animate-fade-in text-center text-lg font-medium text-foreground/95"
               style={{ animationDelay: '100ms', animationFillMode: 'both' }}
             >
               {t.tagline}
             </p>
             <p 
-              className="mt-1 animate-fade-in text-[10px] font-bold uppercase tracking-[0.3em] md:mt-2 md:text-sm md:tracking-[0.4em]"
+              className="mt-1.5 animate-fade-in text-xs font-bold uppercase tracking-[0.35em]"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
@@ -252,7 +252,7 @@ const Index = () => {
 
           {/* Language toggle - perfectly centered */}
           <div 
-            className="flex w-full justify-center mb-3 animate-fade-in md:mb-10"
+            className="flex w-full justify-center mb-6 animate-fade-in"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
@@ -260,7 +260,7 @@ const Index = () => {
 
           {/* Score gauge with premium halo effect */}
           <div 
-            className="relative mb-1 animate-scale-in md:mb-4"
+            className="relative mb-4 animate-scale-in"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
             {/* Saturated halo beam effect behind score */}
@@ -268,7 +268,7 @@ const Index = () => {
               <>
                 {/* Primary radial glow - Leen brand color */}
                 <div 
-                  className="absolute inset-0 -inset-x-16 -inset-y-8 md:-inset-x-24 md:-inset-y-12"
+                  className="absolute inset-0 -inset-x-20 -inset-y-10"
                   style={{
                     background: 'radial-gradient(ellipse 100% 80% at center, hsl(174 80% 50% / 0.35) 0%, hsl(174 70% 45% / 0.15) 40%, transparent 70%)',
                     filter: 'blur(20px)',
@@ -277,7 +277,7 @@ const Index = () => {
                 />
                 {/* Secondary warm accent glow */}
                 <div 
-                  className="absolute inset-0 -inset-x-12 -inset-y-6 md:-inset-x-20 md:-inset-y-10"
+                  className="absolute inset-0 -inset-x-16 -inset-y-8"
                   style={{
                     background: 'radial-gradient(ellipse 70% 60% at center, hsl(40 100% 60% / 0.12) 0%, transparent 60%)',
                     filter: 'blur(15px)',
@@ -287,7 +287,7 @@ const Index = () => {
                 />
                 {/* Central bright core */}
                 <div 
-                  className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 md:h-24 md:w-24"
+                  className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2"
                   style={{
                     background: 'radial-gradient(circle, hsl(174 90% 60% / 0.4) 0%, transparent 70%)',
                     filter: 'blur(10px)',
@@ -310,17 +310,17 @@ const Index = () => {
 
           {/* Post-Analysis: Summary + CTA immediately after score (above the fold) */}
           {masterArticleSummary && (
-            <div className="w-full max-w-xl animate-fade-in mt-4 md:mt-6" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               {/* Short factual article summary */}
-              <p className="text-center text-sm leading-relaxed text-foreground/80 md:text-base">
+              <p className="text-center text-sm leading-relaxed text-foreground/80">
                 {masterArticleSummary}
               </p>
               
               {/* Primary CTA - Run another analysis */}
-              <div className="flex justify-center mt-4 md:mt-6">
+              <div className="flex justify-center mt-5">
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 md:px-8 md:py-3 md:text-base"
+                  className="flex items-center gap-2 rounded-full bg-primary px-7 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
                   style={{
                     boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
                   }}
@@ -334,7 +334,7 @@ const Index = () => {
           {/* Pre-analysis method statement - institutional, fades after analysis */}
           {!hasAnyAnalysis && (
             <p 
-              className="mb-3 max-w-lg animate-fade-in text-center text-xs leading-relaxed text-foreground/75 md:mb-6 md:text-sm"
+              className="mb-4 max-w-lg animate-fade-in text-center text-xs leading-relaxed text-foreground/75"
               style={{ animationDelay: '350ms', animationFillMode: 'both' }}
             >
               {language === 'fr' 
@@ -347,18 +347,18 @@ const Index = () => {
           {/* Analysis form - hidden after first analysis */}
           {!hasAnyAnalysis && (
             <div 
-              className="mt-1 w-full max-w-2xl animate-fade-in md:mt-10"
+              className="mt-2 w-full max-w-2xl animate-fade-in"
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
             >
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
               {/* Ethical positioning tagline - improved readability */}
               <p 
-                className="mt-3 animate-fade-in text-center text-xs leading-relaxed md:mt-6 md:text-base"
+                className="mt-4 animate-fade-in text-center text-xs leading-relaxed"
                 style={{ animationDelay: '450ms', animationFillMode: 'both' }}
               >
                 <span className="font-serif italic text-primary">Leen</span>
                 <span className="font-serif text-foreground">Score</span>
-                <span className="ml-1.5 text-foreground/70 md:ml-2">{t.footer.split('LeenScore')[1]}</span>
+                <span className="ml-1.5 text-foreground/70">{t.footer.split('LeenScore')[1]}</span>
               </p>
             </div>
           )}
@@ -369,13 +369,13 @@ const Index = () => {
 
         {/* Footer - integrated into main for proper spacing */}
         <footer 
-          className="-mt-8 animate-fade-in pb-2 pt-2 text-center md:-mt-4 md:pb-8 md:pt-8"
+          className="-mt-6 animate-fade-in pb-4 pt-4 text-center"
           style={{ animationDelay: '500ms', animationFillMode: 'both' }}
         >
-          <p className="text-[8px] font-semibold tracking-widest text-primary md:text-xs">
+          <p className="text-[10px] font-semibold tracking-widest text-primary">
             {t.developedBy}
           </p>
-          <p className="mt-0.5 text-[8px] tracking-widest text-muted-foreground/60 md:mt-1 md:text-xs">
+          <p className="mt-0.5 text-[10px] tracking-widest text-muted-foreground/60">
             {t.version}
           </p>
         </footer>
