@@ -5,6 +5,7 @@ import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
 import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
+import { ProAnalysisModal } from '@/components/ProAnalysisModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
@@ -68,6 +69,7 @@ const translations = {
 const Index = () => {
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [isLoading, setIsLoading] = useState(false);
+  const [isProModalOpen, setIsProModalOpen] = useState(false);
   
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
@@ -365,6 +367,30 @@ const Index = () => {
 
           {/* Analysis result - detailed breakdown below */}
           {analysisData && <AnalysisResult data={analysisData} language={language} />}
+
+          {/* Pro Analysis CTA - visible after standard analysis */}
+          {hasAnyAnalysis && (
+            <div className="mt-6 flex w-full max-w-xl animate-fade-in flex-col items-center" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+              <button
+                onClick={() => setIsProModalOpen(true)}
+                className="rounded-full border border-border/50 bg-muted/30 px-6 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
+              >
+                {language === 'fr' ? 'Analyser PRO' : 'Analyze PRO'}
+              </button>
+              <p className="mt-2 text-center text-[10px] text-muted-foreground">
+                {language === 'fr' 
+                  ? "Analyse avancée d'images et de sources (bientôt disponible)"
+                  : "Advanced image and source analysis (coming soon)"}
+              </p>
+            </div>
+          )}
+
+          {/* Pro Analysis Modal */}
+          <ProAnalysisModal 
+            open={isProModalOpen} 
+            onOpenChange={setIsProModalOpen} 
+            language={language} 
+          />
         </div>
 
         {/* Footer - integrated into main for proper spacing */}
