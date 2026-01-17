@@ -215,9 +215,9 @@ export const ScoreGauge = ({
           <div 
             className="absolute -inset-x-4 -inset-y-2 rounded-full"
             style={{
-              background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.2), transparent, hsl(174 60% 45% / 0.15))',
-              animation: 'ready-pulse 2.5s ease-in-out infinite',
-              filter: 'blur(6px)',
+              background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.4), hsl(174 60% 55% / 0.2), hsl(174 60% 45% / 0.4))',
+              animation: 'ready-pulse 2s ease-in-out infinite',
+              filter: 'blur(8px)',
             }}
           />
         )}
@@ -238,8 +238,8 @@ export const ScoreGauge = ({
         {score === null && (
           <style>{`
             @keyframes ready-pulse {
-              0%, 100% { opacity: 0.4; transform: scale(0.95); }
-              50% { opacity: 0.8; transform: scale(1.05); }
+              0%, 100% { opacity: 0.5; transform: scale(0.98); }
+              50% { opacity: 0.9; transform: scale(1.02); }
             }
           `}</style>
         )}
