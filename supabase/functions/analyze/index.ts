@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -91,94 +90,31 @@ IMPORTANT:
 - NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR
 - ALL text responses (reasons, summary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
 
-// Input validation
-const MAX_CONTENT_LENGTH = 50000; // 50KB max content
-
-const validateInput = (content: string): { valid: boolean; error?: string } => {
-  if (!content || typeof content !== 'string') {
-    return { valid: false, error: "Content is required and must be a string" };
-  }
-  
-  if (content.trim().length === 0) {
-    return { valid: false, error: "Content cannot be empty" };
-  }
-  
-  if (content.length > MAX_CONTENT_LENGTH) {
-    return { valid: false, error: `Content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` };
-  }
-  
-  return { valid: true };
-};
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Authentication check
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.log("Missing or invalid Authorization header");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - Authentication required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Create Supabase client with user's auth token
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
-    
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error("Supabase configuration missing");
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    // Validate JWT and get user claims
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getUser(token);
-    
-    if (claimsError || !claimsData?.user) {
-      console.log("JWT validation failed:", claimsError?.message);
-      return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const userId = claimsData.user.id;
-    console.log(`Authenticated request from user: ${userId}`);
-
-    // Parse and validate request body
     const { content, language } = await req.json();
     
-    // Validate input
-    const validation = validateInput(content);
-    if (!validation.valid) {
+    if (!content) {
       return new Response(
-        JSON.stringify({ error: validation.error }),
+        JSON.stringify({ error: "Content is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Validate language parameter
-    const validLanguage = language === 'fr' || language === 'en' ? language : 'en';
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const userPrompt = validLanguage === 'fr' 
+    const userPrompt = language === 'fr' 
       ? `Analyse ce contenu et calcule le Trust Score. Réponds en français:\n\n${content}`
       : `Analyze this content and calculate the Trust Score:\n\n${content}`;
 
-    console.log(`Calling Lovable AI Gateway for analysis (user: ${userId}, lang: ${validLanguage})...`);
+    console.log("Calling Lovable AI Gateway for analysis...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -189,7 +125,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: getSystemPrompt(validLanguage) },
+          { role: "system", content: getSystemPrompt(language || 'en') },
           { role: "user", content: userPrompt }
         ],
         temperature: 0.3,
@@ -199,13 +135,13 @@ serve(async (req) => {
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: validLanguage === 'fr' ? "Limite de requêtes atteinte. Réessayez dans quelques instants." : "Rate limit exceeded. Please try again later." }),
+          JSON.stringify({ error: language === 'fr' ? "Limite de requêtes atteinte. Réessayez dans quelques instants." : "Rate limit exceeded. Please try again later." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: validLanguage === 'fr' ? "Crédits IA épuisés. Veuillez ajouter des crédits dans Settings → Workspace → Usage." : "AI credits exhausted. Please add credits in Settings → Workspace → Usage." }),
+          JSON.stringify({ error: language === 'fr' ? "Crédits IA épuisés. Veuillez ajouter des crédits dans Settings → Workspace → Usage." : "AI credits exhausted. Please add credits in Settings → Workspace → Usage." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -221,7 +157,7 @@ serve(async (req) => {
       throw new Error("No response from AI");
     }
 
-    console.log(`AI response received for user ${userId}:`, messageContent.substring(0, 200));
+    console.log("AI response received:", messageContent.substring(0, 200));
 
     // Parse the JSON response from AI
     let analysisResult;

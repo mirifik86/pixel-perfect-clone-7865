@@ -222,8 +222,8 @@ const Index = () => {
             className="mb-1 animate-scale-in md:mb-4"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
-            <ScoreGauge score={score} size={120} className="md:hidden" language={language} />
-            <ScoreGauge score={score} size={180} className="hidden md:block" language={language} />
+            <ScoreGauge score={score} size={120} className="md:hidden" />
+            <ScoreGauge score={score} size={180} className="hidden md:block" />
           </div>
 
           {/* Reset button - appears after analysis */}
