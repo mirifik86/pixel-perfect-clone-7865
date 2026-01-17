@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
+
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
   size?: number;
   className?: string;
 }
+
 export const ScoreGauge = ({
   score,
   size = 160,
@@ -12,12 +14,14 @@ export const ScoreGauge = ({
   const [animatedScore, setAnimatedScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
   const animationRef = useRef<number | null>(null);
-  const strokeWidth = 12;
+  
+  // Increased stroke width for better readability
+  const strokeWidth = 14;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const totalArc = circumference * 0.75; // 270 degrees
   const segmentArc = totalArc / 5; // Each segment is 1/5 of the arc
-  const gap = 4; // Gap between segments
+  const gap = 3; // Smaller gap for cleaner look
 
   useEffect(() => {
     if (score !== null) {
@@ -28,14 +32,14 @@ export const ScoreGauge = ({
       
       const startValue = 0;
       const endValue = score;
-      const duration = 2000; // 2 seconds for smoother animation
+      const duration = 1800; // Slightly shorter for snappier feel
       const startTime = performance.now();
       
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
-        // Professional easing: cubic bezier for smooth acceleration/deceleration
+        // Smooth easing without bounce
         const easeOutQuart = (t: number) => {
           return 1 - Math.pow(1 - t, 4);
         };
@@ -54,7 +58,7 @@ export const ScoreGauge = ({
       // Small delay before starting animation
       const timer = setTimeout(() => {
         animationRef.current = requestAnimationFrame(animate);
-      }, 200);
+      }, 150);
       
       return () => {
         clearTimeout(timer);
@@ -68,16 +72,13 @@ export const ScoreGauge = ({
     }
   }, [score]);
 
-  // 5 colors from red to teal (Leen color)
-  const colors = ['hsl(var(--score-red))',
-  // 0-20: Red
-  'hsl(var(--score-orange))',
-  // 20-40: Orange
-  'hsl(var(--score-yellow))',
-  // 40-60: Yellow
-  'hsl(var(--score-green))',
-  // 60-80: Green
-  'hsl(var(--score-teal))' // 80-100: Teal (Leen) - more saturated
+  // 5 colors from red to teal
+  const colors = [
+    'hsl(var(--score-red))',
+    'hsl(var(--score-orange))',
+    'hsl(var(--score-yellow))',
+    'hsl(var(--score-green))',
+    'hsl(var(--score-teal))'
   ];
 
   // Get current color based on score
@@ -93,72 +94,85 @@ export const ScoreGauge = ({
   const getSegmentOpacity = (segmentIndex: number) => {
     const segmentStart = segmentIndex * 20;
     const segmentEnd = (segmentIndex + 1) * 20;
-    if (score === null) return 0.2;
+    if (score === null) return 0.15;
     if (animatedScore >= segmentEnd) return 1;
-    if (animatedScore <= segmentStart) return 0.2;
+    if (animatedScore <= segmentStart) return 0.15;
     // Partial fill
-    return 0.2 + 0.8 * ((animatedScore - segmentStart) / 20);
+    return 0.15 + 0.85 * ((animatedScore - segmentStart) / 20);
   };
 
-  // Calculate indicator position
+  // Calculate indicator position - on the arc itself
   const indicatorAngle = 135 + animatedScore / 100 * 270;
   const indicatorRad = indicatorAngle * (Math.PI / 180);
-  const indicatorX = size / 2 + (radius - 2) * Math.cos(indicatorRad);
-  const indicatorY = size / 2 + (radius - 2) * Math.sin(indicatorRad);
-  return <div className={`relative ${className || ''}`} style={{
-    width: size,
-    height: size
-  }}>
+  const indicatorX = size / 2 + radius * Math.cos(indicatorRad);
+  const indicatorY = size / 2 + radius * Math.sin(indicatorRad);
+
+  // Responsive font size based on gauge size
+  const scoreFontSize = size * 0.35;
+
+  return (
+    <div className={`relative ${className || ''}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
-          {/* Enhanced glow filter for indicator */}
-          <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          {/* Subtle shadow for depth */}
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.3" />
+          {/* Subtle shadow for depth - no glow */}
+          <filter id="arcShadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25" />
           </filter>
         </defs>
 
-        {/* 5 separate color segments */}
+        {/* 5 separate color segments with uniform thickness */}
         {colors.map((color, i) => {
-        const segmentLength = segmentArc - gap;
-        const rotation = 135 + i * 270 / 5;
-        return <circle key={i} cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={`${segmentLength} ${circumference}`} filter="url(#shadow)" style={{
-          transform: `rotate(${rotation}deg)`,
-          transformOrigin: 'center',
-          opacity: getSegmentOpacity(i),
-          transition: 'opacity 0.15s ease-out'
-        }} />;
-      })}
+          const segmentLength = segmentArc - gap;
+          const rotation = 135 + i * 270 / 5;
+          return (
+            <circle
+              key={i}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={`${segmentLength} ${circumference}`}
+              filter="url(#arcShadow)"
+              style={{
+                transform: `rotate(${rotation}deg)`,
+                transformOrigin: 'center',
+                opacity: getSegmentOpacity(i),
+                transition: 'opacity 0.1s ease-out'
+              }}
+            />
+          );
+        })}
 
-        {/* Indicator dots at segment boundaries */}
-        {[0, 0.2, 0.4, 0.6, 0.8, 1].map((pos, i) => {
-        const angle = (135 + pos * 270) * (Math.PI / 180);
-        const dotRadius = 3;
-        const dotX = size / 2 + (radius + 18) * Math.cos(angle);
-        const dotY = size / 2 + (radius + 18) * Math.sin(angle);
-        const colorIndex = Math.min(i, 4);
-        return <circle key={i} cx={dotX} cy={dotY} r={dotRadius} fill={colors[colorIndex]} opacity={0.7} />;
-      })}
-
-        {/* Precise position indicator - follows arc smoothly */}
-        {score !== null && <circle cx={indicatorX} cy={indicatorY} r={8} fill={getCurrentColor(animatedScore)} stroke="hsl(var(--background))" strokeWidth={2} filter="url(#glow)" />}
+        {/* Discreet position indicator - small, precise mark */}
+        {score !== null && (
+          <circle
+            cx={indicatorX}
+            cy={indicatorY}
+            r={5}
+            fill="hsl(var(--foreground))"
+            stroke="hsl(var(--background))"
+            strokeWidth={1.5}
+          />
+        )}
       </svg>
 
-      {/* Center content */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="font-light transition-colors duration-500 text-6xl" style={{
-        color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))'
-      }}>
-          {score === null ? '?' : displayScore}
+      {/* Center content - score number */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          className="font-medium tabular-nums"
+          style={{
+            fontSize: scoreFontSize,
+            lineHeight: 1,
+            color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
+            letterSpacing: '-0.02em'
+          }}
+        >
+          {score === null ? '—' : displayScore}
         </span>
       </div>
-    </div>;
+    </div>
+  );
 };
