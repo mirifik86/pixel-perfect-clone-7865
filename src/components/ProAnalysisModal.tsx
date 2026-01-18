@@ -95,7 +95,7 @@ export const ProAnalysisModal = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className={`max-w-md border-0 p-0 overflow-hidden transition-all duration-300 ${isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}
+        className={`flex flex-col max-w-md border-0 p-0 overflow-hidden transition-all duration-300 max-h-[90vh] ${isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}
         style={{
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
           boxShadow: '0 0 60px hsl(200 80% 50% / 0.2), 0 0 100px hsl(174 70% 45% / 0.15), 0 25px 50px hsl(0 0% 0% / 0.5)'
@@ -103,14 +103,20 @@ export const ProAnalysisModal = ({
       >
         {/* Gradient header accent */}
         <div 
-          className="absolute inset-x-0 top-0 h-1"
+          className="absolute inset-x-0 top-0 h-1 z-10"
           style={{
             background: 'linear-gradient(90deg, hsl(200 80% 55%) 0%, hsl(174 70% 50%) 50%, hsl(280 60% 60%) 100%)'
           }}
         />
 
-        <div className="p-6">
-          <DialogHeader className="text-center mb-5">
+        {/* Sticky Header */}
+        <div 
+          className="sticky top-0 z-10 pt-6 pb-4 px-6"
+          style={{
+            background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(220 25% 12%) 80%, transparent 100%)',
+          }}
+        >
+          <DialogHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <span 
                 className="rounded-md px-2.5 py-1 text-[10px] font-black tracking-widest"
@@ -138,7 +144,10 @@ export const ProAnalysisModal = ({
               {t.subtitle}
             </p>
           </DialogHeader>
+        </div>
 
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-6 pb-2">
           <div className="space-y-3">
             {t.features.map((feature, index) => {
               const Icon = feature.icon;
@@ -175,7 +184,7 @@ export const ProAnalysisModal = ({
 
           {/* Disclaimer */}
           <div 
-            className="mt-5 rounded-lg p-3.5"
+            className="mt-4 rounded-lg p-3.5"
             style={{
               background: 'hsl(220 20% 15% / 0.5)',
               border: '1px solid hsl(220 20% 25% / 0.3)'
@@ -188,12 +197,20 @@ export const ProAnalysisModal = ({
               {t.scoreRange}
             </p>
           </div>
+        </div>
 
-          {/* CTA Button */}
+        {/* Sticky CTA Footer */}
+        <div 
+          className="sticky bottom-0 px-6 pt-3 pb-6"
+          style={{
+            background: 'linear-gradient(180deg, transparent 0%, hsl(240 20% 8%) 20%, hsl(240 20% 8%) 100%)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           <button
             onClick={onLaunchPro}
             disabled={isLoading || isClosing}
-            className="group relative mt-5 flex w-full items-center justify-center gap-3 overflow-hidden rounded-full py-3.5 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
+            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full py-3.5 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
             style={{
               background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
               boxShadow: '0 0 30px hsl(200 80% 55% / 0.4), 0 0 60px hsl(174 70% 45% / 0.2), 0 4px 20px hsl(0 0% 0% / 0.3)',
