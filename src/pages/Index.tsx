@@ -34,12 +34,34 @@ interface AnalysisBreakdown {
   };
 }
 
+// Social URL v3 types
+interface SocialSubScores {
+  content_access?: number;
+  language_quality?: number;
+  evidence_strength?: number;
+  technical_risk?: number;
+}
+
+interface SocialTransparency {
+  mode: string;
+  extracted_text_length: number;
+  detected_links_count: number;
+  visual_present?: boolean;
+  platform: string;
+}
+
 interface AnalysisData {
   score: number;
   breakdown: AnalysisBreakdown;
   summary: string;
   articleSummary?: string;
   confidence: 'low' | 'medium' | 'high';
+  // Social URL v3 fields
+  isSocialUrl?: boolean;
+  socialMode?: string;
+  subScores?: SocialSubScores;
+  transparency?: SocialTransparency;
+  socialDisclaimer?: string;
 }
 
 // Bilingual summaries stored at analysis time - no translation calls on toggle
