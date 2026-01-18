@@ -258,18 +258,20 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false, articleS
         </div>
       )}
 
-      {/* Summary card - displays the factual article summary */}
-      <div className="analysis-card mb-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
-            {t.confidence}: {confidenceLabels[data.confidence]}
-          </span>
+      {/* Summary card - displays the factual article summary (hidden for social URLs) */}
+      {!isSocialAnalysis && (
+        <div className="analysis-card mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
+              {t.confidence}: {confidenceLabels[data.confidence]}
+            </span>
+          </div>
+          <p className="text-base font-medium leading-relaxed text-slate-700">
+            {articleSummary || data.summary}
+          </p>
         </div>
-        <p className="text-base font-medium leading-relaxed text-slate-700">
-          {articleSummary || data.summary}
-        </p>
-      </div>
+      )}
 
       {/* Credibility Signals Badges - Visual overview (non-social only) */}
       {!isSocialAnalysis && (
@@ -289,30 +291,32 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false, articleS
         </div>
       )}
 
-      {/* Breakdown - Core criteria with details */}
-      <div className="analysis-card">
-        <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">{t.breakdown}</h3>
-        <div className="space-y-4">
-          {coreKeys.map((key) => {
-            const item = data.breakdown[key as keyof AnalysisBreakdown];
-            if (!item) return null;
-            return (
-              <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {getPointsIcon(item.points)}
-                    <span className="font-semibold text-slate-800">{coreCriteriaLabels[key]}</span>
+      {/* Breakdown - Core criteria with details (hidden for social URLs) */}
+      {!isSocialAnalysis && (
+        <div className="analysis-card">
+          <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">{t.breakdown}</h3>
+          <div className="space-y-4">
+            {coreKeys.map((key) => {
+              const item = data.breakdown[key as keyof AnalysisBreakdown];
+              if (!item) return null;
+              return (
+                <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {getPointsIcon(item.points)}
+                      <span className="font-semibold text-slate-800">{coreCriteriaLabels[key]}</span>
+                    </div>
+                    <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
+                      {item.points > 0 ? '+' : ''}{item.points}
+                    </span>
                   </div>
-                  <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
-                    {item.points > 0 ? '+' : ''}{item.points}
-                  </span>
+                  <p className="ml-6 text-sm font-medium text-slate-600">{item.reason}</p>
                 </div>
-                <p className="ml-6 text-sm font-medium text-slate-600">{item.reason}</p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
