@@ -397,9 +397,20 @@ ANTI-APPROXIMATION RULE:
 
 ****** URL_MODE ANALYSIS (analysis_mode = "URL_MODE") ******
 
-When analysis_mode = "URL_MODE", analyze using URL-LEVEL and CONTEXT SIGNALS:
+When analysis_mode = "URL_MODE":
+- The post text COULD NOT BE READ
+- Do NOT attempt to summarize post content
+- Do NOT pretend the message was read
+- Compute credibility score using ONLY URL-level and context signals
 
-SIGNAL A: URL TYPE PATTERN (Weight: 25%)
+MANDATORY URL_MODE BEHAVIORS:
+1. Output MUST explicitly state: "Post text could not be read"
+2. NO content summary (articleSummary = null or explicit unavailable message)
+3. Score range: 35-65 (unless strong risk signals detected)
+
+ANALYZE USING URL-LEVEL AND CONTEXT SIGNALS:
+
+SIGNAL A: SOCIAL PLATFORM TYPE (Weight: 25%)
 - Standard post URL: 0 (neutral baseline)
 - Reel/Short/Story URL (ephemeral content): -5
 - Share/repost URL (secondary source): -3
@@ -412,14 +423,14 @@ SIGNAL B: PLATFORM CHARACTERISTICS (Weight: 20%)
 - Platform known for misinfo spread: -5
 - Newer/less moderated platform: -8
 
-SIGNAL C: URL STRUCTURE SIGNALS (Weight: 20%)
+SIGNAL C: URL STRUCTURE (Weight: 20%)
 - Clean, standard URL format: +5
 - Contains tracking-only parameters (utm, ref): -3
 - Excessive redirects or shorteners: -10
 - Suspicious query parameters: -15
 - Non-standard port or subdomain: -10
 
-SIGNAL D: OUTBOUND LINK PRESENCE IN URL (Weight: 15%)
+SIGNAL D: OUTBOUND LINKS OR REDIRECTS (Weight: 15%)
 - No additional links: 0 (neutral)
 - URL appears to contain link preview: +3
 - Multiple redirects detected: -10
@@ -429,10 +440,10 @@ SIGNAL E: PLATFORM ACCESS LIMITATION (Weight: 20%)
 - IMPORTANT: Do NOT infer the post is false just because content cannot be extracted
 - This is a limitation signal, not a credibility judgment
 
-URL-ONLY SCORE CALCULATION:
+URL_MODE SCORE CALCULATION:
 - Baseline: 50 points
 - Apply all URL-level signals
-- SUGGESTED RANGE: 35-65 unless strong risk signals detected
+- TARGET RANGE: 35-65 (normal cases)
 - FLOOR: 28 (never assume false without evidence)
 - CEILING: 58 (cannot verify without content)
 
@@ -565,8 +576,8 @@ IF analysis_mode = "TEXT_MODE":
 "The score is based on text analysis of the user-provided post content. [Describe dominant signals from 7-signal model]."
 
 IF analysis_mode = "URL_MODE":
-"The score is based on URL-level signals only; user-provided post text was absent or too short (<80 chars). [Describe URL-level signals]."
-"${language === 'fr' ? "Note: L'absence de texte ne signifie pas que la publication est fausse." : "Note: Unavailable text does not imply the post is false."}"
+${language === 'fr' ? '"Le texte de la publication n\'a pas pu être lu. Le score est basé uniquement sur les signaux au niveau de l\'URL. [Décrire les signaux URL]."' : '"Post text could not be read. The score is based on URL-level signals only. [Describe URL-level signals]."'}
+${language === 'fr' ? '"Note: L\'impossibilité de lire le contenu ne signifie pas que la publication est fausse."' : '"Note: Inability to read content does not imply the post is false."'}
 
 =============================================================================
 ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
@@ -578,9 +589,10 @@ FOR TEXT_MODE (MANDATORY):
 - Use neutral, factual, descriptive language (2-3 sentences)
 - Focus on the content itself, not its credibility
 
-FOR URL_MODE (when content unavailable):
-- State that content could not be extracted
-- Describe what can be inferred from URL/platform only
+FOR URL_MODE (NO CONTENT SUMMARY):
+- articleSummary MUST be: ${language === 'fr' ? '"Le contenu de cette publication n\'a pas pu être extrait."' : '"The content of this post could not be extracted."'}
+- Do NOT attempt to summarize what the post says
+- Do NOT pretend the message was read
 - Do NOT fabricate or assume post content
 
 FORBIDDEN IN ALL MODES:
