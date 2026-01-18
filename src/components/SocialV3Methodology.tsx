@@ -1,19 +1,9 @@
 import { 
   Eye, 
-  MessageSquare, 
-  FileText, 
-  Image, 
-  User,
   Volume2,
-  Heart,
-  AlertTriangle,
-  BookOpen,
-  AlignLeft,
-  Link2,
   Shield,
-  Layers,
   Radar as RadarIcon,
-  Sparkles,
+  Layers,
   ChevronDown,
   ChevronUp,
   Info
@@ -33,12 +23,20 @@ interface SocialV3MethodologyProps {
   language: 'en' | 'fr';
   transparency?: {
     mode: string;
-    extracted_text_length: number;
+    combined_text_length?: number;
+    extracted_text_length?: number; // backward compatibility
+    text_sources?: string[];
     detected_links_count: number;
     visual_present?: boolean;
     platform: string;
     signals_applied?: number;
     dynamic_base?: number;
+    layer_weights?: {
+      access: number;
+      language: number;
+      evidence: number;
+      technical: number;
+    };
   };
   subScores?: {
     content_access?: number;
@@ -46,130 +44,89 @@ interface SocialV3MethodologyProps {
     evidence_strength?: number;
     technical_risk?: number;
   };
+  layerAnalysis?: {
+    access_context?: { score: number; signals: string[] };
+    language_quality?: { score: number; signals: string[] };
+    evidence_strength?: { score: number; signals: string[] };
+    technical_risk?: { score: number; signals: string[] };
+  };
 }
 
 const translations = {
   en: {
-    title: 'Social URL v3 Methodology',
-    subtitle: '15 Weighted Credibility Signals',
-    baseScore: 'Dynamic Base',
-    dynamicRange: '45-55 range',
-    signalsApplied: 'Signals Applied',
-    minRequired: 'min 6 required',
-    finalScore: 'Final Score',
-    clamped: 'clamped 25-70',
-    mode: 'Mode',
-    platform: 'Platform',
+    title: 'Social URL v4 Methodology',
+    subtitle: 'Layered Synthesis Credibility Scoring',
     textLength: 'Text Length',
     linksDetected: 'Links Detected',
     visualPresent: 'Visual Present',
+    textSources: 'Text Sources',
     yes: 'Yes',
     no: 'No',
     chars: 'chars',
-    // Categories
-    accessContext: 'Access & Context',
-    languageForm: 'Language & Form',
-    evidenceTechnical: 'Evidence & Technical',
-    imageAI: 'Image AI (Light)',
-    // Signals
-    signal1: 'Content accessibility',
-    signal2: 'Post type inference',
-    signal3: 'Text length',
-    signal4: 'Visual presence',
-    signal5: 'Account type inference',
-    signal6: 'Neutral/informational tone',
-    signal7: 'Emotional language',
-    signal8: 'Alarmist/manipulative',
-    signal9: 'Nuanced language',
-    signal10: 'Clear structure',
-    signal11: 'Links detected',
-    signal12: 'Platform restriction',
-    signal13: 'Consistency inference',
-    signal14: 'URL technical risk',
-    signal15: 'Visual credibility',
+    // Layer Labels
+    accessLayer: 'Access & Context',
+    languageLayer: 'Language Quality',
+    evidenceLayer: 'Evidence Strength',
+    technicalLayer: 'Technical Risk',
     // SubScores
     contentAccess: 'Content Access',
     languageQuality: 'Language Quality',
     evidenceStrength: 'Evidence Strength',
     technicalRisk: 'Technical Risk',
-    showDetails: 'Show methodology details',
+    showDetails: 'Show layer analysis details',
     hideDetails: 'Hide details',
-    textBasedNote: 'Full text analysis applied',
-    limitedNote: 'Limited signals mode (6+ signals active)',
+    textBasedNote: 'Full text analysis - all layers active',
+    limitedNote: 'Limited signal mode - degraded language layer',
     languageUnavailable: 'Language signals unavailable due to access limits',
+    layerSynthesis: 'Layered Synthesis',
+    weightedCombination: 'Weighted combination of 4 layers',
+    mode: 'Mode',
+    platform: 'Platform',
+    weight: 'Weight',
+    layerScore: 'Layer Score',
+    signalsAnalyzed: 'Signals Analyzed',
   },
   fr: {
-    title: 'Méthodologie Social URL v3',
-    subtitle: '15 Signaux de Crédibilité Pondérés',
-    baseScore: 'Base Dynamique',
-    dynamicRange: 'plage 45-55',
-    signalsApplied: 'Signaux Appliqués',
-    minRequired: 'min 6 requis',
-    finalScore: 'Score final',
-    clamped: 'limité 25-70',
-    mode: 'Mode',
-    platform: 'Plateforme',
+    title: 'Méthodologie Social URL v4',
+    subtitle: 'Score de Crédibilité par Synthèse en Couches',
     textLength: 'Longueur du texte',
     linksDetected: 'Liens détectés',
     visualPresent: 'Visuel présent',
+    textSources: 'Sources de texte',
     yes: 'Oui',
     no: 'Non',
     chars: 'car.',
-    // Categories
-    accessContext: 'Accès & Contexte',
-    languageForm: 'Langage & Forme',
-    evidenceTechnical: 'Preuves & Technique',
-    imageAI: 'Image IA (Léger)',
-    // Signals
-    signal1: 'Accessibilité du contenu',
-    signal2: 'Inférence type publication',
-    signal3: 'Longueur du texte',
-    signal4: 'Présence visuelle',
-    signal5: 'Inférence type de compte',
-    signal6: 'Ton neutre/informatif',
-    signal7: 'Langage émotionnel',
-    signal8: 'Alarmiste/manipulateur',
-    signal9: 'Langage nuancé',
-    signal10: 'Structure claire',
-    signal11: 'Liens détectés',
-    signal12: 'Restriction plateforme',
-    signal13: 'Inférence cohérence',
-    signal14: 'Risque technique URL',
-    signal15: 'Crédibilité visuelle',
+    // Layer Labels
+    accessLayer: 'Accès & Contexte',
+    languageLayer: 'Qualité du Langage',
+    evidenceLayer: 'Force des Preuves',
+    technicalLayer: 'Risque Technique',
     // SubScores
     contentAccess: 'Accès au Contenu',
     languageQuality: 'Qualité du Langage',
     evidenceStrength: 'Force des Preuves',
     technicalRisk: 'Risque Technique',
-    showDetails: 'Voir les détails méthodologiques',
+    showDetails: 'Voir les détails d\'analyse par couche',
     hideDetails: 'Masquer les détails',
-    textBasedNote: 'Analyse textuelle complète appliquée',
-    limitedNote: 'Mode signaux limités (6+ signaux actifs)',
+    textBasedNote: 'Analyse textuelle complète - toutes les couches actives',
+    limitedNote: 'Mode signaux limités - couche langage dégradée',
     languageUnavailable: 'Signaux linguistiques indisponibles en raison des limitations d\'accès',
+    layerSynthesis: 'Synthèse en Couches',
+    weightedCombination: 'Combinaison pondérée de 4 couches',
+    mode: 'Mode',
+    platform: 'Plateforme',
+    weight: 'Poids',
+    layerScore: 'Score Couche',
+    signalsAnalyzed: 'Signaux Analysés',
   },
 };
 
-// Signal definitions with weights - SOFT RECALIBRATION (balanced, non-punitive)
-const signalDefinitions = [
-  // Access & Context (1-5)
-  { id: 1, category: 'access', icon: Eye, weights: { positive: '+4', negative: '-2' }, textBasedOnly: false, limitedActive: true },
-  { id: 2, category: 'access', icon: FileText, weights: { positive: '+3', negative: '-1' }, textBasedOnly: false, limitedActive: true },
-  { id: 3, category: 'access', icon: MessageSquare, weights: { positive: '+3', negative: '-2' }, textBasedOnly: false, limitedActive: true },
-  { id: 4, category: 'access', icon: Image, weights: { positive: '+3', negative: '0' }, textBasedOnly: false, limitedActive: false },
-  { id: 5, category: 'access', icon: User, weights: { positive: '+3', negative: '0' }, textBasedOnly: false, limitedActive: false },
-  // Language & Form (6-10) - TEXT_BASED only, degraded to 40/100 in LIMITED_SIGNAL
-  { id: 6, category: 'language', icon: Volume2, weights: { positive: '+3', negative: '' }, textBasedOnly: true, limitedActive: false },
-  { id: 7, category: 'language', icon: Heart, weights: { positive: '', negative: '-2' }, textBasedOnly: true, limitedActive: false },
-  { id: 8, category: 'language', icon: AlertTriangle, weights: { positive: '', negative: '-4' }, textBasedOnly: true, limitedActive: false },
-  { id: 9, category: 'language', icon: BookOpen, weights: { positive: '+2', negative: '' }, textBasedOnly: true, limitedActive: false },
-  { id: 10, category: 'language', icon: AlignLeft, weights: { positive: '+2', negative: '' }, textBasedOnly: true, limitedActive: false },
-  // Evidence & Technical (11-14) - All active in LIMITED_SIGNAL (SOFT weights)
-  { id: 11, category: 'evidence', icon: Link2, weights: { positive: '+2', negative: '-1' }, textBasedOnly: false, limitedActive: true },
-  { id: 12, category: 'evidence', icon: Shield, weights: { positive: '0', negative: '-1' }, textBasedOnly: false, limitedActive: true },
-  { id: 13, category: 'evidence', icon: Layers, weights: { positive: '+3', negative: '-1' }, textBasedOnly: false, limitedActive: true },
-  { id: 14, category: 'evidence', icon: RadarIcon, weights: { positive: '+2', negative: '-3' }, textBasedOnly: false, limitedActive: true },
-  // Image AI (15) - SOFT recalibration
-  { id: 15, category: 'image', icon: Sparkles, weights: { positive: '+3', negative: '-4' }, textBasedOnly: false, limitedActive: false },
+// Layer definitions for v4 methodology
+const layerDefinitions = [
+  { key: 'access', weight: 0.30, icon: Eye, subScoreKey: 'content_access' },
+  { key: 'language', weight: 0.25, icon: Volume2, subScoreKey: 'language_quality' },
+  { key: 'evidence', weight: 0.25, icon: Shield, subScoreKey: 'evidence_strength' },
+  { key: 'technical', weight: 0.20, icon: RadarIcon, subScoreKey: 'technical_risk' },
 ];
 
 const getScoreColor = (score: number) => {
@@ -193,20 +150,31 @@ const getProgressColor = (score: number) => {
   return 'bg-red-500';
 };
 
-export const SocialV3Methodology = ({ language, transparency, subScores }: SocialV3MethodologyProps) => {
+export const SocialV3Methodology = ({ language, transparency, subScores, layerAnalysis }: SocialV3MethodologyProps) => {
   const t = translations[language];
   const [isExpanded, setIsExpanded] = useState(false);
   
   const isTextBased = transparency?.mode === 'TEXT_BASED';
   const platform = transparency?.platform || 'other';
   const platformLabel = platform.charAt(0).toUpperCase() + platform.slice(1);
+  
+  // Get text length with backward compatibility
+  const textLength = transparency?.combined_text_length ?? transparency?.extracted_text_length ?? 0;
+
+  // Layer labels for display
+  const layerLabels: Record<string, string> = {
+    access: t.accessLayer,
+    language: t.languageLayer,
+    evidence: t.evidenceLayer,
+    technical: t.technicalLayer,
+  };
 
   // SubScore cards data
   const subScoreCards = [
-    { key: 'content_access', label: t.contentAccess, value: subScores?.content_access ?? 50, icon: Eye },
-    { key: 'language_quality', label: t.languageQuality, value: subScores?.language_quality ?? 50, icon: Volume2 },
-    { key: 'evidence_strength', label: t.evidenceStrength, value: subScores?.evidence_strength ?? 50, icon: Shield },
-    { key: 'technical_risk', label: t.technicalRisk, value: subScores?.technical_risk ?? 50, icon: RadarIcon },
+    { key: 'content_access', label: t.contentAccess, value: subScores?.content_access ?? 50, icon: Eye, layerKey: 'access_context' },
+    { key: 'language_quality', label: t.languageQuality, value: subScores?.language_quality ?? 50, icon: Volume2, layerKey: 'language_quality' },
+    { key: 'evidence_strength', label: t.evidenceStrength, value: subScores?.evidence_strength ?? 50, icon: Shield, layerKey: 'evidence_strength' },
+    { key: 'technical_risk', label: t.technicalRisk, value: subScores?.technical_risk ?? 50, icon: RadarIcon, layerKey: 'technical_risk' },
   ];
 
   // Radar chart data
@@ -226,19 +194,8 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
   };
   const radarColors = getRadarColor();
 
-  // Category groups for signals
-  const categoryGroups = [
-    { key: 'access', label: t.accessContext, signals: signalDefinitions.filter(s => s.category === 'access') },
-    { key: 'language', label: t.languageForm, signals: signalDefinitions.filter(s => s.category === 'language'), textBasedOnly: true },
-    { key: 'evidence', label: t.evidenceTechnical, signals: signalDefinitions.filter(s => s.category === 'evidence') },
-    { key: 'image', label: t.imageAI, signals: signalDefinitions.filter(s => s.category === 'image') },
-  ];
-
-  const signalLabels: Record<number, string> = {
-    1: t.signal1, 2: t.signal2, 3: t.signal3, 4: t.signal4, 5: t.signal5,
-    6: t.signal6, 7: t.signal7, 8: t.signal8, 9: t.signal9, 10: t.signal10,
-    11: t.signal11, 12: t.signal12, 13: t.signal13, 14: t.signal14, 15: t.signal15,
-  };
+  // Get layer weights with defaults
+  const layerWeights = transparency?.layer_weights ?? { access: 0.30, language: 0.25, evidence: 0.25, technical: 0.20 };
 
   return (
     <div className="analysis-card mb-6">
@@ -258,10 +215,10 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
         </div>
       </div>
 
-      {/* Transparency Stats - Updated for Dynamic Base & Signals Applied */}
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+      {/* Transparency Stats - Updated for v4 Layered Synthesis */}
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-lg bg-slate-50 p-3 text-center">
-          <div className="text-lg font-bold text-slate-900">{transparency?.extracted_text_length ?? 0}</div>
+          <div className="text-lg font-bold text-slate-900">{textLength}</div>
           <div className="text-[10px] uppercase tracking-wide text-slate-500">{t.textLength}</div>
         </div>
         <div className="rounded-lg bg-slate-50 p-3 text-center">
@@ -272,19 +229,29 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
           <div className="text-lg font-bold text-slate-900">{transparency?.visual_present ? t.yes : t.no}</div>
           <div className="text-[10px] uppercase tracking-wide text-slate-500">{t.visualPresent}</div>
         </div>
-        <div className="rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-3 text-center">
-          <div className="text-lg font-bold text-primary">{transparency?.dynamic_base ?? 47}</div>
-          <div className="text-[10px] uppercase tracking-wide text-primary/70">{t.baseScore}</div>
-          <div className="text-[9px] text-slate-400">{t.dynamicRange}</div>
+        {transparency?.text_sources && transparency.text_sources.length > 0 && (
+          <div className="rounded-lg bg-slate-50 p-3 text-center">
+            <div className="text-sm font-bold text-slate-900">{transparency.text_sources.join(', ')}</div>
+            <div className="text-[10px] uppercase tracking-wide text-slate-500">{t.textSources}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Layer Weights Visualization */}
+      <div className="mb-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <Layers className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold text-primary">{t.layerSynthesis}</span>
         </div>
-        <div className={`rounded-lg p-3 text-center ${(transparency?.signals_applied ?? 0) >= 6 ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}`}>
-          <div className={`text-lg font-bold ${(transparency?.signals_applied ?? 0) >= 6 ? 'text-emerald-600' : 'text-amber-600'}`}>
-            {transparency?.signals_applied ?? 6}
-          </div>
-          <div className={`text-[10px] uppercase tracking-wide ${(transparency?.signals_applied ?? 0) >= 6 ? 'text-emerald-600/70' : 'text-amber-600/70'}`}>
-            {t.signalsApplied}
-          </div>
-          <div className="text-[9px] text-slate-400">{t.minRequired}</div>
+        <p className="text-xs text-slate-600 mb-3">{t.weightedCombination}</p>
+        <div className="flex gap-2 flex-wrap">
+          {layerDefinitions.map((layer) => (
+            <div key={layer.key} className="flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-xs">
+              <layer.icon className="h-3 w-3 text-primary" />
+              <span className="font-medium text-slate-700">{layerLabels[layer.key]}</span>
+              <span className="text-primary font-bold">{Math.round(layerWeights[layer.key as keyof typeof layerWeights] * 100)}%</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -350,7 +317,7 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
           </ResponsiveContainer>
         </div>
         <p className="text-[10px] text-slate-500 text-center mt-1">
-          {language === 'fr' ? 'Vue radar des 4 sous-scores de crédibilité' : 'Radar view of 4 credibility sub-scores'}
+          {language === 'fr' ? 'Vue radar des 4 couches de crédibilité' : 'Radar view of 4 credibility layers'}
         </p>
       </div>
 
@@ -359,20 +326,26 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
         {subScoreCards.map((card) => {
           const IconComponent = card.icon;
           const isLanguageDegraded = card.key === 'language_quality' && !isTextBased && card.value === 40;
+          const layerWeight = layerDefinitions.find(l => l.subScoreKey === card.key)?.weight ?? 0;
           return (
             <div 
               key={card.key}
               className={`rounded-xl border p-4 ${getScoreBgColor(card.value)} ${isLanguageDegraded ? 'ring-2 ring-amber-300 ring-offset-1' : ''}`}
             >
-              <div className="mb-2 flex items-center gap-2">
-                <IconComponent className={`h-4 w-4 ${getScoreColor(card.value)}`} />
-                <span className="text-xs font-semibold text-slate-700">{card.label}</span>
-                {isLanguageDegraded && (
-                  <span className="ml-auto rounded-full bg-amber-200 px-1.5 py-0.5 text-[9px] font-medium text-amber-800">
-                    {language === 'fr' ? 'dégradé' : 'degraded'}
-                  </span>
-                )}
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <IconComponent className={`h-4 w-4 ${getScoreColor(card.value)}`} />
+                  <span className="text-xs font-semibold text-slate-700">{card.label}</span>
+                </div>
+                <span className="rounded-full bg-white/60 px-1.5 py-0.5 text-[9px] font-medium text-slate-600">
+                  {Math.round(layerWeight * 100)}%
+                </span>
               </div>
+              {isLanguageDegraded && (
+                <span className="inline-block mb-2 rounded-full bg-amber-200 px-1.5 py-0.5 text-[9px] font-medium text-amber-800">
+                  {language === 'fr' ? 'dégradé' : 'degraded'}
+                </span>
+              )}
               <div className="mb-2 flex items-baseline gap-1">
                 <span className={`text-2xl font-bold ${getScoreColor(card.value)}`}>{card.value}</span>
                 <span className="text-xs text-slate-500">/100</span>
@@ -393,7 +366,7 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
         })}
       </div>
 
-      {/* Expand/Collapse for signal details */}
+      {/* Expand/Collapse for layer details */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
@@ -411,101 +384,79 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
         )}
       </button>
 
-      {/* Detailed Signals (collapsible) */}
-      {isExpanded && (
+      {/* Detailed Layer Analysis (collapsible) */}
+      {isExpanded && layerAnalysis && (
         <div className="mt-4 space-y-4 animate-fade-in">
-          {categoryGroups.map((group) => {
-            const isLanguageGroup = group.key === 'language';
-            const isDisabled = group.textBasedOnly && !isTextBased;
+          {subScoreCards.map((card) => {
+            const IconComponent = card.icon;
+            const layerData = layerAnalysis[card.layerKey as keyof typeof layerAnalysis];
+            const isLanguageLayer = card.key === 'language_quality';
+            const isDegraded = isLanguageLayer && !isTextBased;
+            
             return (
-              <div key={group.key}>
-                <div className="mb-2 flex items-center gap-2">
-                  <h4 className="text-sm font-semibold text-slate-800">{group.label}</h4>
-                  {isDisabled && isLanguageGroup && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                      40/100 {language === 'fr' ? 'par défaut' : 'default'}
+              <div key={card.key} className={`rounded-lg border p-4 ${isDegraded ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <IconComponent className={`h-5 w-5 ${isDegraded ? 'text-amber-600' : 'text-primary'}`} />
+                    <h4 className="text-sm font-semibold text-slate-800">{card.label}</h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-lg font-bold ${getScoreColor(layerData?.score ?? card.value)}`}>
+                      {layerData?.score ?? card.value}
                     </span>
-                  )}
+                    <span className="text-xs text-slate-500">/100</span>
+                  </div>
                 </div>
-                {isDisabled && (
-                  <p className="mb-2 text-xs italic text-slate-500">
-                    {isLanguageGroup
-                      ? (language === 'fr' ? 'Signaux non mesurables - valeur neutre dégradée appliquée' : 'Signals not measurable - degraded neutral value applied')
-                      : (language === 'fr' ? 'Non applicable en mode LIMITED_SIGNAL' : 'Not applicable in LIMITED_SIGNAL mode')}
+                
+                {isDegraded && (
+                  <p className="mb-3 text-xs italic text-amber-700">
+                    {t.languageUnavailable}
                   </p>
                 )}
-                <div className="space-y-1.5">
-                  {group.signals.map((signal) => {
-                    const IconComponent = signal.icon;
-                    const isActiveInLimited = signal.limitedActive && !isTextBased;
-                    return (
-                      <div
-                        key={signal.id}
-                        className={`flex items-center justify-between rounded-lg px-3 py-2 ${
-                          isActiveInLimited 
-                            ? 'bg-emerald-50 border border-emerald-200' 
-                            : isDisabled 
-                              ? 'bg-slate-100 opacity-50' 
-                              : 'bg-slate-50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className={`flex h-6 w-6 items-center justify-center rounded-full shadow-sm ${
-                            isActiveInLimited ? 'bg-emerald-100' : 'bg-white'
-                          }`}>
-                            <IconComponent className={`h-3.5 w-3.5 ${isActiveInLimited ? 'text-emerald-600' : 'text-slate-600'}`} />
-                          </div>
-                          <span className="text-xs font-medium text-slate-700">
-                            <span className="mr-1 text-slate-400">#{signal.id}</span>
-                            {signalLabels[signal.id]}
-                          </span>
-                          {isActiveInLimited && (
-                            <span className="rounded-full bg-emerald-200 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800">
-                              {language === 'fr' ? 'ACTIF' : 'ACTIVE'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {signal.weights.positive && (
-                            <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                              {signal.weights.positive}
-                            </span>
-                          )}
-                          {signal.weights.negative && signal.weights.negative !== '0' && (
-                            <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">
-                              {signal.weights.negative}
-                            </span>
-                          )}
-                          {signal.weights.negative === '0' && !signal.weights.positive && (
-                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
-                              0
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                
+                {layerData?.signals && layerData.signals.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1">{t.signalsAnalyzed}</p>
+                    <ul className="space-y-1">
+                      {layerData.signals.map((signal, idx) => (
+                        <li key={idx} className="text-xs text-slate-600 pl-3 border-l-2 border-slate-300">
+                          {signal}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             );
           })}
 
-          {/* Image AI constraint note */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+          {/* Synthesis explanation */}
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
             <div className="flex items-start gap-2">
-              <Sparkles className="mt-0.5 h-4 w-4 text-amber-600" />
+              <Layers className="mt-0.5 h-4 w-4 text-primary" />
               <div>
-                <p className="text-xs font-semibold text-amber-800">
-                  {language === 'fr' ? 'Contrainte Image IA' : 'Image AI Constraint'}
+                <p className="text-xs font-semibold text-primary">
+                  {language === 'fr' ? 'Synthèse Finale' : 'Final Synthesis'}
                 </p>
-                <p className="text-xs text-amber-700">
+                <p className="text-xs text-slate-700">
                   {language === 'fr' 
-                    ? 'Impact image limité à ±4 points maximum. Si aucun visuel détecté : 0 points.'
-                    : 'Image impact capped at ±4 points maximum. If no visual detected: 0 points.'}
+                    ? `Score = (Accès × ${Math.round(layerWeights.access * 100)}%) + (Langage × ${Math.round(layerWeights.language * 100)}%) + (Preuves × ${Math.round(layerWeights.evidence * 100)}%) + (Technique × ${Math.round(layerWeights.technical * 100)}%), limité à 25-70.`
+                    : `Score = (Access × ${Math.round(layerWeights.access * 100)}%) + (Language × ${Math.round(layerWeights.language * 100)}%) + (Evidence × ${Math.round(layerWeights.evidence * 100)}%) + (Technical × ${Math.round(layerWeights.technical * 100)}%), clamped to 25-70.`}
                 </p>
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Show simplified message when no layer analysis data but expanded */}
+      {isExpanded && !layerAnalysis && (
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-center">
+          <p className="text-sm text-slate-600">
+            {language === 'fr' 
+              ? 'Les détails d\'analyse par couche seront affichés ici lors des prochaines analyses.'
+              : 'Layer analysis details will be displayed here in future analyses.'}
+          </p>
         </div>
       )}
     </div>
