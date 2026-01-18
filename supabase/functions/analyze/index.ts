@@ -340,7 +340,18 @@ STEP 3: SCORING LOGIC (MODE-DEPENDENT)
 
 ****** TEXT_MODE ANALYSIS (analysis_mode = "TEXT_MODE") ******
 
-When analysis_mode = "TEXT_MODE", analyze using the 7-SIGNAL WEIGHTED MODEL:
+When analysis_mode = "TEXT_MODE":
+- The user-provided Post Text is the PRIMARY CONTENT for analysis
+- Perform full credibility signal analysis based on the TEXT ITSELF
+- Generate a credibility score DRIVEN BY TEXT SIGNALS (not URL patterns)
+
+MANDATORY TEXT_MODE OUTPUTS:
+1. A credibility score (22-70) based on text content analysis
+2. A short neutral summary (2-3 sentences) describing WHAT the post claims
+   - Summary is MANDATORY in TEXT_MODE
+   - Must be factual, neutral, descriptive (not evaluative)
+
+ANALYZE USING THE 7-SIGNAL WEIGHTED MODEL:
 
 SIGNAL 1: ACCOUNT NATURE (Weight: 15%)
 - Official media page: +35 | Recognized public figure: +25 | Institution: +30
@@ -352,28 +363,37 @@ SIGNAL 2: OUTBOUND LINKS PRESENCE (Weight: 10%)
 - No links (opinion/experience): 0
 - Unknown/suspicious domains: -20 | Shortened URLs: -15 | Misinfo sites: -35
 
-SIGNAL 3: LANGUAGE TONE (Weight: 20%)
+SIGNAL 3: LANGUAGE TONE & EMOTIONAL LOAD (Weight: 20%)
 - Neutral, factual: +30 | Measured, calm: +20 | Explanatory: +15
 - Inflammatory/outraged: -25 | Alarmist ("URGENT", "WAKE UP"): -35 | Caps abuse: -15
 - Absolutist ("always", "never"): -20 | Aggressive: -20
+- High emotional charge without substance: -20
 
-SIGNAL 4: CLAIM TYPE (Weight: 15%)
+SIGNAL 4: CLAIM STRENGTH VS EVIDENCE (Weight: 15%)
 - Clear opinion: +20 | Personal experience: +15 | Interpretation with uncertainty: +15 | Question: +10
-- Factual claim without evidence: -20 | Extraordinary claim: -30 | Absolute certainty: -25 | Conspiracy-framed: -35
+- Factual claim without evidence: -20 | Extraordinary claim: -30 | Absolute certainty: -25
+- Conspiracy-framed: -35 | Strong claims with zero supporting evidence: -30
 
 SIGNAL 5: INTERNAL COHERENCE (Weight: 15%)
 - Clear logical flow: +25 | Consistent narrative: +20 | Identifiable structure: +15
 - Self-contradictions: -30 | Logical fallacies: -25 | Unclear reasoning: -20
 
-SIGNAL 6: MISINFORMATION PATTERNS (Weight: 15%)
-- Standard opinion: +15 | Appropriate uncertainty: +10
+SIGNAL 6: SOURCES, NAMES, DATES, NUMBERS (Weight: 15%)
+- Named sources/experts: +25 | Specific dates: +15 | Verifiable numbers: +20
+- Standard opinion: +10 | Appropriate uncertainty: +10
 - "Media won't tell you": -30 | "Share before deleted": -25 | "Do your research": -20
 - Cherry-picked stats: -25 | Conspiracy appeal: -35 | False equivalence: -20
+- Vague attribution ("studies show", "experts say"): -15
 
-SIGNAL 7: SCAM & FRAUD INDICATORS (Weight: 10%)
+SIGNAL 7: SCAM & MANIPULATION PATTERNS (Weight: 10%)
 - Normal discussion: +15 | No financial requests: +10
 - Financial promises: -45 | Urgency manipulation: -30 | Personal info requests: -50
 - Impersonation: -40 | Phishing: -40 | Lottery/prize scams: -35
+
+ANTI-APPROXIMATION RULE:
+- TEXT_MODE scores MUST be calculated from text signals only
+- Do NOT reuse or approximate scores from URL_MODE
+- The score MUST vary based on actual text content differences
 
 ****** URL_MODE ANALYSIS (analysis_mode = "URL_MODE") ******
 
@@ -538,7 +558,7 @@ RESPONSE FORMAT (JSON)
 }
 
 =============================================================================
-SUMMARY RULES BASED ON analysis_mode (CRITICAL)
+SUMMARY FIELD RULES BASED ON analysis_mode (CRITICAL)
 =============================================================================
 
 IF analysis_mode = "TEXT_MODE":
@@ -552,20 +572,22 @@ IF analysis_mode = "URL_MODE":
 ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
 =============================================================================
 
-REQUIRED:
-- Describe WHAT the post says (main topic, claim, or message)
-- Use neutral, informational language
-- 2-4 short, clear sentences
+FOR TEXT_MODE (MANDATORY):
+- The articleSummary is REQUIRED and cannot be empty
+- Describe WHAT the post claims (main topic, assertion, or message)
+- Use neutral, factual, descriptive language (2-3 sentences)
+- Focus on the content itself, not its credibility
 
-FOR URL_ONLY mode when content unavailable:
+FOR URL_MODE (when content unavailable):
 - State that content could not be extracted
 - Describe what can be inferred from URL/platform only
 - Do NOT fabricate or assume post content
 
-FORBIDDEN:
-- NO credibility judgments ("unverified", "questionable")
-- NO analysis language ("the post lacks", "no sources")
+FORBIDDEN IN ALL MODES:
+- NO credibility judgments ("unverified", "questionable", "suspicious")
+- NO analysis language ("the post lacks", "no sources provided")
 - NO references to the score or assessment
+- NO evaluative adjectives
 
 ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
 
