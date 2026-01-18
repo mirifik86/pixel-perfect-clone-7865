@@ -401,51 +401,107 @@ When analysis_mode = "URL_MODE":
 - The post text COULD NOT BE READ
 - Do NOT attempt to summarize post content
 - Do NOT pretend the message was read
-- Compute credibility score using ONLY URL-level and context signals
+- Use CLAIM-BASED WEB CORROBORATION approach
 
 MANDATORY URL_MODE BEHAVIORS:
 1. Output MUST explicitly state: "Post text could not be read"
-2. NO content summary (articleSummary = null or explicit unavailable message)
-3. Score range: 35-65 (unless strong risk signals detected)
+2. NO content summary of the post (only corroboration landscape summary)
+3. Score based on URL signals + claim corroboration (if claim identified)
 
-ANALYZE USING URL-LEVEL AND CONTEXT SIGNALS:
+=============================================================================
+CLAIM-BASED WEB CORROBORATION (URL_MODE ENHANCEMENT)
+=============================================================================
 
-SIGNAL A: SOCIAL PLATFORM TYPE (Weight: 25%)
+STEP 1 — CLAIM IDENTIFICATION:
+Identify the likely claim or topic of the post using available signals:
+
+SIGNAL SOURCES FOR CLAIM IDENTIFICATION:
+a) URL metadata: title, description, preview text (if visible in URL structure)
+b) User-provided context: any text provided alongside the URL (even if < 80 chars)
+c) URL keywords: visible words in the URL path (e.g., /vaccine-side-effects/, /election-fraud/)
+d) Platform context: known patterns for specific content types
+
+CLAIM STATUS DETERMINATION:
+- IF a clear claim or topic can be inferred:
+    claim_status = "IDENTIFIED"
+    identifiedClaim = "<the extracted claim/topic>"
+- ELSE:
+    claim_status = "UNCLEAR"
+    identifiedClaim = null
+
+STEP 2 — WEB CORROBORATION ASSESSMENT:
+IF claim_status = "IDENTIFIED":
+
+Assess how this claim appears in the wider information ecosystem:
+- Would reputable sources (major news, official institutions, fact-checkers) cover this topic?
+- Are there known reports corroborating or contradicting this type of claim?
+- Is this a topic that has been fact-checked before?
+
+CORROBORATION CATEGORIES:
+- "strong_corroboration": Multiple reputable sources would confirm this claim type
+- "partial_corroboration": Some credible coverage exists, but not definitive
+- "no_corroboration": No reputable sources would mention this claim
+- "active_contradiction": Reputable sources have debunked similar claims
+- "unassessable": Cannot determine corroboration landscape
+
+STEP 3 — URL-LEVEL SIGNALS (Still Apply):
+
+SIGNAL A: SOCIAL PLATFORM TYPE (Weight: 20%)
 - Standard post URL: 0 (neutral baseline)
 - Reel/Short/Story URL (ephemeral content): -5
 - Share/repost URL (secondary source): -3
 - Direct message share pattern: -10
 - Suspicious URL structure: -15
 
-SIGNAL B: PLATFORM CHARACTERISTICS (Weight: 20%)
+SIGNAL B: PLATFORM CHARACTERISTICS (Weight: 15%)
 - Major verified platform (Facebook, Instagram, X): +5
 - Platform with verification system: +3
 - Platform known for misinfo spread: -5
 - Newer/less moderated platform: -8
 
-SIGNAL C: URL STRUCTURE (Weight: 20%)
+SIGNAL C: URL STRUCTURE (Weight: 15%)
 - Clean, standard URL format: +5
 - Contains tracking-only parameters (utm, ref): -3
 - Excessive redirects or shorteners: -10
 - Suspicious query parameters: -15
 - Non-standard port or subdomain: -10
 
-SIGNAL D: OUTBOUND LINKS OR REDIRECTS (Weight: 15%)
+SIGNAL D: OUTBOUND LINKS OR REDIRECTS (Weight: 10%)
 - No additional links: 0 (neutral)
 - URL appears to contain link preview: +3
 - Multiple redirects detected: -10
 
-SIGNAL E: PLATFORM ACCESS LIMITATION (Weight: 20%)
+SIGNAL E: PLATFORM ACCESS LIMITATION (Weight: 15%)
 - Content inaccessible due to privacy/login: MODERATE PENALTY (-5 to -10)
 - IMPORTANT: Do NOT infer the post is false just because content cannot be extracted
 - This is a limitation signal, not a credibility judgment
 
+STEP 4 — CORROBORATION SCORING (Weight: 25%, only if claim_status = "IDENTIFIED"):
+
+CORROBORATION SCORE ADJUSTMENTS:
+- strong_corroboration: +15 to +20 (claim type widely supported)
+- partial_corroboration: +5 to +10 (some credible support exists)
+- no_corroboration: -5 to -10 (claim type not found in reputable sources)
+- active_contradiction: -15 to -25 (claim type has been debunked)
+- unassessable: 0 (neutral, cannot determine)
+
+IF claim_status = "UNCLEAR":
+- Apply no corroboration adjustment (0 points)
+- Note in output that claim could not be identified for corroboration
+
 URL_MODE SCORE CALCULATION:
 - Baseline: 50 points
-- Apply all URL-level signals
-- TARGET RANGE: 35-65 (normal cases)
-- FLOOR: 28 (never assume false without evidence)
-- CEILING: 58 (cannot verify without content)
+- Apply all URL-level signals (A-E)
+- Apply corroboration adjustment (if claim identified)
+- TARGET RANGE: 30-70 (depending on corroboration)
+- FLOOR: 25 (with active_contradiction)
+- CEILING: 65 (cannot fully verify without content)
+
+CRITICAL RULES:
+- Never claim that the Facebook/social post itself was read or verified
+- Never invent specific sources or links
+- Frame results as PLAUSIBILITY in the wider information ecosystem
+- The score reflects how likely the CLAIM TYPE is to be accurate, not the post itself
 
 =============================================================================
 AGGREGATION FORMULA WITH CONTROLLED VARIABILITY
@@ -455,14 +511,18 @@ FOR TEXT_MODE:
 Raw Score = (Signal1 × 0.15) + (Signal2 × 0.10) + (Signal3 × 0.20) + 
             (Signal4 × 0.15) + (Signal5 × 0.15) + (Signal6 × 0.15) + (Signal7 × 0.10)
 
-FOR URL_MODE:
-Raw Score = 50 + (SignalA) + (SignalB) + (SignalC) + (SignalD) + (SignalE)
+FOR URL_MODE (with Claim-Based Web Corroboration):
+Raw Score = 50 + (SignalA) + (SignalB) + (SignalC) + (SignalD) + (SignalE) + (CorroborationAdjustment)
+
+Where CorroborationAdjustment depends on claim_status:
+- IF claim_status = "IDENTIFIED": Apply corroboration score (-25 to +20)
+- IF claim_status = "UNCLEAR": CorroborationAdjustment = 0
 
 STEP 2: Signal Dominance Variability (±1 to ±3)
 STEP 3: Content-Based Micro-Adjustment (±2)
 STEP 4: Apply Hard Limits based on analysis_mode:
 - TEXT_MODE: Max 70, Min 22 (Fraud exception: 10)
-- URL_MODE: Max 58, Min 28 (Strong risk exception: 22)
+- URL_MODE: Max 65, Min 25 (active_contradiction exception: 20)
 
 =============================================================================
 ANTI-DEFAULT SCORE RULES (CRITICAL)
@@ -522,22 +582,41 @@ RESPONSE FORMAT (JSON)
       "score": <0-100>, "weight": 0.10, "weighted": <score × 0.10>,
       "fraudRisk": "<risk>", "signals": ["<signal>"], "assessment": "<sentence>"
     },
-    // For URL_MODE (5 URL signals):
+    // For URL_MODE (5 URL signals + Corroboration):
     "urlTypePattern": {
-      "score": <-15 to +5>, "weight": 0.25, "assessment": "<sentence>"
-    },
-    "platformCharacteristics": {
-      "score": <-8 to +5>, "weight": 0.20, "assessment": "<sentence>"
-    },
-    "urlStructure": {
       "score": <-15 to +5>, "weight": 0.20, "assessment": "<sentence>"
     },
+    "platformCharacteristics": {
+      "score": <-8 to +5>, "weight": 0.15, "assessment": "<sentence>"
+    },
+    "urlStructure": {
+      "score": <-15 to +5>, "weight": 0.15, "assessment": "<sentence>"
+    },
     "outboundLinkUrl": {
-      "score": <-10 to +3>, "weight": 0.15, "assessment": "<sentence>"
+      "score": <-10 to +3>, "weight": 0.10, "assessment": "<sentence>"
     },
     "platformAccessLimitation": {
-      "score": <-10 to 0>, "weight": 0.20, "assessment": "<sentence>"
+      "score": <-10 to 0>, "weight": 0.15, "assessment": "<sentence>"
+    },
+    "claimCorroboration": {
+      "claimStatus": "<IDENTIFIED|UNCLEAR>",
+      "identifiedClaim": "<extracted claim/topic or null>",
+      "corroborationLevel": "<strong_corroboration|partial_corroboration|no_corroboration|active_contradiction|unassessable>",
+      "score": <-25 to +20>,
+      "weight": 0.25,
+      "sourcesLandscape": "<brief description of how this claim type appears in reputable sources>",
+      "assessment": "<sentence explaining the corroboration finding>"
     }
+  },
+  // Corroboration Details (URL_MODE only):
+  "corroboration": {
+    "claimStatus": "<IDENTIFIED|UNCLEAR>",
+    "identifiedClaim": "<the claim/topic extracted from URL/context, or null if UNCLEAR>",
+    "claimSource": "<url_keywords|user_context|url_metadata|inferred_topic>",
+    "corroborationLevel": "<strong_corroboration|partial_corroboration|no_corroboration|active_contradiction|unassessable>",
+    "corroborationScore": <-25 to +20>,
+    "landscapeSummary": "<2-3 sentences describing how this claim type appears in the information ecosystem>",
+    "transparencyNote": "${language === 'fr' ? "Ce score est basé sur la corroboration web du type de réclamation, pas sur l'accès direct à la publication." : "This score is based on web corroboration of the claim type, not direct access to the post."}"
   },
   "aggregation": {
     "modeUsed": "<TEXT_MODE|URL_MODE>",
@@ -576,8 +655,16 @@ IF analysis_mode = "TEXT_MODE":
 "The score is based on text analysis of the user-provided post content. [Describe dominant signals from 7-signal model]."
 
 IF analysis_mode = "URL_MODE":
-${language === 'fr' ? '"Le texte de la publication n\'a pas pu être lu. Le score est basé uniquement sur les signaux au niveau de l\'URL. [Décrire les signaux URL]."' : '"Post text could not be read. The score is based on URL-level signals only. [Describe URL-level signals]."'}
-${language === 'fr' ? '"Note: L\'impossibilité de lire le contenu ne signifie pas que la publication est fausse."' : '"Note: Inability to read content does not imply the post is false."'}
+MUST include THREE elements:
+1. Statement that post text could not be read
+2. Corroboration landscape summary (if claim was identified)
+3. Transparency note about the scoring methodology
+
+TEMPLATE FOR URL_MODE with claim_status = "IDENTIFIED":
+${language === 'fr' ? '"Le texte de la publication n\'a pas pu être lu. [Décrire le claim identifié et le paysage de corroboration]. Ce score reflète la plausibilité du type de réclamation dans l\'écosystème informationnel, pas une vérification du post lui-même."' : '"Post text could not be read. [Describe identified claim and corroboration landscape]. This score reflects the plausibility of the claim type in the information ecosystem, not verification of the post itself."'}
+
+TEMPLATE FOR URL_MODE with claim_status = "UNCLEAR":
+${language === 'fr' ? '"Le texte de la publication n\'a pas pu être lu et aucune réclamation claire n\'a pu être identifiée à partir de l\'URL. Le score est basé uniquement sur les signaux au niveau de l\'URL. Note: L\'impossibilité de lire le contenu ne signifie pas que la publication est fausse."' : '"Post text could not be read and no clear claim could be identified from the URL. The score is based on URL-level signals only. Note: Inability to read content does not imply the post is false."'}
 
 =============================================================================
 ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
@@ -589,11 +676,14 @@ FOR TEXT_MODE (MANDATORY):
 - Use neutral, factual, descriptive language (2-3 sentences)
 - Focus on the content itself, not its credibility
 
-FOR URL_MODE (NO CONTENT SUMMARY):
-- articleSummary MUST be: ${language === 'fr' ? '"Le contenu de cette publication n\'a pas pu être extrait."' : '"The content of this post could not be extracted."'}
-- Do NOT attempt to summarize what the post says
-- Do NOT pretend the message was read
-- Do NOT fabricate or assume post content
+FOR URL_MODE (CORROBORATION LANDSCAPE ONLY):
+- If claim_status = "IDENTIFIED": articleSummary describes the corroboration landscape
+  - Example: "The identified topic relates to [topic]. Reputable sources [corroboration status]."
+  - ${language === 'fr' ? '"Le sujet identifié concerne [sujet]. Les sources réputées [statut de corroboration]."' : '"The identified topic relates to [topic]. Reputable sources [corroboration status]."'}
+- If claim_status = "UNCLEAR": articleSummary MUST be:
+  - ${language === 'fr' ? '"Le contenu de cette publication n\'a pas pu être extrait et aucune réclamation n\'a pu être identifiée."' : '"The content of this post could not be extracted and no claim could be identified."'}
+- Do NOT pretend the post message was read
+- Do NOT fabricate post content
 
 FORBIDDEN IN ALL MODES:
 - NO credibility judgments ("unverified", "questionable", "suspicious")
