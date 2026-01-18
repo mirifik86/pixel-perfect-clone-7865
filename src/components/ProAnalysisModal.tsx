@@ -95,11 +95,10 @@ export const ProAnalysisModal = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className={`flex flex-col max-w-md border-0 p-0 overflow-hidden transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] ${isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}
+        className={`flex flex-col max-w-md border-0 p-0 overflow-hidden transition-all duration-300 max-h-[75vh] ${isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}
         style={{
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
           boxShadow: '0 0 60px hsl(200 80% 50% / 0.2), 0 0 100px hsl(174 70% 45% / 0.15), 0 25px 50px hsl(0 0% 0% / 0.5)',
-          margin: 'auto',
         }}
       >
         {/* Gradient header accent */}
