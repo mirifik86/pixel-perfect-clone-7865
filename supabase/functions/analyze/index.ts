@@ -40,7 +40,7 @@ const isSocialMediaUrl = (url: string): boolean => {
 };
 
 // Get Social URL v3 prompt for STANDARD analysis (15 Weighted Signals + Light Image AI)
-// LIMITED_SIGNAL Optimization: Dynamic midpoint, minimum 6 signals active, no 0/100 defaults
+// SOFT RECALIBRATION: Balanced credibility, non-punitive, gentle degradation
 const getSocialUrlV3Prompt = (language: string) => `You are LeenScore, a credibility analyst for social media posts.
 
 IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.
@@ -55,6 +55,7 @@ CORE PRINCIPLES:
 - Missing evidence must not freeze the score.
 - Deterministic scoring (no randomness).
 - CRITICAL: In LIMITED_SIGNAL mode, at least 6 signals MUST contribute (+ or -).
+- SOFT RECALIBRATION: Prefer small positive differentiation over strong penalties. Unknown/inaccessible signals degrade gently, not aggressively.
 
 STEP 1 — Evidence Collection (explicit fields)
 Compute:
@@ -75,26 +76,26 @@ Calculate DYNAMIC MIDPOINT between 45 and 55 based on:
 - Platform context: Facebook/Instagram (restricted) = 47 | X/TikTok (open) = 50 | other = 48
 - URL structure quality: clean URL = +2 | tracking-heavy URL = -2
 
-STEP 4 — 15 Weighted Signals Scoring
+STEP 4 — 15 Weighted Signals Scoring (SOFT RECALIBRATION)
 
 === ACCESS & CONTEXT (Signals 1-5) ===
 1) Content accessibility: 
    - readable = +4 
-   - blocked/inaccessible = -3 (MUST apply in LIMITED_SIGNAL)
+   - blocked/empty = -2 (SOFT penalty)
 2) Post type inference (from URL patterns / platform norms):
-   - news share = +2 
+   - news share = +3
    - opinion/unclear = -1
 3) Text length:
    - >200 chars = +3 
    - 80–200 chars = +1 
-   - <80 chars = -2
-   - 0 characters = -2 (MUST apply in LIMITED_SIGNAL)
-4) Visual present: 
-   - detected = +2 
-   - unknown/none = 0
+   - <80 chars = -1 (SOFT)
+   - 0 characters = -2
+4) Visual presence: 
+   - present = +3
+   - unknown/none = 0 (NO penalty)
 5) Account type inference:
-   - media-like or verified pattern = +2 
-   - unknown = 0
+   - media-like or verified pattern = +3
+   - unknown = 0 (NO penalty)
 
 === LANGUAGE & FORM (Signals 6-10) ===
 FOR TEXT_BASED mode:
@@ -112,21 +113,21 @@ FOR LIMITED_SIGNAL mode (CRITICAL ADAPTATION):
 === EVIDENCE & TECHNICAL SIGNALS (Signals 11-14) ===
 11) Links detected:
    - real links found = +2 
-   - 0 real links = -2 (MUST apply)
+   - none detected = -1 (SOFT penalty)
 12) Platform restriction context:
    - restricted platform (Facebook, Instagram) = -1
    - open platform (X, TikTok) = 0
 13) Consistency inference:
    - consistent = +3 
-   - unknown consistency = -1 (apply in LIMITED_SIGNAL)
+   - unknown consistency = -1 (SOFT)
 14) URL technical risk:
-   - no suspicious patterns = +1 
+   - clean URL = +2
    - suspicious patterns (redirects, tracking-heavy) = -3
 
 === IMAGE AI - LIGHT STANDARD (Signal 15) ===
 15) Visual credibility:
-   - consistent, non-manipulative = +2
-   - generic/stock-like = -1
+   - consistent, non-manipulative = +3
+   - generic/stock-like = 0 (neutral, no penalty)
    - suspicious manipulation or AI artifacts = -4
    - if no visual or not analyzable = 0
 

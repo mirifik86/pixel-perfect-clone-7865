@@ -149,27 +149,27 @@ const translations = {
   },
 };
 
-// Signal definitions with weights - Updated for LIMITED_SIGNAL optimization
+// Signal definitions with weights - SOFT RECALIBRATION (balanced, non-punitive)
 const signalDefinitions = [
   // Access & Context (1-5)
-  { id: 1, category: 'access', icon: Eye, weights: { positive: '+4', negative: '-3' }, textBasedOnly: false, limitedActive: true },
-  { id: 2, category: 'access', icon: FileText, weights: { positive: '+2', negative: '-1' }, textBasedOnly: false, limitedActive: true },
+  { id: 1, category: 'access', icon: Eye, weights: { positive: '+4', negative: '-2' }, textBasedOnly: false, limitedActive: true },
+  { id: 2, category: 'access', icon: FileText, weights: { positive: '+3', negative: '-1' }, textBasedOnly: false, limitedActive: true },
   { id: 3, category: 'access', icon: MessageSquare, weights: { positive: '+3', negative: '-2' }, textBasedOnly: false, limitedActive: true },
-  { id: 4, category: 'access', icon: Image, weights: { positive: '+2', negative: '0' }, textBasedOnly: false, limitedActive: false },
-  { id: 5, category: 'access', icon: User, weights: { positive: '+2', negative: '0' }, textBasedOnly: false, limitedActive: false },
+  { id: 4, category: 'access', icon: Image, weights: { positive: '+3', negative: '0' }, textBasedOnly: false, limitedActive: false },
+  { id: 5, category: 'access', icon: User, weights: { positive: '+3', negative: '0' }, textBasedOnly: false, limitedActive: false },
   // Language & Form (6-10) - TEXT_BASED only, degraded to 40/100 in LIMITED_SIGNAL
   { id: 6, category: 'language', icon: Volume2, weights: { positive: '+3', negative: '' }, textBasedOnly: true, limitedActive: false },
   { id: 7, category: 'language', icon: Heart, weights: { positive: '', negative: '-2' }, textBasedOnly: true, limitedActive: false },
   { id: 8, category: 'language', icon: AlertTriangle, weights: { positive: '', negative: '-4' }, textBasedOnly: true, limitedActive: false },
   { id: 9, category: 'language', icon: BookOpen, weights: { positive: '+2', negative: '' }, textBasedOnly: true, limitedActive: false },
   { id: 10, category: 'language', icon: AlignLeft, weights: { positive: '+2', negative: '' }, textBasedOnly: true, limitedActive: false },
-  // Evidence & Technical (11-14) - All active in LIMITED_SIGNAL
-  { id: 11, category: 'evidence', icon: Link2, weights: { positive: '+2', negative: '-2' }, textBasedOnly: false, limitedActive: true },
+  // Evidence & Technical (11-14) - All active in LIMITED_SIGNAL (SOFT weights)
+  { id: 11, category: 'evidence', icon: Link2, weights: { positive: '+2', negative: '-1' }, textBasedOnly: false, limitedActive: true },
   { id: 12, category: 'evidence', icon: Shield, weights: { positive: '0', negative: '-1' }, textBasedOnly: false, limitedActive: true },
   { id: 13, category: 'evidence', icon: Layers, weights: { positive: '+3', negative: '-1' }, textBasedOnly: false, limitedActive: true },
-  { id: 14, category: 'evidence', icon: RadarIcon, weights: { positive: '+1', negative: '-3' }, textBasedOnly: false, limitedActive: true },
-  // Image AI (15)
-  { id: 15, category: 'image', icon: Sparkles, weights: { positive: '+2', negative: '-4' }, textBasedOnly: false, limitedActive: false },
+  { id: 14, category: 'evidence', icon: RadarIcon, weights: { positive: '+2', negative: '-3' }, textBasedOnly: false, limitedActive: true },
+  // Image AI (15) - SOFT recalibration
+  { id: 15, category: 'image', icon: Sparkles, weights: { positive: '+3', negative: '-4' }, textBasedOnly: false, limitedActive: false },
 ];
 
 const getScoreColor = (score: number) => {
