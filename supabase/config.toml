@@ -1,1 +1,10 @@
 project_id = "clejmxumuqhpjncjuuht"
+
+[functions.analyze]
+verify_jwt = false
+
+[functions.translate-analysis]
+verify_jwt = false
+
+[functions.check-outbound-links]
+verify_jwt = false

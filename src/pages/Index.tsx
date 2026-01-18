@@ -7,6 +7,7 @@ import { AnalysisLoader } from '@/components/AnalysisLoader';
 import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
+import { OutboundLinksCheck } from '@/components/OutboundLinksCheck';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
@@ -46,6 +47,23 @@ interface AnalysisData {
 interface BilingualSummaries {
   en: { summary: string; articleSummary: string } | null;
   fr: { summary: string; articleSummary: string } | null;
+}
+
+// Outbound links analysis result
+interface OutboundLinksData {
+  success: boolean;
+  links: Array<{
+    url: string;
+    domain: string;
+    label: 'Safe' | 'Unknown' | 'Suspicious';
+    reasons: string[];
+    riskScore: number;
+  }>;
+  totalFound: number;
+  analyzed: number;
+  proAvailable: boolean;
+  proMessage?: string;
+  error?: string;
 }
 const translations = {
   en: {
@@ -92,6 +110,10 @@ const Index = () => {
     fr: null,
   });
 
+  // Outbound links check state
+  const [outboundLinksData, setOutboundLinksData] = useState<OutboundLinksData | null>(null);
+  const [isCheckingLinks, setIsCheckingLinks] = useState(false);
+
   const t = translations[language];
   const analysisData = analysisByLanguage[language];
   const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr);
@@ -106,6 +128,22 @@ const Index = () => {
   const handleReset = () => {
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
+    setOutboundLinksData(null);
+  };
+
+  // Helper to detect if input is a URL
+  const isUrl = (text: string): boolean => {
+    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+    return urlPattern.test(text.trim());
+  };
+
+  // Normalize URL with protocol
+  const normalizeUrlInput = (input: string): string => {
+    const trimmed = input.trim();
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -115,6 +153,11 @@ const Index = () => {
     setIsLoading(true);
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
+    setOutboundLinksData(null);
+
+    // Check if input is a URL for outbound links check
+    const inputIsUrl = isUrl(input);
+    const normalizedUrl = inputIsUrl ? normalizeUrlInput(input) : null;
 
     try {
       // Fetch both languages in parallel - summaries generated for BOTH languages upfront
@@ -186,6 +229,22 @@ const Index = () => {
 
       // Store both - language toggle is now purely local state
       setAnalysisByLanguage({ en: normalizedEn, fr: normalizedFr });
+
+      // If input is a URL, check outbound links in background (non-blocking)
+      if (inputIsUrl && normalizedUrl) {
+        setIsCheckingLinks(true);
+        supabase.functions.invoke('check-outbound-links', {
+          body: { url: normalizedUrl, language },
+        }).then(linkResult => {
+          if (linkResult.data && !linkResult.error) {
+            setOutboundLinksData(linkResult.data);
+          }
+        }).catch(err => {
+          console.error('Outbound links check error:', err);
+        }).finally(() => {
+          setIsCheckingLinks(false);
+        });
+      }
     } catch (err) {
       console.error('Unexpected error:', err);
       toast.error(tLocal.errorAnalysis);
@@ -345,11 +404,22 @@ const Index = () => {
 
           {/* Analysis result - detailed breakdown below */}
           {analysisData && (
-            <AnalysisResult 
-              data={analysisData} 
-              language={language} 
-              articleSummary={displayArticleSummary}
-            />
+            <>
+              <AnalysisResult 
+                data={analysisData} 
+                language={language} 
+                articleSummary={displayArticleSummary}
+              />
+              
+              {/* Outbound Links Check - shows after analysis if URL was analyzed */}
+              <div className="w-full max-w-2xl">
+                <OutboundLinksCheck 
+                  data={outboundLinksData}
+                  language={language}
+                  isLoading={isCheckingLinks}
+                />
+              </div>
+            </>
           )}
 
           {/* Pro Analysis Modal */}
