@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Loader2, Link2, CheckCircle2 } from 'lucide-react';
+import { Search, Loader2, Link2, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -100,6 +100,29 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
               >
                 {t.placeholderHint}
               </span>
+              {/* Animated arrows pointing to Analyze button */}
+              <div 
+                className="mt-2 flex flex-col items-center gap-0"
+                style={{
+                  filter: 'drop-shadow(0 0 6px hsl(174 80% 50% / 0.6)) drop-shadow(0 0 12px hsl(174 80% 45% / 0.4))',
+                }}
+              >
+                <ChevronDown 
+                  className="h-4 w-4 md:h-5 md:w-5 animate-bounce" 
+                  style={{ 
+                    color: 'hsl(174 70% 55%)',
+                    animationDuration: '1.5s',
+                  }} 
+                />
+                <ChevronDown 
+                  className="h-4 w-4 md:h-5 md:w-5 -mt-2.5 animate-bounce opacity-60" 
+                  style={{ 
+                    color: 'hsl(174 70% 55%)',
+                    animationDuration: '1.5s',
+                    animationDelay: '0.15s',
+                  }} 
+                />
+              </div>
             </div>
           )}
           
