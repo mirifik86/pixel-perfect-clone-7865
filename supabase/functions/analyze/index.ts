@@ -39,89 +39,101 @@ const isSocialMediaUrl = (url: string): boolean => {
   return detectSocialPlatform(url) !== "other";
 };
 
-// Get Social URL v2 prompt for STANDARD analysis
-const getSocialUrlV2Prompt = (language: string) => `You are LeenScore, a credibility analyst for social media posts.
+// Get Social URL v3 prompt for STANDARD analysis (15 Weighted Signals + Light Image AI)
+const getSocialUrlV3Prompt = (language: string) => `You are LeenScore, a credibility analyst for social media posts.
 
 IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.
 
 SCOPE: This analysis applies ONLY to social media URLs (Facebook, Instagram, X, TikTok).
 This is a STANDARD analysis (not PRO).
+Score range MUST be clamped to 25–70.
 
-NON-NEGOTIABLE RULES:
+CORE PRINCIPLES:
+- Credibility signals only (no true/false judgments).
 - Never fabricate text, links, sources, summaries, or counts.
-- Never claim content was read if it was not.
-- If evidence is missing, be explicit and conservative.
+- Missing evidence must not freeze the score.
+- Deterministic scoring (no randomness).
 
-STEP 1 — Evidence Collection
-Analyze the content and compute:
+STEP 1 — Evidence Collection (explicit fields)
+Compute:
 - platform: "facebook" | "instagram" | "x" | "tiktok" | "other"
 - extracted_text: the actual text you can read from the post (may be empty)
 - extracted_text_length: character count of extracted_text
 - detected_links: array of ONLY links actually found in extracted_text or page context (NOT fabricated)
 - detected_links_count: count of detected_links array
-
-Set access_status:
-- "READABLE" if extracted_text_length >= 160
-- "BLOCKED_OR_EMPTY" otherwise
+- visual_present: boolean (true if image/video/thumbnail is detected, false otherwise)
 
 STEP 2 — Mode
-If access_status = "READABLE": mode = "TEXT_BASED"
+If extracted_text_length >= 160: mode = "TEXT_BASED"
 Else: mode = "LIMITED_SIGNAL"
 
-STEP 3 — Deterministic Scoring (NO randomness)
-Base score = 50
+STEP 3 — 15 Weighted Signals Scoring
+BASE SCORE = 47 (neutral social baseline)
 
-TEXT_BASED scoring (apply ONLY if mode="TEXT_BASED"):
-- Language tone:
-  - neutral / informational: +6
-  - emotional (non-alarmist): -2
-  - alarmist / manipulative: -10
-- Claim quality:
-  - strong claim without evidence markers (no sources, no specifics): -10
-  - cautious language / uncertainty: +2
-- Specificity:
-  - names/dates/locations/numbers present: +6
-  - vague / generic wording: -6
-- Coherence:
-  - coherent and consistent: +4
-  - contradictory / confusing: -8
-- Links (ONLY if detected_links_count > 0):
-  - reputable domains present: +6
-  - shorteners / unknown / tracking-heavy: -6
+Apply the following 15 signals (small weights each):
 
-LIMITED_SIGNAL scoring (apply ONLY if mode="LIMITED_SIGNAL"):
+=== ACCESS & CONTEXT (Signals 1-5) ===
+1) Content accessibility: readable +4 | blocked/empty -2
+2) Post type: news share +3 | opinion -1 | unclear 0
+3) Text length (if any): >200 chars +3 | 80–200 chars +1 | <80 chars -2
+4) Visual present: yes +2 | no 0
+5) Account type (if inferable from context): media page +3 | personal/unknown 0
+
+=== LANGUAGE & FORM (Signals 6-10, apply TEXT_BASED only) ===
+6) Neutral/informational tone: +3
+7) Emotional language (non-alarmist): -2
+8) Alarmist/manipulative phrasing: -4
+9) Nuanced language (may/might/according to): +2
+10) Clear structure & coherence: +2
+
+=== EVIDENCE & TECHNICAL SIGNALS (Signals 11-14) ===
+11) Real links detected: yes +2 | none 0
+12) Link quality (if links exist): reputable +4 | unknown/shorteners -4
+13) Text–link–visual consistency: consistent +3 | inconsistent -3
+14) Technical risk (redirect chains, tracking-heavy): present -3 | none 0
+
+=== IMAGE AI - LIGHT STANDARD (Signal 15) ===
+15) Visual credibility:
+    - consistent, non-manipulative: +2
+    - generic/low-informational: 0
+    - suspicious manipulation or AI artifacts: -4
+
+CONSTRAINTS:
+- Image impact max ±4.
+- If no visual or not analyzable: 0.
+
+LIMITED_SIGNAL RULES:
 - Do NOT summarize content (summary MUST be empty string).
-- Apply platform limitation penalty: -5
-- URL risk signals (ONLY if present):
-  - obvious shorteners / redirect chains: -8
-  - tracking-only parameters heavy: -4
-- Otherwise keep score near mid-range.
+- Apply only applicable signals from the list above.
+- Keep score near mid-range unless clear risk signals apply.
 
 STEP 4 — Clamp to STANDARD range
-Final score = clamp(Base score after adjustments, 25, 70)
+Sum all applicable signal points to BASE SCORE.
+Final score = clamp(result, 25, 70)
 
 STEP 5 — Compute subScores
-Each subScore is 0-100, derived from the rules applied:
-- content_readability: Based on extracted_text_length and access_status (READABLE = 70-85, BLOCKED_OR_EMPTY = 20-35)
-- language_risk: Based on tone assessment (neutral = 75-90, emotional = 40-55, alarmist = 15-30)
-- evidence_strength: Based on specificity and claim quality (strong specifics = 70-85, weak/vague = 25-40)
-- link_risk: Based on detected links quality (reputable = 75-90, none detected = 50, risky = 20-35)
+Each subScore is 0-100, derived from the signals applied:
+- content_access: Based on signals 1-5 (accessibility, post type, text length, visual, account). Higher = better access.
+- language_quality: Based on signals 6-10 (tone, structure, nuance). Higher = better language quality.
+- evidence_strength: Based on signals 11-13 (links, consistency). Higher = stronger evidence.
+- technical_risk: Based on signals 14-15 (tech risks, visual credibility). Higher = lower risk (inverted scale).
 
 RESPONSE FORMAT (strict JSON with EXACT keys):
 {
   "score": <number 25-70>,
   "subScores": {
-    "content_readability": <number 0-100>,
-    "language_risk": <number 0-100>,
+    "content_access": <number 0-100>,
+    "language_quality": <number 0-100>,
     "evidence_strength": <number 0-100>,
-    "link_risk": <number 0-100>
+    "technical_risk": <number 0-100>
   },
   "summary": "<2-3 neutral sentences ONLY if mode=TEXT_BASED, otherwise MUST be empty string \"\">",
-  "explanation": "<2-3 sentences stating the mode and top 2 drivers of the score in ${language === 'fr' ? 'French' : 'English'}>",
+  "explanation": "<2-3 sentences stating the mode and top 2-3 drivers of the score in ${language === 'fr' ? 'French' : 'English'}>",
   "transparency": {
     "mode": "<TEXT_BASED|LIMITED_SIGNAL>",
     "extracted_text_length": <integer>,
     "detected_links_count": <integer>,
+    "visual_present": <boolean>,
     "platform": "<facebook|instagram|x|tiktok|other>"
   }
 }
@@ -403,13 +415,14 @@ You MUST respond with valid JSON in this exact format:
 
 ALL responses must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
 
-// Transform Social URL v2 response to standard format for frontend compatibility
-const transformSocialV2Response = (result: any, language: string) => {
+// Transform Social URL v3 response to standard format for frontend compatibility
+const transformSocialV3Response = (result: any, language: string) => {
   const isFr = language === 'fr';
   const mode = result.transparency?.mode || 'LIMITED_SIGNAL';
   const platform = result.transparency?.platform || 'other';
+  const visualPresent = result.transparency?.visual_present || false;
   
-  // Build breakdown from subScores
+  // Build breakdown from v3 subScores
   const breakdown: any = {
     sources: { 
       points: result.subScores?.evidence_strength >= 60 ? 10 : result.subScores?.evidence_strength >= 40 ? 0 : -10, 
@@ -424,22 +437,22 @@ const transformSocialV2Response = (result: any, language: string) => {
         : (mode === 'TEXT_BASED' ? 'Factual coherence assessed' : 'Unable to verify facts')
     },
     tone: { 
-      points: result.subScores?.language_risk >= 70 ? 5 : result.subScores?.language_risk >= 40 ? 0 : -10, 
+      points: result.subScores?.language_quality >= 70 ? 5 : result.subScores?.language_quality >= 40 ? 0 : -10, 
       reason: isFr 
-        ? (result.subScores?.language_risk >= 70 ? 'Ton neutre détecté' : result.subScores?.language_risk >= 40 ? 'Ton émotionnel modéré' : 'Ton alarmiste ou manipulateur')
-        : (result.subScores?.language_risk >= 70 ? 'Neutral tone detected' : result.subScores?.language_risk >= 40 ? 'Moderately emotional tone' : 'Alarmist or manipulative tone')
+        ? (result.subScores?.language_quality >= 70 ? 'Ton neutre détecté' : result.subScores?.language_quality >= 40 ? 'Ton émotionnel modéré' : 'Ton alarmiste ou manipulateur')
+        : (result.subScores?.language_quality >= 70 ? 'Neutral tone detected' : result.subScores?.language_quality >= 40 ? 'Moderately emotional tone' : 'Alarmist or manipulative tone')
     },
     context: { 
-      points: mode === 'TEXT_BASED' ? 0 : -5, 
+      points: result.subScores?.content_access >= 60 ? 5 : result.subScores?.content_access >= 40 ? 0 : -5, 
       reason: isFr 
         ? (mode === 'TEXT_BASED' ? 'Contexte partiel disponible' : 'Contexte non accessible')
         : (mode === 'TEXT_BASED' ? 'Partial context available' : 'Context not accessible')
     },
     transparency: { 
-      points: -5, 
+      points: result.subScores?.technical_risk >= 60 ? 0 : -5, 
       reason: isFr 
-        ? `Publication ${platform} - sources non vérifiées`
-        : `${platform} post - unverified sources`
+        ? `Publication ${platform} - ${result.subScores?.technical_risk >= 60 ? 'signaux techniques neutres' : 'risques techniques détectés'}`
+        : `${platform} post - ${result.subScores?.technical_risk >= 60 ? 'neutral technical signals' : 'technical risks detected'}`
     }
   };
 
@@ -464,7 +477,10 @@ const transformSocialV2Response = (result: any, language: string) => {
       ? `Analyse ${mode === 'TEXT_BASED' ? 'basée sur le texte' : 'à signaux limités'} d'une publication ${platform}.`
       : `${mode === 'TEXT_BASED' ? 'Text-based' : 'Limited signal'} analysis of a ${platform} post.`),
     articleSummary,
-    transparency: result.transparency,
+    transparency: {
+      ...result.transparency,
+      visual_present: visualPresent
+    },
     confidence: mode === 'TEXT_BASED' ? 'medium' : 'low',
     socialDisclaimer: isFr 
       ? 'Ce score reflète les signaux de crédibilité d\'une publication de réseau social, pas une vérification factuelle.'
@@ -501,12 +517,12 @@ serve(async (req) => {
     let userPrompt: string;
     
     if (isSocialUrl) {
-      // Use Social URL v2 methodology
-      systemPrompt = getSocialUrlV2Prompt(language || 'en');
+      // Use Social URL v3 methodology (15 Weighted Signals + Light Image AI)
+      systemPrompt = getSocialUrlV3Prompt(language || 'en');
       userPrompt = language === 'fr' 
-        ? `Analyse cette URL de réseau social selon la méthodologie Social URL v2. Réponds en français:\n\n${content}`
-        : `Analyze this social media URL using the Social URL v2 methodology:\n\n${content}`;
-      console.log(`Calling Lovable AI Gateway for Social URL v2 analysis (platform: ${detectSocialPlatform(content)})...`);
+        ? `Analyse cette URL de réseau social selon la méthodologie Social URL v3 (15 signaux pondérés). Réponds en français:\n\n${content}`
+        : `Analyze this social media URL using the Social URL v3 methodology (15 weighted signals):\n\n${content}`;
+      console.log(`Calling Lovable AI Gateway for Social URL v3 analysis (platform: ${detectSocialPlatform(content)})...`);
     } else {
       systemPrompt = isPro ? getProSystemPrompt(language || 'en') : getSystemPrompt(language || 'en');
       userPrompt = language === 'fr' 
@@ -586,9 +602,9 @@ serve(async (req) => {
       };
     }
 
-    // Transform Social URL v2 response to standard format
+    // Transform Social URL v3 response to standard format
     if (isSocialUrl && analysisResult.transparency) {
-      analysisResult = transformSocialV2Response(analysisResult, language || 'en');
+      analysisResult = transformSocialV3Response(analysisResult, language || 'en');
     } else {
       // Ensure score is within bounds and set analysis type for non-social URLs
       analysisResult.score = Math.max(0, Math.min(100, analysisResult.score));
