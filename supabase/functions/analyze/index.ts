@@ -16,787 +16,7 @@ const getCurrentDateInfo = () => {
   };
 };
 
-// ============= URL TYPE DETECTION =============
-// CRITICAL: Social media URLs MUST be classified as "Social Media Post – Weak Signal Content"
-// and routed to Social Credibility Logic. NEVER reuse scores from previous analyses.
-
-type UrlType = 'SOCIAL_POST' | 'NEWS_ARTICLE' | 'WEB_OTHER';
-
-// Social platforms - content is classified as "Weak Signal Content"
-// These platforms do not provide verifiable source context
-const SOCIAL_DOMAINS = [
-  // Primary social platforms
-  'facebook.com', 'fb.com', 'fb.watch', 'm.facebook.com',
-  'instagram.com',
-  'twitter.com', 'x.com', 'mobile.twitter.com',
-  'tiktok.com', 'vm.tiktok.com',
-  'threads.net',
-  // Secondary social platforms
-  'reddit.com', 'old.reddit.com',
-  'linkedin.com',
-  'mastodon.social',
-  'bsky.app',
-  'youtube.com', 'youtu.be', 'm.youtube.com',
-  'pinterest.com',
-  'tumblr.com',
-  'snapchat.com',
-  // Additional social variants
-  'vk.com',
-  'weibo.com',
-  'telegram.org', 't.me'
-];
-
-const NEWS_DOMAINS = [
-  // Major international news
-  'bbc.com', 'bbc.co.uk',
-  'cnn.com',
-  'reuters.com',
-  'apnews.com',
-  'theguardian.com',
-  'nytimes.com',
-  'washingtonpost.com',
-  'wsj.com',
-  'bloomberg.com',
-  'forbes.com',
-  'economist.com',
-  'ft.com',
-  'aljazeera.com',
-  'npr.org',
-  'abc.net.au',
-  'news.sky.com',
-  // French news
-  'lemonde.fr',
-  'lefigaro.fr',
-  'liberation.fr',
-  'leparisien.fr',
-  'francetvinfo.fr',
-  'france24.com',
-  'rfi.fr',
-  'bfmtv.com',
-  'tf1info.fr',
-  'lexpress.fr',
-  'lobs.com',
-  'lepoint.fr',
-  'lavoixdunord.fr',
-  'sudouest.fr',
-  'ouestfrance.fr',
-  '20minutes.fr',
-  // Canadian news
-  'cbc.ca',
-  'globalnews.ca',
-  'thestar.com',
-  'nationalpost.com',
-  'lapresse.ca',
-  'ledevoir.com',
-  'journaldemontreal.com',
-  'radio-canada.ca',
-  // Tech news
-  'techcrunch.com',
-  'wired.com',
-  'theverge.com',
-  'arstechnica.com',
-  'engadget.com',
-  // Science news
-  'nature.com',
-  'sciencemag.org',
-  'scientificamerican.com',
-  // Fact-checking
-  'snopes.com',
-  'factcheck.org',
-  'politifact.com',
-  'fullfact.org',
-  'lesdecodeurs.fr'
-];
-
-interface UrlDetectionResult {
-  type: UrlType;
-  detectedDomain: string | null;
-  classification: string;
-  analysisRoute: string;
-}
-
-function detectUrlType(content: string): UrlDetectionResult {
-  // Try to extract URL from content
-  const urlMatch = content.match(/https?:\/\/[^\s<>"{}|\\^\[\]`]+/i);
-  
-  if (!urlMatch) {
-    // No URL detected, treat as plain text (WEB_OTHER behavior)
-    return { 
-      type: 'WEB_OTHER', 
-      detectedDomain: null,
-      classification: 'Plain Text Content',
-      analysisRoute: 'Generic Web Analysis'
-    };
-  }
-
-  try {
-    const url = new URL(urlMatch[0]);
-    const hostname = url.hostname.toLowerCase().replace(/^www\./, '').replace(/^m\./, '');
-    
-    // PRIORITY CHECK: Social domains first
-    // Social media content is classified as "Weak Signal Content"
-    for (const domain of SOCIAL_DOMAINS) {
-      if (hostname === domain || hostname.endsWith('.' + domain)) {
-        console.log(`[SOCIAL DETECTION] URL classified as Social Media Post - Weak Signal Content`);
-        console.log(`[SOCIAL DETECTION] Domain: ${domain}, Hostname: ${hostname}`);
-        console.log(`[SOCIAL DETECTION] Routing to: Social Credibility Logic (fresh analysis)`);
-        return { 
-          type: 'SOCIAL_POST', 
-          detectedDomain: domain,
-          classification: 'Social Media Post – Weak Signal Content',
-          analysisRoute: 'Social Credibility Logic'
-        };
-      }
-    }
-    
-    // Check news domains
-    for (const domain of NEWS_DOMAINS) {
-      if (hostname === domain || hostname.endsWith('.' + domain)) {
-        return { 
-          type: 'NEWS_ARTICLE', 
-          detectedDomain: domain,
-          classification: 'News Article',
-          analysisRoute: 'Editorial Reliability Analysis'
-        };
-      }
-    }
-    
-    // Default to WEB_OTHER
-    return { 
-      type: 'WEB_OTHER', 
-      detectedDomain: hostname,
-      classification: 'Web Content',
-      analysisRoute: 'Generic Web Analysis'
-    };
-  } catch {
-    return { 
-      type: 'WEB_OTHER', 
-      detectedDomain: null,
-      classification: 'Unknown Content',
-      analysisRoute: 'Generic Web Analysis'
-    };
-  }
-}
-
-// ============= DETERMINISTIC MICRO-VARIABILITY LAYER =============
-// Prevents identical scores for similar content using secondary signals
-// Range: -2 to +4 (max absolute impact ≤ 5)
-
-function calculateMicroAdjustment(content: string): number {
-  const text = content.toLowerCase();
-  const words = text.split(/\s+/).filter(w => w.length > 0);
-  const wordCount = words.length;
-  
-  let adjustment = 0;
-  
-  // 1. Text length signal (-1 to +1)
-  // Very short content: slight penalty, moderately developed: slight bonus
-  if (wordCount < 30) {
-    adjustment -= 1; // Very short - less context available
-  } else if (wordCount >= 100 && wordCount <= 500) {
-    adjustment += 1; // Well-developed content
-  } else if (wordCount > 500) {
-    adjustment += 0.5; // Long but may be verbose
-  }
-  
-  // 2. Lexical richness signal (-1 to +1)
-  // Unique word ratio as proxy for vocabulary diversity
-  const uniqueWords = new Set(words.filter(w => w.length > 3));
-  const richness = wordCount > 0 ? uniqueWords.size / Math.min(wordCount, 100) : 0;
-  if (richness < 0.3) {
-    adjustment -= 1; // High repetition
-  } else if (richness > 0.6) {
-    adjustment += 1; // Varied vocabulary
-  }
-  
-  // 3. Nuance markers signal (-0.5 to +1.5)
-  // Presence of hedging/measured language
-  const nuanceMarkers = [
-    'may', 'might', 'could', 'possibly', 'perhaps', 'suggests', 'indicates',
-    'according to', 'reportedly', 'allegedly', 'appears', 'seems', 'likely',
-    'peut-être', 'pourrait', 'suggère', 'indique', 'selon', 'apparemment',
-    'semble', 'probablement', 'il est possible'
-  ];
-  const nuanceCount = nuanceMarkers.filter(marker => text.includes(marker)).length;
-  if (nuanceCount >= 3) {
-    adjustment += 1.5; // Strong nuanced language
-  } else if (nuanceCount >= 1) {
-    adjustment += 0.5; // Some nuance
-  } else {
-    adjustment -= 0.5; // Overly assertive
-  }
-  
-  // 4. Structure quality signal (-0.5 to +1)
-  // Check for complete sentences (periods, question marks, exclamation)
-  const sentenceEndings = (text.match(/[.!?]/g) || []).length;
-  const avgSentenceLength = wordCount / Math.max(sentenceEndings, 1);
-  if (sentenceEndings >= 3 && avgSentenceLength >= 8 && avgSentenceLength <= 35) {
-    adjustment += 1; // Well-structured sentences
-  } else if (sentenceEndings === 0 || avgSentenceLength < 5) {
-    adjustment -= 0.5; // Slogan-like or fragmented
-  }
-  
-  // 5. Content hash micro-variation (deterministic)
-  // Creates slight variation for similar content without pure randomness
-  // Uses character-based hash to add -0.5 to +0.5 variation
-  let hash = 0;
-  for (let i = 0; i < Math.min(text.length, 200); i++) {
-    hash = ((hash << 5) - hash) + text.charCodeAt(i);
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  const hashVariation = ((Math.abs(hash) % 100) / 100 - 0.5); // -0.5 to +0.5
-  adjustment += hashVariation;
-  
-  // Clamp final adjustment to -2 to +4 range
-  return Math.round(Math.max(-2, Math.min(4, adjustment)) * 10) / 10;
-}
-
-function getMicroAdjustmentReason(content: string, language: string): string {
-  const text = content.toLowerCase();
-  const words = text.split(/\s+/).filter(w => w.length > 0);
-  const wordCount = words.length;
-  
-  const reasons: string[] = [];
-  
-  // Text length
-  if (wordCount < 30) {
-    reasons.push(language === 'fr' ? 'contenu court' : 'short content');
-  } else if (wordCount >= 100) {
-    reasons.push(language === 'fr' ? 'contenu développé' : 'developed content');
-  }
-  
-  // Lexical richness
-  const uniqueWords = new Set(words.filter(w => w.length > 3));
-  const richness = wordCount > 0 ? uniqueWords.size / Math.min(wordCount, 100) : 0;
-  if (richness > 0.6) {
-    reasons.push(language === 'fr' ? 'vocabulaire varié' : 'varied vocabulary');
-  } else if (richness < 0.3) {
-    reasons.push(language === 'fr' ? 'vocabulaire répétitif' : 'repetitive vocabulary');
-  }
-  
-  // Nuance markers
-  const nuanceMarkers = ['may', 'might', 'could', 'possibly', 'suggests', 'indicates', 'according to',
-    'peut-être', 'pourrait', 'suggère', 'selon', 'probablement'];
-  const hasNuance = nuanceMarkers.some(marker => text.includes(marker));
-  if (hasNuance) {
-    reasons.push(language === 'fr' ? 'langage nuancé' : 'nuanced language');
-  }
-  
-  if (reasons.length === 0) {
-    return language === 'fr' ? 'signaux secondaires neutres' : 'neutral secondary signals';
-  }
-  
-  return reasons.slice(0, 2).join(', ');
-}
-
-// ============= SOCIAL CREDIBILITY ENGINE =============
-// A social media post is NOT verified information.
-// It must be evaluated using weighted credibility signals, not factual certainty.
-// No single signal alone can determine the final score.
-
-const getSocialPostPrompt = (language: string) => `You are LeenScore's Social Credibility Engine.
-
-IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.
-
-CURRENT DATE: ${getCurrentDateInfo().formatted}
-
-=============================================================================
-STEP 1: PLATFORM DETECTION
-=============================================================================
-This content has been classified as "Social Media Post".
-Supported platforms: Facebook, Instagram, X (Twitter), TikTok, Threads, Telegram, LinkedIn, Reddit, YouTube, etc.
-
-=============================================================================
-STEP 2: EXPLICIT ANALYSIS MODE DETERMINATION (CRITICAL)
-=============================================================================
-
-FIRST, detect user-provided "Post Text":
-- Look for text that is NOT part of the URL itself
-- Patterns: quoted text, text before/after URL, "Post says:", "Content:", pasted text blocks
-- Extract this as "userProvidedText"
-
-THEN, EXPLICITLY SET analysis_mode using this EXACT LOGIC:
-
-  IF userProvidedText exists AND userProvidedText.length >= 80 characters:
-    analysis_mode = "TEXT_MODE"
-  ELSE:
-    analysis_mode = "URL_MODE"
-
-IMPORTANT:
-- This variable MUST be set BEFORE any scoring begins
-- Do NOT infer the mode implicitly from other factors
-- Do NOT change the mode during analysis
-- The mode controls ALL scoring and summarization behavior
-
-Store for response:
-- analysis_mode: "TEXT_MODE" | "URL_MODE"
-- userProvidedText: <the extracted user text or null>
-- userTextLength: <character count or 0>
-- modeReason: <why this mode was selected>
-
-=============================================================================
-STEP 3: SCORING LOGIC (MODE-DEPENDENT)
-=============================================================================
-
-****** TEXT_MODE ANALYSIS (analysis_mode = "TEXT_MODE") ******
-
-When analysis_mode = "TEXT_MODE":
-- The user-provided Post Text is the PRIMARY CONTENT for analysis
-- Perform full credibility signal analysis based on the TEXT ITSELF
-- Generate a credibility score DRIVEN BY TEXT SIGNALS (not URL patterns)
-
-MANDATORY TEXT_MODE OUTPUTS:
-1. A credibility score (22-70) based on text content analysis
-2. A short neutral summary (2-3 sentences) describing WHAT the post claims
-   - Summary is MANDATORY in TEXT_MODE
-   - Must be factual, neutral, descriptive (not evaluative)
-
-ANALYZE USING THE 7-SIGNAL WEIGHTED MODEL:
-
-SIGNAL 1: ACCOUNT NATURE (Weight: 15%)
-- Official media page: +35 | Recognized public figure: +25 | Institution: +30
-- Standard public user: +10 | Personal account: +5
-- Anonymous/pseudonymous: -15 | Recently created context: -20 | Impersonation: -35
-
-SIGNAL 2: OUTBOUND LINKS PRESENCE (Weight: 10%)
-- Links to recognized news: +30 | Official documents/studies: +25 | Multiple sources: +20
-- No links (opinion/experience): 0
-- Unknown/suspicious domains: -20 | Shortened URLs: -15 | Misinfo sites: -35
-
-SIGNAL 3: LANGUAGE TONE & EMOTIONAL LOAD (Weight: 20%)
-- Neutral, factual: +30 | Measured, calm: +20 | Explanatory: +15
-- Inflammatory/outraged: -25 | Alarmist ("URGENT", "WAKE UP"): -35 | Caps abuse: -15
-- Absolutist ("always", "never"): -20 | Aggressive: -20
-- High emotional charge without substance: -20
-
-SIGNAL 4: CLAIM STRENGTH VS EVIDENCE (Weight: 15%)
-- Clear opinion: +20 | Personal experience: +15 | Interpretation with uncertainty: +15 | Question: +10
-- Factual claim without evidence: -20 | Extraordinary claim: -30 | Absolute certainty: -25
-- Conspiracy-framed: -35 | Strong claims with zero supporting evidence: -30
-
-SIGNAL 5: INTERNAL COHERENCE (Weight: 15%)
-- Clear logical flow: +25 | Consistent narrative: +20 | Identifiable structure: +15
-- Self-contradictions: -30 | Logical fallacies: -25 | Unclear reasoning: -20
-
-SIGNAL 6: SOURCES, NAMES, DATES, NUMBERS (Weight: 15%)
-- Named sources/experts: +25 | Specific dates: +15 | Verifiable numbers: +20
-- Standard opinion: +10 | Appropriate uncertainty: +10
-- "Media won't tell you": -30 | "Share before deleted": -25 | "Do your research": -20
-- Cherry-picked stats: -25 | Conspiracy appeal: -35 | False equivalence: -20
-- Vague attribution ("studies show", "experts say"): -15
-
-SIGNAL 7: SCAM & MANIPULATION PATTERNS (Weight: 10%)
-- Normal discussion: +15 | No financial requests: +10
-- Financial promises: -45 | Urgency manipulation: -30 | Personal info requests: -50
-- Impersonation: -40 | Phishing: -40 | Lottery/prize scams: -35
-
-ANTI-APPROXIMATION RULE:
-- TEXT_MODE scores MUST be calculated from text signals only
-- Do NOT reuse or approximate scores from URL_MODE
-- The score MUST vary based on actual text content differences
-
-****** URL_MODE ANALYSIS (analysis_mode = "URL_MODE") ******
-
-When analysis_mode = "URL_MODE":
-- The post text COULD NOT BE READ
-- Do NOT attempt to summarize post content
-- Do NOT pretend the message was read
-- Use CLAIM-BASED WEB CORROBORATION approach
-
-MANDATORY URL_MODE BEHAVIORS:
-1. Output MUST explicitly state: "Post text could not be read"
-2. NO content summary of the post (only corroboration landscape summary)
-3. Score based on URL signals + claim corroboration (if claim identified)
-
-=============================================================================
-CLAIM-BASED WEB CORROBORATION (URL_MODE ENHANCEMENT)
-=============================================================================
-
-STEP 1 — CLAIM IDENTIFICATION:
-Identify the likely claim or topic of the post using available signals:
-
-SIGNAL SOURCES FOR CLAIM IDENTIFICATION:
-a) URL metadata: title, description, preview text (if visible in URL structure)
-b) User-provided context: any text provided alongside the URL (even if < 80 chars)
-c) URL keywords: visible words in the URL path (e.g., /vaccine-side-effects/, /election-fraud/)
-d) Platform context: known patterns for specific content types
-
-CLAIM STATUS DETERMINATION:
-- IF a clear claim or topic can be inferred:
-    claim_status = "IDENTIFIED"
-    identifiedClaim = "<the extracted claim/topic>"
-- ELSE:
-    claim_status = "UNCLEAR"
-    identifiedClaim = null
-
-STEP 2 — WEB CORROBORATION ASSESSMENT:
-IF claim_status = "IDENTIFIED":
-
-Assess how this claim appears in the wider information ecosystem:
-- Would reputable sources (major news, official institutions, fact-checkers) cover this topic?
-- Are there known reports corroborating or contradicting this type of claim?
-- Is this a topic that has been fact-checked before?
-
-CORROBORATION CATEGORIES:
-- "strong_corroboration": Multiple reputable sources would confirm this claim type
-- "partial_corroboration": Some credible coverage exists, but not definitive
-- "no_corroboration": No reputable sources would mention this claim
-- "active_contradiction": Reputable sources have debunked similar claims
-- "unassessable": Cannot determine corroboration landscape
-
-STEP 3 — URL-LEVEL SIGNALS (Still Apply):
-
-SIGNAL A: SOCIAL PLATFORM TYPE (Weight: 20%)
-- Standard post URL: 0 (neutral baseline)
-- Reel/Short/Story URL (ephemeral content): -5
-- Share/repost URL (secondary source): -3
-- Direct message share pattern: -10
-- Suspicious URL structure: -15
-
-SIGNAL B: PLATFORM CHARACTERISTICS (Weight: 15%)
-- Major verified platform (Facebook, Instagram, X): +5
-- Platform with verification system: +3
-- Platform known for misinfo spread: -5
-- Newer/less moderated platform: -8
-
-SIGNAL C: URL STRUCTURE (Weight: 15%)
-- Clean, standard URL format: +5
-- Contains tracking-only parameters (utm, ref): -3
-- Excessive redirects or shorteners: -10
-- Suspicious query parameters: -15
-- Non-standard port or subdomain: -10
-
-SIGNAL D: OUTBOUND LINKS OR REDIRECTS (Weight: 10%)
-- No additional links: 0 (neutral)
-- URL appears to contain link preview: +3
-- Multiple redirects detected: -10
-
-SIGNAL E: PLATFORM ACCESS LIMITATION (Weight: 15%)
-- Content inaccessible due to privacy/login: MODERATE PENALTY (-5 to -10)
-- IMPORTANT: Do NOT infer the post is false just because content cannot be extracted
-- This is a limitation signal, not a credibility judgment
-
-STEP 4 — CORROBORATION SCORING (Weight: 25%, only if claim_status = "IDENTIFIED"):
-
-CORROBORATION SCORE ADJUSTMENTS:
-- strong_corroboration: +15 to +20 (claim type widely supported)
-- partial_corroboration: +5 to +10 (some credible support exists)
-- no_corroboration: -5 to -10 (claim type not found in reputable sources)
-- active_contradiction: -15 to -25 (claim type has been debunked)
-- unassessable: 0 (neutral, cannot determine)
-
-IF claim_status = "UNCLEAR":
-- Apply no corroboration adjustment (0 points)
-- Note in output that claim could not be identified for corroboration
-
-URL_MODE SCORE CALCULATION:
-- Baseline: 50 points
-- Apply all URL-level signals (A-E)
-- Apply corroboration adjustment (if claim identified)
-- TARGET RANGE: 30-70 (depending on corroboration)
-- FLOOR: 25 (with active_contradiction)
-- CEILING: 65 (cannot fully verify without content)
-
-CRITICAL RULES:
-- Never claim that the Facebook/social post itself was read or verified
-- Never invent specific sources or links
-- Frame results as PLAUSIBILITY in the wider information ecosystem
-- The score reflects how likely the CLAIM TYPE is to be accurate, not the post itself
-
-=============================================================================
-AGGREGATION FORMULA WITH CONTROLLED VARIABILITY
-=============================================================================
-
-FOR TEXT_MODE:
-Raw Score = (Signal1 × 0.15) + (Signal2 × 0.10) + (Signal3 × 0.20) + 
-            (Signal4 × 0.15) + (Signal5 × 0.15) + (Signal6 × 0.15) + (Signal7 × 0.10)
-
-FOR URL_MODE (with Claim-Based Web Corroboration):
-Raw Score = 50 + (SignalA) + (SignalB) + (SignalC) + (SignalD) + (SignalE) + (CorroborationAdjustment)
-
-Where CorroborationAdjustment depends on claim_status:
-- IF claim_status = "IDENTIFIED": Apply corroboration score (-25 to +20)
-- IF claim_status = "UNCLEAR": CorroborationAdjustment = 0
-
-STEP 2: Signal Dominance Variability (±1 to ±3)
-STEP 3: Content-Based Micro-Adjustment (±2)
-STEP 4: Apply Hard Limits based on analysis_mode:
-- TEXT_MODE: Max 70, Min 22 (Fraud exception: 10)
-- URL_MODE: Max 65, Min 25 (active_contradiction exception: 20)
-
-=============================================================================
-ANTI-DEFAULT SCORE RULES (CRITICAL)
-=============================================================================
-
-FORBIDDEN:
-- NO fixed or default scores (40, 45, 50, 55)
-- NO systematic identical scores for similar posts
-- NO rounding to "nice" numbers without justification
-
-REQUIRED:
-- Score MUST reflect the unique signal combination
-- Similar-but-different content MUST produce different scores
-- Score must feel HUMAN, CONTEXTUAL, and DEFENSIBLE
-
-=============================================================================
-RESPONSE FORMAT (JSON)
-=============================================================================
-
-{
-  "score": <final score within limits>,
-  "contentType": "social_post",
-  "classification": "Social Media Post – Weak Signal Content",
-  "analysisMode": "<TEXT_MODE|URL_MODE>",
-  "modeDetails": {
-    "userProvidedText": "<extracted user text or null>",
-    "userTextLength": <character count or 0>,
-    "modeReason": "<explanation of why this mode was selected>"
-  },
-  "subAnalyses": {
-    // For TEXT_MODE (all 7 signals):
-    "accountNature": {
-      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
-      "detectedType": "<type>", "signals": ["<signal>"], "assessment": "<sentence>"
-    },
-    "outboundLinks": {
-      "score": <0-100>, "weight": 0.10, "weighted": <score × 0.10>,
-      "linksDetected": <bool>, "linkQuality": "<quality>", "signals": ["<signal>"], "assessment": "<sentence>"
-    },
-    "languageTone": {
-      "score": <0-100>, "weight": 0.20, "weighted": <score × 0.20>,
-      "toneCategory": "<category>", "signals": ["<signal>"], "assessment": "<sentence>"
-    },
-    "claimType": {
-      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
-      "claimCategory": "<category>", "signals": ["<signal>"], "assessment": "<sentence>"
-    },
-    "internalCoherence": {
-      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
-      "coherenceLevel": "<level>", "signals": ["<signal>"], "assessment": "<sentence>"
-    },
-    "misinfoPatterns": {
-      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
-      "patternsDetected": ["<pattern>"], "signals": ["<signal>"], "assessment": "<sentence>"
-    },
-    "scamIndicators": {
-      "score": <0-100>, "weight": 0.10, "weighted": <score × 0.10>,
-      "fraudRisk": "<risk>", "signals": ["<signal>"], "assessment": "<sentence>"
-    },
-    // For URL_MODE (5 URL signals + Corroboration):
-    "urlTypePattern": {
-      "score": <-15 to +5>, "weight": 0.20, "assessment": "<sentence>"
-    },
-    "platformCharacteristics": {
-      "score": <-8 to +5>, "weight": 0.15, "assessment": "<sentence>"
-    },
-    "urlStructure": {
-      "score": <-15 to +5>, "weight": 0.15, "assessment": "<sentence>"
-    },
-    "outboundLinkUrl": {
-      "score": <-10 to +3>, "weight": 0.10, "assessment": "<sentence>"
-    },
-    "platformAccessLimitation": {
-      "score": <-10 to 0>, "weight": 0.15, "assessment": "<sentence>"
-    },
-    "claimCorroboration": {
-      "claimStatus": "<IDENTIFIED|UNCLEAR>",
-      "identifiedClaim": "<extracted claim/topic or null>",
-      "corroborationLevel": "<strong_corroboration|partial_corroboration|no_corroboration|active_contradiction|unassessable>",
-      "score": <-25 to +20>,
-      "weight": 0.25,
-      "sourcesLandscape": "<brief description of how this claim type appears in reputable sources>",
-      "assessment": "<sentence explaining the corroboration finding>"
-    }
-  },
-  // Corroboration Details (URL_MODE only):
-  "corroboration": {
-    "claimStatus": "<IDENTIFIED|UNCLEAR>",
-    "identifiedClaim": "<the claim/topic extracted from URL/context, or null if UNCLEAR>",
-    "claimSource": "<url_keywords|user_context|url_metadata|inferred_topic>",
-    "corroborationLevel": "<strong_corroboration|partial_corroboration|no_corroboration|active_contradiction|unassessable>",
-    "corroborationScore": <-25 to +20>,
-    "landscapeSummary": "<2-3 sentences describing how this claim type appears in the information ecosystem>",
-    "transparencyNote": "${language === 'fr' ? "Ce score est basé sur la corroboration web du type de réclamation, pas sur l'accès direct à la publication." : "This score is based on web corroboration of the claim type, not direct access to the post."}"
-  },
-  "aggregation": {
-    "modeUsed": "<TEXT_MODE|URL_MODE>",
-    "rawScore": <sum before adjustments>,
-    "dominanceAdjustment": <-3 to +3>,
-    "microAdjustment": <-2 to +2>,
-    "adjustedScore": <after adjustments>,
-    "hardLimitApplied": "<none|ceiling|floor|fraud_floor>",
-    "finalScore": <after hard limits, TEXT_MODE: 22-70, URL_MODE: 28-58>,
-    "dominantSignal": "<signal name>",
-    "variabilityReason": "<brief explanation>"
-  },
-  "breakdown": {
-    "sources": {"points": 0, "reason": "${language === 'fr' ? 'Non applicable aux réseaux sociaux' : 'Not applicable to social media'}"},
-    "factual": {"points": <-10 to +10>, "reason": "<reason>"},
-    "tone": {"points": <-15 to +10>, "reason": "<reason>"},
-    "context": {"points": <-10 to +5>, "reason": "<reason>"},
-    "transparency": {"points": <-10 to +5>, "reason": "<reason>"},
-    "freshness": {"points": <-5 to +5>, "reason": "<reason>"},
-    "prudence": {"points": <-5 to +5>, "reason": "<reason>"},
-    "density": {"points": <-5 to +5>, "reason": "<reason>"},
-    "attribution": {"points": <-5 to +5>, "reason": "<reason>"},
-    "visualCoherence": {"points": <-5 to +5>, "reason": "<reason>"}
-  },
-  "summary": "<2-3 sentences: MUST state whether score is based on TEXT_MODE or URL_MODE. Describe dominant signals.>",
-  "articleSummary": "<DESCRIPTIVE SUMMARY - see rules below>",
-  "confidence": "<low|medium|high>",
-  "disclaimer": "${language === 'fr' ? "Ce score reflète les signaux de crédibilité d'une publication sur les réseaux sociaux, pas une vérification factuelle." : 'This score reflects credibility signals of a social media post, not factual verification.'}"
-}
-
-=============================================================================
-SUMMARY FIELD RULES BASED ON analysis_mode (CRITICAL)
-=============================================================================
-
-IF analysis_mode = "TEXT_MODE":
-"The score is based on text analysis of the user-provided post content. [Describe dominant signals from 7-signal model]."
-
-IF analysis_mode = "URL_MODE":
-MUST include THREE elements:
-1. Statement that post text could not be read
-2. Corroboration landscape summary (if claim was identified)
-3. Transparency note about the scoring methodology
-
-TEMPLATE FOR URL_MODE with claim_status = "IDENTIFIED":
-${language === 'fr' ? '"Le texte de la publication n\'a pas pu être lu. [Décrire le claim identifié et le paysage de corroboration]. Ce score reflète la plausibilité du type de réclamation dans l\'écosystème informationnel, pas une vérification du post lui-même."' : '"Post text could not be read. [Describe identified claim and corroboration landscape]. This score reflects the plausibility of the claim type in the information ecosystem, not verification of the post itself."'}
-
-TEMPLATE FOR URL_MODE with claim_status = "UNCLEAR":
-${language === 'fr' ? '"Le texte de la publication n\'a pas pu être lu et aucune réclamation claire n\'a pu être identifiée à partir de l\'URL. Le score est basé uniquement sur les signaux au niveau de l\'URL. Note: L\'impossibilité de lire le contenu ne signifie pas que la publication est fausse."' : '"Post text could not be read and no clear claim could be identified from the URL. The score is based on URL-level signals only. Note: Inability to read content does not imply the post is false."'}
-
-=============================================================================
-ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
-=============================================================================
-
-FOR TEXT_MODE (MANDATORY):
-- The articleSummary is REQUIRED and cannot be empty
-- Describe WHAT the post claims (main topic, assertion, or message)
-- Use neutral, factual, descriptive language (2-3 sentences)
-- Focus on the content itself, not its credibility
-
-FOR URL_MODE (CORROBORATION LANDSCAPE ONLY):
-- If claim_status = "IDENTIFIED": articleSummary describes the corroboration landscape
-  - Example: "The identified topic relates to [topic]. Reputable sources [corroboration status]."
-  - ${language === 'fr' ? '"Le sujet identifié concerne [sujet]. Les sources réputées [statut de corroboration]."' : '"The identified topic relates to [topic]. Reputable sources [corroboration status]."'}
-- If claim_status = "UNCLEAR": articleSummary MUST be:
-  - ${language === 'fr' ? '"Le contenu de cette publication n\'a pas pu être extrait et aucune réclamation n\'a pu être identifiée."' : '"The content of this post could not be extracted and no claim could be identified."'}
-- Do NOT pretend the post message was read
-- Do NOT fabricate post content
-
-FORBIDDEN IN ALL MODES:
-- NO credibility judgments ("unverified", "questionable", "suspicious")
-- NO analysis language ("the post lacks", "no sources provided")
-- NO references to the score or assessment
-- NO evaluative adjectives
-
-ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
-
-// ============= NEWS ARTICLE EDITORIAL ANALYSIS =============
-
-const getNewsArticlePrompt = (language: string) => `You are LeenScore, an AI credibility analyst for news and journalistic content.
-
-IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.
-
-CURRENT DATE: ${getCurrentDateInfo().formatted}
-
-CONTEXT: You are analyzing a NEWS ARTICLE from a recognized media outlet.
-News articles undergo editorial processes and can be evaluated for journalistic credibility.
-
-EDITORIAL CREDIBILITY SCORING METHOD:
-Start with a base score of 55/100 (slightly above neutral for published journalism).
-
-A. SOURCES & CORROBORATION:
-- Multiple independent sources cited: +20
-- Official sources or experts quoted: +15
-- Single anonymous source: -10
-- No sources cited: -20
-
-B. JOURNALISTIC STANDARDS:
-- Balanced presentation of multiple viewpoints: +15
-- Clear separation of news and opinion: +10
-- One-sided or advocacy journalism: -10
-- Mixing facts with editorial opinion: -15
-
-C. FACTUAL CONSISTENCY:
-- Claims supported by data or evidence: +15
-- Internal consistency throughout article: +10
-- Contradictions or unverified claims: -15
-- Factual errors detected: -20
-
-D. CONTEXT & TRANSPARENCY:
-- Clear date, author, and publication: +10
-- Proper context for claims and statistics: +10
-- Missing important context: -15
-- Clickbait headline vs. actual content mismatch: -10
-
-E. MEDIA REPUTATION SIGNALS:
-- Established news organization with editorial standards: +10
-- Known for corrections and accountability: +5
-- History of retractions or bias complaints: -10
-- Unverified or new outlet: -5
-
-EXTENDED SIGNALS (±5 points each):
-F. FRESHNESS: Timeliness appropriate to story
-G. PRUDENCE: Appropriate hedging on uncertain claims
-H. DENSITY: Rich in verifiable facts vs. speculation
-I. ATTRIBUTION: Clear attribution for all major claims
-J. VISUAL-TEXTUAL COHERENCE: Images support the narrative appropriately
-
-NEWS SCORE RANGE:
-- High-quality journalism: 70-90
-- Standard news: 55-70
-- Problematic journalism: 35-55
-- Unreliable: below 35
-
-RESPONSE FORMAT (JSON):
-{
-  "score": <number 0-100>,
-  "contentType": "news_article",
-  "breakdown": {
-    "sources": {"points": <number>, "reason": "<brief reason>"},
-    "factual": {"points": <number>, "reason": "<brief reason>"},
-    "tone": {"points": <number>, "reason": "<brief reason>"},
-    "context": {"points": <number>, "reason": "<brief reason>"},
-    "transparency": {"points": <number>, "reason": "<brief reason>"},
-    "freshness": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "prudence": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "density": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "attribution": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
-  },
-  "summary": "<2-3 sentences explaining credibility assessment>",
-  "articleSummary": "<DESCRIPTIVE SUMMARY - see rules below>",
-  "confidence": "<low|medium|high>"
-}
-
-=============================================================================
-ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
-=============================================================================
-The "articleSummary" field must be a FACTUAL, DESCRIPTIVE summary of the article.
-
-REQUIRED:
-- Describe WHAT the article reports (main story, facts, narrative)
-- Use neutral, informational language
-- Include key details: who, what, where, when
-- 2-4 short, clear sentences
-
-FORBIDDEN:
-- NO credibility judgments or analysis language
-- NO references to journalistic quality or sources
-- NO evaluative terms ("reliable", "well-sourced", "questionable")
-- NO phrases that editorialize the content
-
-EXAMPLES:
-✓ GOOD: "The article reports on a summit meeting between European leaders in Brussels. It covers discussions about economic cooperation and climate agreements, with statements from the French and German delegations."
-✗ BAD: "The article presents a well-sourced account of a summit meeting. Multiple officials are quoted, lending credibility to the reporting."
-
-ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
-
-// ============= WEB OTHER (GENERIC) ANALYSIS =============
-
-const getWebOtherPrompt = (language: string) => `You are LeenScore, an AI credibility analyst. Your task is to analyze content and calculate a Trust Score.
+const getSystemPrompt = (language: string) => `You are LeenScore, an AI credibility analyst. Your task is to analyze content and calculate a Trust Score.
 
 IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}. All text including reasons and summary must be in ${language === 'fr' ? 'French' : 'English'}.
 
@@ -831,6 +51,19 @@ D. CONTEXT CLARITY:
 - Incomplete or misleading context: -15
 - Information presented outside its original context: -20
 
+TEMPORAL CONTEXT EVALUATION (CRITICAL):
+When evaluating publication dates:
+1. Compare detected dates against TODAY'S DATE (${getCurrentDateInfo().formatted})
+2. A date in ${getCurrentDateInfo().year} is CURRENT YEAR content - this is NORMAL and expected
+3. Apply NO penalty for:
+   - Same year and month as current date
+   - Dates within ±30 days of current date
+   - Content clearly labeled as forecasts, projections, or future-oriented
+4. Apply context penalty (-15 to -20) ONLY if:
+   - Date is more than 60 days in the future AND not clearly forward-looking content
+   - Date appears fabricated or contradicts the content narrative
+5. When uncertain about dates, state uncertainty - do NOT penalize
+
 E. TRANSPARENCY:
 - Sources clearly cited: +10
 - Identified author or organization: +5
@@ -838,75 +71,75 @@ E. TRANSPARENCY:
 
 ===== EXTENDED CREDIBILITY SIGNALS (F-J) =====
 Each signal has LIMITED IMPACT: maximum +5 or -5 points per signal.
+These signals create score differentiation without dominating the overall assessment.
 
 F. CONTENT FRESHNESS RELEVANCE:
+Evaluate if the content's age aligns with its purpose and claims.
 - Fresh, timely content on current events: +3 to +5
-- Content appropriately dated for its topic: 0 (neutral)
+- Content appropriately dated for its topic (historical, evergreen): 0 (neutral)
 - Outdated information presented as current: -3 to -5
+- Unable to assess freshness: 0 (neutral)
 
 G. LANGUAGE PRUDENCE:
-- Uses measured language ("suggests", "indicates"): +3 to +5
+Assess whether claims are stated with appropriate caution or speculation.
+- Uses measured language ("suggests", "indicates", "according to"): +3 to +5
+- Balanced mix of firm and qualified statements: 0 (neutral)
 - Overconfident assertions without justification: -3 to -5
+- Speculative claims presented as facts: -5
 
 H. FACTUAL DENSITY:
-- High density of specific, verifiable facts: +3 to +5
+Evaluate the ratio of verifiable facts to opinions/claims.
+- High density of specific, verifiable facts (names, dates, figures): +3 to +5
+- Average mix of facts and analysis: 0 (neutral)
 - Vague claims lacking specific details: -3 to -5
+- Almost no verifiable factual content: -5
 
 I. ATTRIBUTION CLARITY:
+Assess how clearly claims are attributed to their sources.
 - Direct quotes with clear attribution: +3 to +5
+- Named sources referenced generally: +1 to +3
+- Vague attributions ("experts say", "sources claim"): -2 to -4
 - No attribution for major claims: -5
 
 J. VISUAL-TEXTUAL COHERENCE:
-- Images directly support the text narrative: +2 to +3
+Evaluate alignment between images and text content.
+- Images directly support and match the text narrative: +2 to +3
+- Neutral, illustrative images (stock, decorative): 0 (neutral)
 - Misleading or unrelated images: -3 to -5
+- No images present: 0 (neutral)
 
-RESPONSE FORMAT (JSON):
+RESPONSE FORMAT:
+You MUST respond with valid JSON in this exact format:
 {
   "score": <number between 0-100>,
-  "contentType": "web_other",
   "breakdown": {
-    "sources": {"points": <number>, "reason": "<brief reason>"},
-    "factual": {"points": <number>, "reason": "<brief reason>"},
-    "tone": {"points": <number>, "reason": "<brief reason>"},
-    "context": {"points": <number>, "reason": "<brief reason>"},
-    "transparency": {"points": <number>, "reason": "<brief reason>"},
-    "freshness": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "prudence": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "density": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "attribution": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
+    "sources": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "factual": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "tone": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "context": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "transparency": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "freshness": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "prudence": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "density": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "attribution": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
+    "visualCoherence": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
   },
-  "summary": "<2-3 sentence explanation>",
-  "articleSummary": "<DESCRIPTIVE SUMMARY - see rules below>",
+  "summary": "<2-3 sentence explanation in ${language === 'fr' ? 'French' : 'English'}>",
+  "articleSummary": "<2-3 sentence FACTUAL summary of what the article is about - ONLY describe the main topic and key reported facts. Use neutral, journalistic tone with verbs like 'reports', 'states', 'outlines', 'describes'. NO opinions, NO conclusions, NO mention of credibility or score. This must be in ${language === 'fr' ? 'French' : 'English'}>",
   "confidence": "<low|medium|high>"
 }
 
-=============================================================================
-ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
-=============================================================================
-The "articleSummary" field must be a FACTUAL, DESCRIPTIVE summary of the content.
+IMPORTANT:
+- Score must be between 0 and 100
+- Be objective and analytical
+- When data is insufficient, state uncertainty instead of penalizing
+- Extended signals (F-J) are CAPPED at ±5 points each - they refine the score, not dominate it
+- The "summary" field should explain why the score is what it is (analysis conclusion)
+- The "articleSummary" field should ONLY describe what the content is about factually - it must NOT influence or mention the score
+- NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR
+- ALL text responses (reasons, summary, articleSummary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
 
-REQUIRED:
-- Describe WHAT the content says (main topic, claim, or message)
-- Use neutral, informational language
-- Include context: who says what, about what
-- 2-4 short, clear sentences
-
-FORBIDDEN:
-- NO credibility judgments ("unverified", "questionable", "appears to be")
-- NO analysis language ("the content lacks", "no sources provided")
-- NO warnings or evaluative terms
-- NO references to the score or analysis
-- NO phrases like "claims" or "allegedly" that imply doubt
-
-EXAMPLES:
-✓ GOOD: "The page discusses benefits of a new software tool for project management. It describes features including task tracking, team collaboration, and integration with popular platforms."
-✗ BAD: "The content makes unsupported claims about software benefits without citing sources or evidence."
-
-ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
-
-// ============= PRO ANALYSIS PROMPT (unchanged, applies to all URL types) =============
-
+// PRO ANALYSIS PROMPT - Includes advanced Image Signals Module
 const getProSystemPrompt = (language: string) => `You are LeenScore Pro, an advanced AI credibility analyst. Your task is to perform a comprehensive Pro Analysis including advanced Image Signals analysis.
 
 IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}. All text including reasons and summary must be in ${language === 'fr' ? 'French' : 'English'}.
@@ -1075,49 +308,7 @@ serve(async (req) => {
     }
 
     const isPro = analysisType === 'pro';
-    
-    // Generate unique analysis ID to prevent score reuse
-    const analysisId = crypto.randomUUID();
-    console.log(`[ANALYSIS START] ID: ${analysisId}, Timestamp: ${new Date().toISOString()}`);
-    
-    // Detect URL type for routing (only for Standard analysis)
-    const urlDetection = detectUrlType(content);
-    const { type: urlType, detectedDomain, classification, analysisRoute } = urlDetection;
-    
-    console.log(`[URL CLASSIFICATION] Type: ${urlType}`);
-    console.log(`[URL CLASSIFICATION] Domain: ${detectedDomain || 'N/A'}`);
-    console.log(`[URL CLASSIFICATION] Classification: ${classification}`);
-    console.log(`[URL CLASSIFICATION] Route: ${analysisRoute}`);
-    
-    // CRITICAL: For social media, explicitly log the routing decision
-    if (urlType === 'SOCIAL_POST') {
-      console.log(`[SOCIAL ROUTING] ⚠️ SOCIAL MEDIA DETECTED`);
-      console.log(`[SOCIAL ROUTING] Classification: "Social Media Post – Weak Signal Content"`);
-      console.log(`[SOCIAL ROUTING] DO NOT use standard web article credibility logic`);
-      console.log(`[SOCIAL ROUTING] DO NOT reuse scores from previous analyses`);
-      console.log(`[SOCIAL ROUTING] Initiating fresh Social Credibility Logic analysis...`);
-    }
-    
-    // Select the appropriate system prompt based on analysis type and URL type
-    let systemPrompt: string;
-    if (isPro) {
-      systemPrompt = getProSystemPrompt(language || 'en');
-      console.log('[PROMPT SELECTION] Using Pro analysis prompt');
-    } else {
-      switch (urlType) {
-        case 'SOCIAL_POST':
-          systemPrompt = getSocialPostPrompt(language || 'en');
-          console.log('[PROMPT SELECTION] Using SOCIAL_POST plausibility model (weighted sub-analyses)');
-          break;
-        case 'NEWS_ARTICLE':
-          systemPrompt = getNewsArticlePrompt(language || 'en');
-          console.log('[PROMPT SELECTION] Using NEWS_ARTICLE editorial reliability model');
-          break;
-        default:
-          systemPrompt = getWebOtherPrompt(language || 'en');
-          console.log('[PROMPT SELECTION] Using WEB_OTHER generic analysis model');
-      }
-    }
+    const systemPrompt = isPro ? getProSystemPrompt(language || 'en') : getSystemPrompt(language || 'en');
     
     const userPrompt = language === 'fr' 
       ? `Analyse ce contenu et calcule le Trust Score${isPro ? ' avec analyse Pro complète' : ''}. Réponds en français:\n\n${content}`
@@ -1184,7 +375,6 @@ serve(async (req) => {
       analysisResult = {
         score: 50,
         analysisType: isPro ? 'pro' : 'standard',
-        contentType: urlType.toLowerCase(),
         breakdown: {
           sources: { points: 0, reason: "Unable to analyze sources" },
           factual: { points: 0, reason: "Unable to verify facts" },
@@ -1197,36 +387,9 @@ serve(async (req) => {
       };
     }
 
-    // ============= DETERMINISTIC MICRO-VARIABILITY LAYER =============
-    // Apply subtle score adjustment based on secondary content signals
-    // Range: -2 to +4 points (max absolute impact ≤ 5)
-    // Purpose: Prevent identical scores for similar content without destabilizing results
-    
-    const microAdjustment = calculateMicroAdjustment(content);
-    console.log(`Micro-adjustment calculated: ${microAdjustment}`);
-    
-    // Apply adjustment to base score
-    let adjustedScore = analysisResult.score + microAdjustment;
-    
-    // Clamp to allowed ranges based on URL type
-    if (!isPro && urlType === 'SOCIAL_POST') {
-      adjustedScore = Math.max(20, Math.min(60, adjustedScore));
-    } else {
-      adjustedScore = Math.max(0, Math.min(100, adjustedScore));
-    }
-    
-    analysisResult.score = adjustedScore;
+    // Ensure score is within bounds and set analysis type
+    analysisResult.score = Math.max(0, Math.min(100, analysisResult.score));
     analysisResult.analysisType = isPro ? 'pro' : 'standard';
-    
-    // Add micro-adjustment metadata (for debugging/transparency)
-    analysisResult.microAdjustment = {
-      applied: microAdjustment,
-      reason: getMicroAdjustmentReason(content, language || 'en')
-    };
-    
-    // Add URL type metadata for frontend display
-    analysisResult.urlType = urlType;
-    analysisResult.detectedDomain = detectedDomain;
 
     return new Response(
       JSON.stringify(analysisResult),
