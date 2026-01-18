@@ -418,7 +418,7 @@ RESPONSE FORMAT (JSON)
     "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
   },
   "summary": "<2-3 sentences explaining overall plausibility assessment based on sub-analyses>",
-  "articleSummary": "<2-3 sentence neutral description of what the post claims/discusses>",
+  "articleSummary": "<DESCRIPTIVE SUMMARY - see ARTICLE SUMMARY RULES below>",
   "confidence": "<low|medium|high>",
   "plausibilityNote": "${language === 'fr' ? 'Contenu social plausible mais non vérifié. Une analyse Pro est requise pour une vérification factuelle.' : 'Plausible but unverified social content. Pro analysis required for factual verification.'}"
 }
@@ -430,6 +430,28 @@ CRITICAL RULES:
 - DO NOT default to the same scores
 - DO NOT require external sources or verification (this is Standard analysis)
 - DO NOT exceed 60 for social posts without Pro verification
+
+=============================================================================
+ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
+=============================================================================
+The "articleSummary" field must be a FACTUAL, DESCRIPTIVE summary of the content.
+
+REQUIRED:
+- Describe WHAT the post says (main topic, claim, or message)
+- Use neutral, informational language
+- Include context: who says what, about what
+- 2-4 short, clear sentences
+
+FORBIDDEN:
+- NO credibility judgments ("unverified", "questionable", "appears to be")
+- NO analysis language ("the post lacks", "no sources provided")
+- NO warnings or evaluative terms
+- NO references to the score or plausibility assessment
+- NO phrases like "the user claims" or "allegedly" that imply doubt
+
+EXAMPLES:
+✓ GOOD: "The post discusses a new environmental policy announced by the French government. It highlights proposed changes to carbon emission regulations for industrial sectors."
+✗ BAD: "The post makes claims about environmental policy without providing sources. The content appears unverified."
 
 ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
 
@@ -507,9 +529,30 @@ RESPONSE FORMAT (JSON):
     "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
   },
   "summary": "<2-3 sentences explaining credibility assessment>",
-  "articleSummary": "<2-3 sentence factual summary of the article content>",
+  "articleSummary": "<DESCRIPTIVE SUMMARY - see rules below>",
   "confidence": "<low|medium|high>"
 }
+
+=============================================================================
+ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
+=============================================================================
+The "articleSummary" field must be a FACTUAL, DESCRIPTIVE summary of the article.
+
+REQUIRED:
+- Describe WHAT the article reports (main story, facts, narrative)
+- Use neutral, informational language
+- Include key details: who, what, where, when
+- 2-4 short, clear sentences
+
+FORBIDDEN:
+- NO credibility judgments or analysis language
+- NO references to journalistic quality or sources
+- NO evaluative terms ("reliable", "well-sourced", "questionable")
+- NO phrases that editorialize the content
+
+EXAMPLES:
+✓ GOOD: "The article reports on a summit meeting between European leaders in Brussels. It covers discussions about economic cooperation and climate agreements, with statements from the French and German delegations."
+✗ BAD: "The article presents a well-sourced account of a summit meeting. Multiple officials are quoted, lending credibility to the reporting."
 
 ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
 
@@ -596,9 +639,31 @@ RESPONSE FORMAT (JSON):
     "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
   },
   "summary": "<2-3 sentence explanation>",
-  "articleSummary": "<2-3 sentence factual summary>",
+  "articleSummary": "<DESCRIPTIVE SUMMARY - see rules below>",
   "confidence": "<low|medium|high>"
 }
+
+=============================================================================
+ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
+=============================================================================
+The "articleSummary" field must be a FACTUAL, DESCRIPTIVE summary of the content.
+
+REQUIRED:
+- Describe WHAT the content says (main topic, claim, or message)
+- Use neutral, informational language
+- Include context: who says what, about what
+- 2-4 short, clear sentences
+
+FORBIDDEN:
+- NO credibility judgments ("unverified", "questionable", "appears to be")
+- NO analysis language ("the content lacks", "no sources provided")
+- NO warnings or evaluative terms
+- NO references to the score or analysis
+- NO phrases like "claims" or "allegedly" that imply doubt
+
+EXAMPLES:
+✓ GOOD: "The page discusses benefits of a new software tool for project management. It describes features including task tracking, team collaboration, and integration with popular platforms."
+✗ BAD: "The content makes unsupported claims about software benefits without citing sources or evidence."
 
 ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
 
