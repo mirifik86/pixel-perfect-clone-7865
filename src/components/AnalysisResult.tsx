@@ -1,4 +1,5 @@
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { SocialV3Methodology } from './SocialV3Methodology';
 
 interface AnalysisBreakdown {
   // Core criteria
@@ -44,6 +45,27 @@ interface ImageSignals {
   disclaimer?: string;
 }
 
+// Social URL v3 SubScores
+interface SocialSubScores {
+  content_access?: number;
+  language_quality?: number;
+  evidence_strength?: number;
+  technical_risk?: number;
+  // Legacy v2 names (for backward compatibility)
+  content_readability?: number;
+  language_risk?: number;
+  link_risk?: number;
+}
+
+// Social URL Transparency
+interface SocialTransparency {
+  mode: string;
+  extracted_text_length: number;
+  detected_links_count: number;
+  visual_present?: boolean;
+  platform: string;
+}
+
 interface AnalysisData {
   score: number;
   analysisType?: 'standard' | 'pro';
@@ -53,6 +75,12 @@ interface AnalysisData {
   visualNote?: string;
   imageSignals?: ImageSignals;
   proNote?: string;
+  // Social URL v3 fields
+  isSocialUrl?: boolean;
+  socialMode?: string;
+  subScores?: SocialSubScores;
+  transparency?: SocialTransparency;
+  socialDisclaimer?: string;
 }
 
 interface AnalysisResultProps {
@@ -84,6 +112,8 @@ const translations = {
     signalContext: 'Context clarity',
     signalPrudence: 'Language prudence',
     signalVisual: 'Visual coherence',
+    // Social disclaimer
+    socialNote: 'Social Media Analysis',
   },
   fr: {
     breakdown: 'Détail du Score',
@@ -106,6 +136,8 @@ const translations = {
     signalContext: 'Clarté du contexte',
     signalPrudence: 'Prudence du langage',
     signalVisual: 'Cohérence visuelle',
+    // Social disclaimer
+    socialNote: 'Analyse Réseau Social',
   },
 };
 
@@ -152,6 +184,9 @@ const badgeDotStyles: Record<number, string> = {
 export const AnalysisResult = ({ data, language, isProUnlocked = false, articleSummary }: AnalysisResultProps) => {
   const t = translations[language];
 
+  // Check if this is a Social URL v3 analysis
+  const isSocialAnalysis = data.isSocialUrl === true;
+
   // Core criteria labels
   const coreCriteriaLabels: Record<string, string> = {
     sources: t.sources,
@@ -179,7 +214,7 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false, articleS
     coreCriteriaLabels[key] !== undefined
   );
 
-  // Compute badge data for 5 fixed signals
+  // Compute badge data for 5 fixed signals (non-social analysis)
   const signalBadges = [
     { 
       label: t.signalSource, 
@@ -205,6 +240,24 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false, articleS
 
   return (
     <div className="mt-8 w-full max-w-2xl animate-fade-in">
+      {/* Social URL v3 Methodology Card - Only for social media URLs */}
+      {isSocialAnalysis && (
+        <SocialV3Methodology
+          language={language}
+          transparency={data.transparency}
+          subScores={data.subScores}
+        />
+      )}
+
+      {/* Social Disclaimer */}
+      {isSocialAnalysis && data.socialDisclaimer && (
+        <div className="analysis-card mb-6 border-l-4 border-amber-400 bg-amber-50">
+          <p className="text-sm font-medium text-amber-800">
+            {data.socialDisclaimer}
+          </p>
+        </div>
+      )}
+
       {/* Summary card - displays the factual article summary */}
       <div className="analysis-card mb-6">
         <div className="mb-4 flex items-center justify-between">
@@ -218,21 +271,23 @@ export const AnalysisResult = ({ data, language, isProUnlocked = false, articleS
         </p>
       </div>
 
-      {/* Credibility Signals Badges - Visual overview */}
-      <div className="analysis-card mb-6">
-        <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">{t.signalsTitle}</h3>
-        <div className="flex flex-wrap gap-2">
-          {signalBadges.map((signal, index) => (
-            <div
-              key={index}
-              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
-            >
-              <span className={`h-2 w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
-              <span className="text-xs font-semibold text-slate-800">{signal.label}</span>
-            </div>
-          ))}
+      {/* Credibility Signals Badges - Visual overview (non-social only) */}
+      {!isSocialAnalysis && (
+        <div className="analysis-card mb-6">
+          <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">{t.signalsTitle}</h3>
+          <div className="flex flex-wrap gap-2">
+            {signalBadges.map((signal, index) => (
+              <div
+                key={index}
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
+              >
+                <span className={`h-2 w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
+                <span className="text-xs font-semibold text-slate-800">{signal.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Breakdown - Core criteria with details */}
       <div className="analysis-card">
