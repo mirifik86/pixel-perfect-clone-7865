@@ -45,7 +45,6 @@ export const ProAnalysisModal = ({
       disclaimer: "PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.",
       scoreRange: "Plausibility score range: 5–98.",
       cta: "Launch PRO Analysis",
-      price: "$2.99",
       loading: "Analyzing..."
     },
     fr: {
@@ -71,7 +70,6 @@ export const ProAnalysisModal = ({
       disclaimer: "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue.",
       scoreRange: "Plage du score de plausibilité : 5–98.",
       cta: "Lancer l'Analyse PRO",
-      price: "2,99 $",
       loading: "Analyse en cours..."
     }
   };
@@ -175,7 +173,7 @@ export const ProAnalysisModal = ({
             </p>
           </div>
 
-          {/* CTA Button with Price */}
+          {/* CTA Button - Launch immediately */}
           <button
             onClick={onLaunchPro}
             disabled={isLoading}
@@ -203,26 +201,10 @@ export const ProAnalysisModal = ({
               <>
                 <Sparkles className="h-4 w-4" />
                 <span>{t.cta}</span>
-                <span 
-                  className="rounded-full px-2.5 py-0.5 text-xs font-bold"
-                  style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    backdropFilter: 'blur(4px)',
-                  }}
-                >
-                  {t.price}
-                </span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </>
             )}
           </button>
-
-          {/* Trust indicator */}
-          <p className="mt-4 text-center text-[10px] text-muted-foreground/50">
-            {language === 'fr' 
-              ? 'Paiement sécurisé • Analyse instantanée' 
-              : 'Secure payment • Instant analysis'}
-          </p>
         </div>
       </DialogContent>
     </Dialog>
