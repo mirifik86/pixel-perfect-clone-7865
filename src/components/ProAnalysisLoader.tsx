@@ -1,13 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sparkles, Search, Globe, Shield, CheckCircle2 } from 'lucide-react';
 
 interface ProAnalysisLoaderProps {
   language: 'en' | 'fr';
 }
 
+// Generate random stars once
+const generateStars = (count: number) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    delay: Math.random() * 3,
+    duration: Math.random() * 2 + 2,
+    opacity: Math.random() * 0.5 + 0.3,
+  }));
+};
+
 export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
   const [dots, setDots] = useState('');
   const [activeStep, setActiveStep] = useState(0);
+  
+  // Memoize stars so they don't regenerate on each render
+  const stars = useMemo(() => generateStars(25), []);
 
   // Animated dots
   useEffect(() => {
@@ -58,9 +74,34 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
           boxShadow: '0 8px 40px hsl(200 80% 50% / 0.15), 0 4px 16px hsl(280 60% 50% / 0.1), inset 0 1px 0 hsl(200 60% 50% / 0.1)',
         }}
       >
+        {/* Animated stars/particles background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {stars.map((star) => (
+            <div
+              key={star.id}
+              className="absolute rounded-full"
+              style={{
+                left: `${star.left}%`,
+                top: `${star.top}%`,
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+                background: star.id % 3 === 0 
+                  ? 'hsl(174 80% 70%)' 
+                  : star.id % 3 === 1 
+                    ? 'hsl(200 85% 75%)' 
+                    : 'hsl(280 70% 75%)',
+                opacity: star.opacity,
+                animation: `twinkle ${star.duration}s ease-in-out infinite`,
+                animationDelay: `${star.delay}s`,
+                boxShadow: `0 0 ${star.size * 2}px ${star.id % 3 === 0 ? 'hsl(174 80% 60%)' : star.id % 3 === 1 ? 'hsl(200 85% 65%)' : 'hsl(280 70% 65%)'}`,
+              }}
+            />
+          ))}
+        </div>
+
         {/* Premium animated gradient bar */}
         <div 
-          className="absolute inset-x-0 top-0 h-1.5 overflow-hidden"
+          className="absolute inset-x-0 top-0 h-1.5 overflow-hidden z-10"
           style={{
             background: 'hsl(220 20% 18%)',
           }}
