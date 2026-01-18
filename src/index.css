@@ -106,3 +106,13 @@
     transform: translateX(200%) skewX(-15deg);
   }
 }
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
