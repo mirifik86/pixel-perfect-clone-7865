@@ -1,4 +1,5 @@
-import { Sparkles, Search, Image, ArrowRight, Loader2, Scale } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sparkles, Search, Image, ArrowRight, Scale } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,21 @@ export const ProAnalysisModal = ({
   onLaunchPro,
   isLoading = false 
 }: ProAnalysisModalProps) => {
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Auto-close modal with smooth transition when loading starts
+  useEffect(() => {
+    if (isLoading && open) {
+      setIsClosing(true);
+      // Wait for fade-out animation before closing
+      const timer = setTimeout(() => {
+        onOpenChange(false);
+        setIsClosing(false);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, open, onOpenChange]);
+
   const content = {
     en: {
       title: "PRO Analysis — In-Depth Verification",
@@ -45,7 +61,7 @@ export const ProAnalysisModal = ({
       disclaimer: "PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.",
       scoreRange: "Plausibility score range: 5–98.",
       cta: "Launch PRO Analysis",
-      loading: "Analyzing..."
+      loading: "Analysis in progress…"
     },
     fr: {
       title: "Analyse PRO — Vérification approfondie",
@@ -70,7 +86,7 @@ export const ProAnalysisModal = ({
       disclaimer: "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue.",
       scoreRange: "Plage du score de plausibilité : 5–98.",
       cta: "Lancer l'Analyse PRO",
-      loading: "Analyse en cours..."
+      loading: "Analyse en cours…"
     }
   };
 
@@ -79,7 +95,7 @@ export const ProAnalysisModal = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-md border-0 p-0 overflow-hidden"
+        className={`max-w-md border-0 p-0 overflow-hidden transition-all duration-300 ${isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}
         style={{
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
           boxShadow: '0 0 60px hsl(200 80% 50% / 0.2), 0 0 100px hsl(174 70% 45% / 0.15), 0 25px 50px hsl(0 0% 0% / 0.5)'
@@ -173,10 +189,10 @@ export const ProAnalysisModal = ({
             </p>
           </div>
 
-          {/* CTA Button - Launch immediately */}
+          {/* CTA Button */}
           <button
             onClick={onLaunchPro}
-            disabled={isLoading}
+            disabled={isLoading || isClosing}
             className="group relative mt-5 flex w-full items-center justify-center gap-3 overflow-hidden rounded-full py-3.5 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
             style={{
               background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
@@ -192,11 +208,8 @@ export const ProAnalysisModal = ({
               }}
             />
             
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{t.loading}</span>
-              </>
+            {isLoading || isClosing ? (
+              <span>{t.loading}</span>
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
