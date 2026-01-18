@@ -440,9 +440,10 @@ FRAUD/SCAM SIGNALS:
 - Lottery/prize/giveaway scam patterns: -35
 
 =============================================================================
-AGGREGATION FORMULA
+AGGREGATION FORMULA WITH CONTROLLED VARIABILITY
 =============================================================================
 
+STEP 1: Calculate Base Score
 Raw Score = 
   (AccountNature × 0.15) + 
   (OutboundLinks × 0.10) + 
@@ -452,16 +453,53 @@ Raw Score =
   (MisinfoPatterns × 0.15) + 
   (ScamIndicators × 0.10)
 
-THEN apply social ceiling:
-- If Raw Score > 60: cap at 60 (social content requires Pro verification for higher)
-- If Raw Score < 15: floor at 15 unless clear fraud (fraud can go to 10)
+STEP 2: Apply Signal Dominance Variability
+Identify the DOMINANT SIGNAL (highest absolute deviation from 50):
+- If one signal strongly dominates (>25 points from baseline), apply a contextual adjustment of ±1 to ±3
+- The adjustment direction depends on whether the dominant signal is positive or negative
+- This ensures similar posts with different signal dominance produce different scores
+
+STEP 3: Apply Content-Based Micro-Adjustment
+Based on content characteristics (NOT random):
+- Text length variation: ±0.5
+- Vocabulary uniqueness: ±0.5  
+- Sentence structure: ±0.5
+- Specific details present: ±0.5
+Total micro-adjustment range: -2 to +2
+
+STEP 4: Apply Hard Limits
+HARD LIMITS (non-negotiable):
+- MAXIMUM without strong external corroboration: 70
+- MINIMUM credibility floor: 22
+- FRAUD EXCEPTION: Clear fraud/scam can go as low as 10
+
+STEP 5: Final Defensibility Check
+The final score MUST be:
+- Contextually justified by the dominant signals
+- Different from similar posts if signal weights differ
+- Explainable in the summary
+
+=============================================================================
+ANTI-DEFAULT SCORE RULES (CRITICAL)
+=============================================================================
+
+FORBIDDEN:
+- NO fixed or default scores (e.g., always returning 42, 45, 50)
+- NO systematic identical scores for similar posts
+- NO rounding to "nice" numbers (40, 45, 50, 55) without justification
+
+REQUIRED:
+- Score MUST reflect the unique signal combination
+- Similar-but-different content MUST produce different scores
+- The score must feel HUMAN, CONTEXTUAL, and DEFENSIBLE
+- Each analysis is INDEPENDENT – never reference or reuse previous analyses
 
 =============================================================================
 RESPONSE FORMAT (JSON)
 =============================================================================
 
 {
-  "score": <final weighted score, capped 15-60>,
+  "score": <final weighted score with variability, range 22-70>,
   "contentType": "social_post",
   "classification": "Social Media Post – Weak Signal Content",
   "subAnalyses": {
@@ -524,10 +562,15 @@ RESPONSE FORMAT (JSON)
     }
   },
   "aggregation": {
-    "rawScore": <sum of weighted scores before ceiling>,
-    "ceilingApplied": <true|false>,
-    "finalScore": <after ceiling/floor>,
-    "dominantSignals": ["<top 2-3 signals that most influenced the score>"]
+    "rawScore": <sum of weighted scores before adjustments>,
+    "dominanceAdjustment": <-3 to +3 based on dominant signal>,
+    "microAdjustment": <-2 to +2 based on content characteristics>,
+    "adjustedScore": <rawScore + dominanceAdjustment + microAdjustment>,
+    "hardLimitApplied": "<none|ceiling_70|floor_22|fraud_floor_10>",
+    "finalScore": <after hard limits, range 22-70>,
+    "dominantSignal": "<name of the signal with highest absolute deviation>",
+    "dominantSignals": ["<top 2-3 signals that most influenced the score>"],
+    "variabilityReason": "<brief explanation of why this score differs from similar content>"
   },
   "breakdown": {
     "sources": {"points": 0, "reason": "${language === 'fr' ? 'Non applicable aux réseaux sociaux (Standard)' : 'Not applicable to social media (Standard)'}"},
@@ -541,21 +584,23 @@ RESPONSE FORMAT (JSON)
     "attribution": {"points": <-5 to +5 based on account nature>, "reason": "<brief reason>"},
     "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
   },
-  "summary": "<2-3 sentences explaining the weighted signal assessment>",
+  "summary": "<2-3 sentences explaining the weighted signal assessment and why this specific score>",
   "articleSummary": "<DESCRIPTIVE SUMMARY - see ARTICLE SUMMARY RULES below>",
   "confidence": "<low|medium|high>",
-  "plausibilityNote": "${language === 'fr' ? 'Contenu social évalué via 7 signaux de crédibilité. Plausibilité ≠ vérification. Analyse Pro requise pour vérification factuelle.' : 'Social content evaluated via 7 credibility signals. Plausibility ≠ verification. Pro analysis required for factual verification.'}"
+  "plausibilityNote": "${language === 'fr' ? 'Score calculé via 7 signaux pondérés avec variabilité contrôlée. Limites: 22-70. Analyse Pro requise pour scores >70.' : 'Score calculated via 7 weighted signals with controlled variability. Limits: 22-70. Pro analysis required for scores >70.'}"
 }
 
 =============================================================================
-CRITICAL RULES
+CRITICAL RULES (ANTI-DEFAULT BEHAVIOR)
 =============================================================================
-1. Each of the 7 signals MUST be genuinely evaluated based on content
-2. NO signal alone determines the final score – aggregation is mandatory
-3. Different content MUST produce different signal scores
-4. NEVER reuse scores or assumptions from previous analyses
-5. Social posts CANNOT exceed 60 without Pro verification
-6. DO NOT require external verification (this is Standard analysis)
+1. NO FIXED SCORES: Never return the same score systematically
+2. NO DEFAULT SCORES: Avoid "round" numbers (40, 45, 50) unless genuinely justified
+3. SIGNAL DOMINANCE: Let the dominant signal shape the variability
+4. UNIQUE ANALYSIS: Each post is analyzed independently – NEVER reuse previous results
+5. DEFENSIBLE SCORES: Every score must be explainable by the signal combination
+6. HUMAN FEEL: The score must feel contextual, not mechanical
+7. HARD LIMITS: Maximum 70 (no external corroboration), Minimum 22 (fraud: 10)
+8. INDEPENDENCE: Similar posts with different nuances MUST produce different scores
 
 =============================================================================
 ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
