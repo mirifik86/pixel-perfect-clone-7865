@@ -301,328 +301,261 @@ IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLIS
 CURRENT DATE: ${getCurrentDateInfo().formatted}
 
 =============================================================================
-CRITICAL CONTEXT: SOCIAL MEDIA POST – WEAK SIGNAL CONTENT
+STEP 1: PLATFORM DETECTION
 =============================================================================
-
-A social media post is NOT verified information.
-It must be evaluated using WEIGHTED CREDIBILITY SIGNALS, not factual certainty.
-Each signal MUST influence the score positively or negatively.
-NO SIGNAL ALONE can determine the final score.
+This content has been classified as "Social Media Post".
+Supported platforms: Facebook, Instagram, X (Twitter), TikTok, Threads, Telegram, LinkedIn, Reddit, YouTube, etc.
 
 =============================================================================
-7-SIGNAL WEIGHTED CREDIBILITY MODEL
+STEP 2: CONTENT EXTRACTION STATUS
+=============================================================================
+Assess the extracted content availability:
+
+IF the extracted text is:
+- Empty, blank, or contains only URL/metadata
+- Truncated or shorter than 80 characters
+- Contains only platform boilerplate (login prompts, cookie notices)
+- Inaccessible due to privacy settings or login requirements
+
+THEN set: content_status = "UNAVAILABLE"
+ELSE set: content_status = "AVAILABLE"
+
+=============================================================================
+STEP 3: USER-PROVIDED TEXT PRIORITY
+=============================================================================
+If the input contains BOTH a URL AND additional text that appears to be post content:
+- ALWAYS prioritize user-provided text over extracted content
+- User-provided text overrides content_status to "AVAILABLE"
+- Look for patterns like: quoted text, text before/after URL, explicit "Post says:" indicators
+
+=============================================================================
+STEP 4: SCORING LOGIC (TWO TIERS)
 =============================================================================
 
-Perform 7 independent sub-analyses, each scored 0-100, then aggregate using weights.
+****** TIER A: TEXT-BASED ANALYSIS (content_status = "AVAILABLE") ******
 
-=============================================================================
+When post text IS available, analyze using the 7-SIGNAL WEIGHTED MODEL:
+
 SIGNAL 1: ACCOUNT NATURE (Weight: 15%)
-=============================================================================
-Assess the apparent source type from context clues:
+- Official media page: +35 | Recognized public figure: +25 | Institution: +30
+- Standard public user: +10 | Personal account: +5
+- Anonymous/pseudonymous: -15 | Recently created context: -20 | Impersonation: -35
 
-HIGH CREDIBILITY INDICATORS:
-- Official media page (verified news outlet account): +35
-- Recognized public figure (journalist, expert, official): +25
-- Institutional account (government, organization): +30
-
-MODERATE CREDIBILITY:
-- Standard public user with history context: +10
-- Personal account sharing experience: +5
-
-LOW CREDIBILITY INDICATORS:
-- Anonymous or pseudonymous account: -15
-- Recently created account context: -20
-- Account impersonation signals: -35
-- No identifiable source context: -10
-
-=============================================================================
 SIGNAL 2: OUTBOUND LINKS PRESENCE (Weight: 10%)
-=============================================================================
-Evaluate whether the post includes external references:
+- Links to recognized news: +30 | Official documents/studies: +25 | Multiple sources: +20
+- No links (opinion/experience): 0
+- Unknown/suspicious domains: -20 | Shortened URLs: -15 | Misinfo sites: -35
 
-POSITIVE SIGNALS:
-- Links to recognized news sources: +30
-- References to official documents or studies: +25
-- Multiple corroborating sources linked: +20
-- Link to institutional website: +15
-
-NEUTRAL:
-- No links (opinion or personal experience): 0
-
-NEGATIVE SIGNALS:
-- Links to unknown or suspicious domains: -20
-- Shortened URLs hiding destination: -15
-- Links to known misinformation sites: -35
-- Broken or invalid links mentioned: -10
-
-=============================================================================
 SIGNAL 3: LANGUAGE TONE (Weight: 20%)
-=============================================================================
-Analyze the emotional and rhetorical quality:
+- Neutral, factual: +30 | Measured, calm: +20 | Explanatory: +15
+- Inflammatory/outraged: -25 | Alarmist ("URGENT", "WAKE UP"): -35 | Caps abuse: -15
+- Absolutist ("always", "never"): -20 | Aggressive: -20
 
-HIGH PLAUSIBILITY (neutral/informational):
-- Neutral, factual presentation: +30
-- Measured, calm language: +20
-- Explanatory without emotional charge: +15
+SIGNAL 4: CLAIM TYPE (Weight: 15%)
+- Clear opinion: +20 | Personal experience: +15 | Interpretation with uncertainty: +15 | Question: +10
+- Factual claim without evidence: -20 | Extraordinary claim: -30 | Absolute certainty: -25 | Conspiracy-framed: -35
 
-LOW PLAUSIBILITY (emotional/alarmist):
-- Inflammatory or outraged tone: -25
-- Alarmist keywords ("URGENT", "WAKE UP", "THEY DON'T WANT YOU TO KNOW"): -35
-- Excessive punctuation, caps lock abuse: -15
-- Absolutist language ("always", "never", "everyone"): -20
-- Aggressive or accusatory framing: -20
-
-=============================================================================
-SIGNAL 4: CLAIM TYPE CLASSIFICATION (Weight: 15%)
-=============================================================================
-Identify what kind of claim is being made:
-
-HIGHER PLAUSIBILITY CLAIM TYPES:
-- Personal opinion clearly stated: +20
-- Personal experience/testimony: +15
-- Interpretation with acknowledgment of uncertainty: +15
-- Question or discussion prompt: +10
-
-LOWER PLAUSIBILITY CLAIM TYPES:
-- Factual claim without evidence: -20
-- Extraordinary claim without extraordinary evidence: -30
-- Absolute certainty on disputed topics: -25
-- Conspiracy-framed claims: -35
-
-=============================================================================
 SIGNAL 5: INTERNAL COHERENCE (Weight: 15%)
-=============================================================================
-Evaluate logical consistency within the message:
+- Clear logical flow: +25 | Consistent narrative: +20 | Identifiable structure: +15
+- Self-contradictions: -30 | Logical fallacies: -25 | Unclear reasoning: -20
 
-COHERENT SIGNALS:
-- Clear logical flow (premise → reasoning → conclusion): +25
-- Consistent narrative, no self-contradictions: +20
-- Identifiable subject + statement structure: +15
-
-INCOHERENT SIGNALS:
-- Self-contradictions within the post: -30
-- Logical fallacies (non sequitur, straw man, false dichotomy): -25
-- Jumbled or unclear reasoning: -20
-- Claims that contradict each other: -25
-
-=============================================================================
 SIGNAL 6: MISINFORMATION PATTERNS (Weight: 15%)
-=============================================================================
-Check for common manipulation or misinformation markers:
+- Standard opinion: +15 | Appropriate uncertainty: +10
+- "Media won't tell you": -30 | "Share before deleted": -25 | "Do your research": -20
+- Cherry-picked stats: -25 | Conspiracy appeal: -35 | False equivalence: -20
 
-NO RED FLAGS (baseline ~60):
-- Standard opinion without manipulation: +15
-- Factual framing with appropriate uncertainty: +10
-
-MISINFORMATION PATTERNS DETECTED:
-- "Mainstream media won't tell you": -30
-- "Share before they delete this": -25
-- "Do your own research" without substance: -20
-- Cherry-picked statistics out of context: -25
-- Appeal to conspiracy ("they", "the elites", "cover-up"): -35
-- False equivalence or misleading comparisons: -20
-
-=============================================================================
 SIGNAL 7: SCAM & FRAUD INDICATORS (Weight: 10%)
-=============================================================================
-Detect financial or personal exploitation signals:
+- Normal discussion: +15 | No financial requests: +10
+- Financial promises: -45 | Urgency manipulation: -30 | Personal info requests: -50
+- Impersonation: -40 | Phishing: -40 | Lottery/prize scams: -35
 
-SAFE (no fraud signals):
-- Normal discussion content: +15
-- No financial or personal requests: +10
+****** TIER B: URL-ONLY ANALYSIS (content_status = "UNAVAILABLE") ******
 
-FRAUD/SCAM SIGNALS:
-- Financial promises ("get rich", "guaranteed returns", "investment opportunity"): -45
-- Urgency manipulation ("ACT NOW", "limited time", "last chance"): -30
-- Requests for personal info, passwords, payments: -50
-- Impersonation of officials, celebrities, institutions: -40
-- Phishing-style calls to action: -40
-- Lottery/prize/giveaway scam patterns: -35
+When post text is NOT available, analyze using URL-LEVEL and CONTEXT SIGNALS:
+
+SIGNAL A: URL TYPE PATTERN (Weight: 25%)
+- Standard post URL: 0 (neutral baseline)
+- Reel/Short/Story URL (ephemeral content): -5
+- Share/repost URL (secondary source): -3
+- Direct message share pattern: -10
+- Suspicious URL structure: -15
+
+SIGNAL B: PLATFORM CHARACTERISTICS (Weight: 20%)
+- Major verified platform (Facebook, Instagram, X): +5
+- Platform with verification system: +3
+- Platform known for misinfo spread: -5
+- Newer/less moderated platform: -8
+
+SIGNAL C: URL STRUCTURE SIGNALS (Weight: 20%)
+- Clean, standard URL format: +5
+- Contains tracking-only parameters (utm, ref): -3
+- Excessive redirects or shorteners: -10
+- Suspicious query parameters: -15
+- Non-standard port or subdomain: -10
+
+SIGNAL D: OUTBOUND LINK PRESENCE IN URL (Weight: 15%)
+- No additional links: 0 (neutral)
+- URL appears to contain link preview: +3
+- Multiple redirects detected: -10
+
+SIGNAL E: PLATFORM ACCESS LIMITATION (Weight: 20%)
+- Content inaccessible due to privacy/login: MODERATE PENALTY (-5 to -10)
+- IMPORTANT: Do NOT infer the post is false just because content cannot be extracted
+- This is a limitation signal, not a credibility judgment
+
+URL-ONLY SCORE CALCULATION:
+- Baseline: 50 points
+- Apply all URL-level signals
+- SUGGESTED RANGE: 35-65 unless strong risk signals detected
+- FLOOR: 28 (never assume false without evidence)
+- CEILING: 58 (cannot verify without content)
 
 =============================================================================
 AGGREGATION FORMULA WITH CONTROLLED VARIABILITY
 =============================================================================
 
-STEP 1: Calculate Base Score
-Raw Score = 
-  (AccountNature × 0.15) + 
-  (OutboundLinks × 0.10) + 
-  (LanguageTone × 0.20) + 
-  (ClaimType × 0.15) + 
-  (InternalCoherence × 0.15) + 
-  (MisinfoPatterns × 0.15) + 
-  (ScamIndicators × 0.10)
+FOR TEXT-BASED ANALYSIS (Tier A):
+Raw Score = (Signal1 × 0.15) + (Signal2 × 0.10) + (Signal3 × 0.20) + 
+            (Signal4 × 0.15) + (Signal5 × 0.15) + (Signal6 × 0.15) + (Signal7 × 0.10)
 
-STEP 2: Apply Signal Dominance Variability
-Identify the DOMINANT SIGNAL (highest absolute deviation from 50):
-- If one signal strongly dominates (>25 points from baseline), apply a contextual adjustment of ±1 to ±3
-- The adjustment direction depends on whether the dominant signal is positive or negative
-- This ensures similar posts with different signal dominance produce different scores
+FOR URL-ONLY ANALYSIS (Tier B):
+Raw Score = 50 + (SignalA) + (SignalB) + (SignalC) + (SignalD) + (SignalE)
 
-STEP 3: Apply Content-Based Micro-Adjustment
-Based on content characteristics (NOT random):
-- Text length variation: ±0.5
-- Vocabulary uniqueness: ±0.5  
-- Sentence structure: ±0.5
-- Specific details present: ±0.5
-Total micro-adjustment range: -2 to +2
-
-STEP 4: Apply Hard Limits
-HARD LIMITS (non-negotiable):
-- MAXIMUM without strong external corroboration: 70
-- MINIMUM credibility floor: 22
-- FRAUD EXCEPTION: Clear fraud/scam can go as low as 10
-
-STEP 5: Final Defensibility Check
-The final score MUST be:
-- Contextually justified by the dominant signals
-- Different from similar posts if signal weights differ
-- Explainable in the summary
+STEP 2: Signal Dominance Variability (±1 to ±3)
+STEP 3: Content-Based Micro-Adjustment (±2)
+STEP 4: Apply Hard Limits:
+- TEXT-BASED: Max 70, Min 22 (Fraud: 10)
+- URL-ONLY: Max 58, Min 28 (Strong risk: 22)
 
 =============================================================================
 ANTI-DEFAULT SCORE RULES (CRITICAL)
 =============================================================================
 
 FORBIDDEN:
-- NO fixed or default scores (e.g., always returning 42, 45, 50)
+- NO fixed or default scores (40, 45, 50, 55)
 - NO systematic identical scores for similar posts
-- NO rounding to "nice" numbers (40, 45, 50, 55) without justification
+- NO rounding to "nice" numbers without justification
 
 REQUIRED:
 - Score MUST reflect the unique signal combination
 - Similar-but-different content MUST produce different scores
-- The score must feel HUMAN, CONTEXTUAL, and DEFENSIBLE
-- Each analysis is INDEPENDENT – never reference or reuse previous analyses
+- Score must feel HUMAN, CONTEXTUAL, and DEFENSIBLE
 
 =============================================================================
 RESPONSE FORMAT (JSON)
 =============================================================================
 
 {
-  "score": <final weighted score with variability, range 22-70>,
+  "score": <final score within limits>,
   "contentType": "social_post",
   "classification": "Social Media Post – Weak Signal Content",
+  "contentStatus": "<AVAILABLE|UNAVAILABLE>",
+  "analysisMode": "<TEXT_BASED|URL_ONLY>",
+  "userTextDetected": <true|false>,
   "subAnalyses": {
+    // For TEXT_BASED mode (all 7 signals):
     "accountNature": {
-      "score": <0-100>,
-      "weight": 0.15,
-      "weighted": <score × 0.15>,
-      "detectedType": "<official_media|public_figure|institution|standard_user|anonymous|unknown>",
-      "signals": ["<key signal 1>", "<key signal 2>"],
-      "assessment": "<one sentence summary>"
+      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
+      "detectedType": "<type>", "signals": ["<signal>"], "assessment": "<sentence>"
     },
     "outboundLinks": {
-      "score": <0-100>,
-      "weight": 0.10,
-      "weighted": <score × 0.10>,
-      "linksDetected": <true|false>,
-      "linkQuality": "<recognized_media|official_source|unknown|suspicious|none>",
-      "signals": ["<key signal 1>", "<key signal 2>"],
-      "assessment": "<one sentence summary>"
+      "score": <0-100>, "weight": 0.10, "weighted": <score × 0.10>,
+      "linksDetected": <bool>, "linkQuality": "<quality>", "signals": ["<signal>"], "assessment": "<sentence>"
     },
     "languageTone": {
-      "score": <0-100>,
-      "weight": 0.20,
-      "weighted": <score × 0.20>,
-      "toneCategory": "<neutral|informational|emotional|alarmist|aggressive>",
-      "signals": ["<key signal 1>", "<key signal 2>"],
-      "assessment": "<one sentence summary>"
+      "score": <0-100>, "weight": 0.20, "weighted": <score × 0.20>,
+      "toneCategory": "<category>", "signals": ["<signal>"], "assessment": "<sentence>"
     },
     "claimType": {
-      "score": <0-100>,
-      "weight": 0.15,
-      "weighted": <score × 0.15>,
-      "claimCategory": "<opinion|experience|interpretation|factual_claim|conspiracy>",
-      "signals": ["<key signal 1>", "<key signal 2>"],
-      "assessment": "<one sentence summary>"
+      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
+      "claimCategory": "<category>", "signals": ["<signal>"], "assessment": "<sentence>"
     },
     "internalCoherence": {
-      "score": <0-100>,
-      "weight": 0.15,
-      "weighted": <score × 0.15>,
-      "coherenceLevel": "<high|moderate|low|incoherent>",
-      "signals": ["<key signal 1>", "<key signal 2>"],
-      "assessment": "<one sentence summary>"
+      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
+      "coherenceLevel": "<level>", "signals": ["<signal>"], "assessment": "<sentence>"
     },
     "misinfoPatterns": {
-      "score": <0-100>,
-      "weight": 0.15,
-      "weighted": <score × 0.15>,
-      "patternsDetected": ["<pattern 1 if any>", "<pattern 2 if any>"],
-      "signals": ["<key signal 1>", "<key signal 2>"],
-      "assessment": "<one sentence summary>"
+      "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
+      "patternsDetected": ["<pattern>"], "signals": ["<signal>"], "assessment": "<sentence>"
     },
     "scamIndicators": {
-      "score": <0-100>,
-      "weight": 0.10,
-      "weighted": <score × 0.10>,
-      "fraudRisk": "<none|low|moderate|high>",
-      "signals": ["<key signal 1>", "<key signal 2>"],
-      "assessment": "<one sentence summary>"
+      "score": <0-100>, "weight": 0.10, "weighted": <score × 0.10>,
+      "fraudRisk": "<risk>", "signals": ["<signal>"], "assessment": "<sentence>"
+    },
+    // For URL_ONLY mode (5 URL signals):
+    "urlTypePattern": {
+      "score": <-15 to +5>, "weight": 0.25, "assessment": "<sentence>"
+    },
+    "platformCharacteristics": {
+      "score": <-8 to +5>, "weight": 0.20, "assessment": "<sentence>"
+    },
+    "urlStructure": {
+      "score": <-15 to +5>, "weight": 0.20, "assessment": "<sentence>"
+    },
+    "outboundLinkUrl": {
+      "score": <-10 to +3>, "weight": 0.15, "assessment": "<sentence>"
+    },
+    "platformAccessLimitation": {
+      "score": <-10 to 0>, "weight": 0.20, "assessment": "<sentence>"
     }
   },
   "aggregation": {
-    "rawScore": <sum of weighted scores before adjustments>,
-    "dominanceAdjustment": <-3 to +3 based on dominant signal>,
-    "microAdjustment": <-2 to +2 based on content characteristics>,
-    "adjustedScore": <rawScore + dominanceAdjustment + microAdjustment>,
-    "hardLimitApplied": "<none|ceiling_70|floor_22|fraud_floor_10>",
-    "finalScore": <after hard limits, range 22-70>,
-    "dominantSignal": "<name of the signal with highest absolute deviation>",
-    "dominantSignals": ["<top 2-3 signals that most influenced the score>"],
-    "variabilityReason": "<brief explanation of why this score differs from similar content>"
+    "rawScore": <sum before adjustments>,
+    "dominanceAdjustment": <-3 to +3>,
+    "microAdjustment": <-2 to +2>,
+    "adjustedScore": <after adjustments>,
+    "hardLimitApplied": "<none|ceiling|floor|fraud_floor>",
+    "finalScore": <after hard limits>,
+    "dominantSignal": "<signal name>",
+    "variabilityReason": "<brief explanation>"
   },
   "breakdown": {
-    "sources": {"points": 0, "reason": "${language === 'fr' ? 'Non applicable aux réseaux sociaux (Standard)' : 'Not applicable to social media (Standard)'}"},
-    "factual": {"points": <-10 to +10 based on coherence>, "reason": "<brief reason>"},
-    "tone": {"points": <-15 to +10 based on tone analysis>, "reason": "<brief reason>"},
-    "context": {"points": <-10 to +5>, "reason": "<brief reason>"},
-    "transparency": {"points": <-10 to +5>, "reason": "<brief reason>"},
-    "freshness": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "prudence": {"points": <-5 to +5 based on claim type>, "reason": "<brief reason>"},
-    "density": {"points": <-5 to +5>, "reason": "<brief reason>"},
-    "attribution": {"points": <-5 to +5 based on account nature>, "reason": "<brief reason>"},
-    "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
+    "sources": {"points": 0, "reason": "${language === 'fr' ? 'Non applicable aux réseaux sociaux' : 'Not applicable to social media'}"},
+    "factual": {"points": <-10 to +10>, "reason": "<reason>"},
+    "tone": {"points": <-15 to +10>, "reason": "<reason>"},
+    "context": {"points": <-10 to +5>, "reason": "<reason>"},
+    "transparency": {"points": <-10 to +5>, "reason": "<reason>"},
+    "freshness": {"points": <-5 to +5>, "reason": "<reason>"},
+    "prudence": {"points": <-5 to +5>, "reason": "<reason>"},
+    "density": {"points": <-5 to +5>, "reason": "<reason>"},
+    "attribution": {"points": <-5 to +5>, "reason": "<reason>"},
+    "visualCoherence": {"points": <-5 to +5>, "reason": "<reason>"}
   },
-  "summary": "<2-3 sentences describing the DOMINANT SIGNALS that shaped this score. Focus on what drove the score up or down.>",
-  "articleSummary": "<DESCRIPTIVE SUMMARY - see ARTICLE SUMMARY RULES below>",
+  "summary": "<2-3 sentences: MUST state whether score is based on TEXT ANALYSIS or PLATFORM-LIMITED SIGNALS. Describe dominant signals.>",
+  "articleSummary": "<DESCRIPTIVE SUMMARY - see rules below>",
   "confidence": "<low|medium|high>",
   "disclaimer": "${language === 'fr' ? "Ce score reflète les signaux de crédibilité d'une publication sur les réseaux sociaux, pas une vérification factuelle." : 'This score reflects credibility signals of a social media post, not factual verification.'}"
 }
 
 =============================================================================
-CRITICAL RULES (ANTI-DEFAULT BEHAVIOR)
+SUMMARY RULES FOR ANALYSIS MODE
 =============================================================================
-1. NO FIXED SCORES: Never return the same score systematically
-2. NO DEFAULT SCORES: Avoid "round" numbers (40, 45, 50) unless genuinely justified
-3. SIGNAL DOMINANCE: Let the dominant signal shape the variability
-4. UNIQUE ANALYSIS: Each post is analyzed independently – NEVER reuse previous results
-5. DEFENSIBLE SCORES: Every score must be explainable by the signal combination
-6. HUMAN FEEL: The score must feel contextual, not mechanical
-7. HARD LIMITS: Maximum 70 (no external corroboration), Minimum 22 (fraud: 10)
-8. INDEPENDENCE: Similar posts with different nuances MUST produce different scores
+
+FOR TEXT_BASED analysis:
+"The score is based on text analysis of the post content. [Describe dominant signals]."
+
+FOR URL_ONLY analysis:
+"The score is based on platform-limited signals only; post content could not be extracted. [Describe URL-level signals]."
+"${language === 'fr' ? "Note: L'absence de contenu ne signifie pas que la publication est fausse." : "Note: Unavailable content does not imply the post is false."}"
 
 =============================================================================
 ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
 =============================================================================
-The "articleSummary" field must be a FACTUAL, DESCRIPTIVE summary of the content.
 
 REQUIRED:
 - Describe WHAT the post says (main topic, claim, or message)
 - Use neutral, informational language
-- Include context: who says what, about what
 - 2-4 short, clear sentences
 
-FORBIDDEN:
-- NO credibility judgments ("unverified", "questionable", "appears to be")
-- NO analysis language ("the post lacks", "no sources provided")
-- NO warnings or evaluative terms
-- NO references to the score or plausibility assessment
-- NO phrases like "the user claims" or "allegedly" that imply doubt
+FOR URL_ONLY mode when content unavailable:
+- State that content could not be extracted
+- Describe what can be inferred from URL/platform only
+- Do NOT fabricate or assume post content
 
-EXAMPLES:
-✓ GOOD: "The post discusses a new environmental policy announced by the French government. It highlights proposed changes to carbon emission regulations for industrial sectors."
-✗ BAD: "The post makes claims about environmental policy without providing sources. The content appears unverified."
+FORBIDDEN:
+- NO credibility judgments ("unverified", "questionable")
+- NO analysis language ("the post lacks", "no sources")
+- NO references to the score or assessment
 
 ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
 
