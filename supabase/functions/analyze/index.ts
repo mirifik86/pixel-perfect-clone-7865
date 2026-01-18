@@ -16,7 +16,282 @@ const getCurrentDateInfo = () => {
   };
 };
 
-const getSystemPrompt = (language: string) => `You are LeenScore, an AI credibility analyst. Your task is to analyze content and calculate a Trust Score.
+// ============= URL TYPE DETECTION =============
+
+type UrlType = 'SOCIAL_POST' | 'NEWS_ARTICLE' | 'WEB_OTHER';
+
+const SOCIAL_DOMAINS = [
+  'facebook.com', 'fb.com', 'fb.watch',
+  'instagram.com',
+  'twitter.com', 'x.com',
+  'tiktok.com',
+  'reddit.com',
+  'linkedin.com',
+  'threads.net',
+  'mastodon.social',
+  'bsky.app',
+  'youtube.com', 'youtu.be',
+  'pinterest.com',
+  'tumblr.com',
+  'snapchat.com'
+];
+
+const NEWS_DOMAINS = [
+  // Major international news
+  'bbc.com', 'bbc.co.uk',
+  'cnn.com',
+  'reuters.com',
+  'apnews.com',
+  'theguardian.com',
+  'nytimes.com',
+  'washingtonpost.com',
+  'wsj.com',
+  'bloomberg.com',
+  'forbes.com',
+  'economist.com',
+  'ft.com',
+  'aljazeera.com',
+  'npr.org',
+  'abc.net.au',
+  'news.sky.com',
+  // French news
+  'lemonde.fr',
+  'lefigaro.fr',
+  'liberation.fr',
+  'leparisien.fr',
+  'francetvinfo.fr',
+  'france24.com',
+  'rfi.fr',
+  'bfmtv.com',
+  'tf1info.fr',
+  'lexpress.fr',
+  'lobs.com',
+  'lepoint.fr',
+  'lavoixdunord.fr',
+  'sudouest.fr',
+  'ouestfrance.fr',
+  '20minutes.fr',
+  // Canadian news
+  'cbc.ca',
+  'globalnews.ca',
+  'thestar.com',
+  'nationalpost.com',
+  'lapresse.ca',
+  'ledevoir.com',
+  'journaldemontreal.com',
+  'radio-canada.ca',
+  // Tech news
+  'techcrunch.com',
+  'wired.com',
+  'theverge.com',
+  'arstechnica.com',
+  'engadget.com',
+  // Science news
+  'nature.com',
+  'sciencemag.org',
+  'scientificamerican.com',
+  // Fact-checking
+  'snopes.com',
+  'factcheck.org',
+  'politifact.com',
+  'fullfact.org',
+  'lesdecodeurs.fr'
+];
+
+function detectUrlType(content: string): { type: UrlType; detectedDomain: string | null } {
+  // Try to extract URL from content
+  const urlMatch = content.match(/https?:\/\/[^\s<>"{}|\\^\[\]`]+/i);
+  
+  if (!urlMatch) {
+    // No URL detected, treat as plain text (WEB_OTHER behavior)
+    return { type: 'WEB_OTHER', detectedDomain: null };
+  }
+
+  try {
+    const url = new URL(urlMatch[0]);
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
+    
+    // Check social domains
+    for (const domain of SOCIAL_DOMAINS) {
+      if (hostname === domain || hostname.endsWith('.' + domain)) {
+        return { type: 'SOCIAL_POST', detectedDomain: domain };
+      }
+    }
+    
+    // Check news domains
+    for (const domain of NEWS_DOMAINS) {
+      if (hostname === domain || hostname.endsWith('.' + domain)) {
+        return { type: 'NEWS_ARTICLE', detectedDomain: domain };
+      }
+    }
+    
+    // Default to WEB_OTHER
+    return { type: 'WEB_OTHER', detectedDomain: hostname };
+  } catch {
+    return { type: 'WEB_OTHER', detectedDomain: null };
+  }
+}
+
+// ============= SOCIAL POST PLAUSIBILITY ANALYSIS =============
+
+const getSocialPostPrompt = (language: string) => `You are LeenScore, an AI plausibility analyst for social media content.
+
+IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.
+
+CURRENT DATE: ${getCurrentDateInfo().formatted}
+
+CONTEXT: You are analyzing a SOCIAL MEDIA POST (Facebook, Instagram, X/Twitter, TikTok, etc.)
+Social media posts are inherently unverified personal opinions or claims. Your task is to assess PLAUSIBILITY, not truth.
+
+CRITICAL SCORING RULE FOR SOCIAL POSTS:
+- Standard analysis scores for social posts should naturally range between 30-60.
+- Scores above 60 require explicit evidence of verification (which is rare in social content).
+- Social posts lack editorial oversight and cannot achieve high credibility without Pro verification.
+
+PLAUSIBILITY SCORING METHOD:
+Start with a base score of 45/100 (lower baseline for unverified social content).
+
+A. INTERNAL COHERENCE (not external verification):
+- Narrative is internally consistent and logical: +10
+- Contains obvious contradictions or logical fallacies: -15
+- Claims without any supporting context: -10
+
+B. TONE & LANGUAGE QUALITY:
+- Measured, reasonable tone: +5
+- Alarmist, sensational, or emotionally manipulative: -15
+- Excessive caps, emojis, or clickbait language: -10
+- Conspiracy-like language ("they don't want you to know", "wake up"): -15
+
+C. SCAM/FRAUD SIGNALS:
+- No suspicious patterns detected: 0
+- Financial promises or get-rich schemes: -20
+- Urgency tactics ("act now", "limited time"): -10
+- Requests for personal info or account access: -20
+- Impersonation signals (claiming to be official account): -15
+
+D. SOURCE TRANSPARENCY:
+- Personal opinion clearly labeled as such: +5
+- Claims to have insider/expert knowledge without credentials: -10
+- Complete anonymity or fake-looking profile: -10
+- Shares traceable media mentions (even if unverified): +3
+
+E. CONTENT QUALITY:
+- Provides specific, verifiable details (names, dates, locations): +5
+- Vague generalizations only: -5
+- Contains obvious factual errors or outdated information: -10
+- Mixes opinion with assertion without distinction: -5
+
+SCORE CEILING ENFORCEMENT:
+- If calculated score > 60, cap at 60 and note: "Social content requires Pro verification for higher scores"
+- If calculated score < 20, floor at 20 unless clear fraud indicators present
+
+RESPONSE FORMAT (JSON):
+{
+  "score": <number 20-60 for social posts>,
+  "contentType": "social_post",
+  "breakdown": {
+    "sources": {"points": <number>, "reason": "<brief reason>"},
+    "factual": {"points": <number>, "reason": "<brief reason - assess internal coherence>"},
+    "tone": {"points": <number>, "reason": "<brief reason>"},
+    "context": {"points": <number>, "reason": "<brief reason>"},
+    "transparency": {"points": <number>, "reason": "<brief reason>"},
+    "freshness": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "prudence": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "density": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "attribution": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
+  },
+  "summary": "<2-3 sentences explaining plausibility assessment>",
+  "articleSummary": "<2-3 sentence neutral description of what the post claims/discusses>",
+  "confidence": "<low|medium|high>",
+  "plausibilityNote": "${language === 'fr' ? 'Contenu social plausible mais non vérifié. Une analyse Pro est requise pour une vérification factuelle.' : 'Plausible but unverified social content. Pro analysis required for factual verification.'}"
+}
+
+ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
+
+// ============= NEWS ARTICLE EDITORIAL ANALYSIS =============
+
+const getNewsArticlePrompt = (language: string) => `You are LeenScore, an AI credibility analyst for news and journalistic content.
+
+IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.
+
+CURRENT DATE: ${getCurrentDateInfo().formatted}
+
+CONTEXT: You are analyzing a NEWS ARTICLE from a recognized media outlet.
+News articles undergo editorial processes and can be evaluated for journalistic credibility.
+
+EDITORIAL CREDIBILITY SCORING METHOD:
+Start with a base score of 55/100 (slightly above neutral for published journalism).
+
+A. SOURCES & CORROBORATION:
+- Multiple independent sources cited: +20
+- Official sources or experts quoted: +15
+- Single anonymous source: -10
+- No sources cited: -20
+
+B. JOURNALISTIC STANDARDS:
+- Balanced presentation of multiple viewpoints: +15
+- Clear separation of news and opinion: +10
+- One-sided or advocacy journalism: -10
+- Mixing facts with editorial opinion: -15
+
+C. FACTUAL CONSISTENCY:
+- Claims supported by data or evidence: +15
+- Internal consistency throughout article: +10
+- Contradictions or unverified claims: -15
+- Factual errors detected: -20
+
+D. CONTEXT & TRANSPARENCY:
+- Clear date, author, and publication: +10
+- Proper context for claims and statistics: +10
+- Missing important context: -15
+- Clickbait headline vs. actual content mismatch: -10
+
+E. MEDIA REPUTATION SIGNALS:
+- Established news organization with editorial standards: +10
+- Known for corrections and accountability: +5
+- History of retractions or bias complaints: -10
+- Unverified or new outlet: -5
+
+EXTENDED SIGNALS (±5 points each):
+F. FRESHNESS: Timeliness appropriate to story
+G. PRUDENCE: Appropriate hedging on uncertain claims
+H. DENSITY: Rich in verifiable facts vs. speculation
+I. ATTRIBUTION: Clear attribution for all major claims
+J. VISUAL-TEXTUAL COHERENCE: Images support the narrative appropriately
+
+NEWS SCORE RANGE:
+- High-quality journalism: 70-90
+- Standard news: 55-70
+- Problematic journalism: 35-55
+- Unreliable: below 35
+
+RESPONSE FORMAT (JSON):
+{
+  "score": <number 0-100>,
+  "contentType": "news_article",
+  "breakdown": {
+    "sources": {"points": <number>, "reason": "<brief reason>"},
+    "factual": {"points": <number>, "reason": "<brief reason>"},
+    "tone": {"points": <number>, "reason": "<brief reason>"},
+    "context": {"points": <number>, "reason": "<brief reason>"},
+    "transparency": {"points": <number>, "reason": "<brief reason>"},
+    "freshness": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "prudence": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "density": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "attribution": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
+  },
+  "summary": "<2-3 sentences explaining credibility assessment>",
+  "articleSummary": "<2-3 sentence factual summary of the article content>",
+  "confidence": "<low|medium|high>"
+}
+
+ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
+
+// ============= WEB OTHER (GENERIC) ANALYSIS =============
+
+const getWebOtherPrompt = (language: string) => `You are LeenScore, an AI credibility analyst. Your task is to analyze content and calculate a Trust Score.
 
 IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}. All text including reasons and summary must be in ${language === 'fr' ? 'French' : 'English'}.
 
@@ -51,19 +326,6 @@ D. CONTEXT CLARITY:
 - Incomplete or misleading context: -15
 - Information presented outside its original context: -20
 
-TEMPORAL CONTEXT EVALUATION (CRITICAL):
-When evaluating publication dates:
-1. Compare detected dates against TODAY'S DATE (${getCurrentDateInfo().formatted})
-2. A date in ${getCurrentDateInfo().year} is CURRENT YEAR content - this is NORMAL and expected
-3. Apply NO penalty for:
-   - Same year and month as current date
-   - Dates within ±30 days of current date
-   - Content clearly labeled as forecasts, projections, or future-oriented
-4. Apply context penalty (-15 to -20) ONLY if:
-   - Date is more than 60 days in the future AND not clearly forward-looking content
-   - Date appears fabricated or contradicts the content narrative
-5. When uncertain about dates, state uncertainty - do NOT penalize
-
 E. TRANSPARENCY:
 - Sources clearly cited: +10
 - Identified author or organization: +5
@@ -71,75 +333,53 @@ E. TRANSPARENCY:
 
 ===== EXTENDED CREDIBILITY SIGNALS (F-J) =====
 Each signal has LIMITED IMPACT: maximum +5 or -5 points per signal.
-These signals create score differentiation without dominating the overall assessment.
 
 F. CONTENT FRESHNESS RELEVANCE:
-Evaluate if the content's age aligns with its purpose and claims.
 - Fresh, timely content on current events: +3 to +5
-- Content appropriately dated for its topic (historical, evergreen): 0 (neutral)
+- Content appropriately dated for its topic: 0 (neutral)
 - Outdated information presented as current: -3 to -5
-- Unable to assess freshness: 0 (neutral)
 
 G. LANGUAGE PRUDENCE:
-Assess whether claims are stated with appropriate caution or speculation.
-- Uses measured language ("suggests", "indicates", "according to"): +3 to +5
-- Balanced mix of firm and qualified statements: 0 (neutral)
+- Uses measured language ("suggests", "indicates"): +3 to +5
 - Overconfident assertions without justification: -3 to -5
-- Speculative claims presented as facts: -5
 
 H. FACTUAL DENSITY:
-Evaluate the ratio of verifiable facts to opinions/claims.
-- High density of specific, verifiable facts (names, dates, figures): +3 to +5
-- Average mix of facts and analysis: 0 (neutral)
+- High density of specific, verifiable facts: +3 to +5
 - Vague claims lacking specific details: -3 to -5
-- Almost no verifiable factual content: -5
 
 I. ATTRIBUTION CLARITY:
-Assess how clearly claims are attributed to their sources.
 - Direct quotes with clear attribution: +3 to +5
-- Named sources referenced generally: +1 to +3
-- Vague attributions ("experts say", "sources claim"): -2 to -4
 - No attribution for major claims: -5
 
 J. VISUAL-TEXTUAL COHERENCE:
-Evaluate alignment between images and text content.
-- Images directly support and match the text narrative: +2 to +3
-- Neutral, illustrative images (stock, decorative): 0 (neutral)
+- Images directly support the text narrative: +2 to +3
 - Misleading or unrelated images: -3 to -5
-- No images present: 0 (neutral)
 
-RESPONSE FORMAT:
-You MUST respond with valid JSON in this exact format:
+RESPONSE FORMAT (JSON):
 {
   "score": <number between 0-100>,
+  "contentType": "web_other",
   "breakdown": {
-    "sources": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "factual": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "tone": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "context": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "transparency": {"points": <number>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "freshness": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "prudence": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "density": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "attribution": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"},
-    "visualCoherence": {"points": <number between -5 and +5>, "reason": "<brief reason in ${language === 'fr' ? 'French' : 'English'}>"}
+    "sources": {"points": <number>, "reason": "<brief reason>"},
+    "factual": {"points": <number>, "reason": "<brief reason>"},
+    "tone": {"points": <number>, "reason": "<brief reason>"},
+    "context": {"points": <number>, "reason": "<brief reason>"},
+    "transparency": {"points": <number>, "reason": "<brief reason>"},
+    "freshness": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "prudence": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "density": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "attribution": {"points": <-5 to +5>, "reason": "<brief reason>"},
+    "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
   },
-  "summary": "<2-3 sentence explanation in ${language === 'fr' ? 'French' : 'English'}>",
-  "articleSummary": "<2-3 sentence FACTUAL summary of what the article is about - ONLY describe the main topic and key reported facts. Use neutral, journalistic tone with verbs like 'reports', 'states', 'outlines', 'describes'. NO opinions, NO conclusions, NO mention of credibility or score. This must be in ${language === 'fr' ? 'French' : 'English'}>",
+  "summary": "<2-3 sentence explanation>",
+  "articleSummary": "<2-3 sentence factual summary>",
   "confidence": "<low|medium|high>"
 }
 
-IMPORTANT:
-- Score must be between 0 and 100
-- Be objective and analytical
-- When data is insufficient, state uncertainty instead of penalizing
-- Extended signals (F-J) are CAPPED at ±5 points each - they refine the score, not dominate it
-- The "summary" field should explain why the score is what it is (analysis conclusion)
-- The "articleSummary" field should ONLY describe what the content is about factually - it must NOT influence or mention the score
-- NEVER penalize content simply because it mentions dates in ${getCurrentDateInfo().year} - that is the CURRENT YEAR
-- ALL text responses (reasons, summary, articleSummary) MUST be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}`;
+ALL text must be in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}.`;
 
-// PRO ANALYSIS PROMPT - Includes advanced Image Signals Module
+// ============= PRO ANALYSIS PROMPT (unchanged, applies to all URL types) =============
+
 const getProSystemPrompt = (language: string) => `You are LeenScore Pro, an advanced AI credibility analyst. Your task is to perform a comprehensive Pro Analysis including advanced Image Signals analysis.
 
 IMPORTANT: You MUST respond entirely in ${language === 'fr' ? 'FRENCH' : 'ENGLISH'}. All text including reasons and summary must be in ${language === 'fr' ? 'French' : 'English'}.
@@ -308,7 +548,30 @@ serve(async (req) => {
     }
 
     const isPro = analysisType === 'pro';
-    const systemPrompt = isPro ? getProSystemPrompt(language || 'en') : getSystemPrompt(language || 'en');
+    
+    // Detect URL type for routing (only for Standard analysis)
+    const { type: urlType, detectedDomain } = detectUrlType(content);
+    console.log(`URL Type Detection: ${urlType}, Domain: ${detectedDomain || 'N/A'}`);
+    
+    // Select the appropriate system prompt based on analysis type and URL type
+    let systemPrompt: string;
+    if (isPro) {
+      systemPrompt = getProSystemPrompt(language || 'en');
+    } else {
+      switch (urlType) {
+        case 'SOCIAL_POST':
+          systemPrompt = getSocialPostPrompt(language || 'en');
+          console.log('Routing to SOCIAL_POST plausibility analysis');
+          break;
+        case 'NEWS_ARTICLE':
+          systemPrompt = getNewsArticlePrompt(language || 'en');
+          console.log('Routing to NEWS_ARTICLE editorial analysis');
+          break;
+        default:
+          systemPrompt = getWebOtherPrompt(language || 'en');
+          console.log('Routing to WEB_OTHER generic analysis');
+      }
+    }
     
     const userPrompt = language === 'fr' 
       ? `Analyse ce contenu et calcule le Trust Score${isPro ? ' avec analyse Pro complète' : ''}. Réponds en français:\n\n${content}`
@@ -375,6 +638,7 @@ serve(async (req) => {
       analysisResult = {
         score: 50,
         analysisType: isPro ? 'pro' : 'standard',
+        contentType: urlType.toLowerCase(),
         breakdown: {
           sources: { points: 0, reason: "Unable to analyze sources" },
           factual: { points: 0, reason: "Unable to verify facts" },
@@ -390,6 +654,10 @@ serve(async (req) => {
     // Ensure score is within bounds and set analysis type
     analysisResult.score = Math.max(0, Math.min(100, analysisResult.score));
     analysisResult.analysisType = isPro ? 'pro' : 'standard';
+    
+    // Add URL type metadata for frontend display
+    analysisResult.urlType = urlType;
+    analysisResult.detectedDomain = detectedDomain;
 
     return new Response(
       JSON.stringify(analysisResult),
