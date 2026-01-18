@@ -95,7 +95,7 @@ export const ProAnalysisModal = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className={`!top-[50%] !translate-y-[-50%] flex flex-col max-w-sm border-0 p-0 overflow-hidden transition-all duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+        className={`!top-[50%] !translate-y-[-50%] flex flex-col max-w-md border-0 p-0 overflow-hidden transition-all duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
         style={{
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
           boxShadow: '0 0 60px hsl(200 80% 50% / 0.2), 0 0 100px hsl(174 70% 45% / 0.15), 0 25px 50px hsl(0 0% 0% / 0.5)',
@@ -109,15 +109,15 @@ export const ProAnalysisModal = ({
           }}
         />
 
-        {/* Header - compact */}
-        <div className="pt-5 pb-3 px-5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-1.5">
+        {/* Header */}
+        <div className="pt-6 pb-4 px-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
             <span 
-              className="rounded-md px-2 py-0.5 text-[9px] font-black tracking-widest"
+              className="rounded-md px-2.5 py-1 text-[10px] font-black tracking-widest"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(280 60% 60%) 100%)',
                 color: 'white',
-                boxShadow: '0 0 12px hsl(200 80% 55% / 0.4)'
+                boxShadow: '0 0 15px hsl(200 80% 55% / 0.4)'
               }}
             >
               PRO
@@ -125,7 +125,7 @@ export const ProAnalysisModal = ({
           </div>
           <DialogHeader>
             <DialogTitle 
-              className="text-lg font-bold leading-tight"
+              className="text-xl font-bold leading-tight"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 80% 75%) 0%, hsl(174 70% 65%) 50%, hsl(280 60% 75%) 100%)',
                 WebkitBackgroundClip: 'text',
@@ -136,39 +136,39 @@ export const ProAnalysisModal = ({
               {t.title}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
             {t.subtitle}
           </p>
         </div>
 
-        {/* Scrollable Content - compact */}
-        <div className="flex-1 overflow-y-auto px-5 pb-2 min-h-0">
-          <div className="space-y-2">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-6 pb-3 min-h-0">
+          <div className="space-y-3">
             {t.features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={index}
-                  className="flex items-start gap-2.5 rounded-lg p-2.5"
+                  className="flex items-start gap-3 rounded-xl p-3.5"
                   style={{
                     background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.8) 0%, hsl(240 20% 12% / 0.8) 100%)',
                     border: '1px solid hsl(220 20% 25% / 0.5)'
                   }}
                 >
                   <div 
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                     style={{
                       background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.15) 0%, hsl(174 70% 50% / 0.15) 100%)',
                       border: '1px solid hsl(174 60% 45% / 0.25)'
                     }}
                   >
-                    <Icon className="h-4 w-4 text-primary" />
+                    <Icon className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-semibold text-foreground">
+                    <h4 className="text-sm font-semibold text-foreground">
                       {feature.title}
                     </h4>
-                    <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>
@@ -177,32 +177,32 @@ export const ProAnalysisModal = ({
             })}
           </div>
 
-          {/* Disclaimer - compact */}
+          {/* Disclaimer */}
           <div 
-            className="mt-3 rounded-md p-2.5"
+            className="mt-4 rounded-lg p-3"
             style={{
               background: 'hsl(220 20% 15% / 0.5)',
               border: '1px solid hsl(220 20% 25% / 0.3)'
             }}
           >
-            <p className="text-[10px] leading-relaxed text-muted-foreground text-center">
+            <p className="text-[11px] leading-relaxed text-muted-foreground text-center">
               {t.disclaimer}
             </p>
-            <p className="text-[10px] leading-relaxed text-muted-foreground/60 text-center mt-0.5">
+            <p className="text-[11px] leading-relaxed text-muted-foreground/60 text-center mt-1">
               {t.scoreRange}
             </p>
           </div>
         </div>
 
-        {/* CTA Footer - compact */}
-        <div className="px-5 pt-2 pb-5">
+        {/* CTA Footer */}
+        <div className="px-6 pt-3 pb-6">
           <button
             onClick={onLaunchPro}
             disabled={isLoading || isClosing}
-            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-full py-3 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
+            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full py-3.5 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
             style={{
               background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
-              boxShadow: '0 0 25px hsl(200 80% 55% / 0.4), 0 0 50px hsl(174 70% 45% / 0.2), 0 4px 15px hsl(0 0% 0% / 0.3)',
+              boxShadow: '0 0 30px hsl(200 80% 55% / 0.4), 0 0 60px hsl(174 70% 45% / 0.2), 0 4px 20px hsl(0 0% 0% / 0.3)',
             }}
           >
             {/* Animated shine */}
