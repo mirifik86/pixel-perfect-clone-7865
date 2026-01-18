@@ -6,6 +6,7 @@ import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
 import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
+import { ProAnalysisLoader } from '@/components/ProAnalysisLoader';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -452,8 +453,13 @@ const Index = () => {
             </div>
           )}
 
+          {/* PRO Analysis loading skeleton */}
+          {isProLoading && (
+            <ProAnalysisLoader language={language} />
+          )}
+
           {/* Analysis result - detailed breakdown below */}
-          {analysisData && (
+          {analysisData && !isProLoading && (
             <AnalysisResult 
               data={analysisData} 
               language={language} 
