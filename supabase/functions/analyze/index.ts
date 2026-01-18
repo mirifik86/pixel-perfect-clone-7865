@@ -584,10 +584,10 @@ RESPONSE FORMAT (JSON)
     "attribution": {"points": <-5 to +5 based on account nature>, "reason": "<brief reason>"},
     "visualCoherence": {"points": <-5 to +5>, "reason": "<brief reason>"}
   },
-  "summary": "<2-3 sentences explaining the weighted signal assessment and why this specific score>",
+  "summary": "<2-3 sentences describing the DOMINANT SIGNALS that shaped this score. Focus on what drove the score up or down.>",
   "articleSummary": "<DESCRIPTIVE SUMMARY - see ARTICLE SUMMARY RULES below>",
   "confidence": "<low|medium|high>",
-  "plausibilityNote": "${language === 'fr' ? 'Score calculé via 7 signaux pondérés avec variabilité contrôlée. Limites: 22-70. Analyse Pro requise pour scores >70.' : 'Score calculated via 7 weighted signals with controlled variability. Limits: 22-70. Pro analysis required for scores >70.'}"
+  "disclaimer": "${language === 'fr' ? "Ce score reflète les signaux de crédibilité d'une publication sur les réseaux sociaux, pas une vérification factuelle." : 'This score reflects credibility signals of a social media post, not factual verification.'}"
 }
 
 =============================================================================
