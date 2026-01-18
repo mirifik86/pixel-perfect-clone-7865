@@ -65,7 +65,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
   const t = content[language];
 
   return (
-    <div className="w-full max-w-2xl animate-fade-in mt-8">
+    <div className="w-full max-w-2xl animate-fade-in mt-4 md:mt-8">
       <div 
         className="relative overflow-hidden rounded-2xl"
         style={{
@@ -101,7 +101,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
 
         {/* Premium animated gradient bar */}
         <div 
-          className="absolute inset-x-0 top-0 h-1.5 overflow-hidden z-10"
+          className="absolute inset-x-0 top-0 h-1 md:h-1.5 overflow-hidden z-10"
           style={{
             background: 'hsl(220 20% 18%)',
           }}
@@ -116,11 +116,11 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
           />
         </div>
 
-        <div className="pt-8 pb-8 px-8 text-center">
+        <div className="pt-4 pb-4 px-4 md:pt-8 md:pb-8 md:px-8 text-center">
           {/* Premium PRO badge with glow */}
-          <div className="mb-6 flex justify-center">
+          <div className="mb-3 md:mb-6 flex justify-center">
             <div 
-              className="relative flex items-center gap-2.5 rounded-full px-5 py-2"
+              className="relative flex items-center gap-2 rounded-full px-3 py-1.5 md:px-5 md:py-2"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 85% 50% / 0.2) 0%, hsl(280 70% 55% / 0.2) 100%)',
                 border: '1px solid hsl(200 80% 55% / 0.4)',
@@ -135,9 +135,9 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
                   animation: 'pulse 2s ease-in-out infinite',
                 }}
               />
-              <Sparkles className="h-5 w-5 relative z-10" style={{ color: 'hsl(174 80% 60%)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+              <Sparkles className="h-4 w-4 md:h-5 md:w-5 relative z-10" style={{ color: 'hsl(174 80% 60%)', animation: 'pulse 1.5s ease-in-out infinite' }} />
               <span 
-                className="text-base font-bold relative z-10"
+                className="text-sm md:text-base font-bold relative z-10"
                 style={{
                   background: 'linear-gradient(135deg, hsl(174 80% 60%) 0%, hsl(200 85% 65%) 50%, hsl(280 70% 70%) 100%)',
                   WebkitBackgroundClip: 'text',
@@ -151,7 +151,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
 
           {/* Title with gradient - light text */}
           <h3 
-            className="font-serif text-xl font-semibold mb-3"
+            className="font-serif text-lg md:text-xl font-semibold mb-2 md:mb-3"
             style={{
               background: 'linear-gradient(135deg, hsl(0 0% 95%) 0%, hsl(200 30% 85%) 100%)',
               WebkitBackgroundClip: 'text',
@@ -161,8 +161,8 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
             {t.title}{dots}
           </h3>
 
-          {/* Subtitle with search icon */}
-          <div className="flex items-center justify-center gap-2.5 mb-8" style={{ color: 'hsl(200 30% 70%)' }}>
+          {/* Subtitle with search icon - hidden on mobile for compactness */}
+          <div className="hidden md:flex items-center justify-center gap-2.5 mb-8" style={{ color: 'hsl(200 30% 70%)' }}>
             <Search className="h-4 w-4" style={{ color: 'hsl(174 70% 55%)', animation: 'pulse 2s ease-in-out infinite' }} />
             <p className="text-sm font-medium">
               {t.subtitle}
@@ -170,7 +170,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
           </div>
 
           {/* Premium step indicators */}
-          <div className="flex justify-center gap-4 mb-6">
+          <div className="flex justify-center gap-3 md:gap-4 mb-4 md:mb-6 mt-4 md:mt-0">
             {t.steps.map((step, i) => {
               const Icon = step.icon;
               const isActive = i === activeStep;
@@ -179,14 +179,14 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
               return (
                 <div 
                   key={i}
-                  className="flex flex-col items-center gap-2 transition-all duration-500"
+                  className="flex flex-col items-center gap-1.5 md:gap-2 transition-all duration-500"
                   style={{
                     opacity: isActive ? 1 : isPast ? 0.8 : 0.5,
                     transform: isActive ? 'scale(1.05)' : 'scale(1)',
                   }}
                 >
                   <div 
-                    className="relative h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-500"
+                    className="relative h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center transition-all duration-500"
                     style={{
                       background: isActive 
                         ? 'linear-gradient(135deg, hsl(174 70% 45%) 0%, hsl(200 85% 55%) 50%, hsl(260 70% 60%) 100%)'
@@ -209,14 +209,15 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
                       />
                     )}
                     <Icon 
-                      className="h-5 w-5 relative z-10 transition-colors duration-500"
+                      className="h-4 w-4 md:h-5 md:w-5 relative z-10 transition-colors duration-500"
                       style={{ 
                         color: isActive || isPast ? 'white' : 'hsl(200 30% 50%)' 
                       }}
                     />
                   </div>
+                  {/* Labels hidden on mobile for compactness */}
                   <span 
-                    className="text-xs font-medium max-w-[80px] text-center transition-colors duration-500"
+                    className="hidden md:block text-xs font-medium max-w-[80px] text-center transition-colors duration-500"
                     style={{ 
                       color: isActive ? 'hsl(200 40% 85%)' : 'hsl(220 15% 50%)' 
                     }}
@@ -230,11 +231,11 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
 
           {/* Premium pulsing dots */}
           <div className="flex justify-center">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 md:gap-2">
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-2.5 w-2.5 rounded-full"
+                  className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full"
                   style={{
                     background: 'linear-gradient(135deg, hsl(174 70% 50%) 0%, hsl(200 85% 55%) 50%, hsl(260 70% 60%) 100%)',
                     animation: `pulse 1.2s ease-in-out infinite`,
