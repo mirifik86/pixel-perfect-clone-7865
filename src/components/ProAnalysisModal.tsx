@@ -95,7 +95,7 @@ export const ProAnalysisModal = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className={`!top-[50%] !translate-y-[-50%] flex flex-col max-w-md border-0 p-0 overflow-hidden transition-all duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+        className={`!top-[50%] !translate-y-[-50%] flex flex-col max-w-md border-0 p-0 overflow-hidden transition-all duration-300 max-h-[85vh] ${isClosing ? 'opacity-0' : 'opacity-100'}`}
         style={{
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
           boxShadow: '0 0 60px hsl(200 80% 50% / 0.2), 0 0 100px hsl(174 70% 45% / 0.15), 0 25px 50px hsl(0 0% 0% / 0.5)',
@@ -109,11 +109,11 @@ export const ProAnalysisModal = ({
           }}
         />
 
-        {/* Header */}
-        <div className="pt-6 pb-4 px-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
+        {/* Header - more compact */}
+        <div className="pt-4 pb-2 px-5 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1.5">
             <span 
-              className="rounded-md px-2.5 py-1 text-[10px] font-black tracking-widest"
+              className="rounded-md px-2 py-0.5 text-[9px] font-black tracking-widest"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(280 60% 60%) 100%)',
                 color: 'white',
@@ -125,7 +125,7 @@ export const ProAnalysisModal = ({
           </div>
           <DialogHeader>
             <DialogTitle 
-              className="text-xl font-bold leading-tight"
+              className="text-lg font-bold leading-tight"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 80% 75%) 0%, hsl(174 70% 65%) 50%, hsl(280 60% 75%) 100%)',
                 WebkitBackgroundClip: 'text',
@@ -136,39 +136,40 @@ export const ProAnalysisModal = ({
               {t.title}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             {t.subtitle}
           </p>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 pb-3 min-h-0">
-          <div className="space-y-3">
+        {/* Content - compact features */}
+        <div className="flex-1 overflow-y-auto px-5 pb-2 min-h-0">
+          <div className="space-y-2">
             {t.features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={index}
-                  className="flex items-start gap-3 rounded-xl p-3.5"
+                  className="flex items-center gap-2.5 rounded-lg p-2.5"
                   style={{
                     background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.8) 0%, hsl(240 20% 12% / 0.8) 100%)',
                     border: '1px solid hsl(220 20% 25% / 0.5)'
                   }}
                 >
                   <div 
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                     style={{
                       background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.15) 0%, hsl(174 70% 50% / 0.15) 100%)',
                       border: '1px solid hsl(174 60% 45% / 0.25)'
                     }}
                   >
-                    <Icon className="h-5 w-5 text-primary" />
+                    <Icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-foreground">
+                    <h4 className="text-xs font-semibold text-foreground">
                       {feature.title}
                     </h4>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {/* Description hidden on mobile */}
+                    <p className="hidden md:block mt-0.5 text-[10px] leading-snug text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>
@@ -177,19 +178,16 @@ export const ProAnalysisModal = ({
             })}
           </div>
 
-          {/* Disclaimer */}
+          {/* Disclaimer - more compact */}
           <div 
-            className="mt-4 rounded-lg p-3"
+            className="mt-3 rounded-lg p-2"
             style={{
               background: 'hsl(220 20% 15% / 0.5)',
               border: '1px solid hsl(220 20% 25% / 0.3)'
             }}
           >
-            <p className="text-[11px] leading-relaxed text-muted-foreground text-center">
+            <p className="text-[10px] leading-relaxed text-muted-foreground text-center">
               {t.disclaimer}
-            </p>
-            <p className="text-[11px] leading-relaxed text-muted-foreground/60 text-center mt-1">
-              {t.scoreRange}
             </p>
           </div>
         </div>
