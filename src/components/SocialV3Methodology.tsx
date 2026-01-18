@@ -12,13 +12,22 @@ import {
   Link2,
   Shield,
   Layers,
-  Radar,
+  Radar as RadarIcon,
   Sparkles,
   ChevronDown,
   ChevronUp,
   Info
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 
 interface SocialV3MethodologyProps {
   language: 'en' | 'fr';
@@ -158,7 +167,7 @@ const signalDefinitions = [
   { id: 11, category: 'evidence', icon: Link2, weights: { positive: '+2', negative: '-2' }, textBasedOnly: false, limitedActive: true },
   { id: 12, category: 'evidence', icon: Shield, weights: { positive: '0', negative: '-1' }, textBasedOnly: false, limitedActive: true },
   { id: 13, category: 'evidence', icon: Layers, weights: { positive: '+3', negative: '-1' }, textBasedOnly: false, limitedActive: true },
-  { id: 14, category: 'evidence', icon: Radar, weights: { positive: '+1', negative: '-3' }, textBasedOnly: false, limitedActive: true },
+  { id: 14, category: 'evidence', icon: RadarIcon, weights: { positive: '+1', negative: '-3' }, textBasedOnly: false, limitedActive: true },
   // Image AI (15)
   { id: 15, category: 'image', icon: Sparkles, weights: { positive: '+2', negative: '-4' }, textBasedOnly: false, limitedActive: false },
 ];
@@ -197,8 +206,25 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
     { key: 'content_access', label: t.contentAccess, value: subScores?.content_access ?? 50, icon: Eye },
     { key: 'language_quality', label: t.languageQuality, value: subScores?.language_quality ?? 50, icon: Volume2 },
     { key: 'evidence_strength', label: t.evidenceStrength, value: subScores?.evidence_strength ?? 50, icon: Shield },
-    { key: 'technical_risk', label: t.technicalRisk, value: subScores?.technical_risk ?? 50, icon: Radar },
+    { key: 'technical_risk', label: t.technicalRisk, value: subScores?.technical_risk ?? 50, icon: RadarIcon },
   ];
+
+  // Radar chart data
+  const radarData = subScoreCards.map(card => ({
+    subject: card.label,
+    value: card.value,
+    fullMark: 100,
+  }));
+
+  // Get color based on average score
+  const avgScore = subScoreCards.reduce((acc, card) => acc + card.value, 0) / subScoreCards.length;
+  const getRadarColor = () => {
+    if (avgScore >= 70) return { fill: 'rgba(34, 211, 238, 0.3)', stroke: 'hsl(185, 84%, 53%)' }; // cyan
+    if (avgScore >= 50) return { fill: 'rgba(45, 212, 191, 0.3)', stroke: 'hsl(168, 71%, 51%)' }; // teal
+    if (avgScore >= 35) return { fill: 'rgba(251, 191, 36, 0.3)', stroke: 'hsl(43, 96%, 56%)' }; // amber
+    return { fill: 'rgba(248, 113, 113, 0.3)', stroke: 'hsl(0, 91%, 71%)' }; // red
+  };
+  const radarColors = getRadarColor();
 
   // Category groups for signals
   const categoryGroups = [
@@ -275,6 +301,57 @@ export const SocialV3Methodology = ({ language, transparency, subScores }: Socia
             {t.languageUnavailable}
           </p>
         )}
+      </div>
+
+      {/* Radar Chart for SubScores */}
+      <div className="mb-6 flex flex-col items-center">
+        <div className="w-full max-w-[280px] h-[220px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+              <PolarGrid 
+                stroke="hsl(var(--border))" 
+                strokeOpacity={0.5}
+              />
+              <PolarAngleAxis 
+                dataKey="subject" 
+                tick={{ 
+                  fill: 'hsl(var(--muted-foreground))', 
+                  fontSize: 10,
+                  fontWeight: 500
+                }}
+                tickLine={false}
+              />
+              <PolarRadiusAxis 
+                angle={90} 
+                domain={[0, 100]} 
+                tick={{ fontSize: 8, fill: 'hsl(var(--muted-foreground))' }}
+                tickCount={5}
+                axisLine={false}
+              />
+              <Radar
+                name={language === 'fr' ? 'Score' : 'Score'}
+                dataKey="value"
+                stroke={radarColors.stroke}
+                fill={radarColors.fill}
+                strokeWidth={2}
+                dot={{ r: 4, fill: radarColors.stroke }}
+              />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--background))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  padding: '8px 12px',
+                }}
+                formatter={(value: number) => [`${value}/100`, language === 'fr' ? 'Score' : 'Score']}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-[10px] text-slate-500 text-center mt-1">
+          {language === 'fr' ? 'Vue radar des 4 sous-scores de crédibilité' : 'Radar view of 4 credibility sub-scores'}
+        </p>
       </div>
 
       {/* SubScores Grid - With degraded indicator for LIMITED_SIGNAL language */}
