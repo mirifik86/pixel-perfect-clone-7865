@@ -132,7 +132,119 @@ function detectUrlType(content: string): { type: UrlType; detectedDomain: string
   }
 }
 
+// ============= DETERMINISTIC MICRO-VARIABILITY LAYER =============
+// Prevents identical scores for similar content using secondary signals
+// Range: -2 to +4 (max absolute impact ≤ 5)
+
+function calculateMicroAdjustment(content: string): number {
+  const text = content.toLowerCase();
+  const words = text.split(/\s+/).filter(w => w.length > 0);
+  const wordCount = words.length;
+  
+  let adjustment = 0;
+  
+  // 1. Text length signal (-1 to +1)
+  // Very short content: slight penalty, moderately developed: slight bonus
+  if (wordCount < 30) {
+    adjustment -= 1; // Very short - less context available
+  } else if (wordCount >= 100 && wordCount <= 500) {
+    adjustment += 1; // Well-developed content
+  } else if (wordCount > 500) {
+    adjustment += 0.5; // Long but may be verbose
+  }
+  
+  // 2. Lexical richness signal (-1 to +1)
+  // Unique word ratio as proxy for vocabulary diversity
+  const uniqueWords = new Set(words.filter(w => w.length > 3));
+  const richness = wordCount > 0 ? uniqueWords.size / Math.min(wordCount, 100) : 0;
+  if (richness < 0.3) {
+    adjustment -= 1; // High repetition
+  } else if (richness > 0.6) {
+    adjustment += 1; // Varied vocabulary
+  }
+  
+  // 3. Nuance markers signal (-0.5 to +1.5)
+  // Presence of hedging/measured language
+  const nuanceMarkers = [
+    'may', 'might', 'could', 'possibly', 'perhaps', 'suggests', 'indicates',
+    'according to', 'reportedly', 'allegedly', 'appears', 'seems', 'likely',
+    'peut-être', 'pourrait', 'suggère', 'indique', 'selon', 'apparemment',
+    'semble', 'probablement', 'il est possible'
+  ];
+  const nuanceCount = nuanceMarkers.filter(marker => text.includes(marker)).length;
+  if (nuanceCount >= 3) {
+    adjustment += 1.5; // Strong nuanced language
+  } else if (nuanceCount >= 1) {
+    adjustment += 0.5; // Some nuance
+  } else {
+    adjustment -= 0.5; // Overly assertive
+  }
+  
+  // 4. Structure quality signal (-0.5 to +1)
+  // Check for complete sentences (periods, question marks, exclamation)
+  const sentenceEndings = (text.match(/[.!?]/g) || []).length;
+  const avgSentenceLength = wordCount / Math.max(sentenceEndings, 1);
+  if (sentenceEndings >= 3 && avgSentenceLength >= 8 && avgSentenceLength <= 35) {
+    adjustment += 1; // Well-structured sentences
+  } else if (sentenceEndings === 0 || avgSentenceLength < 5) {
+    adjustment -= 0.5; // Slogan-like or fragmented
+  }
+  
+  // 5. Content hash micro-variation (deterministic)
+  // Creates slight variation for similar content without pure randomness
+  // Uses character-based hash to add -0.5 to +0.5 variation
+  let hash = 0;
+  for (let i = 0; i < Math.min(text.length, 200); i++) {
+    hash = ((hash << 5) - hash) + text.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const hashVariation = ((Math.abs(hash) % 100) / 100 - 0.5); // -0.5 to +0.5
+  adjustment += hashVariation;
+  
+  // Clamp final adjustment to -2 to +4 range
+  return Math.round(Math.max(-2, Math.min(4, adjustment)) * 10) / 10;
+}
+
+function getMicroAdjustmentReason(content: string, language: string): string {
+  const text = content.toLowerCase();
+  const words = text.split(/\s+/).filter(w => w.length > 0);
+  const wordCount = words.length;
+  
+  const reasons: string[] = [];
+  
+  // Text length
+  if (wordCount < 30) {
+    reasons.push(language === 'fr' ? 'contenu court' : 'short content');
+  } else if (wordCount >= 100) {
+    reasons.push(language === 'fr' ? 'contenu développé' : 'developed content');
+  }
+  
+  // Lexical richness
+  const uniqueWords = new Set(words.filter(w => w.length > 3));
+  const richness = wordCount > 0 ? uniqueWords.size / Math.min(wordCount, 100) : 0;
+  if (richness > 0.6) {
+    reasons.push(language === 'fr' ? 'vocabulaire varié' : 'varied vocabulary');
+  } else if (richness < 0.3) {
+    reasons.push(language === 'fr' ? 'vocabulaire répétitif' : 'repetitive vocabulary');
+  }
+  
+  // Nuance markers
+  const nuanceMarkers = ['may', 'might', 'could', 'possibly', 'suggests', 'indicates', 'according to',
+    'peut-être', 'pourrait', 'suggère', 'selon', 'probablement'];
+  const hasNuance = nuanceMarkers.some(marker => text.includes(marker));
+  if (hasNuance) {
+    reasons.push(language === 'fr' ? 'langage nuancé' : 'nuanced language');
+  }
+  
+  if (reasons.length === 0) {
+    return language === 'fr' ? 'signaux secondaires neutres' : 'neutral secondary signals';
+  }
+  
+  return reasons.slice(0, 2).join(', ');
+}
+
 // ============= SOCIAL POST PLAUSIBILITY ANALYSIS =============
+
 
 const getSocialPostPrompt = (language: string) => `You are LeenScore, an AI plausibility analyst for social media content.
 
@@ -651,9 +763,32 @@ serve(async (req) => {
       };
     }
 
-    // Ensure score is within bounds and set analysis type
-    analysisResult.score = Math.max(0, Math.min(100, analysisResult.score));
+    // ============= DETERMINISTIC MICRO-VARIABILITY LAYER =============
+    // Apply subtle score adjustment based on secondary content signals
+    // Range: -2 to +4 points (max absolute impact ≤ 5)
+    // Purpose: Prevent identical scores for similar content without destabilizing results
+    
+    const microAdjustment = calculateMicroAdjustment(content);
+    console.log(`Micro-adjustment calculated: ${microAdjustment}`);
+    
+    // Apply adjustment to base score
+    let adjustedScore = analysisResult.score + microAdjustment;
+    
+    // Clamp to allowed ranges based on URL type
+    if (!isPro && urlType === 'SOCIAL_POST') {
+      adjustedScore = Math.max(20, Math.min(60, adjustedScore));
+    } else {
+      adjustedScore = Math.max(0, Math.min(100, adjustedScore));
+    }
+    
+    analysisResult.score = adjustedScore;
     analysisResult.analysisType = isPro ? 'pro' : 'standard';
+    
+    // Add micro-adjustment metadata (for debugging/transparency)
+    analysisResult.microAdjustment = {
+      applied: microAdjustment,
+      reason: getMicroAdjustmentReason(content, language || 'en')
+    };
     
     // Add URL type metadata for frontend display
     analysisResult.urlType = urlType;
