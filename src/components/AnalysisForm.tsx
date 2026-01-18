@@ -91,7 +91,13 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
               <span className="text-[11px] md:text-sm font-medium tracking-wide text-white text-center">
                 {t.placeholder}
               </span>
-              <span className="mt-1 text-[10px] md:text-xs text-white/65 italic">
+              <span 
+                className="mt-3 md:mt-4 text-xs md:text-sm font-semibold tracking-widest uppercase"
+                style={{
+                  color: 'hsl(174 70% 55%)',
+                  textShadow: '0 0 12px hsl(174 80% 50% / 0.5), 0 0 24px hsl(174 80% 45% / 0.3)',
+                }}
+              >
                 {t.placeholderHint}
               </span>
             </div>
