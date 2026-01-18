@@ -115,7 +115,16 @@ function isSameDomain(linkUrl: string, sourceUrl: string): boolean {
   }
 }
 
-// Analyze a single link with heuristics
+// Risk category based on score
+type RiskCategory = 'Low' | 'Medium' | 'High';
+
+function getRiskCategory(score: number): RiskCategory {
+  if (score <= 29) return 'Low';
+  if (score <= 69) return 'Medium';
+  return 'High';
+}
+
+// Analyze a single link with heuristics - returns 0-100 risk score
 function analyzeLink(url: string, language: 'en' | 'fr'): LinkAnalysis {
   const reasons: string[] = [];
   let riskScore = 0;
@@ -125,129 +134,153 @@ function analyzeLink(url: string, language: 'en' | 'fr'): LinkAnalysis {
 
   const t = {
     en: {
-      urlShortener: 'URL shortener detected - destination hidden',
-      suspiciousTld: 'Uses high-risk TLD commonly abused',
-      punycode: 'Internationalized domain (potential lookalike)',
-      suspiciousKeywords: 'Contains suspicious keywords in URL',
+      urlShortener: 'URL shortener - destination hidden',
+      suspiciousTld: 'High-risk domain extension',
+      punycode: 'Lookalike domain detected',
+      suspiciousKeywords: 'Suspicious keywords in URL',
       excessiveTracking: 'Multiple tracking parameters',
       longQuery: 'Unusually long query string',
-      manySubdomains: 'Many subdomains (potential obfuscation)',
-      longDomain: 'Unusually long domain name',
-      https: 'Uses HTTPS encryption',
-      wellKnown: 'Well-known domain',
+      manySubdomains: 'Multiple subdomains',
+      longDomain: 'Unusually long domain',
+      noHttps: 'No HTTPS encryption',
+      https: 'HTTPS secured',
+      wellKnown: 'Trusted domain',
     },
     fr: {
-      urlShortener: 'Raccourcisseur d\'URL - destination masquée',
-      suspiciousTld: 'Extension à haut risque souvent abusée',
-      punycode: 'Domaine internationalisé (potentiel sosie)',
-      suspiciousKeywords: 'Contient des mots-clés suspects dans l\'URL',
-      excessiveTracking: 'Multiples paramètres de suivi',
-      longQuery: 'Chaîne de requête anormalement longue',
-      manySubdomains: 'Nombreux sous-domaines (possible obscurcissement)',
-      longDomain: 'Nom de domaine anormalement long',
-      https: 'Utilise le chiffrement HTTPS',
-      wellKnown: 'Domaine bien connu',
+      urlShortener: 'Raccourcisseur - destination masquée',
+      suspiciousTld: 'Extension à haut risque',
+      punycode: 'Domaine sosie détecté',
+      suspiciousKeywords: 'Mots-clés suspects dans l\'URL',
+      excessiveTracking: 'Paramètres de suivi multiples',
+      longQuery: 'Requête anormalement longue',
+      manySubdomains: 'Sous-domaines multiples',
+      longDomain: 'Domaine anormalement long',
+      noHttps: 'Pas de chiffrement HTTPS',
+      https: 'Sécurisé HTTPS',
+      wellKnown: 'Domaine de confiance',
     }
   };
   const tr = t[language];
 
-  // 1. URL shortener detection
+  // Start at baseline 20 (slightly positive)
+  riskScore = 20;
+
+  // 1. URL shortener detection (+30 points)
   if (URL_SHORTENERS.some(s => lowerDomain === s || lowerDomain.endsWith('.' + s))) {
     reasons.push(tr.urlShortener);
+    riskScore += 30;
+  }
+
+  // 2. Suspicious TLD (+25 points)
+  if (SUSPICIOUS_TLDS.some(tld => lowerDomain.endsWith(tld))) {
+    reasons.push(tr.suspiciousTld);
     riskScore += 25;
   }
 
-  // 2. Suspicious TLD
-  if (SUSPICIOUS_TLDS.some(tld => lowerDomain.endsWith(tld))) {
-    reasons.push(tr.suspiciousTld);
-    riskScore += 20;
-  }
-
-  // 3. Punycode/IDN detection
+  // 3. Punycode/IDN detection (+20 points)
   if (domain.includes('xn--') || /[^\x00-\x7F]/.test(domain)) {
     reasons.push(tr.punycode);
-    riskScore += 15;
+    riskScore += 20;
   }
 
-  // 4. Suspicious keywords in path/query
+  // 4. Suspicious keywords in path/query (+15-25 points)
   const urlPath = lowerUrl.split('?')[0] + (lowerUrl.split('?')[1] || '');
   const foundKeywords = SUSPICIOUS_KEYWORDS.filter(kw => urlPath.includes(kw));
-  if (foundKeywords.length >= 2) {
+  if (foundKeywords.length >= 3) {
     reasons.push(tr.suspiciousKeywords);
-    riskScore += 20;
+    riskScore += 25;
+  } else if (foundKeywords.length >= 2) {
+    reasons.push(tr.suspiciousKeywords);
+    riskScore += 18;
   } else if (foundKeywords.length === 1) {
     riskScore += 8;
   }
 
-  // 5. Excessive tracking params
+  // 5. Excessive tracking params (+12 points)
   try {
     const urlObj = new URL(url);
     const trackingCount = TRACKING_PARAMS.filter(p => urlObj.searchParams.has(p)).length;
     if (trackingCount >= 3) {
       reasons.push(tr.excessiveTracking);
-      riskScore += 10;
+      riskScore += 12;
+    } else if (trackingCount >= 1) {
+      riskScore += 4;
     }
     
-    // Very long query string
+    // Very long query string (+10 points)
     if (urlObj.search.length > 200) {
       reasons.push(tr.longQuery);
       riskScore += 10;
     }
   } catch {}
 
-  // 6. Many subdomains
+  // 6. Many subdomains (+15 points)
   const subdomainCount = domain.split('.').length - 2;
   if (subdomainCount >= 3) {
     reasons.push(tr.manySubdomains);
     riskScore += 15;
+  } else if (subdomainCount >= 2) {
+    riskScore += 5;
   }
 
-  // 7. Very long domain
+  // 7. Very long domain (+10 points)
   if (domain.length > 50) {
     reasons.push(tr.longDomain);
     riskScore += 10;
+  } else if (domain.length > 35) {
+    riskScore += 5;
+  }
+
+  // 8. No HTTPS (+15 points)
+  if (!url.startsWith('https://')) {
+    reasons.push(tr.noHttps);
+    riskScore += 15;
   }
 
   // Positive signals (reduce risk)
-  if (url.startsWith('https://')) {
-    if (reasons.length === 0) reasons.push(tr.https);
-    riskScore -= 5;
-  }
-
-  // Well-known domains (basic whitelist for context)
+  // Well-known domains (-25 points)
   const wellKnownDomains = [
     'google.com', 'youtube.com', 'facebook.com', 'twitter.com', 'x.com',
     'instagram.com', 'linkedin.com', 'github.com', 'wikipedia.org',
     'amazon.com', 'apple.com', 'microsoft.com', 'bbc.com', 'cnn.com',
     'nytimes.com', 'reuters.com', 'theguardian.com', 'lemonde.fr',
-    'lefigaro.fr', 'liberation.fr', 'gov.uk', 'gouv.fr', 'europa.eu'
+    'lefigaro.fr', 'liberation.fr', 'gov.uk', 'gouv.fr', 'europa.eu',
+    'reddit.com', 'spotify.com', 'netflix.com', 'paypal.com', 'ebay.com',
+    'wordpress.com', 'medium.com', 'stackoverflow.com', 'twitch.tv'
   ];
-  if (wellKnownDomains.some(wd => lowerDomain === wd || lowerDomain.endsWith('.' + wd))) {
-    if (reasons.length === 0) reasons.push(tr.wellKnown);
-    riskScore -= 20;
+  const isWellKnown = wellKnownDomains.some(wd => lowerDomain === wd || lowerDomain.endsWith('.' + wd));
+  if (isWellKnown) {
+    reasons.unshift(tr.wellKnown);
+    riskScore -= 25;
   }
 
-  // Clamp score
+  // HTTPS bonus for non-well-known (-5 points)
+  if (url.startsWith('https://') && !isWellKnown && reasons.length === 0) {
+    reasons.push(tr.https);
+  }
+
+  // Clamp score to 0-100
   riskScore = Math.max(0, Math.min(100, riskScore));
 
-  // Determine label
+  // Determine label based on new thresholds
+  const category = getRiskCategory(riskScore);
   let label: 'Safe' | 'Unknown' | 'Suspicious';
-  if (riskScore >= 30) {
-    label = 'Suspicious';
-  } else if (riskScore >= 10) {
+  if (category === 'Low') {
+    label = 'Safe';
+  } else if (category === 'Medium') {
     label = 'Unknown';
   } else {
-    label = 'Safe';
+    label = 'Suspicious';
   }
 
-  // Limit to 4 reasons max
-  const finalReasons = reasons.slice(0, 4);
+  // Limit to 2 reasons max (most relevant)
+  const finalReasons = reasons.slice(0, 2);
 
   return {
     url,
     domain,
     label,
-    reasons: finalReasons.length > 0 ? finalReasons : [language === 'fr' ? 'Aucun signal de risque détecté' : 'No risk signals detected'],
+    reasons: finalReasons.length > 0 ? finalReasons : [language === 'fr' ? 'Aucun signal majeur' : 'No major risk signals'],
     riskScore
   };
 }
