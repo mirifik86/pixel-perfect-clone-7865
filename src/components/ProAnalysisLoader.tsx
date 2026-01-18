@@ -51,18 +51,18 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
   return (
     <div className="w-full max-w-2xl animate-fade-in mt-8">
       <div 
-        className="analysis-card relative overflow-hidden"
+        className="relative overflow-hidden rounded-2xl"
         style={{
-          background: 'linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(220 30% 98%) 50%, hsl(280 20% 98%) 100%)',
-          border: '1px solid hsl(200 40% 88%)',
-          boxShadow: '0 8px 32px hsl(200 80% 50% / 0.08), 0 2px 8px hsl(280 60% 50% / 0.06)',
+          background: 'linear-gradient(145deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 50%, hsl(260 25% 10%) 100%)',
+          border: '1px solid hsl(200 60% 40% / 0.3)',
+          boxShadow: '0 8px 40px hsl(200 80% 50% / 0.15), 0 4px 16px hsl(280 60% 50% / 0.1), inset 0 1px 0 hsl(200 60% 50% / 0.1)',
         }}
       >
         {/* Premium animated gradient bar */}
         <div 
           className="absolute inset-x-0 top-0 h-1.5 overflow-hidden"
           style={{
-            background: 'hsl(200 20% 92%)',
+            background: 'hsl(220 20% 18%)',
           }}
         >
           <div 
@@ -81,24 +81,24 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
             <div 
               className="relative flex items-center gap-2.5 rounded-full px-5 py-2"
               style={{
-                background: 'linear-gradient(135deg, hsl(200 85% 50% / 0.12) 0%, hsl(280 70% 55% / 0.12) 100%)',
-                border: '1px solid hsl(200 80% 55% / 0.25)',
-                boxShadow: '0 4px 16px hsl(200 80% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.5)',
+                background: 'linear-gradient(135deg, hsl(200 85% 50% / 0.2) 0%, hsl(280 70% 55% / 0.2) 100%)',
+                border: '1px solid hsl(200 80% 55% / 0.4)',
+                boxShadow: '0 4px 20px hsl(200 80% 50% / 0.25), inset 0 1px 0 hsl(200 60% 60% / 0.2)',
               }}
             >
               {/* Animated glow */}
               <div 
-                className="absolute inset-0 rounded-full opacity-50"
+                className="absolute inset-0 rounded-full opacity-60"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.2) 0%, hsl(280 60% 55% / 0.2) 100%)',
+                  background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.3) 0%, hsl(280 60% 55% / 0.3) 100%)',
                   animation: 'pulse 2s ease-in-out infinite',
                 }}
               />
-              <Sparkles className="h-5 w-5 text-cyan-500 relative z-10" style={{ animation: 'pulse 1.5s ease-in-out infinite' }} />
+              <Sparkles className="h-5 w-5 relative z-10" style={{ color: 'hsl(174 80% 60%)', animation: 'pulse 1.5s ease-in-out infinite' }} />
               <span 
                 className="text-base font-bold relative z-10"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(200 85% 45%) 0%, hsl(280 70% 50%) 100%)',
+                  background: 'linear-gradient(135deg, hsl(174 80% 60%) 0%, hsl(200 85% 65%) 50%, hsl(280 70% 70%) 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -108,11 +108,11 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
             </div>
           </div>
 
-          {/* Title with gradient */}
+          {/* Title with gradient - light text */}
           <h3 
             className="font-serif text-xl font-semibold mb-3"
             style={{
-              background: 'linear-gradient(135deg, hsl(220 20% 25%) 0%, hsl(220 30% 40%) 100%)',
+              background: 'linear-gradient(135deg, hsl(0 0% 95%) 0%, hsl(200 30% 85%) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
@@ -121,8 +121,8 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
           </h3>
 
           {/* Subtitle with search icon */}
-          <div className="flex items-center justify-center gap-2.5 text-slate-600 mb-8">
-            <Search className="h-4 w-4 text-cyan-600" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
+          <div className="flex items-center justify-center gap-2.5 mb-8" style={{ color: 'hsl(200 30% 70%)' }}>
+            <Search className="h-4 w-4" style={{ color: 'hsl(174 70% 55%)', animation: 'pulse 2s ease-in-out infinite' }} />
             <p className="text-sm font-medium">
               {t.subtitle}
             </p>
@@ -140,7 +140,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
                   key={i}
                   className="flex flex-col items-center gap-2 transition-all duration-500"
                   style={{
-                    opacity: isActive ? 1 : isPast ? 0.7 : 0.4,
+                    opacity: isActive ? 1 : isPast ? 0.8 : 0.5,
                     transform: isActive ? 'scale(1.05)' : 'scale(1)',
                   }}
                 >
@@ -150,10 +150,11 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
                       background: isActive 
                         ? 'linear-gradient(135deg, hsl(174 70% 45%) 0%, hsl(200 85% 55%) 50%, hsl(260 70% 60%) 100%)'
                         : isPast 
-                          ? 'linear-gradient(135deg, hsl(174 60% 55%) 0%, hsl(200 70% 60%) 100%)'
-                          : 'hsl(220 20% 94%)',
+                          ? 'linear-gradient(135deg, hsl(174 50% 40%) 0%, hsl(200 60% 45%) 100%)'
+                          : 'hsl(220 20% 18%)',
+                      border: isActive ? 'none' : '1px solid hsl(200 40% 30% / 0.5)',
                       boxShadow: isActive 
-                        ? '0 4px 20px hsl(200 80% 50% / 0.35), 0 2px 8px hsl(280 60% 50% / 0.2)'
+                        ? '0 4px 24px hsl(200 80% 50% / 0.4), 0 2px 8px hsl(280 60% 50% / 0.25)'
                         : 'none',
                     }}
                   >
@@ -167,15 +168,17 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
                       />
                     )}
                     <Icon 
-                      className={`h-5 w-5 relative z-10 transition-colors duration-500 ${
-                        isActive || isPast ? 'text-white' : 'text-slate-400'
-                      }`}
+                      className="h-5 w-5 relative z-10 transition-colors duration-500"
+                      style={{ 
+                        color: isActive || isPast ? 'white' : 'hsl(200 30% 50%)' 
+                      }}
                     />
                   </div>
                   <span 
-                    className={`text-xs font-medium max-w-[80px] text-center transition-colors duration-500 ${
-                      isActive ? 'text-slate-700' : 'text-slate-400'
-                    }`}
+                    className="text-xs font-medium max-w-[80px] text-center transition-colors duration-500"
+                    style={{ 
+                      color: isActive ? 'hsl(200 40% 85%)' : 'hsl(220 15% 50%)' 
+                    }}
                   >
                     {step.label}
                   </span>
@@ -195,7 +198,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
                     background: 'linear-gradient(135deg, hsl(174 70% 50%) 0%, hsl(200 85% 55%) 50%, hsl(260 70% 60%) 100%)',
                     animation: `pulse 1.2s ease-in-out infinite`,
                     animationDelay: `${i * 0.15}s`,
-                    boxShadow: '0 2px 8px hsl(200 80% 50% / 0.3)',
+                    boxShadow: '0 2px 12px hsl(200 80% 50% / 0.5)',
                   }}
                 />
               ))}
