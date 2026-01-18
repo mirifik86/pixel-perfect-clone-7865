@@ -11,13 +11,15 @@ interface AnalysisFormProps {
 
 const translations = {
   en: {
-    placeholder: 'Paste a message excerpt or describe the claim to verify',
+    placeholder: 'Paste an excerpt of the message or describe the claim to verify…',
+    placeholderHint: 'then',
     analyze: 'Analyze',
     description: 'We analyze source credibility, linguistic patterns, and context to help you understand online information.',
     urlDetected: 'URL detected',
   },
   fr: {
-    placeholder: "Collez un extrait du message ou décrivez l'affirmation à vérifier",
+    placeholder: "Collez un extrait du message ou décrivez l'affirmation à vérifier…",
+    placeholderHint: 'puis',
     analyze: 'Analyser',
     description: 'Nous analysons la crédibilité des sources, les modèles linguistiques et le contexte pour vous aider à comprendre les informations en ligne.',
     urlDetected: 'URL détectée',
@@ -83,11 +85,22 @@ export const AnalysisForm = ({ onAnalyze, isLoading, language }: AnalysisFormPro
             />
           </div>
           
+          {/* Custom two-line placeholder overlay */}
+          {!input && (
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4">
+              <span className="text-[11px] md:text-sm font-medium tracking-wide text-white text-center">
+                {t.placeholder}
+              </span>
+              <span className="mt-1 text-[10px] md:text-xs text-white/65 italic">
+                {t.placeholderHint}
+              </span>
+            </div>
+          )}
+          
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={t.placeholder}
-            className="min-h-[50px] md:min-h-[80px] resize-none border-0 bg-transparent text-center text-sm text-white placeholder:text-white placeholder:text-[11px] placeholder:md:text-sm placeholder:font-medium placeholder:tracking-wide focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="min-h-[50px] md:min-h-[80px] resize-none border-0 bg-transparent text-center text-sm text-white focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
       </div>
