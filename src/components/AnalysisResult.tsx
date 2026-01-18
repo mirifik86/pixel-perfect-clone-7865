@@ -47,11 +47,18 @@ interface ImageSignals {
   disclaimer?: string;
 }
 
+interface CorroborationSources {
+  corroborated?: string[];
+  neutral?: string[];
+  constrained?: string[];
+}
+
 interface Corroboration {
   outcome: string;
   sourcesConsulted: number;
   sourceTypes: string[];
   summary: string;
+  sources?: CorroborationSources;
 }
 
 interface AnalysisData {
@@ -63,7 +70,7 @@ interface AnalysisData {
   visualNote?: string;
   imageSignals?: ImageSignals;
   corroboration?: Corroboration;
-  proNote?: string;
+  proDisclaimer?: string;
 }
 
 interface AnalysisResultProps {
@@ -77,6 +84,7 @@ const translations = {
   en: {
     breakdown: 'Score Breakdown',
     proBreakdown: 'Pro Analysis Breakdown',
+    proExplanation: 'PRO Explanation',
     // Core criteria
     sources: 'Sources & Corroboration',
     factual: 'Factual Consistency',
@@ -89,17 +97,22 @@ const translations = {
     webCorroboration: 'Web Corroboration',
     imageCoherence: 'Image Signals',
     // Corroboration
-    corroborationTitle: 'Web Research Results',
-    corroborated: 'Corroborated',
-    neutral: 'Neutral',
-    constrained: 'Constrained',
+    corroborationTitle: 'Web Corroboration',
+    corroborated: 'Clear Corroboration',
+    neutral: 'Neutral Mentions',
+    constrained: 'Limited Coverage',
     sourcesConsulted: 'sources consulted',
+    // Source group labels
+    sourceGroupCorroborated: 'Clear corroboration',
+    sourceGroupNeutral: 'Neutral or contextual mentions',
+    sourceGroupConstrained: 'Limited or constrained coverage',
     // UI
     confidence: 'Confidence',
     confidenceLow: 'Low',
     confidenceMedium: 'Medium',
     confidenceHigh: 'High',
     summary: 'Summary',
+    plausibilityScore: 'Plausibility Score (PRO Analysis)',
     // Credibility signals badges
     signalsTitle: 'Credibility signals reviewed',
     proSignalsTitle: 'Pro signals evaluated',
@@ -117,6 +130,7 @@ const translations = {
   fr: {
     breakdown: 'Détail du Score',
     proBreakdown: 'Détail Analyse Pro',
+    proExplanation: 'Explication PRO',
     // Core criteria
     sources: 'Sources & Corroboration',
     factual: 'Cohérence Factuelle',
@@ -129,17 +143,22 @@ const translations = {
     webCorroboration: 'Corroboration Web',
     imageCoherence: 'Signaux Image',
     // Corroboration
-    corroborationTitle: 'Résultats de recherche web',
-    corroborated: 'Corroboré',
-    neutral: 'Neutre',
-    constrained: 'Contraint',
+    corroborationTitle: 'Corroboration Web',
+    corroborated: 'Corroboration claire',
+    neutral: 'Mentions neutres',
+    constrained: 'Couverture limitée',
     sourcesConsulted: 'sources consultées',
+    // Source group labels
+    sourceGroupCorroborated: 'Corroboration claire',
+    sourceGroupNeutral: 'Mentions neutres ou contextuelles',
+    sourceGroupConstrained: 'Couverture limitée ou contrainte',
     // UI
     confidence: 'Niveau de confiance',
     confidenceLow: 'Faible',
     confidenceMedium: 'Moyen',
     confidenceHigh: 'Élevé',
     summary: 'Résumé',
+    plausibilityScore: 'Score de Plausibilité (Analyse PRO)',
     // Credibility signals badges
     signalsTitle: 'Signaux de crédibilité évalués',
     proSignalsTitle: 'Signaux Pro évalués',
@@ -296,20 +315,34 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
         </div>
       )}
 
-      {/* Summary card */}
-      <div className="analysis-card mb-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
-            {t.confidence}: {confidenceLabels[data.confidence]}
-          </span>
+      {/* PRO: Plausibility Score Label */}
+      {isPro && (
+        <div className="analysis-card mb-6">
+          <h3 className="font-serif text-lg font-semibold text-slate-900 text-center mb-2">
+            {t.plausibilityScore}
+          </h3>
+          <p className="text-base font-medium leading-relaxed text-slate-700">
+            {articleSummary || data.summary}
+          </p>
         </div>
-        <p className="text-base font-medium leading-relaxed text-slate-700">
-          {articleSummary || data.summary}
-        </p>
-      </div>
+      )}
 
-      {/* PRO: Corroboration Results Card */}
+      {/* Standard: Summary card */}
+      {!isPro && (
+        <div className="analysis-card mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
+              {t.confidence}: {confidenceLabels[data.confidence]}
+            </span>
+          </div>
+          <p className="text-base font-medium leading-relaxed text-slate-700">
+            {articleSummary || data.summary}
+          </p>
+        </div>
+      )}
+
+      {/* PRO: Web Corroboration Card with Grouped Sources */}
       {isPro && data.corroboration && (
         <div 
           className="analysis-card mb-6"
@@ -333,28 +366,104 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
             </div>
           </div>
           
-          <p className="mb-3 text-sm font-medium leading-relaxed text-slate-700">
-            {data.corroboration.summary}
-          </p>
+          {/* Grouped Sources by Signal Type */}
+          {data.corroboration.sources && (
+            <div className="space-y-3 mb-4">
+              {/* Clear Corroboration Sources */}
+              {data.corroboration.sources.corroborated && data.corroboration.sources.corroborated.length > 0 && (
+                <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-xs font-semibold text-emerald-800">{t.sourceGroupCorroborated}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {data.corroboration.sources.corroborated.map((source, idx) => (
+                      <span 
+                        key={idx}
+                        className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700"
+                      >
+                        {source}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Neutral Sources */}
+              {data.corroboration.sources.neutral && data.corroboration.sources.neutral.length > 0 && (
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="text-xs font-semibold text-amber-800">{t.sourceGroupNeutral}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {data.corroboration.sources.neutral.map((source, idx) => (
+                      <span 
+                        key={idx}
+                        className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700"
+                      >
+                        {source}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Constrained Sources */}
+              {data.corroboration.sources.constrained && data.corroboration.sources.constrained.length > 0 && (
+                <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="h-2 w-2 rounded-full bg-red-500" />
+                    <span className="text-xs font-semibold text-red-800">{t.sourceGroupConstrained}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {data.corroboration.sources.constrained.map((source, idx) => (
+                      <span 
+                        key={idx}
+                        className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700"
+                      >
+                        {source}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
             <span className="flex items-center gap-1">
               <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span>
               {t.sourcesConsulted}
             </span>
-            {data.corroboration.sourceTypes && data.corroboration.sourceTypes.length > 0 && (
-              <div className="flex gap-1">
-                {data.corroboration.sourceTypes.map((type, idx) => (
-                  <span 
-                    key={idx}
-                    className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600"
-                  >
-                    {type}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
+        </div>
+      )}
+
+      {/* PRO: Explanation Card */}
+      {isPro && data.summary && (
+        <div className="analysis-card mb-6">
+          <h3 className="font-serif text-lg font-semibold text-slate-900 mb-3">
+            {t.proExplanation}
+          </h3>
+          <p className="text-sm font-medium leading-relaxed text-slate-700">
+            {data.summary}
+          </p>
+        </div>
+      )}
+
+      {/* PRO: Disclaimer */}
+      {isPro && data.proDisclaimer && (
+        <div 
+          className="mb-6 rounded-lg p-3 text-center"
+          style={{
+            background: 'hsl(220 20% 95%)',
+            border: '1px solid hsl(220 20% 88%)',
+          }}
+        >
+          <p className="text-xs text-slate-600 italic">
+            {data.proDisclaimer}
+          </p>
         </div>
       )}
 

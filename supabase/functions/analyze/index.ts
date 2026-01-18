@@ -309,7 +309,12 @@ Distinguish plausibility from factual certainty.
     "outcome": "<corroborated|neutral|constrained>",
     "sourcesConsulted": <number 1-10>,
     "sourceTypes": ["<media|agency|institution|other>"],
-    "summary": "<brief summary of web findings>"
+    "summary": "<brief summary of web findings>",
+    "sources": {
+      "corroborated": ["<source names that clearly corroborate>"],
+      "neutral": ["<source names with neutral/contextual mentions>"],
+      "constrained": ["<source names with limited coverage or no coverage indicator>"]
+    }
   },
   "imageSignals": {
     "origin": {
@@ -339,7 +344,7 @@ Distinguish plausibility from factual certainty.
   "summary": "<90-180 words, ideal 120-150 words, justifying the plausibility score with web-backed context>",
   "articleSummary": "<factual summary of submitted content>",
   "confidence": "<low|medium|high>",
-  "proNote": "${isFr ? 'Analyse Pro : évaluation de plausibilité basée sur la gravité, la cohérence contextuelle et la corroboration web. Score de 5 à 98.' : 'Pro Analysis: plausibility assessment based on gravity, contextual coherence, and web corroboration. Score range 5-98.'}"
+  "proDisclaimer": "${isFr ? "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue." : 'PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.'}"
 }
 
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
