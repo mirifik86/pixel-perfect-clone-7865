@@ -17,23 +17,33 @@ const getCurrentDateInfo = () => {
 };
 
 // ============= URL TYPE DETECTION =============
+// CRITICAL: Social media URLs MUST be classified as "Social Media Post – Weak Signal Content"
+// and routed to Social Credibility Logic. NEVER reuse scores from previous analyses.
 
 type UrlType = 'SOCIAL_POST' | 'NEWS_ARTICLE' | 'WEB_OTHER';
 
+// Social platforms - content is classified as "Weak Signal Content"
+// These platforms do not provide verifiable source context
 const SOCIAL_DOMAINS = [
-  'facebook.com', 'fb.com', 'fb.watch',
+  // Primary social platforms
+  'facebook.com', 'fb.com', 'fb.watch', 'm.facebook.com',
   'instagram.com',
-  'twitter.com', 'x.com',
-  'tiktok.com',
-  'reddit.com',
-  'linkedin.com',
+  'twitter.com', 'x.com', 'mobile.twitter.com',
+  'tiktok.com', 'vm.tiktok.com',
   'threads.net',
+  // Secondary social platforms
+  'reddit.com', 'old.reddit.com',
+  'linkedin.com',
   'mastodon.social',
   'bsky.app',
-  'youtube.com', 'youtu.be',
+  'youtube.com', 'youtu.be', 'm.youtube.com',
   'pinterest.com',
   'tumblr.com',
-  'snapchat.com'
+  'snapchat.com',
+  // Additional social variants
+  'vk.com',
+  'weibo.com',
+  'telegram.org', 't.me'
 ];
 
 const NEWS_DOMAINS = [
@@ -98,37 +108,73 @@ const NEWS_DOMAINS = [
   'lesdecodeurs.fr'
 ];
 
-function detectUrlType(content: string): { type: UrlType; detectedDomain: string | null } {
+interface UrlDetectionResult {
+  type: UrlType;
+  detectedDomain: string | null;
+  classification: string;
+  analysisRoute: string;
+}
+
+function detectUrlType(content: string): UrlDetectionResult {
   // Try to extract URL from content
   const urlMatch = content.match(/https?:\/\/[^\s<>"{}|\\^\[\]`]+/i);
   
   if (!urlMatch) {
     // No URL detected, treat as plain text (WEB_OTHER behavior)
-    return { type: 'WEB_OTHER', detectedDomain: null };
+    return { 
+      type: 'WEB_OTHER', 
+      detectedDomain: null,
+      classification: 'Plain Text Content',
+      analysisRoute: 'Generic Web Analysis'
+    };
   }
 
   try {
     const url = new URL(urlMatch[0]);
-    const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, '').replace(/^m\./, '');
     
-    // Check social domains
+    // PRIORITY CHECK: Social domains first
+    // Social media content is classified as "Weak Signal Content"
     for (const domain of SOCIAL_DOMAINS) {
       if (hostname === domain || hostname.endsWith('.' + domain)) {
-        return { type: 'SOCIAL_POST', detectedDomain: domain };
+        console.log(`[SOCIAL DETECTION] URL classified as Social Media Post - Weak Signal Content`);
+        console.log(`[SOCIAL DETECTION] Domain: ${domain}, Hostname: ${hostname}`);
+        console.log(`[SOCIAL DETECTION] Routing to: Social Credibility Logic (fresh analysis)`);
+        return { 
+          type: 'SOCIAL_POST', 
+          detectedDomain: domain,
+          classification: 'Social Media Post – Weak Signal Content',
+          analysisRoute: 'Social Credibility Logic'
+        };
       }
     }
     
     // Check news domains
     for (const domain of NEWS_DOMAINS) {
       if (hostname === domain || hostname.endsWith('.' + domain)) {
-        return { type: 'NEWS_ARTICLE', detectedDomain: domain };
+        return { 
+          type: 'NEWS_ARTICLE', 
+          detectedDomain: domain,
+          classification: 'News Article',
+          analysisRoute: 'Editorial Reliability Analysis'
+        };
       }
     }
     
     // Default to WEB_OTHER
-    return { type: 'WEB_OTHER', detectedDomain: hostname };
+    return { 
+      type: 'WEB_OTHER', 
+      detectedDomain: hostname,
+      classification: 'Web Content',
+      analysisRoute: 'Generic Web Analysis'
+    };
   } catch {
-    return { type: 'WEB_OTHER', detectedDomain: null };
+    return { 
+      type: 'WEB_OTHER', 
+      detectedDomain: null,
+      classification: 'Unknown Content',
+      analysisRoute: 'Generic Web Analysis'
+    };
   }
 }
 
@@ -838,27 +884,46 @@ serve(async (req) => {
 
     const isPro = analysisType === 'pro';
     
+    // Generate unique analysis ID to prevent score reuse
+    const analysisId = crypto.randomUUID();
+    console.log(`[ANALYSIS START] ID: ${analysisId}, Timestamp: ${new Date().toISOString()}`);
+    
     // Detect URL type for routing (only for Standard analysis)
-    const { type: urlType, detectedDomain } = detectUrlType(content);
-    console.log(`URL Type Detection: ${urlType}, Domain: ${detectedDomain || 'N/A'}`);
+    const urlDetection = detectUrlType(content);
+    const { type: urlType, detectedDomain, classification, analysisRoute } = urlDetection;
+    
+    console.log(`[URL CLASSIFICATION] Type: ${urlType}`);
+    console.log(`[URL CLASSIFICATION] Domain: ${detectedDomain || 'N/A'}`);
+    console.log(`[URL CLASSIFICATION] Classification: ${classification}`);
+    console.log(`[URL CLASSIFICATION] Route: ${analysisRoute}`);
+    
+    // CRITICAL: For social media, explicitly log the routing decision
+    if (urlType === 'SOCIAL_POST') {
+      console.log(`[SOCIAL ROUTING] ⚠️ SOCIAL MEDIA DETECTED`);
+      console.log(`[SOCIAL ROUTING] Classification: "Social Media Post – Weak Signal Content"`);
+      console.log(`[SOCIAL ROUTING] DO NOT use standard web article credibility logic`);
+      console.log(`[SOCIAL ROUTING] DO NOT reuse scores from previous analyses`);
+      console.log(`[SOCIAL ROUTING] Initiating fresh Social Credibility Logic analysis...`);
+    }
     
     // Select the appropriate system prompt based on analysis type and URL type
     let systemPrompt: string;
     if (isPro) {
       systemPrompt = getProSystemPrompt(language || 'en');
+      console.log('[PROMPT SELECTION] Using Pro analysis prompt');
     } else {
       switch (urlType) {
         case 'SOCIAL_POST':
           systemPrompt = getSocialPostPrompt(language || 'en');
-          console.log('Routing to SOCIAL_POST plausibility analysis');
+          console.log('[PROMPT SELECTION] Using SOCIAL_POST plausibility model (weighted sub-analyses)');
           break;
         case 'NEWS_ARTICLE':
           systemPrompt = getNewsArticlePrompt(language || 'en');
-          console.log('Routing to NEWS_ARTICLE editorial analysis');
+          console.log('[PROMPT SELECTION] Using NEWS_ARTICLE editorial reliability model');
           break;
         default:
           systemPrompt = getWebOtherPrompt(language || 'en');
-          console.log('Routing to WEB_OTHER generic analysis');
+          console.log('[PROMPT SELECTION] Using WEB_OTHER generic analysis model');
       }
     }
     
