@@ -74,8 +74,13 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
           boxShadow: '0 8px 40px hsl(200 80% 50% / 0.15), 0 4px 16px hsl(280 60% 50% / 0.1), inset 0 1px 0 hsl(200 60% 50% / 0.1)',
         }}
       >
-        {/* Animated stars/particles background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated stars/particles background with slow rotation */}
+        <div 
+          className="absolute inset-[-20%] overflow-hidden pointer-events-none"
+          style={{
+            animation: 'spin 60s linear infinite',
+          }}
+        >
           {stars.map((star) => (
             <div
               key={star.id}
