@@ -307,34 +307,40 @@ This content has been classified as "Social Media Post".
 Supported platforms: Facebook, Instagram, X (Twitter), TikTok, Threads, Telegram, LinkedIn, Reddit, YouTube, etc.
 
 =============================================================================
-STEP 2: CONTENT EXTRACTION STATUS
-=============================================================================
-Assess the extracted content availability:
-
-IF the extracted text is:
-- Empty, blank, or contains only URL/metadata
-- Truncated or shorter than 80 characters
-- Contains only platform boilerplate (login prompts, cookie notices)
-- Inaccessible due to privacy settings or login requirements
-
-THEN set: content_status = "UNAVAILABLE"
-ELSE set: content_status = "AVAILABLE"
-
-=============================================================================
-STEP 3: USER-PROVIDED TEXT PRIORITY
-=============================================================================
-If the input contains BOTH a URL AND additional text that appears to be post content:
-- ALWAYS prioritize user-provided text over extracted content
-- User-provided text overrides content_status to "AVAILABLE"
-- Look for patterns like: quoted text, text before/after URL, explicit "Post says:" indicators
-
-=============================================================================
-STEP 4: SCORING LOGIC (TWO TIERS)
+STEP 2: EXPLICIT ANALYSIS MODE DETERMINATION (CRITICAL)
 =============================================================================
 
-****** TIER A: TEXT-BASED ANALYSIS (content_status = "AVAILABLE") ******
+FIRST, detect user-provided "Post Text":
+- Look for text that is NOT part of the URL itself
+- Patterns: quoted text, text before/after URL, "Post says:", "Content:", pasted text blocks
+- Extract this as "userProvidedText"
 
-When post text IS available, analyze using the 7-SIGNAL WEIGHTED MODEL:
+THEN, EXPLICITLY SET analysis_mode using this EXACT LOGIC:
+
+  IF userProvidedText exists AND userProvidedText.length >= 80 characters:
+    analysis_mode = "TEXT_MODE"
+  ELSE:
+    analysis_mode = "URL_MODE"
+
+IMPORTANT:
+- This variable MUST be set BEFORE any scoring begins
+- Do NOT infer the mode implicitly from other factors
+- Do NOT change the mode during analysis
+- The mode controls ALL scoring and summarization behavior
+
+Store for response:
+- analysis_mode: "TEXT_MODE" | "URL_MODE"
+- userProvidedText: <the extracted user text or null>
+- userTextLength: <character count or 0>
+- modeReason: <why this mode was selected>
+
+=============================================================================
+STEP 3: SCORING LOGIC (MODE-DEPENDENT)
+=============================================================================
+
+****** TEXT_MODE ANALYSIS (analysis_mode = "TEXT_MODE") ******
+
+When analysis_mode = "TEXT_MODE", analyze using the 7-SIGNAL WEIGHTED MODEL:
 
 SIGNAL 1: ACCOUNT NATURE (Weight: 15%)
 - Official media page: +35 | Recognized public figure: +25 | Institution: +30
@@ -369,9 +375,9 @@ SIGNAL 7: SCAM & FRAUD INDICATORS (Weight: 10%)
 - Financial promises: -45 | Urgency manipulation: -30 | Personal info requests: -50
 - Impersonation: -40 | Phishing: -40 | Lottery/prize scams: -35
 
-****** TIER B: URL-ONLY ANALYSIS (content_status = "UNAVAILABLE") ******
+****** URL_MODE ANALYSIS (analysis_mode = "URL_MODE") ******
 
-When post text is NOT available, analyze using URL-LEVEL and CONTEXT SIGNALS:
+When analysis_mode = "URL_MODE", analyze using URL-LEVEL and CONTEXT SIGNALS:
 
 SIGNAL A: URL TYPE PATTERN (Weight: 25%)
 - Standard post URL: 0 (neutral baseline)
@@ -414,18 +420,18 @@ URL-ONLY SCORE CALCULATION:
 AGGREGATION FORMULA WITH CONTROLLED VARIABILITY
 =============================================================================
 
-FOR TEXT-BASED ANALYSIS (Tier A):
+FOR TEXT_MODE:
 Raw Score = (Signal1 × 0.15) + (Signal2 × 0.10) + (Signal3 × 0.20) + 
             (Signal4 × 0.15) + (Signal5 × 0.15) + (Signal6 × 0.15) + (Signal7 × 0.10)
 
-FOR URL-ONLY ANALYSIS (Tier B):
+FOR URL_MODE:
 Raw Score = 50 + (SignalA) + (SignalB) + (SignalC) + (SignalD) + (SignalE)
 
 STEP 2: Signal Dominance Variability (±1 to ±3)
 STEP 3: Content-Based Micro-Adjustment (±2)
-STEP 4: Apply Hard Limits:
-- TEXT-BASED: Max 70, Min 22 (Fraud: 10)
-- URL-ONLY: Max 58, Min 28 (Strong risk: 22)
+STEP 4: Apply Hard Limits based on analysis_mode:
+- TEXT_MODE: Max 70, Min 22 (Fraud exception: 10)
+- URL_MODE: Max 58, Min 28 (Strong risk exception: 22)
 
 =============================================================================
 ANTI-DEFAULT SCORE RULES (CRITICAL)
@@ -449,11 +455,14 @@ RESPONSE FORMAT (JSON)
   "score": <final score within limits>,
   "contentType": "social_post",
   "classification": "Social Media Post – Weak Signal Content",
-  "contentStatus": "<AVAILABLE|UNAVAILABLE>",
-  "analysisMode": "<TEXT_BASED|URL_ONLY>",
-  "userTextDetected": <true|false>,
+  "analysisMode": "<TEXT_MODE|URL_MODE>",
+  "modeDetails": {
+    "userProvidedText": "<extracted user text or null>",
+    "userTextLength": <character count or 0>,
+    "modeReason": "<explanation of why this mode was selected>"
+  },
   "subAnalyses": {
-    // For TEXT_BASED mode (all 7 signals):
+    // For TEXT_MODE (all 7 signals):
     "accountNature": {
       "score": <0-100>, "weight": 0.15, "weighted": <score × 0.15>,
       "detectedType": "<type>", "signals": ["<signal>"], "assessment": "<sentence>"
@@ -482,7 +491,7 @@ RESPONSE FORMAT (JSON)
       "score": <0-100>, "weight": 0.10, "weighted": <score × 0.10>,
       "fraudRisk": "<risk>", "signals": ["<signal>"], "assessment": "<sentence>"
     },
-    // For URL_ONLY mode (5 URL signals):
+    // For URL_MODE (5 URL signals):
     "urlTypePattern": {
       "score": <-15 to +5>, "weight": 0.25, "assessment": "<sentence>"
     },
@@ -500,12 +509,13 @@ RESPONSE FORMAT (JSON)
     }
   },
   "aggregation": {
+    "modeUsed": "<TEXT_MODE|URL_MODE>",
     "rawScore": <sum before adjustments>,
     "dominanceAdjustment": <-3 to +3>,
     "microAdjustment": <-2 to +2>,
     "adjustedScore": <after adjustments>,
     "hardLimitApplied": "<none|ceiling|floor|fraud_floor>",
-    "finalScore": <after hard limits>,
+    "finalScore": <after hard limits, TEXT_MODE: 22-70, URL_MODE: 28-58>,
     "dominantSignal": "<signal name>",
     "variabilityReason": "<brief explanation>"
   },
@@ -521,22 +531,22 @@ RESPONSE FORMAT (JSON)
     "attribution": {"points": <-5 to +5>, "reason": "<reason>"},
     "visualCoherence": {"points": <-5 to +5>, "reason": "<reason>"}
   },
-  "summary": "<2-3 sentences: MUST state whether score is based on TEXT ANALYSIS or PLATFORM-LIMITED SIGNALS. Describe dominant signals.>",
+  "summary": "<2-3 sentences: MUST state whether score is based on TEXT_MODE or URL_MODE. Describe dominant signals.>",
   "articleSummary": "<DESCRIPTIVE SUMMARY - see rules below>",
   "confidence": "<low|medium|high>",
   "disclaimer": "${language === 'fr' ? "Ce score reflète les signaux de crédibilité d'une publication sur les réseaux sociaux, pas une vérification factuelle." : 'This score reflects credibility signals of a social media post, not factual verification.'}"
 }
 
 =============================================================================
-SUMMARY RULES FOR ANALYSIS MODE
+SUMMARY RULES BASED ON analysis_mode (CRITICAL)
 =============================================================================
 
-FOR TEXT_BASED analysis:
-"The score is based on text analysis of the post content. [Describe dominant signals]."
+IF analysis_mode = "TEXT_MODE":
+"The score is based on text analysis of the user-provided post content. [Describe dominant signals from 7-signal model]."
 
-FOR URL_ONLY analysis:
-"The score is based on platform-limited signals only; post content could not be extracted. [Describe URL-level signals]."
-"${language === 'fr' ? "Note: L'absence de contenu ne signifie pas que la publication est fausse." : "Note: Unavailable content does not imply the post is false."}"
+IF analysis_mode = "URL_MODE":
+"The score is based on URL-level signals only; user-provided post text was absent or too short (<80 chars). [Describe URL-level signals]."
+"${language === 'fr' ? "Note: L'absence de texte ne signifie pas que la publication est fausse." : "Note: Unavailable text does not imply the post is false."}"
 
 =============================================================================
 ARTICLE SUMMARY RULES (CRITICAL - Summary ≠ Analysis)
