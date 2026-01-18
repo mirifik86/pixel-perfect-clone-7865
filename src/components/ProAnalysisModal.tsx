@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Sparkles, Search, Image, ArrowRight, Loader2 } from 'lucide-react';
+import { Sparkles, Search, Image, ArrowRight, Loader2, Scale } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -24,51 +23,55 @@ export const ProAnalysisModal = ({
 }: ProAnalysisModalProps) => {
   const content = {
     en: {
-      title: "Pro Analysis",
-      subtitle: "Web-backed plausibility assessment",
+      title: "PRO Analysis — In-Depth Verification",
+      subtitle: "Advanced plausibility assessment with web research and cross-source analysis.",
       features: [
         {
           icon: Search,
           title: "Web Corroboration",
-          description: "Up to 10 verified sources from recognized media and official institutions."
+          description: "Web research and cross-checking across up to 10 sources from recognized media outlets and official institutions."
         },
         {
-          icon: Sparkles,
-          title: "Claim Gravity & Coherence",
-          description: "Assessment of claim weight and alignment with known contextual patterns."
+          icon: Scale,
+          title: "Claim Gravity & Context",
+          description: "Evaluation of the real-world weight of the claim and its coherence with known contextual patterns."
         },
         {
           icon: Image,
           title: "Image Signal Analysis",
-          description: "Origin detection, metadata indicators, and visual-textual coherence."
+          description: "Assessment of visual signals including probable origin, available metadata, and image coherence."
         }
       ],
-      disclaimer: "Pro Analysis provides plausibility assessment, not absolute verification. Score range: 5-98.",
-      cta: "Launch Pro Analysis",
+      disclaimer: "PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.",
+      scoreRange: "Plausibility score range: 5–98.",
+      cta: "Launch PRO Analysis",
+      price: "$2.99",
       loading: "Analyzing..."
     },
     fr: {
-      title: "Analyse Pro",
-      subtitle: "Évaluation de plausibilité avec recherche web",
+      title: "Analyse PRO — Vérification approfondie",
+      subtitle: "Évaluation de plausibilité avancée avec recherche web et analyse multi-sources.",
       features: [
         {
           icon: Search,
           title: "Corroboration Web",
-          description: "Jusqu'à 10 sources vérifiées de médias reconnus et institutions officielles."
+          description: "Recherche web et recoupement sur jusqu'à 10 sources provenant de médias reconnus et d'institutions officielles."
         },
         {
-          icon: Sparkles,
-          title: "Gravité & Cohérence",
-          description: "Évaluation du poids de l'affirmation et de sa cohérence contextuelle."
+          icon: Scale,
+          title: "Gravité & Contexte",
+          description: "Évaluation du poids réel de l'affirmation et de sa cohérence avec les schémas contextuels connus."
         },
         {
           icon: Image,
           title: "Analyse des Signaux Image",
-          description: "Détection d'origine, indicateurs de métadonnées et cohérence visuelle."
+          description: "Évaluation des signaux visuels incluant l'origine probable, les métadonnées disponibles et la cohérence de l'image."
         }
       ],
-      disclaimer: "L'Analyse Pro fournit une évaluation de plausibilité, pas une vérification absolue. Score: 5-98.",
-      cta: "Lancer l'Analyse Pro",
+      disclaimer: "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue.",
+      scoreRange: "Plage du score de plausibilité : 5–98.",
+      cta: "Lancer l'Analyse PRO",
+      price: "2,99 $",
       loading: "Analyse en cours..."
     }
   };
@@ -93,10 +96,10 @@ export const ProAnalysisModal = ({
         />
 
         <div className="p-6">
-          <DialogHeader className="text-center mb-6">
+          <DialogHeader className="text-center mb-5">
             <div className="flex items-center justify-center gap-2 mb-2">
               <span 
-                className="rounded-md px-2 py-1 text-xs font-black tracking-wider"
+                className="rounded-md px-2.5 py-1 text-[10px] font-black tracking-widest"
                 style={{
                   background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(280 60% 60%) 100%)',
                   color: 'white',
@@ -107,9 +110,9 @@ export const ProAnalysisModal = ({
               </span>
             </div>
             <DialogTitle 
-              className="text-2xl font-bold"
+              className="text-xl font-bold leading-tight"
               style={{
-                background: 'linear-gradient(135deg, hsl(200 80% 70%) 0%, hsl(174 70% 60%) 50%, hsl(280 60% 70%) 100%)',
+                background: 'linear-gradient(135deg, hsl(200 80% 75%) 0%, hsl(174 70% 65%) 50%, hsl(280 60% 75%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -117,7 +120,7 @@ export const ProAnalysisModal = ({
             >
               {t.title}
             </DialogTitle>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
               {t.subtitle}
             </p>
           </DialogHeader>
@@ -128,26 +131,26 @@ export const ProAnalysisModal = ({
               return (
                 <div 
                   key={index}
-                  className="flex items-start gap-3 rounded-xl p-3 transition-all"
+                  className="flex items-start gap-3 rounded-xl p-3.5 transition-all"
                   style={{
                     background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.8) 0%, hsl(240 20% 12% / 0.8) 100%)',
                     border: '1px solid hsl(220 20% 25% / 0.5)'
                   }}
                 >
                   <div 
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                     style={{
-                      background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.2) 0%, hsl(174 70% 50% / 0.2) 100%)',
-                      border: '1px solid hsl(174 60% 45% / 0.3)'
+                      background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.15) 0%, hsl(174 70% 50% / 0.15) 100%)',
+                      border: '1px solid hsl(174 60% 45% / 0.25)'
                     }}
                   >
-                    <Icon className="h-4 w-4 text-primary" />
+                    <Icon className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="text-sm font-semibold text-foreground">
                       {feature.title}
                     </h4>
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>
@@ -158,7 +161,7 @@ export const ProAnalysisModal = ({
 
           {/* Disclaimer */}
           <div 
-            className="mt-4 rounded-lg p-3"
+            className="mt-5 rounded-lg p-3.5"
             style={{
               background: 'hsl(220 20% 15% / 0.5)',
               border: '1px solid hsl(220 20% 25% / 0.3)'
@@ -167,13 +170,16 @@ export const ProAnalysisModal = ({
             <p className="text-[11px] leading-relaxed text-muted-foreground text-center">
               {t.disclaimer}
             </p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground/70 text-center mt-1">
+              {t.scoreRange}
+            </p>
           </div>
 
-          {/* CTA Button */}
+          {/* CTA Button with Price */}
           <button
             onClick={onLaunchPro}
             disabled={isLoading}
-            className="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-full py-3 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
+            className="group relative mt-5 flex w-full items-center justify-center gap-3 overflow-hidden rounded-full py-3.5 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
             style={{
               background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
               boxShadow: '0 0 30px hsl(200 80% 55% / 0.4), 0 0 60px hsl(174 70% 45% / 0.2), 0 4px 20px hsl(0 0% 0% / 0.3)',
@@ -197,10 +203,26 @@ export const ProAnalysisModal = ({
               <>
                 <Sparkles className="h-4 w-4" />
                 <span>{t.cta}</span>
+                <span 
+                  className="rounded-full px-2.5 py-0.5 text-xs font-bold"
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  {t.price}
+                </span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </>
             )}
           </button>
+
+          {/* Trust indicator */}
+          <p className="mt-4 text-center text-[10px] text-muted-foreground/50">
+            {language === 'fr' 
+              ? 'Paiement sécurisé • Analyse instantanée' 
+              : 'Secure payment • Instant analysis'}
+          </p>
         </div>
       </DialogContent>
     </Dialog>
