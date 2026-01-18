@@ -393,50 +393,52 @@ const Index = () => {
                   {language === 'fr' ? 'Nouvelle analyse' : 'New analysis'}
                 </button>
                 
-                {/* Secondary CTA - Pro Analysis (Active & Inviting) */}
-                <button
-                  onClick={() => setIsProModalOpen(true)}
-                  className="group relative flex items-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
-                    boxShadow: '0 0 25px hsl(200 80% 55% / 0.5), 0 0 50px hsl(174 70% 45% / 0.3), 0 4px 20px hsl(0 0% 0% / 0.3)',
-                  }}
-                >
-                  {/* Animated shine effect */}
-                  <div 
-                    className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                {/* Secondary CTA - Pro Analysis (only show if NOT already a PRO analysis) */}
+                {analysisData?.analysisType !== 'pro' && (
+                  <button
+                    onClick={() => setIsProModalOpen(true)}
+                    className="group relative flex items-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300"
                     style={{
-                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
-                      animation: 'shine 2s infinite',
-                    }}
-                  />
-                  
-                  {/* PRO badge with glow */}
-                  <span 
-                    className="relative rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider"
-                    style={{
-                      background: 'rgba(255,255,255,0.2)',
-                      color: 'white',
-                      textShadow: '0 0 10px rgba(255,255,255,0.5)',
+                      background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
+                      boxShadow: '0 0 25px hsl(200 80% 55% / 0.5), 0 0 50px hsl(174 70% 45% / 0.3), 0 4px 20px hsl(0 0% 0% / 0.3)',
                     }}
                   >
-                    PRO
-                  </span>
+                    {/* Animated shine effect */}
+                    <div 
+                      className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      style={{
+                        background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
+                        animation: 'shine 2s infinite',
+                      }}
+                    />
+                    
+                    {/* PRO badge with glow */}
+                    <span 
+                      className="relative rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider"
+                      style={{
+                        background: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        textShadow: '0 0 10px rgba(255,255,255,0.5)',
+                      }}
+                    >
+                      PRO
+                    </span>
+                    
+                    <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                      {language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}
+                    </span>
                   
-                  <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
-                    {language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}
-                  </span>
-                  
-                  {/* Subtle pulse ring */}
-                  <div 
-                    className="absolute -inset-1 -z-10 rounded-full opacity-50"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(174 70% 50%) 50%, hsl(280 60% 60%) 100%)',
-                      animation: 'pulse 2s ease-in-out infinite',
-                      filter: 'blur(8px)',
-                    }}
-                  />
-                </button>
+                    {/* Subtle pulse ring */}
+                    <div 
+                      className="absolute -inset-1 -z-10 rounded-full opacity-50"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(174 70% 50%) 50%, hsl(280 60% 60%) 100%)',
+                        animation: 'pulse 2s ease-in-out infinite',
+                        filter: 'blur(8px)',
+                      }}
+                    />
+                  </button>
+                )}
               </div>
             </div>
           )}
