@@ -376,113 +376,140 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
         </div>
       )}
 
-      {/* PRO: Explanation Card - Now FIRST section for PRO results */}
-      {isPro && data.summary && (
-        <div className="analysis-card mb-6">
-          <h3 className="font-serif text-lg font-semibold text-slate-900 mb-3">
-            {t.proExplanation}
-          </h3>
-          <p className="text-sm font-medium leading-relaxed text-slate-700">
-            {data.summary}
-          </p>
-        </div>
-      )}
-
-      {/* PRO: Web Corroboration Card with Grouped Sources */}
-      {isPro && data.corroboration && (
+      {/* PRO: Unified Explanation + Corroboration Card */}
+      {isPro && (data.summary || data.corroboration) && (
         <div 
-          className="analysis-card mb-6"
+          className="analysis-card mb-6 overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(200 30% 98%) 100%)',
-            border: '1px solid hsl(200 40% 90%)',
+            background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(200 20% 98%) 100%)',
+            border: '1px solid hsl(200 40% 88%)',
+            boxShadow: '0 4px 24px hsl(200 40% 50% / 0.08), 0 1px 3px hsl(0 0% 0% / 0.05)',
           }}
         >
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Search className="h-5 w-5 text-cyan-600" />
-              <h3 className="font-serif text-lg font-semibold text-slate-900">{t.corroborationTitle}</h3>
-            </div>
-            <div 
-              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${corroborationStyles[data.corroboration.outcome]?.bg}`}
-            >
-              <span className={`h-2 w-2 rounded-full ${corroborationStyles[data.corroboration.outcome]?.dot}`} />
-              <span className={`text-xs font-bold ${corroborationStyles[data.corroboration.outcome]?.text}`}>
-                {corroborationLabels[data.corroboration.outcome]}
-              </span>
-            </div>
-          </div>
-          
-          {/* Grouped Sources by Signal Type */}
-          {data.corroboration.sources && (
-            <div className="space-y-3 mb-4">
-              {/* Clear Corroboration Sources */}
-              {data.corroboration.sources.corroborated && data.corroboration.sources.corroborated.length > 0 && (
-                <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-xs font-semibold text-emerald-800">{t.sourceGroupCorroborated}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {data.corroboration.sources.corroborated.map((source, idx) => (
-                      <span 
-                        key={idx}
-                        className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700"
-                      >
-                        {source}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Neutral Sources */}
-              {data.corroboration.sources.neutral && data.corroboration.sources.neutral.length > 0 && (
-                <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span className="text-xs font-semibold text-amber-800">{t.sourceGroupNeutral}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {data.corroboration.sources.neutral.map((source, idx) => (
-                      <span 
-                        key={idx}
-                        className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700"
-                      >
-                        {source}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Constrained Sources */}
-              {data.corroboration.sources.constrained && data.corroboration.sources.constrained.length > 0 && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="h-2 w-2 rounded-full bg-red-500" />
-                    <span className="text-xs font-semibold text-red-800">{t.sourceGroupConstrained}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {data.corroboration.sources.constrained.map((source, idx) => (
-                      <span 
-                        key={idx}
-                        className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700"
-                      >
-                        {source}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {/* Explication PRO Section */}
+          {data.summary && (
+            <div className="pb-5">
+              <h3 className="font-serif text-lg font-semibold text-slate-900 mb-3">
+                {t.proExplanation}
+              </h3>
+              <p className="text-sm font-medium leading-relaxed text-slate-700">
+                {data.summary}
+              </p>
             </div>
           )}
           
-          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-            <span className="flex items-center gap-1">
-              <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span>
-              {t.sourcesConsulted}
-            </span>
-          </div>
+          {/* Elegant separator */}
+          {data.summary && data.corroboration && (
+            <div className="relative py-4">
+              <div 
+                className="absolute inset-x-0 top-1/2 h-px"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, hsl(200 40% 85%) 20%, hsl(200 40% 85%) 80%, transparent 100%)',
+                }}
+              />
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3">
+                <div 
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(200 60% 55%) 0%, hsl(174 60% 50%) 100%)',
+                    boxShadow: '0 0 8px hsl(200 60% 55% / 0.5)',
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Corroboration Web Section */}
+          {data.corroboration && (
+            <div className="pt-1">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Search className="h-5 w-5 text-cyan-600" />
+                  <h3 className="font-serif text-lg font-semibold text-slate-900">{t.corroborationTitle}</h3>
+                </div>
+                <div 
+                  className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${corroborationStyles[data.corroboration.outcome]?.bg}`}
+                >
+                  <span className={`h-2 w-2 rounded-full ${corroborationStyles[data.corroboration.outcome]?.dot}`} />
+                  <span className={`text-xs font-bold ${corroborationStyles[data.corroboration.outcome]?.text}`}>
+                    {corroborationLabels[data.corroboration.outcome]}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Grouped Sources by Signal Type */}
+              {data.corroboration.sources && (
+                <div className="space-y-3 mb-4">
+                  {/* Clear Corroboration Sources */}
+                  {data.corroboration.sources.corroborated && data.corroboration.sources.corroborated.length > 0 && (
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <span className="text-xs font-semibold text-emerald-800">{t.sourceGroupCorroborated}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {data.corroboration.sources.corroborated.map((source, idx) => (
+                          <span 
+                            key={idx}
+                            className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700"
+                          >
+                            {source}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Neutral Sources */}
+                  {data.corroboration.sources.neutral && data.corroboration.sources.neutral.length > 0 && (
+                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="h-2 w-2 rounded-full bg-amber-500" />
+                        <span className="text-xs font-semibold text-amber-800">{t.sourceGroupNeutral}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {data.corroboration.sources.neutral.map((source, idx) => (
+                          <span 
+                            key={idx}
+                            className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700"
+                          >
+                            {source}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Constrained Sources */}
+                  {data.corroboration.sources.constrained && data.corroboration.sources.constrained.length > 0 && (
+                    <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="h-2 w-2 rounded-full bg-red-500" />
+                        <span className="text-xs font-semibold text-red-800">{t.sourceGroupConstrained}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {data.corroboration.sources.constrained.map((source, idx) => (
+                          <span 
+                            key={idx}
+                            className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700"
+                          >
+                            {source}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <span className="flex items-center gap-1">
+                  <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span>
+                  {t.sourcesConsulted}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
