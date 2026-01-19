@@ -294,13 +294,24 @@ export const ProAnalysisModal = ({
                 <Sparkles className="h-5 w-5" />
                 <span>{t.cta}</span>
                 <span 
-                  className="ml-2 rounded-full px-3 py-1 text-sm font-bold"
+                  className="ml-2 rounded-full px-3 py-1 text-sm font-bold relative overflow-hidden"
                   style={{
-                    background: 'hsl(0 0% 100% / 0.25)',
-                    boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.2)'
+                    background: 'linear-gradient(135deg, hsl(45 100% 60%) 0%, hsl(35 100% 50%) 50%, hsl(45 100% 65%) 100%)',
+                    color: 'hsl(30 90% 15%)',
+                    boxShadow: '0 0 20px hsl(45 100% 55% / 0.6), 0 0 40px hsl(35 100% 50% / 0.4), inset 0 1px 0 hsl(45 100% 80% / 0.5)',
+                    textShadow: '0 1px 1px hsl(45 100% 80% / 0.3)',
+                    animation: 'price-glow 2s ease-in-out infinite',
                   }}
                 >
-                  {t.ctaPrice}
+                  {/* Animated shine sweep */}
+                  <span 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(105deg, transparent 30%, hsl(45 100% 90% / 0.8) 45%, hsl(45 100% 95% / 0.9) 50%, hsl(45 100% 90% / 0.8) 55%, transparent 70%)',
+                      animation: 'price-shine 2.5s ease-in-out infinite',
+                    }}
+                  />
+                  <span className="relative z-10">{t.ctaPrice}</span>
                 </span>
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </>
