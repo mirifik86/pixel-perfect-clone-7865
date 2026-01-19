@@ -290,27 +290,73 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
 
   return (
     <div className="mt-8 w-full max-w-2xl animate-fade-in">
-      {/* PRO badge indicator */}
+      {/* PRO badge indicator - Premium visual */}
       {isPro && (
-        <div className="mb-4 flex justify-center">
+        <div className="mb-6 flex justify-center">
           <div 
-            className="flex items-center gap-2 rounded-full px-4 py-1.5"
+            className="group relative flex items-center gap-3 rounded-full px-6 py-2.5 overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, hsl(200 80% 50% / 0.15) 0%, hsl(280 60% 55% / 0.15) 100%)',
-              border: '1px solid hsl(200 80% 55% / 0.3)',
+              background: 'linear-gradient(135deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
+              border: '1px solid hsl(200 80% 55% / 0.4)',
+              boxShadow: '0 0 30px hsl(200 80% 55% / 0.2), 0 0 60px hsl(280 60% 55% / 0.15), inset 0 1px 0 hsl(200 80% 70% / 0.15)',
             }}
           >
-            <Sparkles className="h-4 w-4 text-cyan-400" />
-            <span 
-              className="text-sm font-semibold"
+            {/* Animated shine sweep */}
+            <div 
+              className="absolute inset-0 opacity-60"
               style={{
-                background: 'linear-gradient(135deg, hsl(200 80% 65%) 0%, hsl(280 60% 70%) 100%)',
+                background: 'linear-gradient(105deg, transparent 20%, hsl(200 80% 70% / 0.1) 40%, hsl(280 60% 70% / 0.15) 50%, transparent 80%)',
+                animation: 'pro-badge-shine 3s ease-in-out infinite',
+              }}
+            />
+            
+            {/* Outer glow ring */}
+            <div 
+              className="absolute -inset-0.5 -z-10 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.3) 0%, hsl(280 60% 55% / 0.3) 100%)',
+                filter: 'blur(6px)',
+                animation: 'pro-badge-pulse 2.5s ease-in-out infinite',
+              }}
+            />
+            
+            {/* Sparkles icon with glow */}
+            <div className="relative">
+              <Sparkles 
+                className="h-5 w-5"
+                style={{
+                  color: 'hsl(45 100% 70%)',
+                  filter: 'drop-shadow(0 0 6px hsl(45 100% 60% / 0.8))',
+                  animation: 'pro-sparkle 2s ease-in-out infinite',
+                }}
+              />
+            </div>
+            
+            {/* PRO text with premium gradient */}
+            <span 
+              className="relative text-base font-bold tracking-wide"
+              style={{
+                background: 'linear-gradient(135deg, hsl(45 100% 75%) 0%, hsl(35 100% 65%) 30%, hsl(200 80% 70%) 70%, hsl(280 60% 75%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                textShadow: '0 0 30px hsl(45 100% 60% / 0.5)',
               }}
             >
-              Pro Analysis
+              PRO ANALYSIS
             </span>
+            
+            {/* Premium verified badge */}
+            <div 
+              className="flex items-center justify-center rounded-full"
+              style={{
+                width: '20px',
+                height: '20px',
+                background: 'linear-gradient(135deg, hsl(45 100% 55%) 0%, hsl(35 100% 50%) 100%)',
+                boxShadow: '0 0 10px hsl(45 100% 55% / 0.6)',
+              }}
+            >
+              <CheckCircle className="h-3.5 w-3.5 text-slate-900" strokeWidth={3} />
+            </div>
           </div>
         </div>
       )}
