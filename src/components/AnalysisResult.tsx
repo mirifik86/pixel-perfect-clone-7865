@@ -315,6 +315,17 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
         </div>
       )}
 
+      {/* PRO: Plausibility Score Label */}
+      {isPro && (
+        <div className="analysis-card mb-6">
+          <h3 className="font-serif text-lg font-semibold text-slate-900 text-center mb-2">
+            {t.plausibilityScore}
+          </h3>
+          <p className="text-base font-medium leading-relaxed text-slate-700">
+            {articleSummary || data.summary}
+          </p>
+        </div>
+      )}
 
       {/* Standard: Summary card */}
       {!isPro && (
@@ -429,14 +440,14 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
         </div>
       )}
 
-      {/* PRO: Plausibility Score (moved from top) */}
-      {isPro && (
+      {/* PRO: Explanation Card */}
+      {isPro && data.summary && (
         <div className="analysis-card mb-6">
-          <h3 className="font-serif text-lg font-semibold text-slate-900 text-center mb-2">
-            {t.plausibilityScore}
+          <h3 className="font-serif text-lg font-semibold text-slate-900 mb-3">
+            {t.proExplanation}
           </h3>
-          <p className="text-base font-medium leading-relaxed text-slate-700">
-            {articleSummary || data.summary}
+          <p className="text-sm font-medium leading-relaxed text-slate-700">
+            {data.summary}
           </p>
         </div>
       )}
