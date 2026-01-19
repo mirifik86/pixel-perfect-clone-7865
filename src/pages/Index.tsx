@@ -377,66 +377,74 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Post-Analysis: CTA buttons only (summary moved to AnalysisResult card) */}
+          {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}
           {hasAnyAnalysis && (
             <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-              {/* Action buttons row - premium dual CTA */}
+              {/* Action buttons row */}
               <div className="flex items-center justify-center gap-3">
-                {/* Primary CTA - Run another analysis */}
+                {/* Primary CTA - Run another analysis (always visible, emphasized after PRO) */}
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                  className="flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all"
                   style={{
-                    boxShadow: '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
+                    background: analysisData?.analysisType === 'pro' 
+                      ? 'linear-gradient(135deg, hsl(174 70% 40%) 0%, hsl(174 60% 35%) 100%)'
+                      : 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: analysisData?.analysisType === 'pro'
+                      ? '0 0 30px hsl(174 60% 45% / 0.5), 0 4px 16px hsl(0 0% 0% / 0.3)'
+                      : '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
                   }}
                 >
                   {language === 'fr' ? 'Nouvelle analyse' : 'New analysis'}
                 </button>
                 
-                {/* Secondary CTA - Pro Analysis (Active & Inviting) */}
-                <button
-                  onClick={() => setIsProModalOpen(true)}
-                  className="group relative flex items-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
-                    boxShadow: '0 0 25px hsl(200 80% 55% / 0.5), 0 0 50px hsl(174 70% 45% / 0.3), 0 4px 20px hsl(0 0% 0% / 0.3)',
-                  }}
-                >
-                  {/* Animated shine effect */}
-                  <div 
-                    className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                {/* Secondary CTA - Pro Analysis (Hidden after PRO analysis is complete) */}
+                {analysisData?.analysisType !== 'pro' && (
+                  <button
+                    onClick={() => setIsProModalOpen(true)}
+                    className="group relative flex items-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300"
                     style={{
-                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
-                      animation: 'shine 2s infinite',
-                    }}
-                  />
-                  
-                  {/* PRO badge with glow */}
-                  <span 
-                    className="relative rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider"
-                    style={{
-                      background: 'rgba(255,255,255,0.2)',
-                      color: 'white',
-                      textShadow: '0 0 10px rgba(255,255,255,0.5)',
+                      background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
+                      boxShadow: '0 0 25px hsl(200 80% 55% / 0.5), 0 0 50px hsl(174 70% 45% / 0.3), 0 4px 20px hsl(0 0% 0% / 0.3)',
                     }}
                   >
-                    PRO
-                  </span>
-                  
-                  <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
-                    {language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}
-                  </span>
-                  
-                  {/* Subtle pulse ring */}
-                  <div 
-                    className="absolute -inset-1 -z-10 rounded-full opacity-50"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(174 70% 50%) 50%, hsl(280 60% 60%) 100%)',
-                      animation: 'pulse 2s ease-in-out infinite',
-                      filter: 'blur(8px)',
-                    }}
-                  />
-                </button>
+                    {/* Animated shine effect */}
+                    <div 
+                      className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      style={{
+                        background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
+                        animation: 'shine 2s infinite',
+                      }}
+                    />
+                    
+                    {/* PRO badge with glow */}
+                    <span 
+                      className="relative rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider"
+                      style={{
+                        background: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        textShadow: '0 0 10px rgba(255,255,255,0.5)',
+                      }}
+                    >
+                      PRO
+                    </span>
+                    
+                    <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                      {language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}
+                    </span>
+                    
+                    {/* Subtle pulse ring */}
+                    <div 
+                      className="absolute -inset-1 -z-10 rounded-full opacity-50"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(174 70% 50%) 50%, hsl(280 60% 60%) 100%)',
+                        animation: 'pulse 2s ease-in-out infinite',
+                        filter: 'blur(8px)',
+                      }}
+                    />
+                  </button>
+                )}
               </div>
             </div>
           )}
