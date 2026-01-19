@@ -143,8 +143,8 @@ export const ProAnalysisModal = ({
         `}
         style={{
           width: isMobile ? '94vw' : 'clamp(720px, 78vw, 880px)',
-          height: isMobile ? '92vh' : 'auto',
-          maxHeight: isMobile ? '92vh' : '80vh',
+          height: isMobile ? 'auto' : 'auto',
+          maxHeight: isMobile ? '75vh' : '80vh',
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
           boxShadow: '0 0 80px hsl(200 80% 50% / 0.25), 0 0 120px hsl(174 70% 45% / 0.15), 0 30px 60px hsl(0 0% 0% / 0.6)',
           border: '1px solid hsl(220 20% 20% / 0.5)',
@@ -169,15 +169,15 @@ export const ProAnalysisModal = ({
 
         {/* Sticky Header */}
         <div 
-          className="sticky top-0 z-10 pt-6 pb-4 px-6 md:pt-8 md:pb-6 md:px-10 text-center"
+          className="sticky top-0 z-10 pt-4 pb-3 px-5 md:pt-8 md:pb-6 md:px-10 text-center"
           style={{
             background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(220 25% 12% / 0.95) 80%, transparent 100%)',
           }}
         >
           {/* PRO Badge */}
-          <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="flex items-center justify-center gap-2 mb-2 md:mb-3">
             <span 
-              className="rounded-lg px-3 py-1 text-[10px] md:text-xs font-black tracking-widest"
+              className="rounded-lg px-2.5 py-0.5 text-[9px] md:text-xs font-black tracking-widest"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(280 60% 60%) 100%)',
                 color: 'white',
@@ -190,7 +190,7 @@ export const ProAnalysisModal = ({
 
           {/* Title */}
           <h2 
-            className="text-xl md:text-2xl font-bold leading-tight mb-2"
+            className="text-lg md:text-2xl font-bold leading-tight mb-1 md:mb-2"
             style={{
               background: 'linear-gradient(135deg, hsl(200 80% 75%) 0%, hsl(174 70% 65%) 50%, hsl(280 60% 75%) 100%)',
               WebkitBackgroundClip: 'text',
@@ -201,41 +201,41 @@ export const ProAnalysisModal = ({
             {t.title} — {t.titleSuffix}
           </h2>
 
-          {/* Subtitle */}
-          <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-lg mx-auto">
+          {/* Subtitle - hidden on mobile */}
+          <p className="hidden md:block text-base text-muted-foreground leading-relaxed max-w-lg mx-auto">
             {t.subtitle}
           </p>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-4">
+        <div className="flex-1 overflow-y-auto px-5 md:px-10 pb-3 md:pb-4">
           {/* Feature Cards */}
-          <div className="space-y-3 md:space-y-4">
+          <div className="space-y-2 md:space-y-4">
             {t.features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={index}
-                  className="flex items-start gap-4 rounded-xl p-4 md:p-5"
+                  className="flex items-start gap-3 md:gap-4 rounded-xl p-3 md:p-5"
                   style={{
                     background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.9) 0%, hsl(240 20% 12% / 0.9) 100%)',
                     border: '1px solid hsl(220 20% 25% / 0.5)'
                   }}
                 >
                   <div 
-                    className="flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl"
+                    className="flex h-9 w-9 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg md:rounded-xl"
                     style={{
                       background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.2) 0%, hsl(174 70% 50% / 0.2) 100%)',
                       border: '1px solid hsl(174 60% 45% / 0.3)'
                     }}
                   >
-                    <Icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                    <Icon className="h-4 w-4 md:h-6 md:w-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm md:text-base font-semibold text-foreground mb-1">
+                    <h4 className="text-[13px] md:text-base font-semibold text-foreground mb-0.5 md:mb-1">
                       {feature.title}
                     </h4>
-                    <p className="text-xs md:text-sm leading-relaxed text-muted-foreground">
+                    <p className="text-[11px] md:text-sm leading-snug md:leading-relaxed text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>
@@ -244,15 +244,15 @@ export const ProAnalysisModal = ({
             })}
           </div>
 
-          {/* Disclaimer */}
+          {/* Disclaimer - hidden on mobile */}
           <div 
-            className="mt-4 md:mt-6 rounded-xl p-4"
+            className="hidden md:block mt-6 rounded-xl p-4"
             style={{
               background: 'hsl(220 20% 15% / 0.6)',
               border: '1px solid hsl(220 20% 25% / 0.4)'
             }}
           >
-            <p className="text-xs md:text-sm leading-relaxed text-muted-foreground text-center">
+            <p className="text-sm leading-relaxed text-muted-foreground text-center">
               {t.disclaimer}
             </p>
           </div>
@@ -260,7 +260,7 @@ export const ProAnalysisModal = ({
 
         {/* Sticky CTA Bar */}
         <div 
-          className="sticky bottom-0 px-6 md:px-10 pt-4 pb-6 md:pb-8"
+          className="sticky bottom-0 px-5 md:px-10 pt-3 pb-4 md:pt-4 md:pb-8"
           style={{
             background: 'linear-gradient(180deg, transparent 0%, hsl(240 20% 8% / 0.95) 20%, hsl(240 20% 8%) 100%)',
             backdropFilter: 'blur(12px)',
@@ -270,10 +270,10 @@ export const ProAnalysisModal = ({
           <button
             onClick={onLaunchPro}
             disabled={isLoading || isClosing}
-            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full text-base md:text-lg font-semibold text-white transition-all duration-300 disabled:opacity-70 hover:scale-[1.02] active:scale-[0.98]"
+            className="group relative flex w-full items-center justify-center gap-2 md:gap-3 overflow-hidden rounded-full text-[15px] md:text-lg font-semibold text-white transition-all duration-300 disabled:opacity-70 hover:scale-[1.02] active:scale-[0.98]"
             style={{
-              height: isMobile ? '56px' : '52px',
-              minHeight: '48px',
+              height: isMobile ? '50px' : '52px',
+              minHeight: '44px',
               background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
               boxShadow: '0 0 40px hsl(200 80% 55% / 0.5), 0 0 80px hsl(174 70% 45% / 0.25), 0 8px 30px hsl(0 0% 0% / 0.4)',
             }}
