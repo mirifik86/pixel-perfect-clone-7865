@@ -61,6 +61,7 @@ export const ProAnalysisModal = ({
       disclaimer: "PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.",
       scoreRange: "Plausibility score range: 5–98.",
       cta: "Launch PRO Analysis",
+      ctaPrice: "$2.99",
       loading: "Analysis in progress…"
     },
     fr: {
@@ -86,6 +87,7 @@ export const ProAnalysisModal = ({
       disclaimer: "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue.",
       scoreRange: "Plage du score de plausibilité : 5–98.",
       cta: "Lancer l'Analyse PRO",
+      ctaPrice: "2,99$",
       loading: "Analyse en cours…"
     }
   };
@@ -218,6 +220,7 @@ export const ProAnalysisModal = ({
               <>
                 <Sparkles className="h-4 w-4" />
                 <span>{t.cta}</span>
+                <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">{t.ctaPrice}</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </>
             )}
