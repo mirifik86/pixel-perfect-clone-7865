@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Search, Image, ArrowRight, Scale } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Sparkles, Search, Image, ArrowRight, Scale, X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProAnalysisModalProps {
   open: boolean;
@@ -23,12 +18,37 @@ export const ProAnalysisModal = ({
   isLoading = false 
 }: ProAnalysisModalProps) => {
   const [isClosing, setIsClosing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Handle open/close animations
+  useEffect(() => {
+    if (open) {
+      // Small delay to trigger animation
+      requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+    } else {
+      setIsVisible(false);
+    }
+  }, [open]);
+
+  // Disable background scroll when modal is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   // Auto-close modal with smooth transition when loading starts
   useEffect(() => {
     if (isLoading && open) {
       setIsClosing(true);
-      // Wait for fade-out animation before closing
       const timer = setTimeout(() => {
         onOpenChange(false);
         setIsClosing(false);
@@ -39,7 +59,8 @@ export const ProAnalysisModal = ({
 
   const content = {
     en: {
-      title: "PRO Analysis — In-Depth Verification",
+      title: "PRO Analysis",
+      titleSuffix: "In-Depth Verification",
       subtitle: "Advanced plausibility assessment with web research and cross-source analysis.",
       features: [
         {
@@ -65,7 +86,8 @@ export const ProAnalysisModal = ({
       loading: "Analysis in progress…"
     },
     fr: {
-      title: "Analyse PRO — Vérification approfondie",
+      title: "Analyse PRO",
+      titleSuffix: "Vérification approfondie",
       subtitle: "Évaluation de plausibilité avancée avec recherche web et analyse multi-sources.",
       features: [
         {
@@ -94,84 +116,126 @@ export const ProAnalysisModal = ({
 
   const t = content[language];
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
-        className={`!top-[50%] !translate-y-[-50%] flex flex-col max-w-md border-0 p-0 overflow-hidden transition-all duration-300 max-h-[85vh] ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+    <div className="fixed inset-0 z-50">
+      {/* Backdrop with blur */}
+      <div 
+        className={`absolute inset-0 transition-opacity duration-300 ${isVisible && !isClosing ? 'opacity-100' : 'opacity-0'}`}
         style={{
+          background: 'hsl(0 0% 0% / 0.75)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
+        onClick={() => onOpenChange(false)}
+      />
+
+      {/* Modal Container */}
+      <div 
+        className={`
+          absolute flex flex-col overflow-hidden
+          transition-all duration-300 ease-out
+          ${isMobile 
+            ? `bottom-0 left-[3vw] right-[3vw] rounded-t-2xl ${isVisible && !isClosing ? 'translate-y-0' : 'translate-y-full'}` 
+            : `top-1/2 left-1/2 -translate-x-1/2 rounded-2xl ${isVisible && !isClosing ? '-translate-y-1/2 scale-100 opacity-100' : '-translate-y-1/2 scale-95 opacity-0'}`
+          }
+        `}
+        style={{
+          width: isMobile ? '94vw' : 'clamp(720px, 78vw, 880px)',
+          height: isMobile ? '92vh' : 'auto',
+          maxHeight: isMobile ? '92vh' : '80vh',
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
-          boxShadow: '0 0 60px hsl(200 80% 50% / 0.2), 0 0 100px hsl(174 70% 45% / 0.15), 0 25px 50px hsl(0 0% 0% / 0.5)',
+          boxShadow: '0 0 80px hsl(200 80% 50% / 0.25), 0 0 120px hsl(174 70% 45% / 0.15), 0 30px 60px hsl(0 0% 0% / 0.6)',
+          border: '1px solid hsl(220 20% 20% / 0.5)',
         }}
       >
-        {/* Gradient header accent */}
+        {/* Gradient header accent line */}
         <div 
-          className="absolute inset-x-0 top-0 h-1 z-10"
+          className="absolute inset-x-0 top-0 h-1 z-10 rounded-t-2xl"
           style={{
             background: 'linear-gradient(90deg, hsl(200 80% 55%) 0%, hsl(174 70% 50%) 50%, hsl(280 60% 60%) 100%)'
           }}
         />
 
-        {/* Header - more compact */}
-        <div className="pt-4 pb-2 px-5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-1.5">
+        {/* Close button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-white/10"
+          style={{ minHeight: '44px', minWidth: '44px' }}
+        >
+          <X className="h-5 w-5 text-muted-foreground" />
+        </button>
+
+        {/* Sticky Header */}
+        <div 
+          className="sticky top-0 z-10 pt-6 pb-4 px-6 md:pt-8 md:pb-6 md:px-10 text-center"
+          style={{
+            background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(220 25% 12% / 0.95) 80%, transparent 100%)',
+          }}
+        >
+          {/* PRO Badge */}
+          <div className="flex items-center justify-center gap-2 mb-3">
             <span 
-              className="rounded-md px-2 py-0.5 text-[9px] font-black tracking-widest"
+              className="rounded-lg px-3 py-1 text-[10px] md:text-xs font-black tracking-widest"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(280 60% 60%) 100%)',
                 color: 'white',
-                boxShadow: '0 0 15px hsl(200 80% 55% / 0.4)'
+                boxShadow: '0 0 20px hsl(200 80% 55% / 0.5)'
               }}
             >
               PRO
             </span>
           </div>
-          <DialogHeader>
-            <DialogTitle 
-              className="text-lg font-bold leading-tight"
-              style={{
-                background: 'linear-gradient(135deg, hsl(200 80% 75%) 0%, hsl(174 70% 65%) 50%, hsl(280 60% 75%) 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              {t.title}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+
+          {/* Title */}
+          <h2 
+            className="text-xl md:text-2xl font-bold leading-tight mb-2"
+            style={{
+              background: 'linear-gradient(135deg, hsl(200 80% 75%) 0%, hsl(174 70% 65%) 50%, hsl(280 60% 75%) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            {t.title} — {t.titleSuffix}
+          </h2>
+
+          {/* Subtitle */}
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-lg mx-auto">
             {t.subtitle}
           </p>
         </div>
 
-        {/* Content - compact features */}
-        <div className="flex-1 overflow-y-auto px-5 pb-2 min-h-0">
-          <div className="space-y-2">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-4">
+          {/* Feature Cards */}
+          <div className="space-y-3 md:space-y-4">
             {t.features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={index}
-                  className="flex items-center gap-2.5 rounded-lg p-2.5"
+                  className="flex items-start gap-4 rounded-xl p-4 md:p-5"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.8) 0%, hsl(240 20% 12% / 0.8) 100%)',
+                    background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.9) 0%, hsl(240 20% 12% / 0.9) 100%)',
                     border: '1px solid hsl(220 20% 25% / 0.5)'
                   }}
                 >
                   <div 
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                    className="flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl"
                     style={{
-                      background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.15) 0%, hsl(174 70% 50% / 0.15) 100%)',
-                      border: '1px solid hsl(174 60% 45% / 0.25)'
+                      background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.2) 0%, hsl(174 70% 50% / 0.2) 100%)',
+                      border: '1px solid hsl(174 60% 45% / 0.3)'
                     }}
                   >
-                    <Icon className="h-4 w-4 text-primary" />
+                    <Icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-semibold text-foreground">
+                    <h4 className="text-sm md:text-base font-semibold text-foreground mb-1">
                       {feature.title}
                     </h4>
-                    {/* Description hidden on mobile */}
-                    <p className="hidden md:block mt-0.5 text-[10px] leading-snug text-muted-foreground">
+                    <p className="text-xs md:text-sm leading-relaxed text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>
@@ -180,29 +244,38 @@ export const ProAnalysisModal = ({
             })}
           </div>
 
-          {/* Disclaimer - more compact */}
+          {/* Disclaimer */}
           <div 
-            className="mt-3 rounded-lg p-2"
+            className="mt-4 md:mt-6 rounded-xl p-4"
             style={{
-              background: 'hsl(220 20% 15% / 0.5)',
-              border: '1px solid hsl(220 20% 25% / 0.3)'
+              background: 'hsl(220 20% 15% / 0.6)',
+              border: '1px solid hsl(220 20% 25% / 0.4)'
             }}
           >
-            <p className="text-[10px] leading-relaxed text-muted-foreground text-center">
+            <p className="text-xs md:text-sm leading-relaxed text-muted-foreground text-center">
               {t.disclaimer}
             </p>
           </div>
         </div>
 
-        {/* CTA Footer */}
-        <div className="px-6 pt-3 pb-6">
+        {/* Sticky CTA Bar */}
+        <div 
+          className="sticky bottom-0 px-6 md:px-10 pt-4 pb-6 md:pb-8"
+          style={{
+            background: 'linear-gradient(180deg, transparent 0%, hsl(240 20% 8% / 0.95) 20%, hsl(240 20% 8%) 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        >
           <button
             onClick={onLaunchPro}
             disabled={isLoading || isClosing}
-            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full py-3.5 text-sm font-semibold text-white transition-all duration-300 disabled:opacity-70"
+            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full text-base md:text-lg font-semibold text-white transition-all duration-300 disabled:opacity-70 hover:scale-[1.02] active:scale-[0.98]"
             style={{
+              height: isMobile ? '56px' : '52px',
+              minHeight: '48px',
               background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
-              boxShadow: '0 0 30px hsl(200 80% 55% / 0.4), 0 0 60px hsl(174 70% 45% / 0.2), 0 4px 20px hsl(0 0% 0% / 0.3)',
+              boxShadow: '0 0 40px hsl(200 80% 55% / 0.5), 0 0 80px hsl(174 70% 45% / 0.25), 0 8px 30px hsl(0 0% 0% / 0.4)',
             }}
           >
             {/* Animated shine */}
@@ -215,18 +288,26 @@ export const ProAnalysisModal = ({
             />
             
             {isLoading || isClosing ? (
-              <span>{t.loading}</span>
+              <span className="text-base md:text-lg">{t.loading}</span>
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-5 w-5" />
                 <span>{t.cta}</span>
-                <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">{t.ctaPrice}</span>
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <span 
+                  className="ml-2 rounded-full px-3 py-1 text-sm font-bold"
+                  style={{
+                    background: 'hsl(0 0% 100% / 0.25)',
+                    boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.2)'
+                  }}
+                >
+                  {t.ctaPrice}
+                </span>
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </>
             )}
           </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
