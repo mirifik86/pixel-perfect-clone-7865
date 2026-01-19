@@ -267,56 +267,87 @@ export const ProAnalysisModal = ({
             WebkitBackdropFilter: 'blur(12px)',
           }}
         >
-          <button
-            onClick={onLaunchPro}
-            disabled={isLoading || isClosing}
-            className="group relative flex w-full items-center justify-center gap-2 md:gap-3 overflow-hidden rounded-full text-[15px] md:text-lg font-semibold text-white transition-all duration-300 disabled:opacity-70 hover:scale-[1.02] active:scale-[0.98]"
-            style={{
-              height: isMobile ? '50px' : '52px',
-              minHeight: '44px',
-              background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
-              boxShadow: '0 0 40px hsl(200 80% 55% / 0.5), 0 0 80px hsl(174 70% 45% / 0.25), 0 8px 30px hsl(0 0% 0% / 0.4)',
-            }}
-          >
-            {/* Animated shine */}
+          {/* Button container with orbiting star */}
+          <div className="relative">
+            {/* Orbiting star particle */}
             <div 
-              className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              className="absolute pointer-events-none"
               style={{
-                background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
-                animation: 'shine 2s infinite',
+                width: 'calc(100% + 24px)',
+                height: 'calc(100% + 24px)',
+                left: '-12px',
+                top: '-12px',
+                animation: 'orbit-star 4s linear infinite',
               }}
-            />
-            
-            {isLoading || isClosing ? (
-              <span className="text-base md:text-lg">{t.loading}</span>
-            ) : (
-              <>
-                <Sparkles className="h-5 w-5" />
-                <span>{t.cta}</span>
-                <span 
-                  className="ml-2 rounded-full px-3 py-1 text-sm font-bold relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(45 100% 60%) 0%, hsl(35 100% 50%) 50%, hsl(45 100% 65%) 100%)',
-                    color: 'hsl(30 90% 15%)',
-                    boxShadow: '0 0 20px hsl(45 100% 55% / 0.6), 0 0 40px hsl(35 100% 50% / 0.4), inset 0 1px 0 hsl(45 100% 80% / 0.5)',
-                    textShadow: '0 1px 1px hsl(45 100% 80% / 0.3)',
-                    animation: 'price-glow 2s ease-in-out infinite',
-                  }}
-                >
-                  {/* Animated shine sweep */}
+            >
+              <div 
+                className="absolute"
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  top: '50%',
+                  left: '0',
+                  marginTop: '-4px',
+                  marginLeft: '-4px',
+                  background: 'radial-gradient(circle, hsl(45 100% 85%) 0%, hsl(200 80% 70%) 40%, transparent 70%)',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 12px hsl(45 100% 75% / 0.9), 0 0 24px hsl(200 80% 60% / 0.6), 0 0 6px hsl(0 0% 100% / 0.8)',
+                  animation: 'star-twinkle 1.5s ease-in-out infinite',
+                }}
+              />
+            </div>
+
+            <button
+              onClick={onLaunchPro}
+              disabled={isLoading || isClosing}
+              className="group relative flex w-full items-center justify-center gap-2 md:gap-3 overflow-hidden rounded-full text-[15px] md:text-lg font-semibold text-white transition-all duration-300 disabled:opacity-70 hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                height: isMobile ? '50px' : '52px',
+                minHeight: '44px',
+                background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
+                boxShadow: '0 0 40px hsl(200 80% 55% / 0.5), 0 0 80px hsl(174 70% 45% / 0.25), 0 8px 30px hsl(0 0% 0% / 0.4)',
+              }}
+            >
+              {/* Animated shine */}
+              <div 
+                className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                style={{
+                  background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
+                  animation: 'shine 2s infinite',
+                }}
+              />
+              
+              {isLoading || isClosing ? (
+                <span className="text-base md:text-lg">{t.loading}</span>
+              ) : (
+                <>
+                  <Sparkles className="h-5 w-5" />
+                  <span>{t.cta}</span>
                   <span 
-                    className="absolute inset-0 pointer-events-none"
+                    className="ml-2 rounded-full px-3 py-1 text-sm font-bold relative overflow-hidden"
                     style={{
-                      background: 'linear-gradient(105deg, transparent 30%, hsl(45 100% 90% / 0.8) 45%, hsl(45 100% 95% / 0.9) 50%, hsl(45 100% 90% / 0.8) 55%, transparent 70%)',
-                      animation: 'price-shine 2.5s ease-in-out infinite',
+                      background: 'linear-gradient(135deg, hsl(45 100% 60%) 0%, hsl(35 100% 50%) 50%, hsl(45 100% 65%) 100%)',
+                      color: 'hsl(30 90% 15%)',
+                      boxShadow: '0 0 20px hsl(45 100% 55% / 0.6), 0 0 40px hsl(35 100% 50% / 0.4), inset 0 1px 0 hsl(45 100% 80% / 0.5)',
+                      textShadow: '0 1px 1px hsl(45 100% 80% / 0.3)',
+                      animation: 'price-glow 2s ease-in-out infinite',
                     }}
-                  />
-                  <span className="relative z-10">{t.ctaPrice}</span>
-                </span>
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </>
-            )}
-          </button>
+                  >
+                    {/* Animated shine sweep */}
+                    <span 
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(105deg, transparent 30%, hsl(45 100% 90% / 0.8) 45%, hsl(45 100% 95% / 0.9) 50%, hsl(45 100% 90% / 0.8) 55%, transparent 70%)',
+                        animation: 'price-shine 2.5s ease-in-out infinite',
+                      }}
+                    />
+                    <span className="relative z-10">{t.ctaPrice}</span>
+                  </span>
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

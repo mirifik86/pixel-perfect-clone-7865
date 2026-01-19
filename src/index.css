@@ -161,3 +161,25 @@
     transform: translateX(150%);
   }
 }
+
+/* Orbiting star animation */
+@keyframes orbit-star {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Star twinkle animation */
+@keyframes star-twinkle {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
