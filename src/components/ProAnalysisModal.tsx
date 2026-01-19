@@ -144,7 +144,7 @@ export const ProAnalysisModal = ({
         style={{
           width: isMobile ? '94vw' : 'clamp(720px, 78vw, 880px)',
           height: isMobile ? 'auto' : 'auto',
-          maxHeight: isMobile ? '75vh' : '80vh',
+          maxHeight: isMobile ? '60vh' : '80vh',
           background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
           boxShadow: '0 0 80px hsl(200 80% 50% / 0.25), 0 0 120px hsl(174 70% 45% / 0.15), 0 30px 60px hsl(0 0% 0% / 0.6)',
           border: '1px solid hsl(220 20% 20% / 0.5)',
