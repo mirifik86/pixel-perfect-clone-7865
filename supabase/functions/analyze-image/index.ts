@@ -5,56 +5,76 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// OCR and Image Analysis using Gemini Vision
+// OCR and Image Analysis using Gemini Vision with STRICT credibility guardrails
 const getOcrPrompt = (language: string) => {
   const isFr = language === 'fr';
   
-  return `You are an expert OCR and image analysis system. Analyze this screenshot/image and perform two tasks:
+  return `You are an expert OCR and image analysis system with STRICT CREDIBILITY GUARDRAILS. Analyze this screenshot/image.
+
+═══════════════════════════════════════════════════════════════════
+CRITICAL GUARDRAIL RULES — NON-NEGOTIABLE
+═══════════════════════════════════════════════════════════════════
+
+RULE 1: VISUAL IDENTITY VS TEXT MISMATCH DETECTION
+- If the image shows a CLEARLY IDENTIFIABLE PUBLIC FIGURE
+- AND the text refers to a DIFFERENT person, country, or authority
+→ You MUST flag "visual_text_mismatch": true
+→ Describe exactly who is visible vs who the text mentions
+
+RULE 2: IMAGE DOES NOT PROVE CLAIMS
+- NEVER state the image "confirms", "supports", or "proves" anything
+- Images are ONLY "illustrative context"
+- Images NEVER constitute evidence of factual announcements
+
+RULE 3: SCREENSHOT = HIGH-RISK INPUT
+- All screenshots (especially social media) are HIGH-RISK
+- Default assumption: unverified until proven otherwise
+
+RULE 4: NO STORYTELLING
+- Do NOT invent political logic
+- Do NOT claim hypothetical media coverage
+- Do NOT infer institutional processes
+- ONLY describe what is VISIBLE and what the text EXPLICITLY claims
+
+RULE 5: FACTUAL SIGNALS ONLY
+- Describe ONLY observable facts
+- No identity assumptions beyond clearly visible
+- No political role assumptions
+- No authority confirmation
+
+═══════════════════════════════════════════════════════════════════
 
 TASK 1: TEXT EXTRACTION (OCR)
 - Extract ALL visible text from the image
 - Preserve meaningful structure (paragraphs, lists)
-- Normalize whitespace (remove excessive spaces)
-- Remove obvious OCR garbage (repeated stray symbols like "|||" or "###")
-- Preserve line breaks where they indicate semantic separation
+- Normalize whitespace
+- Remove obvious OCR garbage
 
-TASK 2: IMAGE SIGNAL ANALYSIS
-Evaluate these cautious, low-risk signals:
+TASK 2: VISUAL-TEXT MISMATCH CHECK
+- Identify any clearly recognizable public figures in the image
+- Compare with entities mentioned in the text
+- Flag mismatch if the visible person differs from text subject
 
-1. screenshot_likelihood: Is this likely a screenshot vs a photo?
-   - "likely": Has UI elements, browser chrome, app interface, flat graphics
-   - "uncertain": Ambiguous or photo-like
+TASK 3: IMAGE SIGNAL ANALYSIS (RESTRICTED)
+Evaluate ONLY these observable signals:
 
-2. blur_level: How blurry is the image?
-   - "low": Clear, readable
-   - "medium": Some blur but mostly readable
-   - "high": Significant blur affecting readability
+1. screenshot_likelihood: "likely" | "uncertain"
+2. blur_level: "low" | "medium" | "high"
+3. compression_artifacts: "low" | "medium" | "high"
+4. suspicious_editing_hints: "none" | "possible" (low confidence only)
+5. metadata_present: "yes" | "no" | "partial"
 
-3. compression_artifacts: JPEG/image compression quality
-   - "low": Clean edges, no visible blocky artifacts
-   - "medium": Some visible artifacts around text/edges
-   - "high": Heavy compression, blocky, degraded quality
+TASK 4: VISUAL DESCRIPTION (STRICTLY FACTUAL)
+- Describe ONLY what is visible
+- If a public figure is recognizable, state their name
+- Do NOT make claims about what the image "proves"
+- State explicitly what CANNOT be verified from the image alone
 
-4. suspicious_editing_hints: Any signs of image manipulation?
-   - "none": No obvious editing indicators
-   - "possible": Some potential indicators (inconsistent lighting, edges, clone patterns) - LOW CONFIDENCE ONLY
-
-5. metadata_present: Can you detect any embedded information?
-   - "yes": Has visible source info, timestamps, watermarks
-   - "no": No visible metadata
-   - "partial": Some but incomplete
-
-IMPORTANT CONSTRAINTS:
-- Be CAUTIOUS in your assessments
-- NEVER make definitive claims about authenticity
-- "possible" editing hints = low confidence only
-- Metadata presence ≠ proof of authenticity
-
-Calculate an overall OCR confidence score (0.0 to 1.0):
-- 0.9-1.0: Crystal clear, professional screenshot
-- 0.7-0.89: Good quality, minor issues
-- 0.5-0.69: Readable but some problems
-- Below 0.5: Poor quality, significant text unclear
+OCR CONFIDENCE (0.0 to 1.0):
+- 0.9-1.0: Crystal clear
+- 0.7-0.89: Good quality
+- 0.5-0.69: Readable with issues
+- Below 0.5: Poor quality
 
 RESPONSE FORMAT (JSON only):
 {
@@ -69,7 +89,19 @@ RESPONSE FORMAT (JSON only):
     "suspicious_editing_hints": "<none|possible>",
     "metadata_present": "<yes|no|partial>"
   },
-  "quality_notes": "<brief explanation of quality assessment>"
+  "visual_text_mismatch": {
+    "detected": <true|false>,
+    "visible_entity": "<who/what is clearly visible in image, or null>",
+    "text_entity": "<who/what the text refers to, or null>",
+    "mismatch_description": "<explanation if mismatch detected, or null>"
+  },
+  "visual_description": "<strictly factual description of what is visible>",
+  "quality_notes": "<brief quality assessment>",
+  "credibility_flags": {
+    "is_social_media_screenshot": <true|false>,
+    "contains_unverifiable_claims": <true|false>,
+    "image_proves_nothing": true
+  }
 }
 
 Respond ONLY with valid JSON, no additional text.`;
@@ -81,8 +113,86 @@ const extractBase64Data = (dataUrl: string): { mimeType: string; data: string } 
   if (match) {
     return { mimeType: match[1], data: match[2] };
   }
-  // If no data URL format, assume it's raw base64 and PNG
   return { mimeType: 'image/png', data: dataUrl };
+};
+
+// Apply credibility guardrails to analysis result
+const applyCredibilityGuardrails = (
+  analysisResult: any, 
+  ocrData: any, 
+  language: string
+): any => {
+  if (!analysisResult) return analysisResult;
+  
+  const isFr = language === 'fr';
+  let modifiedResult = { ...analysisResult };
+  let guardrailsApplied: string[] = [];
+  let maxAllowedScore = 98; // Default max
+  
+  // RULE 1: Visual-Text Mismatch → Score capped at 50
+  if (ocrData.visual_text_mismatch?.detected) {
+    maxAllowedScore = Math.min(maxAllowedScore, 50);
+    guardrailsApplied.push('visual_text_mismatch');
+    
+    const mismatchExplanation = isFr
+      ? `⚠️ INCOHÉRENCE VISUEL-TEXTE: L'image montre "${ocrData.visual_text_mismatch.visible_entity}". Le texte fait référence à "${ocrData.visual_text_mismatch.text_entity}". Aucun lien vérifié entre l'image et l'affirmation spécifique du texte.`
+      : `⚠️ VISUAL-TEXT MISMATCH: The image shows "${ocrData.visual_text_mismatch.visible_entity}". The text refers to "${ocrData.visual_text_mismatch.text_entity}". There is no verified link between the image and the specific claim made in the text.`;
+    
+    modifiedResult.explanation = mismatchExplanation + "\n\n" + (modifiedResult.explanation || '');
+    modifiedResult.visualTextMismatch = ocrData.visual_text_mismatch;
+  }
+  
+  // RULE 3: Screenshot with no verified sources → Score in 30-50 range
+  if (ocrData.credibility_flags?.is_social_media_screenshot) {
+    maxAllowedScore = Math.min(maxAllowedScore, 50);
+    guardrailsApplied.push('social_media_screenshot');
+  }
+  
+  // RULE 3: Unverifiable claims → Score capped
+  if (ocrData.credibility_flags?.contains_unverifiable_claims) {
+    maxAllowedScore = Math.min(maxAllowedScore, 55);
+    guardrailsApplied.push('unverifiable_claims');
+  }
+  
+  // Check if score contains major geopolitical/financial/institutional claims
+  const textLower = (ocrData.cleaned_text || '').toLowerCase();
+  const highRiskKeywords = [
+    'war', 'guerre', 'invasion', 'nuclear', 'nucléaire', 
+    'assassination', 'assassinat', 'coup', 'overthrow',
+    'billions', 'milliards', 'trillion', 'billion',
+    'president', 'président', 'prime minister', 'premier ministre',
+    'emergency', 'urgence', 'martial law', 'loi martiale',
+    'breaking', 'urgent', 'exclusive', 'leaked', 'fuite'
+  ];
+  
+  const containsHighRiskClaims = highRiskKeywords.some(keyword => textLower.includes(keyword));
+  if (containsHighRiskClaims) {
+    maxAllowedScore = Math.min(maxAllowedScore, 50);
+    guardrailsApplied.push('high_risk_claims');
+  }
+  
+  // Apply score cap
+  if (modifiedResult.score && modifiedResult.score > maxAllowedScore) {
+    modifiedResult.originalScore = modifiedResult.score;
+    modifiedResult.score = maxAllowedScore;
+    modifiedResult.scoreCapped = true;
+    modifiedResult.scoreCappedReason = guardrailsApplied;
+  }
+  
+  // Add mandatory credibility context to explanation
+  const credibilityDisclaimer = isFr
+    ? "\n\n📋 Cette analyse est basée sur le texte extrait et un contexte visuel limité. Les captures d'écran peuvent être partielles ou trompeuses et ne constituent pas une preuve de faits."
+    : "\n\n📋 This analysis is based on extracted text and limited visual context. Screenshots can be partial or misleading and do not constitute proof of factual claims.";
+  
+  modifiedResult.explanation = (modifiedResult.explanation || '') + credibilityDisclaimer;
+  
+  // Mark analysis as screenshot-based
+  modifiedResult.isScreenshotAnalysis = true;
+  modifiedResult.guardrailsApplied = guardrailsApplied;
+  modifiedResult.visualDescription = ocrData.visual_description;
+  modifiedResult.credibilityFlags = ocrData.credibility_flags;
+  
+  return modifiedResult;
 };
 
 serve(async (req) => {
@@ -105,12 +215,11 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Starting OCR and image signal analysis...");
+    console.log("Starting OCR with STRICT credibility guardrails...");
 
-    // Extract base64 data
     const { mimeType, data } = extractBase64Data(imageData);
     
-    // Step 1: OCR + Image Signals using Gemini Vision
+    // Step 1: OCR + Image Signals + Mismatch Detection using Gemini Vision
     const ocrResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -165,7 +274,7 @@ serve(async (req) => {
       throw new Error("No OCR response from AI");
     }
 
-    console.log("OCR response received:", ocrContent.substring(0, 300));
+    console.log("OCR response received:", ocrContent.substring(0, 500));
 
     // Parse OCR result
     let ocrData;
@@ -178,7 +287,6 @@ serve(async (req) => {
       }
     } catch (parseError) {
       console.error("Failed to parse OCR response:", parseError);
-      // Fallback with conservative defaults
       ocrData = {
         raw_text: "",
         cleaned_text: "",
@@ -191,14 +299,34 @@ serve(async (req) => {
           suspicious_editing_hints: "none",
           metadata_present: "no"
         },
-        quality_notes: "OCR processing encountered issues"
+        visual_text_mismatch: {
+          detected: false,
+          visible_entity: null,
+          text_entity: null,
+          mismatch_description: null
+        },
+        visual_description: "Image analysis encountered issues",
+        quality_notes: "OCR processing encountered issues",
+        credibility_flags: {
+          is_social_media_screenshot: true,
+          contains_unverifiable_claims: true,
+          image_proves_nothing: true
+        }
       };
     }
 
-    // Step 2: Now run the LeenScore analysis on the extracted text
-    const isPro = analysisType === 'pro';
+    // Ensure credibility_flags exists with default high-risk values
+    if (!ocrData.credibility_flags) {
+      ocrData.credibility_flags = {
+        is_social_media_screenshot: true,
+        contains_unverifiable_claims: true,
+        image_proves_nothing: true
+      };
+    }
     
-    // If text is too short or OCR confidence too low, return with warning
+    // Always mark that image proves nothing
+    ocrData.credibility_flags.image_proves_nothing = true;
+
     const textToAnalyze = ocrData.cleaned_text || ocrData.raw_text || "";
     const confidence = ocrData.ocr_confidence || 0;
     
@@ -213,6 +341,9 @@ serve(async (req) => {
             text_length: textToAnalyze.length,
           },
           image_signals: ocrData.image_signals,
+          visual_text_mismatch: ocrData.visual_text_mismatch,
+          visual_description: ocrData.visual_description,
+          credibility_flags: ocrData.credibility_flags,
           quality_notes: ocrData.quality_notes,
           analysis: null,
           warning: language === 'fr' 
@@ -223,7 +354,7 @@ serve(async (req) => {
       );
     }
 
-    // Call the existing analyze function for LeenScore analysis
+    // Call the existing analyze function
     const analyzeResponse = await fetch(`${req.headers.get('origin') || 'https://clejmxumuqhpjncjuuht.supabase.co'}/functions/v1/analyze`, {
       method: "POST",
       headers: {
@@ -233,7 +364,8 @@ serve(async (req) => {
       body: JSON.stringify({
         content: textToAnalyze,
         language: language || 'en',
-        analysisType: analysisType || 'standard'
+        analysisType: analysisType || 'standard',
+        isScreenshot: true // Flag for downstream analysis
       }),
     });
 
@@ -241,18 +373,27 @@ serve(async (req) => {
     if (analyzeResponse.ok) {
       analysisResult = await analyzeResponse.json();
       
-      // Apply OCR uncertainty penalty if needed
+      // Apply STRICT credibility guardrails
+      analysisResult = applyCredibilityGuardrails(analysisResult, ocrData, language || 'en');
+      
+      // Apply additional OCR uncertainty penalty
       if (confidence < 0.55 && analysisResult.score) {
-        // Small uncertainty penalty (max -5 points)
-        const penalty = Math.round((0.55 - confidence) * 10);
+        const penalty = Math.round((0.55 - confidence) * 15); // Increased penalty
         analysisResult.score = Math.max(5, analysisResult.score - penalty);
         analysisResult.ocrPenaltyApplied = penalty;
       }
+      
+      // Ensure score never exceeds screenshot limits
+      if (analysisResult.score > 70 && !analysisResult.proSources?.length) {
+        analysisResult.score = 50; // No external verification = uncertainty zone
+        analysisResult.scoreCapped = true;
+        analysisResult.scoreCappedReason = (analysisResult.scoreCappedReason || []).concat(['no_external_verification']);
+      }
+      
     } else {
       console.error("LeenScore analysis failed:", await analyzeResponse.text());
     }
 
-    // Return combined result
     return new Response(
       JSON.stringify({
         success: true,
@@ -263,13 +404,19 @@ serve(async (req) => {
           text_length: textToAnalyze.length,
         },
         image_signals: ocrData.image_signals,
+        visual_text_mismatch: ocrData.visual_text_mismatch,
+        visual_description: ocrData.visual_description,
+        credibility_flags: ocrData.credibility_flags,
         quality_notes: ocrData.quality_notes,
         analysis: analysisResult,
         warning: confidence < 0.55 
           ? (language === 'fr' 
-            ? "Confiance OCR faible. Le score peut être moins précis." 
-            : "Low OCR confidence. Score may be less accurate.")
-          : null
+            ? "Confiance OCR faible. Le score reflète cette incertitude." 
+            : "Low OCR confidence. Score reflects this uncertainty.")
+          : null,
+        mandatory_disclaimer: language === 'fr'
+          ? "Cette analyse est basée sur le texte extrait et un contexte visuel limité. Les captures d'écran peuvent être partielles ou trompeuses et ne constituent pas une preuve de faits."
+          : "This analysis is based on extracted text and limited visual context. Screenshots can be partial or misleading and do not constitute proof of factual claims."
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
