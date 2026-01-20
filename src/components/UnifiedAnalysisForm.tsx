@@ -375,42 +375,58 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Arrow transition cue - pointing to Analyser button */}
+      {/* Transition cue - "Puis" on empty, just arrow when content */}
       <div className="flex justify-center py-3">
-        <div 
-          className="relative"
-          style={{
-            animation: 'arrow-bounce 2s ease-in-out infinite',
-          }}
-        >
-          {/* Glow behind arrow */}
-          <div 
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'radial-gradient(circle, hsl(174 70% 55% / 0.4), transparent 70%)',
-              animation: 'arrow-glow 2s ease-in-out infinite',
-              filter: 'blur(6px)',
-              transform: 'scale(2.5)',
-            }}
-          />
-          <svg 
-            width="18" 
-            height="10" 
-            viewBox="0 0 18 10" 
-            fill="none"
-            className="relative"
-          >
-            <path 
-              d="M1 1L9 9L17 1" 
-              stroke="hsl(174 70% 60%)" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
+        <div className="relative flex flex-col items-center gap-1">
+          {/* "Puis" text - only visible on empty state */}
+          {!hasText && !hasImage && (
+            <span 
+              className="text-[10px] font-light tracking-[0.25em] uppercase"
               style={{
-                filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.6))',
+                color: 'hsl(174 65% 55% / 0.72)',
+                textShadow: '0 0 10px hsl(174 70% 50% / 0.3)',
+              }}
+            >
+              {language === 'fr' ? 'Puis' : 'Then'}
+            </span>
+          )}
+          
+          {/* Arrow - always visible with animation */}
+          <div 
+            className="relative"
+            style={{
+              animation: 'arrow-bounce 2s ease-in-out infinite',
+            }}
+          >
+            {/* Glow behind arrow */}
+            <div 
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, hsl(174 70% 55% / 0.4), transparent 70%)',
+                animation: 'arrow-glow 2s ease-in-out infinite',
+                filter: 'blur(6px)',
+                transform: 'scale(2.5)',
               }}
             />
-          </svg>
+            <svg 
+              width="18" 
+              height="10" 
+              viewBox="0 0 18 10" 
+              fill="none"
+              className="relative"
+            >
+              <path 
+                d="M1 1L9 9L17 1" 
+                stroke="hsl(174 70% 60%)" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                style={{
+                  filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.6))',
+                }}
+              />
+            </svg>
+          </div>
         </div>
       </div>
       
