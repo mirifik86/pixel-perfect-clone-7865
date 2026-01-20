@@ -233,9 +233,45 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                 <p className="text-sm font-medium text-white/70 text-center">
                   {t.placeholder}
                 </p>
-                <p className="mt-2 text-[10px] font-medium tracking-wider text-white/30 uppercase">
+                <p className="mt-1.5 text-[10px] font-medium tracking-wider text-white/30 uppercase">
                   {t.hint}
                 </p>
+                
+                {/* "Puis" hint with arrow pointing to Analyze button */}
+                <div className="mt-4 flex flex-col items-center">
+                  <span 
+                    className="text-xs font-semibold tracking-[0.25em] uppercase"
+                    style={{
+                      color: 'hsl(174 70% 55%)',
+                      textShadow: '0 0 12px hsl(174 80% 50% / 0.5), 0 0 24px hsl(174 80% 45% / 0.3)',
+                    }}
+                  >
+                    {language === 'fr' ? 'Puis' : 'Then'}
+                  </span>
+                  <div 
+                    className="mt-1 flex flex-col items-center"
+                    style={{
+                      filter: 'drop-shadow(0 0 6px hsl(174 80% 50% / 0.6)) drop-shadow(0 0 12px hsl(174 80% 45% / 0.4))',
+                    }}
+                  >
+                    <svg 
+                      width="20" 
+                      height="12" 
+                      viewBox="0 0 20 12" 
+                      fill="none"
+                      className="animate-bounce"
+                      style={{ animationDuration: '1.5s' }}
+                    >
+                      <path 
+                        d="M1 1L10 10L19 1" 
+                        stroke="hsl(174 70% 55%)" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
             )}
             
