@@ -1,7 +1,7 @@
 export const LeenScoreLogo = () => {
   return (
-    <div className="flex flex-col items-center" style={{ gap: 'var(--space-4)' }}>
-      {/* Premium icon with layered glow effects */}
+    <div className="flex flex-col items-center" style={{ gap: 'var(--space-2)' }}>
+      {/* Premium icon with layered glow effects - compact */}
       <div className="relative">
         {/* Outer glow ring */}
         <div 
@@ -12,16 +12,16 @@ export const LeenScoreLogo = () => {
           }}
         />
         
-        {/* Icon container with premium styling - unified size */}
+        {/* Icon container with premium styling - compact size */}
         <div 
-          className="relative rounded-xl border border-primary/40 backdrop-blur-md"
+          className="relative rounded-lg border border-primary/40 backdrop-blur-md"
           style={{
-            padding: 'var(--space-3)',
+            padding: 'var(--space-2)',
             background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.15) 0%, hsl(240 20% 10% / 0.8) 100%)',
-            boxShadow: '0 0 20px hsl(174 60% 45% / 0.2), inset 0 1px 1px hsl(0 0% 100% / 0.1), 0 8px 32px hsl(0 0% 0% / 0.4)'
+            boxShadow: '0 0 15px hsl(174 60% 45% / 0.2), inset 0 1px 1px hsl(0 0% 100% / 0.1), 0 6px 24px hsl(0 0% 0% / 0.4)'
           }}
         >
-          <div className="relative" style={{ width: '2.5rem', height: '2.5rem' }}>
+          <div className="relative" style={{ width: '1.75rem', height: '1.75rem' }}>
             {/* Document icon - white with subtle shadow */}
             <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full drop-shadow-lg" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="hsl(0 0% 95%)" stroke="hsl(0 0% 85%)" strokeWidth="0.5" />
@@ -38,11 +38,11 @@ export const LeenScoreLogo = () => {
               strokeLinecap="round" 
               strokeLinejoin="round"
               style={{
-                bottom: '-0.375rem',
-                right: '-0.375rem',
-                width: '1.5rem',
-                height: '1.5rem',
-                filter: 'drop-shadow(0 2px 4px hsl(0 0% 0% / 0.3)) drop-shadow(0 0 8px hsl(174 60% 45% / 0.4))'
+                bottom: '-0.25rem',
+                right: '-0.25rem',
+                width: '1.125rem',
+                height: '1.125rem',
+                filter: 'drop-shadow(0 2px 4px hsl(0 0% 0% / 0.3)) drop-shadow(0 0 6px hsl(174 60% 45% / 0.4))'
               }}
             >
               {/* Glass fill with gradient */}
@@ -83,8 +83,8 @@ export const LeenScoreLogo = () => {
         />
         
         <h1 
-          className="relative brand-text font-normal tracking-tight text-unified-hero"
-          style={{ letterSpacing: '-0.03em' }}
+          className="relative brand-text font-normal tracking-tight"
+          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(2rem, 1.6rem + 2vw, 3.5rem)' }}
         >
           <span 
             className="brand-accent italic"
