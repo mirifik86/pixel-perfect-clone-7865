@@ -4,16 +4,14 @@ import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
-import { AnalysisForm } from '@/components/AnalysisForm';
+import { UnifiedAnalysisForm } from '@/components/UnifiedAnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { ProAnalysisLoader } from '@/components/ProAnalysisLoader';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
-import { ScreenshotUpload } from '@/components/ScreenshotUpload';
 import { ScreenshotAnalysisLoader } from '@/components/ScreenshotAnalysisLoader';
 import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Camera, FileText } from 'lucide-react';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
 
 interface AnalysisBreakdown {
@@ -101,9 +99,6 @@ const translations = {
     analyzing: 'Analyzing...',
     errorAnalysis: 'Analysis failed. Please try again.',
     newAnalysis: 'New Analysis',
-    textTab: 'Text / URL',
-    screenshotTab: 'Screenshot',
-    launchAnalysis: 'Launch Analysis',
   },
   fr: {
     tagline: "Voir clair dans l'information.",
@@ -116,9 +111,6 @@ const translations = {
     analyzing: 'Analyse en cours...',
     errorAnalysis: "L'analyse a échoué. Veuillez réessayer.",
     newAnalysis: 'Faire autre analyse',
-    textTab: 'Texte / URL',
-    screenshotTab: 'Capture d\'écran',
-    launchAnalysis: 'Lancer l\'analyse',
   }
 };
 
@@ -130,8 +122,8 @@ const Index = () => {
   const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [lastAnalyzedContent, setLastAnalyzedContent] = useState<string>('');
   
-  // Input mode: 'text' or 'screenshot'
-  const [inputMode, setInputMode] = useState<'text' | 'screenshot'>('text');
+  // Track if current analysis is from an image (for loader display)
+  const [isImageAnalysis, setIsImageAnalysis] = useState(false);
   
   // Screenshot state
   const [uploadedFile, setUploadedFile] = useState<{ file: File; preview: string } | null>(null);
@@ -169,6 +161,7 @@ const Index = () => {
     setUploadedFile(null);
     setScreenshotData(null);
     setScreenshotLoaderStep(0);
+    setIsImageAnalysis(false);
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -176,6 +169,7 @@ const Index = () => {
     const tLocal = translations[language];
 
     setIsLoading(true);
+    setIsImageAnalysis(false);
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent(input);
@@ -258,12 +252,12 @@ const Index = () => {
     }
   };
 
-  // Screenshot Analysis Handler
-  const handleScreenshotAnalysis = async (analysisType: 'standard' | 'pro' = 'standard') => {
-    if (!uploadedFile) return;
-    
+  // Screenshot Analysis Handler - now called directly when image is ready
+  const handleImageAnalysis = async (file: File, preview: string, analysisType: 'standard' | 'pro' = 'standard') => {
     const tLocal = translations[language];
+    setUploadedFile({ file, preview });
     setIsLoading(true);
+    setIsImageAnalysis(true);
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setScreenshotLoaderStep(0);
@@ -280,7 +274,7 @@ const Index = () => {
       // Call the analyze-image endpoint
       const result = await supabase.functions.invoke('analyze-image', {
         body: { 
-          imageData: uploadedFile.preview, 
+          imageData: preview, 
           language: language,
           analysisType: analysisType
         },
@@ -563,7 +557,7 @@ const Index = () => {
             <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise */}
               {isLoading ? (
-                inputMode === 'screenshot' ? (
+                isImageAnalysis ? (
                   <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
                 ) : (
                   <AnalysisLoader size={isMobile ? 150 : 200} language={language} />
@@ -646,80 +640,18 @@ const Index = () => {
             </div>
           )}
 
-          {/* Input Mode Tabs - Only show when no analysis */}
+          {/* Unified Analysis Form - hidden during loading and after analysis */}
           {!hasAnyAnalysis && !isLoading && (
             <div 
-              className="mb-4 flex items-center gap-1 rounded-full p-1 animate-fade-in"
-              style={{ 
-                animationDelay: '350ms', 
-                animationFillMode: 'both',
-                background: 'hsl(0 0% 100% / 0.05)',
-                border: '1px solid hsl(0 0% 100% / 0.1)',
-              }}
-            >
-              <button
-                onClick={() => setInputMode('text')}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                  inputMode === 'text' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'text-white/60 hover:text-white/90'
-                }`}
-              >
-                <FileText className="h-4 w-4" />
-                {t.textTab}
-              </button>
-              <button
-                onClick={() => setInputMode('screenshot')}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                  inputMode === 'screenshot' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'text-white/60 hover:text-white/90'
-                }`}
-              >
-                <Camera className="h-4 w-4" />
-                {t.screenshotTab}
-              </button>
-            </div>
-          )}
-
-          {/* Analysis form - hidden during loading and after analysis */}
-          {!hasAnyAnalysis && !isLoading && inputMode === 'text' && (
-            <div 
               className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
-              style={{ animationDelay: '400ms', animationFillMode: 'both' }}
+              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
             >
-              <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
-            </div>
-          )}
-
-          {/* Screenshot Upload - hidden during loading and after analysis */}
-          {!hasAnyAnalysis && !isLoading && inputMode === 'screenshot' && (
-            <div 
-              className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
-              style={{ animationDelay: '400ms', animationFillMode: 'both' }}
-            >
-              <ScreenshotUpload
-                language={language}
-                uploadedFile={uploadedFile}
-                onImageReady={(file, preview) => setUploadedFile({ file, preview })}
-                onRemove={() => setUploadedFile(null)}
+              <UnifiedAnalysisForm 
+                onAnalyzeText={handleAnalyze} 
+                onImageReady={(file, preview) => handleImageAnalysis(file, preview, 'standard')}
+                isLoading={isLoading} 
+                language={language} 
               />
-              
-              {/* Launch Analysis Button */}
-              {uploadedFile && (
-                <div className="mt-4">
-                  <button
-                    onClick={() => handleScreenshotAnalysis('standard')}
-                    className="w-full rounded-lg py-3 text-sm font-semibold text-primary-foreground transition-all"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(174 70% 40%) 0%, hsl(174 60% 35%) 100%)',
-                      boxShadow: '0 0 25px hsl(174 60% 45% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.25)',
-                    }}
-                  >
-                    {t.launchAnalysis}
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
