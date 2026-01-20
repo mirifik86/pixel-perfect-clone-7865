@@ -350,6 +350,109 @@ Distinguish plausibility from factual certainty.
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
+// Translation helper function - translates text fields while preserving numerical values
+const translateAnalysisResult = async (analysisResult: any, targetLanguage: string, apiKey: string): Promise<any> => {
+  if (targetLanguage === 'en') {
+    return analysisResult; // Already in English
+  }
+
+  const translationPrompt = `You are a professional translator. Translate the following JSON analysis from English to French.
+
+CRITICAL RULES:
+1. Translate ONLY text content - NEVER change any numerical values or scores
+2. Keep the exact same JSON structure
+3. Maintain professional, analytical tone
+4. Keep source names (media names, websites) in their original form
+5. Translate these fields: reason, summary, articleSummary, observation, explanation, disclaimer, proDisclaimer
+6. For corroboration.sources arrays, keep source names unchanged but translate any descriptive text
+7. DO NOT modify: score, points, confidence values, sourcesConsulted numbers, outcome values
+
+Respond with ONLY the complete translated JSON object.`;
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: translationPrompt },
+          { role: "user", content: `Translate to French:\n\n${JSON.stringify(analysisResult, null, 2)}` }
+        ],
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Translation failed, returning English version");
+      return analysisResult;
+    }
+
+    const aiResponse = await response.json();
+    const messageContent = aiResponse.choices?.[0]?.message?.content;
+
+    if (!messageContent) {
+      return analysisResult;
+    }
+
+    const jsonMatch = messageContent.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const translated = JSON.parse(jsonMatch[0]);
+      
+      // CRITICAL: Preserve all numerical values from original
+      translated.score = analysisResult.score;
+      translated.analysisType = analysisResult.analysisType;
+      translated.confidence = analysisResult.confidence;
+      
+      if (translated.breakdown && analysisResult.breakdown) {
+        // Standard breakdown
+        if (analysisResult.breakdown.sources) translated.breakdown.sources.points = analysisResult.breakdown.sources.points;
+        if (analysisResult.breakdown.factual) translated.breakdown.factual.points = analysisResult.breakdown.factual.points;
+        if (analysisResult.breakdown.tone) translated.breakdown.tone.points = analysisResult.breakdown.tone.points;
+        if (analysisResult.breakdown.context) translated.breakdown.context.points = analysisResult.breakdown.context.points;
+        if (analysisResult.breakdown.transparency) translated.breakdown.transparency.points = analysisResult.breakdown.transparency.points;
+        
+        // PRO breakdown
+        if (analysisResult.breakdown.claimGravity) translated.breakdown.claimGravity.points = analysisResult.breakdown.claimGravity.points;
+        if (analysisResult.breakdown.contextualCoherence) translated.breakdown.contextualCoherence.points = analysisResult.breakdown.contextualCoherence.points;
+        if (analysisResult.breakdown.webCorroboration) translated.breakdown.webCorroboration.points = analysisResult.breakdown.webCorroboration.points;
+        if (analysisResult.breakdown.imageCoherence) translated.breakdown.imageCoherence.points = analysisResult.breakdown.imageCoherence.points;
+      }
+      
+      // PRO corroboration - preserve structure
+      if (analysisResult.corroboration) {
+        translated.corroboration.outcome = analysisResult.corroboration.outcome;
+        translated.corroboration.sourcesConsulted = analysisResult.corroboration.sourcesConsulted;
+        translated.corroboration.sourceTypes = analysisResult.corroboration.sourceTypes;
+        // Keep source names exactly as found
+        translated.corroboration.sources = analysisResult.corroboration.sources;
+      }
+      
+      // PRO image signals - preserve all numerical scoring
+      if (analysisResult.imageSignals?.scoring) {
+        translated.imageSignals.scoring = analysisResult.imageSignals.scoring;
+        translated.imageSignals.origin.confidence = analysisResult.imageSignals.origin.confidence;
+        translated.imageSignals.origin.classification = analysisResult.imageSignals.origin.classification;
+        translated.imageSignals.coherence.classification = analysisResult.imageSignals.coherence.classification;
+      }
+      
+      // Standard web presence
+      if (analysisResult.webPresence) {
+        translated.webPresence.level = analysisResult.webPresence.level;
+      }
+      
+      return translated;
+    }
+  } catch (e) {
+    console.error("Translation error:", e);
+  }
+  
+  return analysisResult;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -371,13 +474,15 @@ serve(async (req) => {
     }
 
     const isPro = analysisType === 'pro';
-    const systemPrompt = isPro ? getProSystemPrompt(language || 'en') : getSystemPrompt(language || 'en');
     
-    const userPrompt = language === 'fr' 
-      ? `Analyse ce contenu et calcule le Trust Score${isPro ? ' avec analyse Pro complète' : ''}. Réponds en français:\n\n${content}`
-      : `Analyze this content and calculate the Trust Score${isPro ? ' with full Pro analysis' : ''}:\n\n${content}`;
+    // CRITICAL: Always use English prompts for consistent web corroboration
+    // Then translate output to user's language
+    const systemPrompt = isPro ? getProSystemPrompt('en') : getSystemPrompt('en');
+    
+    // User prompt always in English for consistency
+    const userPrompt = `Analyze this content and calculate the Trust Score${isPro ? ' with full Pro analysis' : ''}:\n\n${content}`;
 
-    console.log(`Calling Lovable AI Gateway for ${isPro ? 'Pro' : 'Standard'} analysis...`);
+    console.log(`Calling Lovable AI Gateway for ${isPro ? 'Pro' : 'Standard'} analysis (English base)...`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -397,14 +502,20 @@ serve(async (req) => {
 
     if (!response.ok) {
       if (response.status === 429) {
+        const errorMsg = language === 'fr' 
+          ? "Limite de requêtes atteinte. Réessayez dans quelques instants."
+          : "Rate limit exceeded. Please try again later.";
         return new Response(
-          JSON.stringify({ error: language === 'fr' ? "Limite de requêtes atteinte. Réessayez dans quelques instants." : "Rate limit exceeded. Please try again later." }),
+          JSON.stringify({ error: errorMsg }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
+        const errorMsg = language === 'fr'
+          ? "Crédits IA épuisés. Veuillez ajouter des crédits dans Settings → Workspace → Usage."
+          : "AI credits exhausted. Please add credits in Settings → Workspace → Usage.";
         return new Response(
-          JSON.stringify({ error: language === 'fr' ? "Crédits IA épuisés. Veuillez ajouter des crédits dans Settings → Workspace → Usage." : "AI credits exhausted. Please add credits in Settings → Workspace → Usage." }),
+          JSON.stringify({ error: errorMsg }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -420,7 +531,7 @@ serve(async (req) => {
       throw new Error("No response from AI");
     }
 
-    console.log("AI response received:", messageContent.substring(0, 200));
+    console.log("AI response received (English):", messageContent.substring(0, 200));
 
     // Parse the JSON response from AI
     let analysisResult;
@@ -453,6 +564,12 @@ serve(async (req) => {
     // Ensure score is within bounds and set analysis type
     analysisResult.score = Math.max(0, Math.min(100, analysisResult.score));
     analysisResult.analysisType = isPro ? 'pro' : 'standard';
+
+    // Translate to French if needed (after consistent English analysis)
+    if (language === 'fr') {
+      console.log("Translating analysis to French...");
+      analysisResult = await translateAnalysisResult(analysisResult, 'fr', LOVABLE_API_KEY);
+    }
 
     return new Response(
       JSON.stringify(analysisResult),
