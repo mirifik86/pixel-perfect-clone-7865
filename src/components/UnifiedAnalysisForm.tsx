@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
-import { Search, Loader2, Link2, CheckCircle2, ChevronDown, ImagePlus, X } from 'lucide-react';
+import { Search, Loader2, CheckCircle2, ChevronDown, ImagePlus, X, FileText, Link, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -12,8 +12,6 @@ interface UnifiedAnalysisFormProps {
 
 const translations = {
   en: {
-    placeholder: 'Paste text, a URL, or add an image to analyze…',
-    placeholderHint: 'then',
     analyze: 'Analyze',
     description: 'We analyze source credibility, linguistic patterns, and context to help you understand online information.',
     urlDetected: 'URL detected',
@@ -21,8 +19,6 @@ const translations = {
     removeImage: 'Remove',
   },
   fr: {
-    placeholder: 'Collez du texte, une URL, ou ajoutez une image à analyser…',
-    placeholderHint: 'puis',
     analyze: 'Analyser',
     description: 'Nous analysons la crédibilité des sources, les modèles linguistiques et le contexte pour vous aider à comprendre les informations en ligne.',
     urlDetected: 'URL détectée',
@@ -186,17 +182,6 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             </div>
           )}
           
-          {/* Input Icon - Left side */}
-          <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
-            <Link2 
-              className="h-5 w-5 transition-colors duration-300" 
-              style={{
-                color: hasValidUrl 
-                  ? 'hsl(174 80% 45%)'
-                  : 'hsl(var(--muted-foreground) / 0.4)'
-              }}
-            />
-          </div>
 
           {/* Upload Icon - Right side (clickable) - Premium & visible */}
           <button
@@ -260,24 +245,59 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             </div>
           )}
           
-          {/* Custom two-line placeholder overlay */}
+          {/* Visual placeholder with icons */}
           {!input && !uploadedImage && (
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4">
-              <span className="text-[11px] md:text-sm font-medium tracking-wide text-white text-center">
-                {t.placeholder}
-              </span>
-              <span 
-                className="mt-3 md:mt-4 text-xs md:text-sm font-semibold tracking-widest uppercase"
-                style={{
-                  color: 'hsl(174 70% 55%)',
-                  textShadow: '0 0 12px hsl(174 80% 50% / 0.5), 0 0 24px hsl(174 80% 45% / 0.3)',
-                }}
-              >
-                {t.placeholderHint}
-              </span>
-              {/* Animated arrows pointing to Analyze button */}
+              {/* Three input types as visual icons */}
+              <div className="flex items-center justify-center gap-6 mb-3">
+                {/* Text icon */}
+                <div className="flex flex-col items-center gap-1">
+                  <div 
+                    className="flex h-10 w-10 items-center justify-center rounded-full"
+                    style={{ 
+                      background: 'hsl(0 0% 100% / 0.08)',
+                      border: '1px solid hsl(0 0% 100% / 0.12)'
+                    }}
+                  >
+                    <Type className="h-5 w-5 text-white/60" />
+                  </div>
+                  <span className="text-[9px] font-medium text-white/40 uppercase tracking-wider">
+                    {language === 'fr' ? 'Texte' : 'Text'}
+                  </span>
+                </div>
+                
+                {/* URL icon */}
+                <div className="flex flex-col items-center gap-1">
+                  <div 
+                    className="flex h-10 w-10 items-center justify-center rounded-full"
+                    style={{ 
+                      background: 'hsl(0 0% 100% / 0.08)',
+                      border: '1px solid hsl(0 0% 100% / 0.12)'
+                    }}
+                  >
+                    <Link className="h-5 w-5 text-white/60" />
+                  </div>
+                  <span className="text-[9px] font-medium text-white/40 uppercase tracking-wider">URL</span>
+                </div>
+                
+                {/* Image icon */}
+                <div className="flex flex-col items-center gap-1">
+                  <div 
+                    className="flex h-10 w-10 items-center justify-center rounded-full"
+                    style={{ 
+                      background: 'hsl(0 0% 100% / 0.08)',
+                      border: '1px solid hsl(0 0% 100% / 0.12)'
+                    }}
+                  >
+                    <ImagePlus className="h-5 w-5 text-white/60" />
+                  </div>
+                  <span className="text-[9px] font-medium text-white/40 uppercase tracking-wider">Image</span>
+                </div>
+              </div>
+              
+              {/* Arrow hint */}
               <div 
-                className="mt-2 flex flex-col items-center gap-0"
+                className="mt-1 flex flex-col items-center"
                 style={{
                   filter: 'drop-shadow(0 0 6px hsl(174 80% 50% / 0.6)) drop-shadow(0 0 12px hsl(174 80% 45% / 0.4))',
                 }}
@@ -287,14 +307,6 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   style={{ 
                     color: 'hsl(174 70% 55%)',
                     animationDuration: '1.5s',
-                  }} 
-                />
-                <ChevronDown 
-                  className="h-4 w-4 md:h-5 md:w-5 -mt-2.5 animate-bounce opacity-60" 
-                  style={{ 
-                    color: 'hsl(174 70% 55%)',
-                    animationDuration: '1.5s',
-                    animationDelay: '0.15s',
                   }} 
                 />
               </div>
