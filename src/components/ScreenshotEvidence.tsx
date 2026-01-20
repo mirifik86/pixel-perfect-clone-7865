@@ -158,9 +158,9 @@ export const ScreenshotEvidence = ({
 
   return (
     <div 
-      className="rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] overflow-hidden"
+      className="rounded-xl border border-border/50 bg-card text-card-foreground overflow-hidden"
       style={{
-        boxShadow: '0 4px 20px hsl(0 0% 0% / 0.3)',
+        boxShadow: '0 4px 20px hsl(0 0% 0% / 0.08)',
       }}
     >
       {/* Header */}
@@ -168,15 +168,15 @@ export const ScreenshotEvidence = ({
         className="flex items-center justify-between px-4 py-3 cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
         style={{
-          background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.1) 0%, transparent 100%)',
-          borderBottom: '1px solid hsl(0 0% 100% / 0.05)',
+          background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.08) 0%, transparent 100%)',
+          borderBottom: '1px solid hsl(var(--border) / 0.5)',
         }}
       >
         <div className="flex items-center gap-2">
           <Camera className="h-4 w-4 text-primary" />
-          <h4 className="text-sm font-semibold text-white">{t.title}</h4>
+          <h4 className="text-sm font-semibold text-foreground">{t.title}</h4>
         </div>
-        <button className="text-white/50 hover:text-white transition-colors">
+        <button className="text-muted-foreground hover:text-foreground transition-colors">
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
       </div>
@@ -188,14 +188,14 @@ export const ScreenshotEvidence = ({
           <div 
             className="flex items-start gap-3 rounded-lg p-3"
             style={{
-              background: 'linear-gradient(135deg, hsl(45 80% 50% / 0.1) 0%, hsl(45 80% 50% / 0.05) 100%)',
-              border: '1px solid hsl(45 80% 50% / 0.3)',
+              background: 'hsl(45 80% 50% / 0.08)',
+              border: '1px solid hsl(45 80% 50% / 0.25)',
             }}
           >
-            <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-amber-400">{t.contextWarning}</p>
-              <p className="text-xs text-amber-300/80 mt-0.5">{t.contextWarningText}</p>
+              <p className="text-xs font-semibold text-amber-700">{t.contextWarning}</p>
+              <p className="text-xs text-amber-600/80 mt-0.5">{t.contextWarningText}</p>
             </div>
           </div>
 
@@ -204,20 +204,20 @@ export const ScreenshotEvidence = ({
             <div 
               className="flex items-start gap-3 rounded-lg p-3"
               style={{
-                background: 'linear-gradient(135deg, hsl(0 90% 45% / 0.15) 0%, hsl(0 90% 45% / 0.08) 100%)',
-                border: '1px solid hsl(0 90% 50% / 0.5)',
+                background: 'hsl(0 90% 50% / 0.08)',
+                border: '1px solid hsl(0 90% 50% / 0.3)',
               }}
             >
-              <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0 animate-pulse" />
+              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0 animate-pulse" />
               <div>
-                <p className="text-sm font-bold text-red-400">{t.visualTextMismatch}</p>
-                <p className="text-xs text-red-300/90 mt-1">
+                <p className="text-sm font-bold text-red-700">{t.visualTextMismatch}</p>
+                <p className="text-xs text-red-600/90 mt-1">
                   {language === 'fr' 
                     ? `L'image montre "${visualTextMismatch.visible_entity}". Le texte fait référence à "${visualTextMismatch.text_entity}".`
                     : `The image shows "${visualTextMismatch.visible_entity}". The text refers to "${visualTextMismatch.text_entity}".`
                   }
                 </p>
-                <p className="text-xs text-red-300/70 mt-1">{t.visualTextMismatchDesc}</p>
+                <p className="text-xs text-red-600/70 mt-1">{t.visualTextMismatchDesc}</p>
               </div>
             </div>
           )}
@@ -227,12 +227,12 @@ export const ScreenshotEvidence = ({
             <div 
               className="flex items-start gap-3 rounded-lg p-3"
               style={{
-                background: 'linear-gradient(135deg, hsl(0 80% 50% / 0.1) 0%, hsl(0 80% 50% / 0.05) 100%)',
-                border: '1px solid hsl(0 80% 50% / 0.3)',
+                background: 'hsl(0 80% 50% / 0.06)',
+                border: '1px solid hsl(0 80% 50% / 0.25)',
               }}
             >
-              <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-red-300">{t.ocrLowConfidence}</p>
+              <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-red-700">{t.ocrLowConfidence}</p>
             </div>
           )}
 
@@ -241,12 +241,12 @@ export const ScreenshotEvidence = ({
             <div 
               className="rounded-lg p-3"
               style={{
-                background: 'linear-gradient(135deg, hsl(210 60% 50% / 0.08) 0%, transparent 100%)',
+                background: 'hsl(210 60% 50% / 0.06)',
                 border: '1px solid hsl(210 60% 50% / 0.2)',
               }}
             >
-              <p className="text-xs font-medium text-blue-400 mb-1">{t.visualDescription}</p>
-              <p className="text-xs text-white/70">{visualDescription}</p>
+              <p className="text-xs font-medium text-blue-600 mb-1">{t.visualDescription}</p>
+              <p className="text-xs text-muted-foreground">{visualDescription}</p>
             </div>
           )}
 
@@ -255,13 +255,13 @@ export const ScreenshotEvidence = ({
             <div>
               <button
                 onClick={() => setShowPreview(!showPreview)}
-                className="flex items-center gap-2 text-xs text-white/60 hover:text-white transition-colors mb-2"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
               >
                 {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                 {showPreview ? t.hidePreview : t.showPreview}
               </button>
               {showPreview && (
-                <div className="rounded-lg overflow-hidden border border-white/10 mb-3">
+                <div className="rounded-lg overflow-hidden border border-border mb-3">
                   <img src={imagePreview} alt="Original" className="max-h-32 w-auto mx-auto" />
                 </div>
               )}
@@ -272,8 +272,8 @@ export const ScreenshotEvidence = ({
           <div>
             <div className="flex items-center gap-2 mb-2">
               <FileText className="h-4 w-4 text-primary" />
-              <label className="text-xs font-medium text-white/80">{t.extractedText}</label>
-              <span className="text-[10px] text-white/40 ml-auto">
+              <label className="text-xs font-medium text-foreground/80">{t.extractedText}</label>
+              <span className="text-[10px] text-muted-foreground ml-auto">
                 OCR: {Math.round(ocrConfidence * 100)}%
               </span>
             </div>
@@ -281,7 +281,7 @@ export const ScreenshotEvidence = ({
               value={editedText}
               onChange={(e) => setEditedText(e.target.value)}
               placeholder={t.editText}
-              className="min-h-[100px] bg-white/5 border-white/10 text-white/90 text-sm resize-none"
+              className="min-h-[100px] bg-muted/50 border-border text-foreground text-sm resize-none"
             />
             
             {/* Re-run button */}
@@ -312,7 +312,7 @@ export const ScreenshotEvidence = ({
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Camera className="h-4 w-4 text-primary" />
-              <h5 className="text-xs font-medium text-white/80">{t.imageSignals}</h5>
+              <h5 className="text-xs font-medium text-foreground/80">{t.imageSignals}</h5>
             </div>
             <div className="space-y-2">
               {/* Screenshot likelihood */}
@@ -361,8 +361,8 @@ export const ScreenshotEvidence = ({
 
       {/* Collapsed preview */}
       {!isExpanded && (
-        <div className="px-4 py-3 border-t border-white/5">
-          <p className="text-xs text-white/50 line-clamp-2">
+        <div className="px-4 py-3 border-t border-border/50">
+          <p className="text-xs text-muted-foreground line-clamp-2">
             {extractedText.substring(0, 150)}...
           </p>
         </div>
