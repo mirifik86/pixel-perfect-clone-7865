@@ -483,8 +483,8 @@ const Index = () => {
         }} 
       />
       
-      {/* Main content - centered layout, everything visible without scroll */}
-      <main className="container-unified relative z-10 flex h-full flex-col items-center justify-center overflow-y-auto py-2">
+      {/* Main content - scrollable layout for results */}
+      <main className="container-unified relative z-10 flex min-h-full flex-col items-center overflow-y-auto py-4 md:py-6">
         <div className="flex w-full flex-col items-center">
           {/* Logo & branding with unified halo */}
           <div 
@@ -719,14 +719,17 @@ const Index = () => {
           />
         </div>
 
+        {/* Spacer to push footer down when content is short */}
+        <div className="flex-grow" />
+
         {/* Footer - minimal */}
         <footer 
-          className="animate-fade-in text-center shrink-0"
+          className="animate-fade-in mt-auto text-center shrink-0 w-full"
           style={{ 
             animationDelay: '500ms', 
             animationFillMode: 'both',
-            paddingTop: 'var(--space-2)',
-            paddingBottom: 'var(--space-2)'
+            paddingTop: 'var(--space-4)',
+            paddingBottom: 'var(--space-4)'
           }}
         >
           <p 
