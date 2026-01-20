@@ -399,7 +399,8 @@ const Index = () => {
   };
 
   // Compact gauge size to fit above fold
-  const gaugeSize = 150;
+  // Mobile-first: Compact gauge for instant above-fold visibility
+  const gaugeSize = isMobile ? 120 : 150;
 
   return (
     <div 
@@ -419,13 +420,23 @@ const Index = () => {
         }} 
       />
       
-      {/* Main content - scrollable layout for results */}
-      <main className="container-unified relative z-10 flex min-h-full flex-col items-center overflow-y-auto py-3">
+      {/* Main content - mobile-first: tighter spacing, desktop: more air */}
+      <main 
+        className="container-unified relative z-10 flex min-h-full flex-col items-center overflow-y-auto"
+        style={{ 
+          paddingTop: isMobile ? 'var(--space-3)' : 'var(--space-6)',
+          paddingBottom: isMobile ? 'var(--space-2)' : 'var(--space-4)'
+        }}
+      >
         <div className="flex w-full flex-col items-center">
           {/* Logo & branding with unified halo */}
           <div 
             className="relative flex animate-fade-in flex-col items-center" 
-            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
+            style={{ 
+              animationDelay: '0ms', 
+              animationFillMode: 'both', 
+              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-6)'
+            }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
@@ -438,53 +449,64 @@ const Index = () => {
             
             <LeenScoreLogo />
             
-            {/* Premium light beam separator */}
-            <div className="relative flex w-full items-center justify-center" style={{ marginTop: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
+            {/* Premium light beam separator - smaller on mobile */}
+            <div 
+              className="relative flex w-full items-center justify-center" 
+              style={{ 
+                marginTop: isMobile ? '2px' : 'var(--space-1)', 
+                marginBottom: isMobile ? '2px' : 'var(--space-1)' 
+              }}
+            >
               {/* Central glow dot */}
               <div 
-                className="absolute h-1.5 w-1.5 rounded-full"
+                className="absolute rounded-full"
                 style={{
+                  width: isMobile ? '4px' : '6px',
+                  height: isMobile ? '4px' : '6px',
                   background: 'hsl(174 80% 60%)',
                   boxShadow: '0 0 8px 2px hsl(174 80% 55% / 0.8), 0 0 20px 4px hsl(174 60% 45% / 0.4)'
                 }}
               />
               {/* Light beam left */}
               <div 
-                className="h-px w-24"
+                className="h-px"
                 style={{
+                  width: isMobile ? '3rem' : '6rem',
                   background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.6) 100%)'
                 }}
               />
               {/* Light beam right */}
               <div 
-                className="h-px w-24"
+                className="h-px"
                 style={{
+                  width: isMobile ? '3rem' : '6rem',
                   background: 'linear-gradient(90deg, hsl(174 60% 50% / 0.6) 0%, transparent 100%)'
                 }}
               />
             </div>
             
-            {/* Tagline - clear hierarchy under brand */}
+            {/* Tagline - clear hierarchy under brand, compact on mobile */}
             <p 
               className="animate-fade-in text-center font-normal"
               style={{ 
                 animationDelay: '100ms', 
                 animationFillMode: 'both',
-                fontSize: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)',
-                color: 'hsl(210 20% 90% / 0.85)',
-                marginTop: 'var(--space-2)',
+                fontSize: isMobile ? '0.875rem' : 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)',
+                color: 'hsl(210 20% 90% / 0.75)',
+                marginTop: isMobile ? '4px' : 'var(--space-2)',
                 letterSpacing: '0.01em'
               }}
             >
               {t.tagline}
             </p>
+            {/* Byline - discreet on mobile */}
             <p 
               className="animate-fade-in font-semibold uppercase"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
-                marginTop: 'var(--space-3)',
-                fontSize: 'clamp(0.6rem, 0.55rem + 0.2vw, 0.7rem)',
+                marginTop: isMobile ? '4px' : 'var(--space-2)',
+                fontSize: isMobile ? '0.5rem' : 'clamp(0.6rem, 0.55rem + 0.2vw, 0.7rem)',
                 letterSpacing: '0.35em',
                 color: 'hsl(174 80% 65%)',
                 textShadow: '0 0 10px hsl(174 80% 55% / 0.6), 0 0 20px hsl(174 60% 45% / 0.4), 0 0 30px hsl(174 60% 45% / 0.2)'
@@ -494,18 +516,25 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - breathing room */}
+          {/* Language toggle - compact on mobile */}
           <div 
             className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
+            style={{ 
+              animationDelay: '200ms', 
+              animationFillMode: 'both', 
+              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-5)'
+            }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - breathing room with smooth transition */}
+          {/* Score gauge - compact on mobile for above-fold priority */}
           <div 
             className="relative flex justify-center items-center"
-            style={{ marginBottom: 'var(--space-4)', minHeight: `${gaugeSize}px` }}
+            style={{ 
+              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-5)', 
+              minHeight: `${gaugeSize}px` 
+            }}
           >
             {/* Loader - shows during analysis */}
             {isLoading && (
@@ -661,63 +690,31 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - minimal */}
+        {/* Footer - responsive: compact on mobile, refined on desktop */}
         <footer 
           className="mt-auto text-center shrink-0 w-full flex flex-col items-center"
           style={{ 
-            paddingTop: 'var(--space-8)',
-            paddingBottom: 'var(--space-6)',
-            gap: '6px'
+            paddingTop: isMobile ? 'var(--space-4)' : 'var(--space-8)',
+            paddingBottom: isMobile ? 'var(--space-3)' : 'var(--space-6)',
+            gap: isMobile ? '3px' : '5px'
           }}
         >
-          {/* Line 1: Brand & Slogan - Most prominent */}
+          {/* Line 1: Brand & Slogan */}
           <p 
-            className="tracking-[0.10em] font-medium"
-            style={{ fontSize: 'clamp(14px, 1.2rem, 17px)' }}
+            className="tracking-[0.08em] font-medium"
+            style={{ fontSize: isMobile ? '12px' : 'clamp(14px, 1.1rem, 16px)' }}
           >
-            <span 
-              className="font-serif italic"
-              style={{ color: 'hsl(174 45% 55% / 0.75)' }}
-            >Leen</span>
-            <span 
-              className="font-serif font-semibold"
-              style={{ color: 'hsl(210 15% 82% / 0.72)' }}
-            >Score</span>
-            <span 
-              className="mx-2 font-light"
-              style={{ color: 'hsl(210 10% 65% / 0.55)' }}
-            >—</span>
-            <span 
-              className="font-sans"
-              style={{ 
-                color: 'hsl(210 12% 75% / 0.70)', 
-                letterSpacing: '0.03em',
-                fontWeight: 450
-              }}
-            >{t.footerSlogan}</span>
+            <span className="font-serif italic" style={{ color: 'hsl(174 45% 55% / 0.75)' }}>Leen</span>
+            <span className="font-serif font-semibold" style={{ color: 'hsl(210 15% 82% / 0.72)' }}>Score</span>
+            <span className="mx-1.5 font-light" style={{ color: 'hsl(210 10% 65% / 0.55)' }}>—</span>
+            <span className="font-sans" style={{ color: 'hsl(210 12% 75% / 0.70)', letterSpacing: '0.02em', fontWeight: 450 }}>{t.footerSlogan}</span>
           </p>
           
-          {/* Line 2: Version - Secondary */}
-          <p 
-            className="font-sans font-light tracking-[0.18em]"
-            style={{ 
-              fontSize: 'clamp(10px, 0.7rem, 11px)', 
-              color: 'hsl(210 10% 62% / 0.58)' 
-            }}
-          >
-            v1.0
-          </p>
+          {/* Line 2: Version */}
+          <p className="font-sans font-light tracking-[0.15em]" style={{ fontSize: isMobile ? '9px' : '10px', color: 'hsl(210 10% 62% / 0.55)' }}>v1.0</p>
           
-          {/* Line 3: Attribution - Tertiary, discreet */}
-          <p 
-            className="font-sans font-extralight italic tracking-[0.05em]"
-            style={{ 
-              fontSize: 'clamp(9px, 0.6rem, 10px)', 
-              color: 'hsl(174 25% 55% / 0.50)' 
-            }}
-          >
-            {t.footerAttribution}
-          </p>
+          {/* Line 3: Attribution */}
+          <p className="font-sans font-extralight italic tracking-[0.04em]" style={{ fontSize: isMobile ? '8px' : '9px', color: 'hsl(174 25% 55% / 0.48)' }}>{t.footerAttribution}</p>
         </footer>
       </main>
     </div>
