@@ -1,25 +1,27 @@
 export const LeenScoreLogo = () => {
-  return <div className="flex flex-col items-center gap-3 md:gap-5">
+  return (
+    <div className="flex flex-col items-center" style={{ gap: 'var(--space-4)' }}>
       {/* Premium icon with layered glow effects */}
       <div className="relative">
         {/* Outer glow ring */}
         <div 
-          className="absolute -inset-2 rounded-2xl md:-inset-3"
+          className="absolute -inset-3 rounded-2xl"
           style={{
             background: 'radial-gradient(circle, hsl(174 60% 45% / 0.2) 0%, transparent 70%)',
             filter: 'blur(8px)'
           }}
         />
         
-        {/* Icon container with premium styling */}
+        {/* Icon container with premium styling - unified size */}
         <div 
-          className="relative rounded-xl border border-primary/40 p-2.5 backdrop-blur-md md:rounded-2xl md:p-4"
+          className="relative rounded-xl border border-primary/40 backdrop-blur-md"
           style={{
+            padding: 'var(--space-3)',
             background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.15) 0%, hsl(240 20% 10% / 0.8) 100%)',
             boxShadow: '0 0 20px hsl(174 60% 45% / 0.2), inset 0 1px 1px hsl(0 0% 100% / 0.1), 0 8px 32px hsl(0 0% 0% / 0.4)'
           }}
         >
-          <div className="relative h-8 w-8 md:h-12 md:w-12">
+          <div className="relative" style={{ width: '2.5rem', height: '2.5rem' }}>
             {/* Document icon - white with subtle shadow */}
             <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full drop-shadow-lg" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="hsl(0 0% 95%)" stroke="hsl(0 0% 85%)" strokeWidth="0.5" />
@@ -31,11 +33,15 @@ export const LeenScoreLogo = () => {
             {/* Magnifying glass - premium teal with glow */}
             <svg 
               viewBox="0 0 24 24" 
-              className="absolute -bottom-1.5 -right-1.5 h-6 w-6 md:-bottom-2 md:-right-2 md:h-8 md:w-8" 
+              className="absolute" 
               fill="none" 
               strokeLinecap="round" 
               strokeLinejoin="round"
               style={{
+                bottom: '-0.375rem',
+                right: '-0.375rem',
+                width: '1.5rem',
+                height: '1.5rem',
                 filter: 'drop-shadow(0 2px 4px hsl(0 0% 0% / 0.3)) drop-shadow(0 0 8px hsl(174 60% 45% / 0.4))'
               }}
             >
@@ -61,31 +67,45 @@ export const LeenScoreLogo = () => {
       {/* Title with solar halo reflection effect */}
       <div className="relative">
         {/* Solar halo glow behind title */}
-        <div className="absolute -inset-x-16 -inset-y-8 rounded-full md:-inset-x-24 md:-inset-y-12" style={{
-          background: 'radial-gradient(ellipse 80% 60% at center, hsl(40 100% 60% / 0.15) 0%, hsl(30 100% 50% / 0.08) 30%, transparent 70%)'
-        }} />
+        <div 
+          className="absolute -inset-x-20 -inset-y-10 rounded-full" 
+          style={{
+            background: 'radial-gradient(ellipse 80% 60% at center, hsl(40 100% 60% / 0.15) 0%, hsl(30 100% 50% / 0.08) 30%, transparent 70%)'
+          }} 
+        />
         
         {/* Subtle dark vignette for contrast */}
-        <div className="absolute -inset-x-12 -inset-y-4 rounded-3xl md:-inset-x-16 md:-inset-y-6" style={{
-          background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.6) 0%, transparent 70%)'
-        }} />
+        <div 
+          className="absolute -inset-x-14 -inset-y-5 rounded-3xl" 
+          style={{
+            background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.6) 0%, transparent 70%)'
+          }} 
+        />
         
-        <h1 className="relative brand-text text-5xl font-normal tracking-tight md:text-8xl" style={{
-          letterSpacing: '-0.03em'
-        }}>
-          <span className="brand-accent italic text-5xl md:text-8xl" style={{
-            color: 'hsl(174 65% 52%)',
-            textShadow: '0 0 40px hsl(174 60% 45% / 0.4), 0 0 80px hsl(40 100% 60% / 0.2), 0 2px 20px hsl(30 90% 55% / 0.15)'
-          }}>
+        <h1 
+          className="relative brand-text font-normal tracking-tight text-unified-hero"
+          style={{ letterSpacing: '-0.03em' }}
+        >
+          <span 
+            className="brand-accent italic"
+            style={{
+              color: 'hsl(174 65% 52%)',
+              textShadow: '0 0 40px hsl(174 60% 45% / 0.4), 0 0 80px hsl(40 100% 60% / 0.2), 0 2px 20px hsl(30 90% 55% / 0.15)'
+            }}
+          >
             Leen
           </span>
-          <span className="font-semibold not-italic" style={{
-            color: 'hsl(0 0% 98%)',
-            textShadow: '0 0 30px hsl(40 100% 70% / 0.25), 0 2px 15px hsl(30 90% 55% / 0.1)'
-          }}>
+          <span 
+            className="font-semibold not-italic" 
+            style={{
+              color: 'hsl(0 0% 98%)',
+              textShadow: '0 0 30px hsl(40 100% 70% / 0.25), 0 2px 15px hsl(30 90% 55% / 0.1)'
+            }}
+          >
             Score
           </span>
         </h1>
       </div>
-    </div>;
+    </div>
+  );
 };

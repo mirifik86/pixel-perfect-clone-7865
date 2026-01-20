@@ -459,6 +459,9 @@ const Index = () => {
     setLanguage(next);
   };
 
+  // Unified gauge size based on CSS variable (same proportions across devices)
+  const gaugeSize = 180; // Single size for consistency
+
   return (
     <div 
       className="relative flex min-h-screen flex-col overflow-hidden" 
@@ -477,13 +480,13 @@ const Index = () => {
         }} 
       />
       
-      {/* Main content - mobile-first: fit everything above fold */}
-      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-2 md:py-6">
-        <div className="flex w-full flex-col items-center pt-2 md:pt-8">
+      {/* Main content - unified layout for mobile and desktop */}
+      <main className="container-unified relative z-10 flex min-h-screen flex-col items-center justify-between py-6">
+        <div className="flex w-full flex-col items-center" style={{ paddingTop: 'var(--space-6)' }}>
           {/* Logo & branding with unified halo */}
           <div 
-            className="relative mb-2 md:mb-8 flex animate-fade-in flex-col items-center" 
-            style={{ animationDelay: '0ms', animationFillMode: 'both' }}
+            className="relative flex animate-fade-in flex-col items-center" 
+            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-6)' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
@@ -497,7 +500,7 @@ const Index = () => {
             <LeenScoreLogo />
             
             {/* Premium light beam separator */}
-            <div className="relative my-1 md:my-2 flex w-full items-center justify-center">
+            <div className="relative flex w-full items-center justify-center" style={{ marginTop: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
               {/* Central glow dot */}
               <div 
                 className="absolute h-1.5 w-1.5 rounded-full"
@@ -522,18 +525,25 @@ const Index = () => {
               />
             </div>
             
-            {/* Subtitle - unified styling */}
+            {/* Subtitle - unified styling with clamp */}
             <p 
-              className="animate-fade-in text-center text-base md:text-lg font-medium text-foreground/95"
-              style={{ animationDelay: '100ms', animationFillMode: 'both' }}
+              className="animate-fade-in text-center font-medium text-foreground/95"
+              style={{ 
+                animationDelay: '100ms', 
+                animationFillMode: 'both',
+                fontSize: 'var(--text-lg)'
+              }}
             >
               {t.tagline}
             </p>
             <p 
-              className="mt-0.5 md:mt-1.5 animate-fade-in text-[10px] md:text-xs font-bold uppercase tracking-[0.35em]"
+              className="animate-fade-in font-bold uppercase"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
+                marginTop: 'var(--space-1)',
+                fontSize: 'var(--text-xs)',
+                letterSpacing: '0.35em',
                 color: 'hsl(174 80% 65%)',
                 textShadow: '0 0 10px hsl(174 80% 55% / 0.6), 0 0 20px hsl(174 60% 45% / 0.4), 0 0 30px hsl(174 60% 45% / 0.2)'
               }}
@@ -542,18 +552,18 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - perfectly centered */}
+          {/* Language toggle - unified spacing */}
           <div 
-            className="flex w-full justify-center mb-2 md:mb-8 animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both' }}
+            className="flex w-full justify-center animate-fade-in"
+            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-6)' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - clean, instrument-like design */}
+          {/* Score gauge - unified size */}
           <div 
-            className="relative mb-1 md:mb-4 animate-scale-in"
-            style={{ animationDelay: '300ms', animationFillMode: 'both' }}
+            className="relative animate-scale-in"
+            style={{ animationDelay: '300ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
           >
             <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise */}
@@ -561,23 +571,23 @@ const Index = () => {
                 isImageAnalysis ? (
                   <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
                 ) : (
-                  <AnalysisLoader size={isMobile ? 150 : 200} language={language} />
+                  <AnalysisLoader size={gaugeSize} language={language} />
                 )
               ) : (
-                <ScoreGauge score={score} size={isMobile ? 150 : 200} language={language} hasContent={hasFormContent} />
+                <ScoreGauge score={score} size={gaugeSize} language={language} hasContent={hasFormContent} />
               )}
             </div>
           </div>
 
           {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}
           {hasAnyAnalysis && (
-            <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <div className="container-content w-full animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both', marginTop: 'var(--space-5)' }}>
               {/* Action buttons row */}
-              <div className="flex items-center justify-center gap-3">
-                {/* Primary CTA - Run another analysis (always visible, emphasized after PRO) */}
+              <div className="flex items-center justify-center" style={{ gap: 'var(--space-3)' }}>
+                {/* Primary CTA - Run another analysis */}
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all"
+                  className="btn-unified"
                   style={{
                     background: analysisData?.analysisType === 'pro' 
                       ? 'linear-gradient(135deg, hsl(174 70% 40%) 0%, hsl(174 60% 35%) 100%)'
@@ -595,7 +605,7 @@ const Index = () => {
                 {analysisData?.analysisType !== 'pro' && (
                   <button
                     onClick={() => setIsProModalOpen(true)}
-                    className="group relative flex items-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300"
+                    className="btn-unified group relative overflow-hidden"
                     style={{
                       background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
                       boxShadow: '0 0 25px hsl(200 80% 55% / 0.5), 0 0 50px hsl(174 70% 45% / 0.3), 0 4px 20px hsl(0 0% 0% / 0.3)',
@@ -612,8 +622,10 @@ const Index = () => {
                     
                     {/* PRO badge with glow */}
                     <span 
-                      className="relative rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider"
+                      className="relative rounded-md font-black tracking-wider"
                       style={{
+                        padding: '2px 6px',
+                        fontSize: 'var(--text-xs)',
                         background: 'rgba(255,255,255,0.2)',
                         color: 'white',
                         textShadow: '0 0 10px rgba(255,255,255,0.5)',
@@ -644,8 +656,8 @@ const Index = () => {
           {/* Unified Analysis Form - hidden during loading and after analysis */}
           {!hasAnyAnalysis && !isLoading && (
             <div 
-              className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
-              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
+              className="container-content w-full animate-fade-in"
+              style={{ animationDelay: '350ms', animationFillMode: 'both', marginTop: 'var(--space-2)' }}
             >
               <UnifiedAnalysisForm 
                 onAnalyzeText={handleAnalyze} 
@@ -664,7 +676,7 @@ const Index = () => {
 
           {/* Screenshot Evidence Section - show after screenshot analysis */}
           {screenshotData && hasAnyAnalysis && !isProLoading && (
-            <div className="w-full max-w-2xl mt-4 animate-fade-in">
+            <div className="container-content w-full animate-fade-in" style={{ marginTop: 'var(--space-4)' }}>
               <ScreenshotEvidence
                 extractedText={screenshotData.ocr.cleaned_text}
                 ocrConfidence={screenshotData.ocr.confidence}
@@ -699,13 +711,21 @@ const Index = () => {
           />
         </div>
 
-        {/* Footer - premium styling */}
+        {/* Footer - unified styling */}
         <footer 
-          className="animate-fade-in pb-6 pt-8 text-center"
-          style={{ animationDelay: '500ms', animationFillMode: 'both' }}
+          className="animate-fade-in text-center"
+          style={{ 
+            animationDelay: '500ms', 
+            animationFillMode: 'both',
+            paddingTop: 'var(--space-8)',
+            paddingBottom: 'var(--space-6)'
+          }}
         >
           {/* Ethical positioning - premium institutional style */}
-          <p className="mx-auto max-w-md border-t border-white/10 pt-6 text-xs tracking-wide text-foreground/50">
+          <p 
+            className="mx-auto max-w-md border-t border-white/10 tracking-wide text-foreground/50"
+            style={{ paddingTop: 'var(--space-6)', fontSize: 'var(--text-xs)' }}
+          >
             <span 
               className="font-serif italic"
               style={{ color: 'hsl(174 65% 55%)' }}
@@ -714,10 +734,16 @@ const Index = () => {
             <span className="ml-1">{t.footer.split('LeenScore')[1]}</span>
           </p>
           
-          <p className="mt-4 text-[10px] font-medium tracking-[0.2em] text-primary/70">
+          <p 
+            className="font-medium tracking-[0.2em] text-primary/70"
+            style={{ marginTop: 'var(--space-4)', fontSize: 'var(--text-xs)' }}
+          >
             {t.developedBy}
           </p>
-          <p className="mt-1 text-[10px] tracking-[0.15em] text-muted-foreground/40">
+          <p 
+            className="tracking-[0.15em] text-muted-foreground/40"
+            style={{ marginTop: 'var(--space-1)', fontSize: 'var(--text-xs)' }}
+          >
             {t.version}
           </p>
         </footer>
