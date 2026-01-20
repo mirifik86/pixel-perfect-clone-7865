@@ -296,26 +296,11 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   {t.removeImage}
                 </button>
               </div>
-            ) : hasText ? (
-              /* Text input active state */
-              <div className="relative" onClick={(e) => e.stopPropagation()}>
-                <Textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={handleInputChange}
-                  onPaste={handlePaste}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  className="min-h-[100px] resize-none border-0 bg-transparent text-left text-sm text-white placeholder:text-white/40 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0"
-                  placeholder={t.primaryText}
-                  autoFocus
-                />
-              </div>
             ) : (
-              /* Empty state - Split layout: Text left, Image right */
+              /* Text/Image input state - unified layout */
               <div className="flex items-stretch gap-4 w-full">
-                {/* Text input zone */}
-                <div className="flex-1 relative">
+                {/* Text input zone - always visible, full width when hasText */}
+                <div className={`relative transition-all duration-200 ${hasText ? 'flex-1' : 'flex-1'}`} onClick={(e) => e.stopPropagation()}>
                   <Textarea
                     ref={textareaRef}
                     value={input}
@@ -331,51 +316,55 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   />
                 </div>
                 
-                {/* Vertical divider */}
-                <div 
-                  className="w-px self-stretch my-2"
-                  style={{
-                    background: 'linear-gradient(to bottom, transparent, hsl(0 0% 100% / 0.15), transparent)',
-                  }}
-                />
-                
-                {/* Image upload zone - premium button */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl px-6 md:px-8 transition-all hover:scale-105 group/img"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
-                    border: '1px dashed hsl(174 50% 50% / 0.35)',
-                    boxShadow: '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-                  }}
-                  title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
-                >
-                  {/* Icon container with glow */}
+                {/* Vertical divider - hidden when text is entered */}
+                {!hasText && (
                   <div 
-                    className="rounded-xl p-3 transition-all group-hover/img:scale-110"
+                    className="w-px self-stretch my-2"
                     style={{
-                      background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
-                      boxShadow: '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.2)',
+                      background: 'linear-gradient(to bottom, transparent, hsl(0 0% 100% / 0.15), transparent)',
                     }}
+                  />
+                )}
+                
+                {/* Image upload zone - hidden when text is entered */}
+                {!hasText && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="flex flex-col items-center justify-center gap-2 rounded-xl px-6 md:px-8 transition-all hover:scale-105 group/img"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
+                      border: '1px dashed hsl(174 50% 50% / 0.35)',
+                      boxShadow: '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+                    }}
+                    title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
                   >
-                    <Image 
-                      className="h-7 w-7 md:h-8 md:w-8" 
-                      style={{ color: 'hsl(174 65% 60%)' }}
-                    />
-                  </div>
-                  
-                  {/* Label */}
-                  <span 
-                    className="text-[10px] md:text-[11px] font-medium tracking-wide uppercase"
-                    style={{ color: 'hsl(174 60% 55% / 0.8)' }}
-                  >
-                    Image
-                  </span>
-                </button>
+                    {/* Icon container with glow */}
+                    <div 
+                      className="rounded-xl p-3 transition-all group-hover/img:scale-110"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
+                        boxShadow: '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.2)',
+                      }}
+                    >
+                      <Image 
+                        className="h-7 w-7 md:h-8 md:w-8" 
+                        style={{ color: 'hsl(174 65% 60%)' }}
+                      />
+                    </div>
+                    
+                    {/* Label */}
+                    <span 
+                      className="text-[10px] md:text-[11px] font-medium tracking-wide uppercase"
+                      style={{ color: 'hsl(174 60% 55% / 0.8)' }}
+                    >
+                      Image
+                    </span>
+                  </button>
+                )}
               </div>
             )}
           </div>
