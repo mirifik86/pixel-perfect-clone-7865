@@ -379,9 +379,9 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
       {/* Transition cue: PUIS ↓ */}
       {!hasImage && !hasText && (
         <div className="relative mt-3 flex flex-col items-center gap-0.5">
-          {/* Subtle synchronized pulse glow - tight around word */}
+          {/* Subtle synchronized pulse glow - exact around word */}
           <div 
-            className="absolute -inset-x-1 -inset-y-1.5 rounded-full"
+            className="absolute inset-x-0 -inset-y-1 rounded-full"
             style={{
               background: 'radial-gradient(ellipse 100% 120% at center, hsl(174 70% 50% / 0.4), hsl(174 70% 55% / 0.15) 60%, transparent 100%)',
               animation: 'puis-pulse 2s ease-in-out infinite',
