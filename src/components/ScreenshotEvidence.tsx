@@ -11,6 +11,13 @@ interface ImageSignals {
   metadataPresent: 'yes' | 'no' | 'partial';
 }
 
+interface VisualTextMismatch {
+  detected: boolean;
+  visible_entity: string | null;
+  text_entity: string | null;
+  mismatch_description: string | null;
+}
+
 interface ScreenshotEvidenceProps {
   extractedText: string;
   ocrConfidence: number;
@@ -19,6 +26,8 @@ interface ScreenshotEvidenceProps {
   isRerunning: boolean;
   language: 'en' | 'fr';
   imagePreview?: string;
+  visualTextMismatch?: VisualTextMismatch;
+  visualDescription?: string;
 }
 
 const translations = {
@@ -29,13 +38,16 @@ const translations = {
     rerunAnalysis: 'Re-run analysis',
     rerunning: 'Re-analyzing...',
     imageSignals: 'Image Signals',
-    contextWarning: 'Context Warning',
-    contextWarningText: 'Screenshots can be partial context. Score is based on extracted text + visual signals.',
+    contextWarning: 'Critical Disclaimer',
+    contextWarningText: 'This analysis is based on extracted text and limited visual context. Screenshots can be partial or misleading and do not constitute proof of factual claims.',
     ocrLowConfidence: 'OCR confidence is low. Crop or edit the extracted text, then re-run.',
     showPreview: 'Show original',
     hidePreview: 'Hide original',
     expand: 'Expand',
     collapse: 'Collapse',
+    visualTextMismatch: 'Visual-Text Mismatch Detected',
+    visualTextMismatchDesc: 'The image shows a different person/entity than the text refers to. No verified link exists.',
+    visualDescription: 'Visual Description',
     signals: {
       screenshotLikelihood: {
         likely: 'Image appears to be a screenshot (likely).',
@@ -69,13 +81,16 @@ const translations = {
     rerunAnalysis: 'Relancer l\'analyse',
     rerunning: 'Réanalyse...',
     imageSignals: 'Signaux image',
-    contextWarning: 'Avertissement',
-    contextWarningText: 'Les captures peuvent être hors contexte. Le score est basé sur le texte extrait + signaux visuels.',
+    contextWarning: 'Avertissement Critique',
+    contextWarningText: 'Cette analyse est basée sur le texte extrait et un contexte visuel limité. Les captures d\'écran peuvent être partielles ou trompeuses et ne constituent pas une preuve de faits.',
     ocrLowConfidence: 'Confiance OCR faible. Recadrez ou modifiez le texte extrait, puis relancez.',
     showPreview: 'Voir l\'original',
     hidePreview: 'Masquer l\'original',
     expand: 'Développer',
     collapse: 'Réduire',
+    visualTextMismatch: 'Incohérence Visuel-Texte Détectée',
+    visualTextMismatchDesc: 'L\'image montre une personne/entité différente de celle mentionnée dans le texte. Aucun lien vérifié n\'existe.',
+    visualDescription: 'Description Visuelle',
     signals: {
       screenshotLikelihood: {
         likely: 'L\'image semble être une capture d\'écran.',
@@ -112,6 +127,8 @@ export const ScreenshotEvidence = ({
   isRerunning,
   language,
   imagePreview,
+  visualTextMismatch,
+  visualDescription,
 }: ScreenshotEvidenceProps) => {
   const t = translations[language];
   const [editedText, setEditedText] = useState(extractedText);
@@ -182,6 +199,29 @@ export const ScreenshotEvidence = ({
             </div>
           </div>
 
+          {/* Visual-Text Mismatch Alert - RULE 1 */}
+          {visualTextMismatch?.detected && (
+            <div 
+              className="flex items-start gap-3 rounded-lg p-3"
+              style={{
+                background: 'linear-gradient(135deg, hsl(0 90% 45% / 0.15) 0%, hsl(0 90% 45% / 0.08) 100%)',
+                border: '1px solid hsl(0 90% 50% / 0.5)',
+              }}
+            >
+              <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0 animate-pulse" />
+              <div>
+                <p className="text-sm font-bold text-red-400">{t.visualTextMismatch}</p>
+                <p className="text-xs text-red-300/90 mt-1">
+                  {language === 'fr' 
+                    ? `L'image montre "${visualTextMismatch.visible_entity}". Le texte fait référence à "${visualTextMismatch.text_entity}".`
+                    : `The image shows "${visualTextMismatch.visible_entity}". The text refers to "${visualTextMismatch.text_entity}".`
+                  }
+                </p>
+                <p className="text-xs text-red-300/70 mt-1">{t.visualTextMismatchDesc}</p>
+              </div>
+            </div>
+          )}
+
           {/* Low OCR Confidence warning */}
           {isLowConfidence && (
             <div 
@@ -193,6 +233,20 @@ export const ScreenshotEvidence = ({
             >
               <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-red-300">{t.ocrLowConfidence}</p>
+            </div>
+          )}
+
+          {/* Visual Description - RULE 5 (Factual only) */}
+          {visualDescription && (
+            <div 
+              className="rounded-lg p-3"
+              style={{
+                background: 'linear-gradient(135deg, hsl(210 60% 50% / 0.08) 0%, transparent 100%)',
+                border: '1px solid hsl(210 60% 50% / 0.2)',
+              }}
+            >
+              <p className="text-xs font-medium text-blue-400 mb-1">{t.visualDescription}</p>
+              <p className="text-xs text-white/70">{visualDescription}</p>
             </div>
           )}
 

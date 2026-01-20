@@ -62,6 +62,13 @@ interface ImageSignals {
   metadataPresent: 'yes' | 'no' | 'partial';
 }
 
+interface VisualTextMismatch {
+  detected: boolean;
+  visible_entity: string | null;
+  text_entity: string | null;
+  mismatch_description: string | null;
+}
+
 interface ScreenshotAnalysisData {
   ocr: {
     raw_text: string;
@@ -72,6 +79,8 @@ interface ScreenshotAnalysisData {
   image_signals: ImageSignals;
   analysis: AnalysisData | null;
   warning?: string;
+  visual_text_mismatch?: VisualTextMismatch;
+  visual_description?: string;
 }
 
 // Bilingual summaries stored at analysis time - no translation calls on toggle
@@ -310,6 +319,8 @@ const Index = () => {
         image_signals: transformedSignals,
         analysis: data.analysis,
         warning: data.warning,
+        visual_text_mismatch: data.visual_text_mismatch,
+        visual_description: data.visual_description,
       };
       
       setScreenshotData(processedData);
@@ -728,6 +739,8 @@ const Index = () => {
                 isRerunning={isRerunning}
                 language={language}
                 imagePreview={uploadedFile?.preview}
+                visualTextMismatch={screenshotData.visual_text_mismatch}
+                visualDescription={screenshotData.visual_description}
               />
             </div>
           )}
