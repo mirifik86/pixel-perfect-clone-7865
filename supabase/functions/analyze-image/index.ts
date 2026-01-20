@@ -354,8 +354,9 @@ serve(async (req) => {
       );
     }
 
-    // Call the existing analyze function
-    const analyzeResponse = await fetch(`${req.headers.get('origin') || 'https://clejmxumuqhpjncjuuht.supabase.co'}/functions/v1/analyze`, {
+    // Call the existing analyze function using the correct Supabase URL
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || 'https://clejmxumuqhpjncjuuht.supabase.co';
+    const analyzeResponse = await fetch(`${SUPABASE_URL}/functions/v1/analyze`, {
       method: "POST",
       headers: {
         Authorization: req.headers.get('authorization') || '',
