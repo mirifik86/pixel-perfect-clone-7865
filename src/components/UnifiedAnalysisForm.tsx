@@ -371,7 +371,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={t.primaryText}
-                    className="min-h-[80px] md:min-h-[90px] w-full resize-none rounded-xl border-0 bg-white/[0.04] px-4 py-3 text-center text-sm text-white placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:ring-offset-0 transition-all"
+                    className="min-h-[80px] md:min-h-[90px] w-full resize-none rounded-xl border-0 bg-white/[0.04] px-4 py-3 text-center text-sm text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
                       boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                     }}
