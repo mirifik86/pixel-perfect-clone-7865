@@ -425,7 +425,7 @@ const Index = () => {
           {/* Logo & branding with unified halo */}
           <div 
             className="relative flex animate-fade-in flex-col items-center" 
-            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-1)' }}
+            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
@@ -464,24 +464,27 @@ const Index = () => {
               />
             </div>
             
-            {/* Subtitle - compact styling */}
+            {/* Tagline - clear hierarchy under brand */}
             <p 
-              className="animate-fade-in text-center font-medium text-foreground/95"
+              className="animate-fade-in text-center font-normal"
               style={{ 
                 animationDelay: '100ms', 
                 animationFillMode: 'both',
-                fontSize: 'var(--text-base)'
+                fontSize: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)',
+                color: 'hsl(210 20% 90% / 0.85)',
+                marginTop: 'var(--space-2)',
+                letterSpacing: '0.01em'
               }}
             >
               {t.tagline}
             </p>
             <p 
-              className="animate-fade-in font-bold uppercase"
+              className="animate-fade-in font-semibold uppercase"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
-                marginTop: 'var(--space-1)',
-                fontSize: 'var(--text-xs)',
+                marginTop: 'var(--space-3)',
+                fontSize: 'clamp(0.6rem, 0.55rem + 0.2vw, 0.7rem)',
                 letterSpacing: '0.35em',
                 color: 'hsl(174 80% 65%)',
                 textShadow: '0 0 10px hsl(174 80% 55% / 0.6), 0 0 20px hsl(174 60% 45% / 0.4), 0 0 30px hsl(174 60% 45% / 0.2)'
@@ -491,18 +494,18 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - compact spacing */}
+          {/* Language toggle - breathing room */}
           <div 
             className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-1)' }}
+            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - compact spacing with smooth transition */}
+          {/* Score gauge - breathing room with smooth transition */}
           <div 
             className="relative flex justify-center items-center"
-            style={{ marginBottom: 'var(--space-1)', minHeight: `${gaugeSize}px` }}
+            style={{ marginBottom: 'var(--space-4)', minHeight: `${gaugeSize}px` }}
           >
             {/* Loader - shows during analysis */}
             {isLoading && (
@@ -662,23 +665,23 @@ const Index = () => {
         <footer 
           className="mt-auto text-center shrink-0 w-full flex flex-col items-center"
           style={{ 
-            paddingTop: 'var(--space-6)',
-            paddingBottom: 'var(--space-5)',
-            gap: '5px'
+            paddingTop: 'var(--space-8)',
+            paddingBottom: 'var(--space-6)',
+            gap: '6px'
           }}
         >
           {/* Line 1: Brand & Slogan - Most prominent */}
           <p 
-            className="tracking-[0.12em] font-medium"
-            style={{ fontSize: 'clamp(13px, 1.5vw, 15px)' }}
+            className="tracking-[0.10em] font-medium"
+            style={{ fontSize: 'clamp(14px, 1.2rem, 17px)' }}
           >
             <span 
               className="font-serif italic"
-              style={{ color: 'hsl(174 45% 55% / 0.72)' }}
+              style={{ color: 'hsl(174 45% 55% / 0.75)' }}
             >Leen</span>
             <span 
-              className="font-serif"
-              style={{ color: 'hsl(210 15% 78% / 0.70)' }}
+              className="font-serif font-semibold"
+              style={{ color: 'hsl(210 15% 82% / 0.72)' }}
             >Score</span>
             <span 
               className="mx-2 font-light"
@@ -687,8 +690,8 @@ const Index = () => {
             <span 
               className="font-sans"
               style={{ 
-                color: 'hsl(210 12% 72% / 0.68)', 
-                letterSpacing: '0.04em',
+                color: 'hsl(210 12% 75% / 0.70)', 
+                letterSpacing: '0.03em',
                 fontWeight: 450
               }}
             >{t.footerSlogan}</span>
@@ -696,10 +699,10 @@ const Index = () => {
           
           {/* Line 2: Version - Secondary */}
           <p 
-            className="font-sans font-light tracking-[0.15em]"
+            className="font-sans font-light tracking-[0.18em]"
             style={{ 
-              fontSize: '10px', 
-              color: 'hsl(210 10% 60% / 0.55)' 
+              fontSize: 'clamp(10px, 0.7rem, 11px)', 
+              color: 'hsl(210 10% 62% / 0.58)' 
             }}
           >
             v1.0
@@ -707,10 +710,10 @@ const Index = () => {
           
           {/* Line 3: Attribution - Tertiary, discreet */}
           <p 
-            className="font-sans font-light italic tracking-[0.06em]"
+            className="font-sans font-extralight italic tracking-[0.05em]"
             style={{ 
-              fontSize: '9px', 
-              color: 'hsl(174 25% 55% / 0.48)' 
+              fontSize: 'clamp(9px, 0.6rem, 10px)', 
+              color: 'hsl(174 25% 55% / 0.50)' 
             }}
           >
             {t.footerAttribution}

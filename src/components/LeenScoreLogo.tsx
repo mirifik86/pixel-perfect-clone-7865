@@ -83,8 +83,12 @@ export const LeenScoreLogo = () => {
         />
         
         <h1 
-          className="relative brand-text font-normal tracking-tight"
-          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(2rem, 1.6rem + 2vw, 3.5rem)' }}
+          className="relative brand-text font-medium tracking-tight"
+          style={{ 
+            letterSpacing: '-0.02em', 
+            fontSize: 'clamp(2.75rem, 2.2rem + 2.8vw, 4.5rem)',
+            lineHeight: 1.1
+          }}
         >
           <span 
             className="brand-accent italic"
