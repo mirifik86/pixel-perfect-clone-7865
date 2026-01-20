@@ -483,8 +483,8 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
           50% { opacity: 1; }
         }
         @keyframes puis-arrow-pulse {
-          0%, 100% { transform: translateY(0); opacity: 0.8; }
-          50% { transform: translateY(2px); opacity: 1; }
+          0%, 100% { transform: translateY(0); opacity: 0.75; }
+          50% { transform: translateY(4px); opacity: 1; }
         }
       `}</style>
     </form>
