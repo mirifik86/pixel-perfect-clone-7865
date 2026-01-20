@@ -682,7 +682,17 @@ const Index = () => {
             <ProAnalysisLoader language={language} />
           )}
 
-          {/* Screenshot Evidence Section - show after screenshot analysis */}
+          {/* Analysis result - detailed breakdown below */}
+          {analysisData && !isProLoading && (
+            <AnalysisResult 
+              data={analysisData} 
+              language={language} 
+              articleSummary={displayArticleSummary}
+              hasImage={isImageAnalysis}
+            />
+          )}
+
+          {/* Screenshot Evidence Section - show after analysis results (PRO explanation) */}
           {screenshotData && hasAnyAnalysis && !isProLoading && (
             <div className="container-content w-full animate-fade-in" style={{ marginTop: 'var(--space-4)' }}>
               <ScreenshotEvidence
@@ -697,16 +707,6 @@ const Index = () => {
                 visualDescription={screenshotData.visual_description}
               />
             </div>
-          )}
-
-          {/* Analysis result - detailed breakdown below */}
-          {analysisData && !isProLoading && (
-            <AnalysisResult 
-              data={analysisData} 
-              language={language} 
-              articleSummary={displayArticleSummary}
-              hasImage={isImageAnalysis}
-            />
           )}
 
           {/* Pro Analysis Modal */}
