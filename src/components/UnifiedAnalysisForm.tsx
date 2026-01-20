@@ -255,8 +255,8 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             </div>
           )}
 
-          {/* Main content area - unified padding */}
-          <div style={{ padding: 'var(--space-6)' }}>
+          {/* Main content area - compact padding */}
+          <div style={{ padding: 'var(--space-4)' }}>
             
             {/* Image uploaded state */}
             {uploadedImage ? (
@@ -329,8 +329,8 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     placeholder={t.primaryText}
                     className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
-                      minHeight: '110px',
-                      padding: 'var(--space-4)',
+                      minHeight: '80px',
+                      padding: 'var(--space-3)',
                       fontSize: 'var(--text-sm)',
                       boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                     }}
@@ -397,8 +397,8 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Transition cue - "Puis" on empty, just arrow (intensified) when content */}
-      <div className="flex justify-center py-3">
+      {/* Transition cue - compact */}
+      <div className="flex justify-center py-2">
         <div className="relative flex flex-col items-center gap-1">
           {/* "Puis" text - only visible on empty state */}
           {!hasContent && (
@@ -461,8 +461,8 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Premium Analyze Button */}
-      <div className="relative mt-4 md:mt-5 group">
+      {/* Premium Analyze Button - compact */}
+      <div className="relative mt-2 group">
         {/* Outer glow ring - only visible when content is ready */}
         {(hasText || hasImage) && (
           <div 
@@ -497,7 +497,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         <Button
           type="submit"
           disabled={isLoading || (!hasText && !hasImage)}
-          className="relative w-full rounded-xl py-5 md:py-6 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 border-0"
+          className="relative w-full rounded-xl py-4 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 border-0"
           style={{
             background: (hasText || hasImage)
               ? 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)'

@@ -459,8 +459,8 @@ const Index = () => {
     setLanguage(next);
   };
 
-  // Unified gauge size based on CSS variable (same proportions across devices)
-  const gaugeSize = 180; // Single size for consistency
+  // Compact gauge size to fit above fold
+  const gaugeSize = 150;
 
   return (
     <div 
@@ -481,12 +481,12 @@ const Index = () => {
       />
       
       {/* Main content - centered layout, everything visible without scroll */}
-      <main className="container-unified relative z-10 flex h-full flex-col items-center justify-center overflow-y-auto py-4">
+      <main className="container-unified relative z-10 flex h-full flex-col items-center justify-center overflow-y-auto py-2">
         <div className="flex w-full flex-col items-center">
           {/* Logo & branding with unified halo */}
           <div 
             className="relative flex animate-fade-in flex-col items-center" 
-            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
+            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-2)' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
@@ -500,7 +500,7 @@ const Index = () => {
             <LeenScoreLogo />
             
             {/* Premium light beam separator */}
-            <div className="relative flex w-full items-center justify-center" style={{ marginTop: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+            <div className="relative flex w-full items-center justify-center" style={{ marginTop: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
               {/* Central glow dot */}
               <div 
                 className="absolute h-1.5 w-1.5 rounded-full"
@@ -525,13 +525,13 @@ const Index = () => {
               />
             </div>
             
-            {/* Subtitle - unified styling with clamp */}
+            {/* Subtitle - compact styling */}
             <p 
               className="animate-fade-in text-center font-medium text-foreground/95"
               style={{ 
                 animationDelay: '100ms', 
                 animationFillMode: 'both',
-                fontSize: 'var(--text-lg)'
+                fontSize: 'var(--text-base)'
               }}
             >
               {t.tagline}
@@ -555,7 +555,7 @@ const Index = () => {
           {/* Language toggle - compact spacing */}
           <div 
             className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
+            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-2)' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
@@ -563,7 +563,7 @@ const Index = () => {
           {/* Score gauge - compact spacing */}
           <div 
             className="relative animate-scale-in"
-            style={{ animationDelay: '300ms', animationFillMode: 'both', marginBottom: 'var(--space-3)' }}
+            style={{ animationDelay: '300ms', animationFillMode: 'both', marginBottom: 'var(--space-2)' }}
           >
             <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise */}
@@ -711,40 +711,27 @@ const Index = () => {
           />
         </div>
 
-        {/* Footer - compact styling */}
+        {/* Footer - minimal */}
         <footer 
           className="animate-fade-in text-center shrink-0"
           style={{ 
             animationDelay: '500ms', 
             animationFillMode: 'both',
-            paddingTop: 'var(--space-4)',
-            paddingBottom: 'var(--space-3)'
+            paddingTop: 'var(--space-2)',
+            paddingBottom: 'var(--space-2)'
           }}
         >
-          {/* Ethical positioning - premium institutional style */}
           <p 
-            className="mx-auto max-w-md tracking-wide text-foreground/50"
-            style={{ fontSize: 'var(--text-xs)' }}
+            className="mx-auto tracking-wide text-foreground/40"
+            style={{ fontSize: '10px' }}
           >
             <span 
               className="font-serif italic"
-              style={{ color: 'hsl(174 65% 55%)' }}
+              style={{ color: 'hsl(174 65% 55% / 0.8)' }}
             >Leen</span>
-            <span className="font-serif text-foreground/70">Score</span>
-            <span className="ml-1">{t.footer.split('LeenScore')[1]}</span>
-          </p>
-          
-          <p 
-            className="font-medium tracking-[0.2em] text-primary/70"
-            style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)' }}
-          >
-            {t.developedBy}
-          </p>
-          <p 
-            className="tracking-[0.15em] text-muted-foreground/40"
-            style={{ marginTop: 'var(--space-1)', fontSize: 'var(--text-xs)' }}
-          >
-            {t.version}
+            <span className="font-serif text-foreground/60">Score</span>
+            <span className="mx-1">·</span>
+            <span className="tracking-[0.15em] text-primary/60">{t.developedBy.replace('OUTIL DÉVELOPPÉ PAR ', '').replace('TOOL DEVELOPED BY ', '')}</span>
           </p>
         </footer>
       </main>
