@@ -305,10 +305,10 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                 />
               </div>
             ) : (
-              /* Empty state - Text input with integrated image upload */
-              <div className="flex flex-col items-center gap-3 w-full">
-                {/* Textarea with image upload button */}
-                <div className="w-full relative">
+              /* Empty state - Split layout: Text left, Image right */
+              <div className="flex items-stretch gap-4 w-full">
+                {/* Text input zone */}
+                <div className="flex-1 relative">
                   <Textarea
                     ref={textareaRef}
                     value={input}
@@ -317,40 +317,58 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={t.primaryText}
-                    className="min-h-[90px] md:min-h-[100px] w-full resize-none rounded-xl border-0 bg-white/[0.04] px-4 py-4 pr-14 text-center text-sm text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                    className="min-h-[100px] md:min-h-[110px] w-full resize-none rounded-xl border-0 bg-white/[0.04] px-4 py-4 text-center text-sm text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
                       boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                     }}
                   />
-                  
-                  {/* Image upload button - positioned inside textarea */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-lg p-2.5 transition-all hover:scale-110 hover:bg-white/10"
-                    style={{
-                      background: 'hsl(0 0% 100% / 0.06)',
-                      border: '1px solid hsl(0 0% 100% / 0.1)',
-                    }}
-                    title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
-                  >
-                    <Image 
-                      className="h-5 w-5" 
-                      style={{ color: 'hsl(174 60% 55%)' }}
-                    />
-                  </button>
                 </div>
                 
-                {/* Secondary hint */}
-                <p 
-                  className="text-[10px] md:text-[11px] font-medium tracking-wider uppercase"
-                  style={{ color: 'hsl(0 0% 100% / 0.3)' }}
+                {/* Vertical divider */}
+                <div 
+                  className="w-px self-stretch my-2"
+                  style={{
+                    background: 'linear-gradient(to bottom, transparent, hsl(0 0% 100% / 0.15), transparent)',
+                  }}
+                />
+                
+                {/* Image upload zone - premium button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl px-6 md:px-8 transition-all hover:scale-105 group/img"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
+                    border: '1px dashed hsl(174 50% 50% / 0.35)',
+                    boxShadow: '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+                  }}
+                  title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
                 >
-                  {t.hint}
-                </p>
+                  {/* Icon container with glow */}
+                  <div 
+                    className="rounded-xl p-3 transition-all group-hover/img:scale-110"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
+                      boxShadow: '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.2)',
+                    }}
+                  >
+                    <Image 
+                      className="h-7 w-7 md:h-8 md:w-8" 
+                      style={{ color: 'hsl(174 65% 60%)' }}
+                    />
+                  </div>
+                  
+                  {/* Label */}
+                  <span 
+                    className="text-[10px] md:text-[11px] font-medium tracking-wide uppercase"
+                    style={{ color: 'hsl(174 60% 55% / 0.8)' }}
+                  >
+                    Image
+                  </span>
+                </button>
               </div>
             )}
           </div>
