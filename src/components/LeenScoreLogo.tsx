@@ -90,7 +90,7 @@ export const LeenScoreLogo = () => {
           className="relative brand-text font-semibold tracking-tight"
           style={{ 
             letterSpacing: '-0.02em', 
-            fontSize: isMobile ? 'clamp(2.25rem, 10vw, 2.75rem)' : 'clamp(3rem, 2.5rem + 2.5vw, 4.5rem)',
+            fontSize: isMobile ? 'clamp(2.75rem, 12vw, 3.25rem)' : 'clamp(3.5rem, 3rem + 3vw, 5rem)',
             lineHeight: 1.05
           }}
         >
