@@ -380,12 +380,12 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
       {!hasImage && !hasText && (
         <div className="flex justify-center py-3">
           <div className="relative flex flex-col items-center gap-1">
-            {/* Localized aura - strictly around text */}
+            {/* Localized aura - synchronized with PRÊT À ANALYSER */}
             <div 
               className="absolute inset-0 rounded-lg"
               style={{
-                background: 'radial-gradient(ellipse 80% 100% at center, hsl(174 70% 50% / 0.25), transparent 70%)',
-                animation: 'puis-pulse 3s ease-in-out infinite',
+                background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 70% 55% / 0.3), hsl(174 70% 50% / 0.5))',
+                animation: 'puis-pulse 2s ease-in-out infinite',
                 filter: 'blur(8px)',
               }}
             />
@@ -396,7 +396,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
               style={{
                 color: 'hsl(174 65% 55% / 0.72)',
                 textShadow: '0 0 10px hsl(174 70% 50% / 0.3)',
-                animation: 'puis-text-pulse 3s ease-in-out infinite',
+                animation: 'puis-text-pulse 2s ease-in-out infinite',
               }}
             >
               {language === 'fr' ? 'Puis' : 'Then'}
@@ -406,7 +406,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             <div 
               className="relative"
               style={{
-                animation: 'puis-arrow-pulse 3s ease-in-out infinite',
+                animation: 'puis-arrow-pulse 2s ease-in-out infinite',
               }}
             >
               <svg 
@@ -475,7 +475,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
           50% { opacity: 0.8; transform: scale(1.01); }
         }
         @keyframes puis-pulse {
-          0%, 100% { opacity: 0.5; transform: scale(0.96); }
+          0%, 100% { opacity: 0.4; transform: scale(0.96); }
           50% { opacity: 1; transform: scale(1.04); }
         }
         @keyframes puis-text-pulse {
