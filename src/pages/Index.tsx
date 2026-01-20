@@ -484,12 +484,12 @@ const Index = () => {
       />
       
       {/* Main content - scrollable layout for results */}
-      <main className="container-unified relative z-10 flex min-h-full flex-col items-center overflow-y-auto py-4 md:py-6">
+      <main className="container-unified relative z-10 flex min-h-full flex-col items-center overflow-y-auto py-3">
         <div className="flex w-full flex-col items-center">
           {/* Logo & branding with unified halo */}
           <div 
             className="relative flex animate-fade-in flex-col items-center" 
-            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-2)' }}
+            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-1)' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
@@ -558,7 +558,7 @@ const Index = () => {
           {/* Language toggle - compact spacing */}
           <div 
             className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-2)' }}
+            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-1)' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
@@ -566,7 +566,7 @@ const Index = () => {
           {/* Score gauge - compact spacing with smooth transition */}
           <div 
             className="relative flex justify-center items-center"
-            style={{ marginBottom: 'var(--space-2)', minHeight: `${gaugeSize}px` }}
+            style={{ marginBottom: 'var(--space-1)', minHeight: `${gaugeSize}px` }}
           >
             {/* Loader - shows during analysis */}
             {isLoading && (
