@@ -169,15 +169,15 @@ export const ProAnalysisModal = ({
 
         {/* Sticky Header */}
         <div 
-          className="sticky top-0 z-10 pt-2 pb-2 px-4 md:pt-8 md:pb-6 md:px-10 text-center"
+          className="sticky top-0 z-10 pt-4 pb-3 px-5 md:pt-8 md:pb-6 md:px-10 text-center"
           style={{
             background: 'linear-gradient(180deg, hsl(220 25% 12%) 0%, hsl(220 25% 12% / 0.95) 80%, transparent 100%)',
           }}
         >
           {/* PRO Badge */}
-          <div className="flex items-center justify-center gap-2 mb-1 md:mb-3">
+          <div className="flex items-center justify-center gap-2 mb-2 md:mb-3">
             <span 
-              className="rounded-lg px-2 py-0.5 text-[8px] md:text-xs font-black tracking-widest"
+              className="rounded-lg px-2.5 py-0.5 text-[9px] md:text-xs font-black tracking-widest"
               style={{
                 background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(280 60% 60%) 100%)',
                 color: 'white',
@@ -190,7 +190,7 @@ export const ProAnalysisModal = ({
 
           {/* Title */}
           <h2 
-            className="text-base md:text-2xl font-bold leading-tight mb-0 md:mb-2"
+            className="text-lg md:text-2xl font-bold leading-tight mb-1 md:mb-2"
             style={{
               background: 'linear-gradient(135deg, hsl(200 80% 75%) 0%, hsl(174 70% 65%) 50%, hsl(280 60% 75%) 100%)',
               WebkitBackgroundClip: 'text',
@@ -208,34 +208,34 @@ export const ProAnalysisModal = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-10 pb-2 md:pb-4">
+        <div className="flex-1 overflow-y-auto px-5 md:px-10 pb-3 md:pb-4">
           {/* Feature Cards */}
-          <div className="space-y-1.5 md:space-y-4">
+          <div className="space-y-2 md:space-y-4">
             {t.features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={index}
-                  className="flex items-start gap-2.5 md:gap-4 rounded-xl p-2.5 md:p-5"
+                  className="flex items-start gap-3 md:gap-4 rounded-xl p-3 md:p-5"
                   style={{
                     background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.9) 0%, hsl(240 20% 12% / 0.9) 100%)',
                     border: '1px solid hsl(220 20% 25% / 0.5)'
                   }}
                 >
                   <div 
-                    className="flex h-8 w-8 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg md:rounded-xl"
+                    className="flex h-9 w-9 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg md:rounded-xl"
                     style={{
                       background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.2) 0%, hsl(174 70% 50% / 0.2) 100%)',
                       border: '1px solid hsl(174 60% 45% / 0.3)'
                     }}
                   >
-                    <Icon className="h-3.5 w-3.5 md:h-6 md:w-6 text-primary" />
+                    <Icon className="h-4 w-4 md:h-6 md:w-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-[12px] md:text-base font-semibold text-foreground mb-0 md:mb-1">
+                    <h4 className="text-[13px] md:text-base font-semibold text-foreground mb-0.5 md:mb-1">
                       {feature.title}
                     </h4>
-                    <p className="text-[10px] md:text-sm leading-tight md:leading-relaxed text-muted-foreground">
+                    <p className="text-[11px] md:text-sm leading-snug md:leading-relaxed text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>

@@ -289,12 +289,12 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
   );
 
   return (
-    <div className="mt-6 md:mt-8 w-full max-w-2xl animate-fade-in px-1 md:px-0">
+    <div className="mt-8 w-full max-w-2xl animate-fade-in">
       {/* PRO badge indicator - Premium visual */}
       {isPro && (
-        <div className="mb-4 md:mb-6 flex justify-center">
+        <div className="mb-6 flex justify-center">
           <div 
-            className="group relative flex items-center gap-2 md:gap-3 rounded-full px-4 md:px-6 py-2 md:py-2.5 overflow-hidden"
+            className="group relative flex items-center gap-3 rounded-full px-6 py-2.5 overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
               border: '1px solid hsl(200 80% 55% / 0.4)',
@@ -323,7 +323,7 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
             {/* Sparkles icon with glow */}
             <div className="relative">
               <Sparkles 
-                className="h-4 w-4 md:h-5 md:w-5"
+                className="h-5 w-5"
                 style={{
                   color: 'hsl(45 100% 70%)',
                   filter: 'drop-shadow(0 0 6px hsl(45 100% 60% / 0.8))',
@@ -334,7 +334,7 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
             
             {/* PRO text with premium gradient */}
             <span 
-              className="relative text-sm md:text-base font-bold tracking-wide"
+              className="relative text-base font-bold tracking-wide"
               style={{
                 background: 'linear-gradient(135deg, hsl(45 100% 75%) 0%, hsl(35 100% 65%) 30%, hsl(200 80% 70%) 70%, hsl(280 60% 75%) 100%)',
                 WebkitBackgroundClip: 'text',
@@ -363,14 +363,14 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
 
       {/* Standard: Summary card */}
       {!isPro && (
-        <div className="analysis-card mb-4 md:mb-6 p-5 md:p-8">
-          <div className="mb-3 md:mb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <h3 className="font-serif text-base md:text-lg font-semibold text-slate-900">{t.summary}</h3>
-            <span className={`self-start md:self-auto rounded-full px-2.5 md:px-3 py-1 text-[10px] md:text-xs font-semibold ${confidenceColors[data.confidence]}`}>
+        <div className="analysis-card mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
               {t.confidence}: {confidenceLabels[data.confidence]}
             </span>
           </div>
-          <p className="text-sm md:text-base font-medium leading-relaxed text-slate-700">
+          <p className="text-base font-medium leading-relaxed text-slate-700">
             {articleSummary || data.summary}
           </p>
         </div>
@@ -379,7 +379,7 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
       {/* PRO: Unified Explanation + Corroboration Card */}
       {isPro && (data.summary || data.corroboration) && (
         <div 
-          className="analysis-card mb-4 md:mb-6 overflow-hidden p-4 md:p-8"
+          className="analysis-card mb-6 overflow-hidden"
           style={{
             background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(200 20% 98%) 100%)',
             border: '1px solid hsl(200 40% 88%)',
@@ -388,11 +388,11 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
         >
           {/* Explication PRO Section */}
           {data.summary && (
-            <div className="pb-4 md:pb-5">
-              <h3 className="font-serif text-base md:text-lg font-semibold text-slate-900 mb-2 md:mb-3">
+            <div className="pb-5">
+              <h3 className="font-serif text-lg font-semibold text-slate-900 mb-3">
                 {t.proExplanation}
               </h3>
-              <p className="text-xs md:text-sm font-medium leading-relaxed text-slate-700">
+              <p className="text-sm font-medium leading-relaxed text-slate-700">
                 {data.summary}
               </p>
             </div>
@@ -400,7 +400,7 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
           
           {/* Elegant separator */}
           {data.summary && data.corroboration && (
-            <div className="relative py-3 md:py-4">
+            <div className="relative py-4">
               <div 
                 className="absolute inset-x-0 top-1/2 h-px"
                 style={{
@@ -422,16 +422,16 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
           {/* Corroboration Web Section */}
           {data.corroboration && (
             <div className="pt-1">
-              <div className="mb-3 md:mb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Search className="h-4 w-4 md:h-5 md:w-5 text-cyan-600" />
-                  <h3 className="font-serif text-base md:text-lg font-semibold text-slate-900">{t.corroborationTitle}</h3>
+                  <Search className="h-5 w-5 text-cyan-600" />
+                  <h3 className="font-serif text-lg font-semibold text-slate-900">{t.corroborationTitle}</h3>
                 </div>
                 <div 
-                  className={`self-start md:self-auto flex items-center gap-1.5 md:gap-2 rounded-full border px-2.5 md:px-3 py-1 md:py-1.5 ${corroborationStyles[data.corroboration.outcome]?.bg}`}
+                  className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${corroborationStyles[data.corroboration.outcome]?.bg}`}
                 >
-                  <span className={`h-1.5 w-1.5 md:h-2 md:w-2 rounded-full ${corroborationStyles[data.corroboration.outcome]?.dot}`} />
-                  <span className={`text-[10px] md:text-xs font-bold ${corroborationStyles[data.corroboration.outcome]?.text}`}>
+                  <span className={`h-2 w-2 rounded-full ${corroborationStyles[data.corroboration.outcome]?.dot}`} />
+                  <span className={`text-xs font-bold ${corroborationStyles[data.corroboration.outcome]?.text}`}>
                     {corroborationLabels[data.corroboration.outcome]}
                   </span>
                 </div>
@@ -439,19 +439,19 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
               
               {/* Grouped Sources by Signal Type */}
               {data.corroboration.sources && (
-                <div className="space-y-2 md:space-y-3 mb-3 md:mb-4">
+                <div className="space-y-3 mb-4">
                   {/* Clear Corroboration Sources */}
                   {data.corroboration.sources.corroborated && data.corroboration.sources.corroborated.length > 0 && (
-                    <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 md:p-3">
-                      <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-                        <span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] md:text-xs font-semibold text-emerald-800">{t.sourceGroupCorroborated}</span>
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <span className="text-xs font-semibold text-emerald-800">{t.sourceGroupCorroborated}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1 md:gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
                         {data.corroboration.sources.corroborated.map((source, idx) => (
                           <span 
                             key={idx}
-                            className="rounded-full bg-emerald-100 px-2 md:px-2.5 py-0.5 md:py-1 text-[10px] md:text-xs font-medium text-emerald-700"
+                            className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700"
                           >
                             {source}
                           </span>
@@ -462,16 +462,16 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
 
                   {/* Neutral Sources */}
                   {data.corroboration.sources.neutral && data.corroboration.sources.neutral.length > 0 && (
-                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-2.5 md:p-3">
-                      <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-                        <span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-amber-500" />
-                        <span className="text-[10px] md:text-xs font-semibold text-amber-800">{t.sourceGroupNeutral}</span>
+                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="h-2 w-2 rounded-full bg-amber-500" />
+                        <span className="text-xs font-semibold text-amber-800">{t.sourceGroupNeutral}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1 md:gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
                         {data.corroboration.sources.neutral.map((source, idx) => (
                           <span 
                             key={idx}
-                            className="rounded-full bg-amber-100 px-2 md:px-2.5 py-0.5 md:py-1 text-[10px] md:text-xs font-medium text-amber-700"
+                            className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700"
                           >
                             {source}
                           </span>
@@ -482,16 +482,16 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
 
                   {/* Constrained Sources */}
                   {data.corroboration.sources.constrained && data.corroboration.sources.constrained.length > 0 && (
-                    <div className="rounded-lg bg-red-50 border border-red-200 p-2.5 md:p-3">
-                      <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-                        <span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-red-500" />
-                        <span className="text-[10px] md:text-xs font-semibold text-red-800">{t.sourceGroupConstrained}</span>
+                    <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="h-2 w-2 rounded-full bg-red-500" />
+                        <span className="text-xs font-semibold text-red-800">{t.sourceGroupConstrained}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1 md:gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
                         {data.corroboration.sources.constrained.map((source, idx) => (
                           <span 
                             key={idx}
-                            className="rounded-full bg-red-100 px-2 md:px-2.5 py-0.5 md:py-1 text-[10px] md:text-xs font-medium text-red-700"
+                            className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700"
                           >
                             {source}
                           </span>
@@ -502,7 +502,7 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
                 </div>
               )}
               
-              <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[10px] md:text-xs text-slate-500">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <span className="flex items-center gap-1">
                   <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span>
                   {t.sourcesConsulted}
@@ -516,34 +516,34 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
       {/* PRO: Disclaimer */}
       {isPro && data.proDisclaimer && (
         <div 
-          className="mb-4 md:mb-6 rounded-lg p-2.5 md:p-3 text-center"
+          className="mb-6 rounded-lg p-3 text-center"
           style={{
             background: 'hsl(220 20% 95%)',
             border: '1px solid hsl(220 20% 88%)',
           }}
         >
-          <p className="text-[10px] md:text-xs text-slate-600 italic">
+          <p className="text-xs text-slate-600 italic">
             {data.proDisclaimer}
           </p>
         </div>
       )}
 
       {/* Signal badges */}
-      <div className="analysis-card mb-4 md:mb-6 p-4 md:p-8">
-        <h3 className="mb-3 md:mb-4 font-serif text-base md:text-lg font-semibold text-slate-900">
+      <div className="analysis-card mb-6">
+        <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">
           {isPro ? t.proSignalsTitle : t.signalsTitle}
         </h3>
-        <div className="flex flex-wrap gap-1.5 md:gap-2">
+        <div className="flex flex-wrap gap-2">
           {isPro ? (
             proSignalBadges.map((signal, index) => {
               const IconComponent = signal.icon;
               return (
                 <div
                   key={index}
-                  className={`flex items-center gap-1.5 md:gap-2 rounded-full border px-2.5 md:px-3 py-1 md:py-1.5 ${badgeStyles[signal.level]}`}
+                  className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
                 >
-                  <IconComponent className="h-2.5 w-2.5 md:h-3 md:w-3 text-slate-600" />
-                  <span className="text-[10px] md:text-xs font-semibold text-slate-800">{signal.label}</span>
+                  <IconComponent className="h-3 w-3 text-slate-600" />
+                  <span className="text-xs font-semibold text-slate-800">{signal.label}</span>
                 </div>
               );
             })
@@ -551,10 +551,10 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
             standardSignalBadges.map((signal, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-1.5 md:gap-2 rounded-full border px-2.5 md:px-3 py-1 md:py-1.5 ${badgeStyles[signal.level]}`}
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
               >
-                <span className={`h-1.5 w-1.5 md:h-2 md:w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
-                <span className="text-[10px] md:text-xs font-semibold text-slate-800">{signal.label}</span>
+                <span className={`h-2 w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
+                <span className="text-xs font-semibold text-slate-800">{signal.label}</span>
               </div>
             ))
           )}
@@ -562,11 +562,11 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
       </div>
 
       {/* Breakdown - different for PRO vs Standard */}
-      <div className="analysis-card p-4 md:p-8">
-        <h3 className="mb-3 md:mb-4 font-serif text-base md:text-lg font-semibold text-slate-900">
+      <div className="analysis-card">
+        <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">
           {isPro ? t.proBreakdown : t.breakdown}
         </h3>
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-4">
           {isPro ? (
             // PRO breakdown with weights
             proKeys.map((key) => {
@@ -574,24 +574,24 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
               if (!item) return null;
               const Icon = proCriteriaIcons[key];
               return (
-                <div key={key} className="border-b border-slate-200 pb-3 md:pb-4 last:border-0 last:pb-0">
-                  <div className="mb-1.5 md:mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-                      <span className="flex h-5 w-5 md:h-6 md:w-6 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-600">
+                <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-600">
                         {Icon}
                       </span>
-                      <span className="font-semibold text-slate-800 text-sm md:text-base">{proCriteriaLabels[key]}</span>
+                      <span className="font-semibold text-slate-800">{proCriteriaLabels[key]}</span>
                       {item.weight && (
-                        <span className="rounded-full bg-slate-100 px-1.5 md:px-2 py-0.5 text-[9px] md:text-[10px] font-medium text-slate-500">
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
                           {item.weight}
                         </span>
                       )}
                     </div>
-                    <span className={`font-mono text-xs md:text-sm font-bold ${getPointsColor(item.points)}`}>
+                    <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
                       {item.points > 0 ? '+' : ''}{item.points}
                     </span>
                   </div>
-                  <p className="ml-6 md:ml-8 text-xs md:text-sm font-medium text-slate-600">{item.reason}</p>
+                  <p className="ml-8 text-sm font-medium text-slate-600">{item.reason}</p>
                 </div>
               );
             })
@@ -601,17 +601,17 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
               const item = data.breakdown[key as keyof AnalysisBreakdown];
               if (!item) return null;
               return (
-                <div key={key} className="border-b border-slate-200 pb-3 md:pb-4 last:border-0 last:pb-0">
-                  <div className="mb-1.5 md:mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 md:gap-2">
+                <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       {getPointsIcon(item.points)}
-                      <span className="font-semibold text-slate-800 text-sm md:text-base">{standardCriteriaLabels[key]}</span>
+                      <span className="font-semibold text-slate-800">{standardCriteriaLabels[key]}</span>
                     </div>
-                    <span className={`font-mono text-xs md:text-sm font-bold ${getPointsColor(item.points)}`}>
+                    <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
                       {item.points > 0 ? '+' : ''}{item.points}
                     </span>
                   </div>
-                  <p className="ml-5 md:ml-6 text-xs md:text-sm font-medium text-slate-600">{item.reason}</p>
+                  <p className="ml-6 text-sm font-medium text-slate-600">{item.reason}</p>
                 </div>
               );
             })
@@ -621,30 +621,30 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
 
       {/* PRO Image Signals detailed view */}
       {isPro && data.imageSignals && (
-        <div className="analysis-card mt-4 md:mt-6 p-4 md:p-8">
-          <div className="mb-3 md:mb-4 flex items-center gap-1.5 md:gap-2">
-            <Image className="h-4 w-4 md:h-5 md:w-5 text-cyan-600" />
-            <h3 className="font-serif text-base md:text-lg font-semibold text-slate-900">
+        <div className="analysis-card mt-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Image className="h-5 w-5 text-cyan-600" />
+            <h3 className="font-serif text-lg font-semibold text-slate-900">
               {language === 'fr' ? 'Analyse des Signaux Image' : 'Image Signal Analysis'}
             </h3>
           </div>
           
-          <div className="space-y-2 md:space-y-3">
+          <div className="space-y-3">
             {/* Origin */}
             {data.imageSignals.origin && (
-              <div className="rounded-lg bg-slate-50 p-2.5 md:p-3">
+              <div className="rounded-lg bg-slate-50 p-3">
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs md:text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-semibold text-slate-700">
                     {language === 'fr' ? 'Origine probable' : 'Probable origin'}
                   </span>
-                  <span className="rounded-full bg-slate-200 px-1.5 md:px-2 py-0.5 text-[9px] md:text-xs font-medium text-slate-600">
+                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
                     {data.imageSignals.origin.classification}
                   </span>
                 </div>
                 {data.imageSignals.origin.indicators && data.imageSignals.origin.indicators.length > 0 && (
-                  <div className="mt-1.5 md:mt-2 flex flex-wrap gap-1">
+                  <div className="mt-2 flex flex-wrap gap-1">
                     {data.imageSignals.origin.indicators.map((indicator, idx) => (
-                      <span key={idx} className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] md:text-[10px] text-slate-500">
+                      <span key={idx} className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
                         {indicator}
                       </span>
                     ))}
@@ -655,37 +655,37 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
 
             {/* Coherence */}
             {data.imageSignals.coherence && (
-              <div className="rounded-lg bg-slate-50 p-2.5 md:p-3">
+              <div className="rounded-lg bg-slate-50 p-3">
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs md:text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-semibold text-slate-700">
                     {language === 'fr' ? 'Cohérence visuelle' : 'Visual coherence'}
                   </span>
-                  <span className="rounded-full bg-slate-200 px-1.5 md:px-2 py-0.5 text-[9px] md:text-xs font-medium text-slate-600">
+                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
                     {data.imageSignals.coherence.classification}
                   </span>
                 </div>
-                <p className="text-[10px] md:text-xs text-slate-500">{data.imageSignals.coherence.explanation}</p>
+                <p className="text-xs text-slate-500">{data.imageSignals.coherence.explanation}</p>
               </div>
             )}
 
             {/* Scoring impact */}
             {data.imageSignals.scoring && (
-              <div className="rounded-lg border border-slate-200 bg-white p-2.5 md:p-3">
-                <div className="mb-1.5 md:mb-2 flex items-center justify-between">
-                  <span className="text-xs md:text-sm font-semibold text-slate-700">
+              <div className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-700">
                     {language === 'fr' ? 'Impact sur le score' : 'Score impact'}
                   </span>
-                  <span className={`font-mono text-xs md:text-sm font-bold ${getPointsColor(data.imageSignals.scoring.totalImpact)}`}>
+                  <span className={`font-mono text-sm font-bold ${getPointsColor(data.imageSignals.scoring.totalImpact)}`}>
                     {data.imageSignals.scoring.totalImpact}
                   </span>
                 </div>
-                <p className="text-[10px] md:text-xs text-slate-500">{data.imageSignals.scoring.reasoning}</p>
+                <p className="text-xs text-slate-500">{data.imageSignals.scoring.reasoning}</p>
               </div>
             )}
 
             {/* Disclaimer */}
             {data.imageSignals.disclaimer && (
-              <p className="text-[9px] md:text-[10px] italic text-slate-400">{data.imageSignals.disclaimer}</p>
+              <p className="text-[10px] italic text-slate-400">{data.imageSignals.disclaimer}</p>
             )}
           </div>
         </div>

@@ -290,16 +290,16 @@ const Index = () => {
     }} />
       
       {/* Main content - mobile-first: fit everything above fold */}
-      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-3 md:py-6">
-        <div className="flex w-full flex-col items-center pt-3 md:pt-8">
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-2 md:py-6">
+        <div className="flex w-full flex-col items-center pt-2 md:pt-8">
           {/* Logo & branding with unified halo */}
           <div 
-            className="relative mb-3 md:mb-8 flex animate-fade-in flex-col items-center" 
+            className="relative mb-2 md:mb-8 flex animate-fade-in flex-col items-center" 
             style={{ animationDelay: '0ms', animationFillMode: 'both' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
-              className="pointer-events-none absolute -inset-4 md:-inset-6"
+              className="pointer-events-none absolute -inset-6"
               style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 40%, hsl(174 60% 45% / 0.15) 0%, transparent 70%)',
                 filter: 'blur(20px)'
@@ -309,10 +309,10 @@ const Index = () => {
             <LeenScoreLogo />
             
             {/* Premium light beam separator */}
-            <div className="relative my-1.5 md:my-2 flex w-full items-center justify-center">
+            <div className="relative my-1 md:my-2 flex w-full items-center justify-center">
               {/* Central glow dot */}
               <div 
-                className="absolute h-1 w-1 md:h-1.5 md:w-1.5 rounded-full"
+                className="absolute h-1.5 w-1.5 rounded-full"
                 style={{
                   background: 'hsl(174 80% 60%)',
                   boxShadow: '0 0 8px 2px hsl(174 80% 55% / 0.8), 0 0 20px 4px hsl(174 60% 45% / 0.4)'
@@ -320,14 +320,14 @@ const Index = () => {
               />
               {/* Light beam left */}
               <div 
-                className="h-px w-16 md:w-24"
+                className="h-px w-24"
                 style={{
                   background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.6) 100%)'
                 }}
               />
               {/* Light beam right */}
               <div 
-                className="h-px w-16 md:w-24"
+                className="h-px w-24"
                 style={{
                   background: 'linear-gradient(90deg, hsl(174 60% 50% / 0.6) 0%, transparent 100%)'
                 }}
@@ -336,13 +336,13 @@ const Index = () => {
             
             {/* Subtitle - unified styling */}
             <p 
-              className="animate-fade-in text-center text-sm md:text-lg font-medium text-foreground/95"
+              className="animate-fade-in text-center text-base md:text-lg font-medium text-foreground/95"
               style={{ animationDelay: '100ms', animationFillMode: 'both' }}
             >
               {t.tagline}
             </p>
             <p 
-              className="mt-0.5 md:mt-1.5 animate-fade-in text-[9px] md:text-xs font-bold uppercase tracking-[0.3em] md:tracking-[0.35em]"
+              className="mt-0.5 md:mt-1.5 animate-fade-in text-[10px] md:text-xs font-bold uppercase tracking-[0.35em]"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
@@ -356,7 +356,7 @@ const Index = () => {
 
           {/* Language toggle - perfectly centered */}
           <div 
-            className="flex w-full justify-center mb-3 md:mb-8 animate-fade-in"
+            className="flex w-full justify-center mb-2 md:mb-8 animate-fade-in"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
@@ -364,28 +364,28 @@ const Index = () => {
 
           {/* Score gauge - clean, instrument-like design */}
           <div 
-            className="relative mb-2 md:mb-4 animate-scale-in"
+            className="relative mb-1 md:mb-4 animate-scale-in"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
             <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise - smaller on mobile */}
               {isLoading ? (
-                <AnalysisLoader size={isMobile ? 140 : 200} language={language} />
+                <AnalysisLoader size={isMobile ? 150 : 200} language={language} />
               ) : (
-                <ScoreGauge score={score} size={isMobile ? 140 : 200} language={language} />
+                <ScoreGauge score={score} size={isMobile ? 150 : 200} language={language} />
               )}
             </div>
           </div>
 
           {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}
           {hasAnyAnalysis && (
-            <div className="w-full max-w-xl animate-fade-in mt-4 md:mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <div className="w-full max-w-xl animate-fade-in mt-5" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               {/* Action buttons row */}
-              <div className="flex items-center justify-center gap-2 md:gap-3">
+              <div className="flex items-center justify-center gap-3">
                 {/* Primary CTA - Run another analysis (always visible, emphasized after PRO) */}
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-1.5 md:gap-2 rounded-full px-4 md:px-6 py-2 md:py-2.5 text-xs md:text-sm font-semibold transition-all"
+                  className="flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all"
                   style={{
                     background: analysisData?.analysisType === 'pro' 
                       ? 'linear-gradient(135deg, hsl(174 70% 40%) 0%, hsl(174 60% 35%) 100%)'
@@ -403,7 +403,7 @@ const Index = () => {
                 {analysisData?.analysisType !== 'pro' && (
                   <button
                     onClick={() => setIsProModalOpen(true)}
-                    className="group relative flex items-center gap-1.5 md:gap-2 overflow-hidden rounded-full px-4 md:px-6 py-2 md:py-2.5 text-xs md:text-sm font-semibold transition-all duration-300"
+                    className="group relative flex items-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300"
                     style={{
                       background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
                       boxShadow: '0 0 25px hsl(200 80% 55% / 0.5), 0 0 50px hsl(174 70% 45% / 0.3), 0 4px 20px hsl(0 0% 0% / 0.3)',
@@ -420,7 +420,7 @@ const Index = () => {
                     
                     {/* PRO badge with glow */}
                     <span 
-                      className="relative rounded-md px-1 md:px-1.5 py-0.5 text-[8px] md:text-[10px] font-black tracking-wider"
+                      className="relative rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider"
                       style={{
                         background: 'rgba(255,255,255,0.2)',
                         color: 'white',
@@ -430,7 +430,7 @@ const Index = () => {
                       PRO
                     </span>
                     
-                    <span className="relative text-white text-[11px] md:text-sm" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                    <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
                       {language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}
                     </span>
                     
@@ -450,10 +450,11 @@ const Index = () => {
           )}
 
 
+
           {/* Analysis form - hidden during loading and after analysis */}
           {!hasAnyAnalysis && !isLoading && (
             <div 
-              className="mt-1 md:mt-2 w-full max-w-2xl animate-fade-in"
+              className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
             >
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isLoading} language={language} />
@@ -486,11 +487,11 @@ const Index = () => {
 
         {/* Footer - premium styling */}
         <footer 
-          className="animate-fade-in pb-4 md:pb-6 pt-6 md:pt-8 text-center"
+          className="animate-fade-in pb-6 pt-8 text-center"
           style={{ animationDelay: '500ms', animationFillMode: 'both' }}
         >
           {/* Ethical positioning - premium institutional style */}
-          <p className="mx-auto max-w-md border-t border-white/10 pt-4 md:pt-6 text-[10px] md:text-xs tracking-wide text-foreground/50">
+          <p className="mx-auto max-w-md border-t border-white/10 pt-6 text-xs tracking-wide text-foreground/50">
             <span 
               className="font-serif italic"
               style={{ color: 'hsl(174 65% 55%)' }}
@@ -499,10 +500,10 @@ const Index = () => {
             <span className="ml-1">{t.footer.split('LeenScore')[1]}</span>
           </p>
           
-          <p className="mt-3 md:mt-4 text-[9px] md:text-[10px] font-medium tracking-[0.15em] md:tracking-[0.2em] text-primary/70">
+          <p className="mt-4 text-[10px] font-medium tracking-[0.2em] text-primary/70">
             {t.developedBy}
           </p>
-          <p className="mt-0.5 md:mt-1 text-[9px] md:text-[10px] tracking-[0.1em] md:tracking-[0.15em] text-muted-foreground/40">
+          <p className="mt-1 text-[10px] tracking-[0.15em] text-muted-foreground/40">
             {t.version}
           </p>
         </footer>
