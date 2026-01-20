@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, Loader2, CheckCircle2, FileText, Image, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +8,7 @@ interface UnifiedAnalysisFormProps {
   onImageReady: (file: File, preview: string) => void;
   isLoading: boolean;
   language: 'en' | 'fr';
+  onContentChange?: (hasContent: boolean) => void;
 }
 
 const translations = {
@@ -34,7 +35,7 @@ const translations = {
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
-export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, language }: UnifiedAnalysisFormProps) => {
+export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, language, onContentChange }: UnifiedAnalysisFormProps) => {
   const [input, setInput] = useState('');
   const [uploadedImage, setUploadedImage] = useState<{ file: File; preview: string } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -45,7 +46,13 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
   
   const hasImage = Boolean(uploadedImage);
   const hasText = input.trim().length > 0;
+  const hasContent = hasText || hasImage;
   const isActive = isDragOver; // Only drag-over triggers card glow, not focus
+
+  // Notify parent when content state changes
+  useEffect(() => {
+    onContentChange?.(hasContent);
+  }, [hasContent, onContentChange]);
 
   const validateFile = (file: File): boolean => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
@@ -375,13 +382,13 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Transition cue - "Puis" on empty, just arrow when content */}
+      {/* Transition cue - "Puis" on empty, just arrow (intensified) when content */}
       <div className="flex justify-center py-3">
         <div className="relative flex flex-col items-center gap-1">
           {/* "Puis" text - only visible on empty state */}
-          {!hasText && !hasImage && (
+          {!hasContent && (
             <span 
-              className="text-[10px] font-light tracking-[0.25em] uppercase"
+              className="text-[10px] font-light tracking-[0.25em] uppercase transition-opacity duration-300"
               style={{
                 color: 'hsl(174 65% 55% / 0.72)',
                 textShadow: '0 0 10px hsl(174 70% 50% / 0.3)',
@@ -391,38 +398,47 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             </span>
           )}
           
-          {/* Arrow - always visible with animation */}
+          {/* Arrow - always visible, intensified when content is present */}
           <div 
-            className="relative"
+            className="relative transition-transform duration-300"
             style={{
-              animation: 'arrow-bounce 2s ease-in-out infinite',
+              animation: hasContent 
+                ? 'arrow-bounce-intense 1.5s ease-in-out infinite' 
+                : 'arrow-bounce 2s ease-in-out infinite',
+              transform: hasContent ? 'scale(1.3)' : 'scale(1)',
             }}
           >
-            {/* Glow behind arrow */}
+            {/* Glow behind arrow - intensified when content is present */}
             <div 
-              className="absolute inset-0 rounded-full"
+              className="absolute inset-0 rounded-full transition-all duration-300"
               style={{
-                background: 'radial-gradient(circle, hsl(174 70% 55% / 0.4), transparent 70%)',
-                animation: 'arrow-glow 2s ease-in-out infinite',
-                filter: 'blur(6px)',
-                transform: 'scale(2.5)',
+                background: hasContent 
+                  ? 'radial-gradient(circle, hsl(174 70% 55% / 0.7), transparent 70%)'
+                  : 'radial-gradient(circle, hsl(174 70% 55% / 0.4), transparent 70%)',
+                animation: hasContent 
+                  ? 'arrow-glow-intense 1.5s ease-in-out infinite' 
+                  : 'arrow-glow 2s ease-in-out infinite',
+                filter: hasContent ? 'blur(10px)' : 'blur(6px)',
+                transform: hasContent ? 'scale(3.5)' : 'scale(2.5)',
               }}
             />
             <svg 
-              width="18" 
-              height="10" 
+              width={hasContent ? "22" : "18"}
+              height={hasContent ? "12" : "10"}
               viewBox="0 0 18 10" 
               fill="none"
-              className="relative"
+              className="relative transition-all duration-300"
             >
               <path 
                 d="M1 1L9 9L17 1" 
-                stroke="hsl(174 70% 60%)" 
-                strokeWidth="2" 
+                stroke={hasContent ? "hsl(174 80% 65%)" : "hsl(174 70% 60%)"} 
+                strokeWidth={hasContent ? "2.5" : "2"}
                 strokeLinecap="round" 
                 strokeLinejoin="round"
                 style={{
-                  filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.6))',
+                  filter: hasContent 
+                    ? 'drop-shadow(0 0 10px hsl(174 80% 60% / 0.8))'
+                    : 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.6))',
                 }}
               />
             </svg>
@@ -506,17 +522,13 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
           0% { transform: translateX(-100%); }
           50%, 100% { transform: translateX(100%); }
         }
-        @keyframes puis-pulse {
-          0%, 100% { opacity: 0.4; transform: scale(0.96); }
-          50% { opacity: 1; transform: scale(1.04); }
+        @keyframes arrow-bounce-intense {
+          0%, 100% { transform: translateY(0) scale(1.3); }
+          50% { transform: translateY(6px) scale(1.3); }
         }
-        @keyframes puis-text-pulse {
-          0%, 100% { opacity: 0.85; }
+        @keyframes arrow-glow-intense {
+          0%, 100% { opacity: 0.5; }
           50% { opacity: 1; }
-        }
-        @keyframes puis-arrow-pulse {
-          0%, 100% { transform: translateY(0); opacity: 0.75; }
-          50% { transform: translateY(4px); opacity: 1; }
         }
       `}</style>
     </form>

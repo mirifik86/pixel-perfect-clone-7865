@@ -5,13 +5,15 @@ interface ScoreGaugeProps {
   size?: number;
   className?: string;
   language?: 'en' | 'fr';
+  hasContent?: boolean; // When true, disables pulse effects on "Ready" label
 }
 
 export const ScoreGauge = ({
   score,
   size = 160,
   className,
-  language = 'fr'
+  language = 'fr',
+  hasContent = false
 }: ScoreGaugeProps) => {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
@@ -205,8 +207,8 @@ export const ScoreGauge = ({
 
       {/* Status label - seamlessly connected to gauge */}
       <div className="relative w-full flex justify-center mt-2">
-        {/* Pulse effect for ready state */}
-        {score === null && (
+        {/* Pulse effect for ready state - only when no content */}
+        {score === null && !hasContent && (
           <div 
             className="absolute -inset-x-6 -inset-y-3 rounded-full"
             style={{
@@ -218,22 +220,27 @@ export const ScoreGauge = ({
           />
         )}
         <span
-          className="relative text-center"
+          className="relative text-center transition-all duration-300"
           style={{
             fontSize: size * 0.095,
-            color: score === null ? 'hsl(0 0% 100%)' : currentLabelColor,
+            color: score === null 
+              ? hasContent 
+                ? 'hsl(0 0% 100% / 0.4)' // Dimmed when content is present
+                : 'hsl(0 0% 100%)' // Bright when empty
+              : currentLabelColor,
             fontWeight: 600,
             letterSpacing: '0.18em',
             fontFamily: 'var(--font-sans)',
-            transition: 'color 0.3s ease-out',
-            textShadow: score === null ? '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)' : 'none',
+            textShadow: score === null && !hasContent 
+              ? '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)' 
+              : 'none',
           }}
         >
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
         </span>
         
         {/* CSS for pulse animation */}
-        {score === null && (
+        {score === null && !hasContent && (
           <style>{`
             @keyframes ready-pulse {
               0%, 100% { opacity: 0.4; transform: scale(0.96); }
