@@ -121,6 +121,16 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter without Shift triggers submit
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim() && !isLoading) {
+        onAnalyzeText(input.trim());
+      }
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     if (uploadedImage && e.target.value.trim()) {
@@ -306,6 +316,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     value={input}
                     onChange={handleInputChange}
                     onPaste={handlePaste}
+                    onKeyDown={handleKeyDown}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={t.primaryText}
