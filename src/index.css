@@ -38,6 +38,37 @@
 
     --radius: 0.75rem;
 
+    /* ============================================
+       UNIFIED SPACING SCALE (used everywhere)
+       ============================================ */
+    --space-1: 0.25rem;   /* 4px */
+    --space-2: 0.5rem;    /* 8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.25rem;   /* 20px */
+    --space-6: 1.5rem;    /* 24px */
+    --space-8: 2rem;      /* 32px */
+    --space-10: 2.5rem;   /* 40px */
+    --space-12: 3rem;     /* 48px */
+
+    /* ============================================
+       UNIFIED TYPOGRAPHY SCALE (clamp for smooth scaling)
+       ============================================ */
+    --text-xs: clamp(0.6875rem, 0.65rem + 0.2vw, 0.75rem);      /* 11-12px */
+    --text-sm: clamp(0.8125rem, 0.78rem + 0.2vw, 0.875rem);     /* 13-14px */
+    --text-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);        /* 15-16px */
+    --text-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.125rem);        /* 17-18px */
+    --text-xl: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem);      /* 19-22px */
+    --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);              /* 24-32px */
+    --text-3xl: clamp(1.875rem, 1.6rem + 1.4vw, 2.5rem);        /* 30-40px */
+    --text-hero: clamp(2.5rem, 2rem + 2.5vw, 4rem);             /* 40-64px - for logo */
+
+    /* ============================================
+       UNIFIED CONTAINER WIDTH
+       ============================================ */
+    --container-max: 72rem;  /* 1152px */
+    --container-content: 42rem; /* 672px - for content areas */
+
     /* Custom tokens - Score gauge colors */
     --score-red: 0 84% 60%;
     --score-orange: 30 95% 55%;
@@ -51,9 +82,18 @@
     
     --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 
+    /* Unified component sizing */
+    --button-height: 2.75rem;      /* 44px consistent height */
+    --input-height: 2.75rem;       /* 44px consistent height */
+    --card-radius: 1rem;           /* 16px consistent radius */
+    --card-padding: var(--space-6); /* 24px consistent padding */
+
     /* Fonts */
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
+
+    /* Unified gauge size - same proportions on all screens */
+    --gauge-size: clamp(160px, 20vw, 200px);
   }
 }
 
@@ -73,8 +113,41 @@
 }
 
 @layer components {
+  /* Unified container - centers content with consistent padding */
+  .container-unified {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .container-unified {
+      padding-left: var(--space-6);
+      padding-right: var(--space-6);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-unified {
+      padding-left: var(--space-8);
+      padding-right: var(--space-8);
+    }
+  }
+
+  /* Content container - narrower for main content */
+  .container-content {
+    width: 100%;
+    max-width: var(--container-content);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .analysis-card {
-    @apply bg-card rounded-2xl p-8;
+    @apply bg-card rounded-2xl;
+    padding: var(--card-padding);
     box-shadow: var(--shadow-card);
   }
 
@@ -86,6 +159,35 @@
   .brand-accent {
     color: hsl(var(--primary));
   }
+
+  /* Unified button base */
+  .btn-unified {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    height: var(--button-height);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+    border-radius: 9999px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  /* Unified input base */
+  .input-unified {
+    min-height: var(--input-height);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--card-radius);
+    font-size: var(--text-base);
+  }
+
+  /* Unified section spacing */
+  .section-spacing {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
 }
 
 @layer utilities {
@@ -95,6 +197,16 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  /* Unified text sizes using the scale */
+  .text-unified-xs { font-size: var(--text-xs); }
+  .text-unified-sm { font-size: var(--text-sm); }
+  .text-unified-base { font-size: var(--text-base); }
+  .text-unified-lg { font-size: var(--text-lg); }
+  .text-unified-xl { font-size: var(--text-xl); }
+  .text-unified-2xl { font-size: var(--text-2xl); }
+  .text-unified-3xl { font-size: var(--text-3xl); }
+  .text-unified-hero { font-size: var(--text-hero); }
 }
 
 /* PRO button shine animation */

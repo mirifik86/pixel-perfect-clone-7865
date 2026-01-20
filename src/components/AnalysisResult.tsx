@@ -294,7 +294,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   );
 
   return (
-    <div className="mt-8 w-full max-w-2xl animate-fade-in">
+    <div className="container-content w-full animate-fade-in" style={{ marginTop: 'var(--space-8)' }}>
       {/* PRO badge indicator - Premium visual */}
       {isPro && (
         <div className="mb-6 flex justify-center">
