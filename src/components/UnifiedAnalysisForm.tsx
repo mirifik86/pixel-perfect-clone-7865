@@ -376,58 +376,6 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Transition cue: PUIS ↓ */}
-      {!hasImage && !hasText && (
-        <div className="relative mt-3 flex flex-col items-center gap-0.5">
-          {/* Subtle synchronized pulse glow - exact around word */}
-          <div 
-            className="absolute inset-x-0 -inset-y-1 rounded-full"
-            style={{
-              background: 'radial-gradient(ellipse 100% 120% at center, hsl(174 70% 50% / 0.4), hsl(174 70% 55% / 0.15) 60%, transparent 100%)',
-              animation: 'puis-pulse 2s ease-in-out infinite',
-              animationDelay: '1s',
-              filter: 'blur(6px)',
-            }}
-          />
-          <span
-            className="relative text-[11px] font-semibold tracking-[0.2em] uppercase"
-            style={{
-              color: 'hsl(174 70% 60%)',
-              textShadow: '0 0 12px hsl(174 80% 55% / 0.5), 0 0 20px hsl(174 80% 50% / 0.3)',
-              animation: 'puis-text-pulse 2s ease-in-out infinite',
-              animationDelay: '1s',
-            }}
-          >
-            {language === 'fr' ? 'Puis' : 'Then'}
-          </span>
-          <div 
-            className="relative flex flex-col items-center"
-            style={{
-              animation: 'puis-arrow-pulse 2s ease-in-out infinite',
-              animationDelay: '1s',
-            }}
-          >
-            <svg 
-              width="16" 
-              height="10" 
-              viewBox="0 0 16 10" 
-              fill="none"
-              style={{
-                filter: 'drop-shadow(0 0 3px hsl(174 80% 50% / 0.3)) drop-shadow(0 0 8px hsl(174 80% 45% / 0.15))',
-              }}
-            >
-              <path 
-                d="M1 1L8 8L15 1" 
-                stroke="hsl(174 70% 60% / 0.85)" 
-                strokeWidth="1.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-        </div>
-      )}
-      
       {/* Analyze Button */}
       <div className="relative mt-4 md:mt-5">
         <div 
