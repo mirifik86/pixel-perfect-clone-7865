@@ -130,6 +130,7 @@ const Index = () => {
   const [screenshotLoaderStep, setScreenshotLoaderStep] = useState(0);
   const [screenshotData, setScreenshotData] = useState<ScreenshotAnalysisData | null>(null);
   const [isRerunning, setIsRerunning] = useState(false);
+  const [hasFormContent, setHasFormContent] = useState(false);
   
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
@@ -563,7 +564,7 @@ const Index = () => {
                   <AnalysisLoader size={isMobile ? 150 : 200} language={language} />
                 )
               ) : (
-                <ScoreGauge score={score} size={isMobile ? 150 : 200} language={language} />
+                <ScoreGauge score={score} size={isMobile ? 150 : 200} language={language} hasContent={hasFormContent} />
               )}
             </div>
           </div>
@@ -650,7 +651,8 @@ const Index = () => {
                 onAnalyzeText={handleAnalyze} 
                 onImageReady={(file, preview) => handleImageAnalysis(file, preview, 'standard')}
                 isLoading={isLoading} 
-                language={language} 
+                language={language}
+                onContentChange={setHasFormContent}
               />
             </div>
           )}
