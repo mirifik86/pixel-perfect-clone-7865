@@ -45,7 +45,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
   
   const hasImage = Boolean(uploadedImage);
   const hasText = input.trim().length > 0;
-  const isActive = isDragOver || isFocused;
+  const isActive = isDragOver; // Only drag-over triggers card glow, not focus
 
   const validateFile = (file: File): boolean => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
