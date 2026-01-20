@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
-import { Search, Loader2, CheckCircle2, ChevronDown, ImagePlus, X, FileText, Link, Type } from 'lucide-react';
+import { Search, Loader2, CheckCircle2, ChevronDown, ImagePlus, X, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -248,12 +248,12 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
           {/* Visual placeholder with icons */}
           {!input && !uploadedImage && (
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4">
-              {/* Three input types as visual icons */}
-              <div className="flex items-center justify-center gap-6 mb-3">
+              {/* Two input types as visual icons */}
+              <div className="flex items-center justify-center gap-8 mb-3">
                 {/* Text icon */}
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-1.5">
                   <div 
-                    className="flex h-10 w-10 items-center justify-center rounded-full"
+                    className="flex h-11 w-11 items-center justify-center rounded-full"
                     style={{ 
                       background: 'hsl(0 0% 100% / 0.08)',
                       border: '1px solid hsl(0 0% 100% / 0.12)'
@@ -266,24 +266,10 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   </span>
                 </div>
                 
-                {/* URL icon */}
-                <div className="flex flex-col items-center gap-1">
-                  <div 
-                    className="flex h-10 w-10 items-center justify-center rounded-full"
-                    style={{ 
-                      background: 'hsl(0 0% 100% / 0.08)',
-                      border: '1px solid hsl(0 0% 100% / 0.12)'
-                    }}
-                  >
-                    <Link className="h-5 w-5 text-white/60" />
-                  </div>
-                  <span className="text-[9px] font-medium text-white/40 uppercase tracking-wider">URL</span>
-                </div>
-                
                 {/* Image icon */}
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-1.5">
                   <div 
-                    className="flex h-10 w-10 items-center justify-center rounded-full"
+                    className="flex h-11 w-11 items-center justify-center rounded-full"
                     style={{ 
                       background: 'hsl(0 0% 100% / 0.08)',
                       border: '1px solid hsl(0 0% 100% / 0.12)'
