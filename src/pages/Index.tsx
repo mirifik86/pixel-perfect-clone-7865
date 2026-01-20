@@ -565,33 +565,26 @@ const Index = () => {
 
           {/* Score gauge - compact spacing with smooth transition */}
           <div 
-            className="relative"
-            style={{ marginBottom: 'var(--space-2)' }}
+            className="relative flex justify-center items-center"
+            style={{ marginBottom: 'var(--space-2)', minHeight: `${gaugeSize}px` }}
           >
-            <div className="relative flex justify-center">
-              {/* Loader - fades out when done */}
-              <div 
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
-                  isLoading ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-                }`}
-              >
+            {/* Loader - shows during analysis */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
                 {isImageAnalysis ? (
                   <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
                 ) : (
                   <AnalysisLoader size={gaugeSize} language={language} />
                 )}
               </div>
-              
-              {/* Score Gauge - fades in when loader is done */}
-              <div 
-                className={`transition-all duration-500 ${
-                  isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-                }`}
-                style={{ transitionDelay: isLoading ? '0ms' : '200ms' }}
-              >
+            )}
+            
+            {/* Score Gauge - shows when not loading */}
+            {!isLoading && (
+              <div className="animate-scale-in" style={{ animationDuration: '500ms' }}>
                 <ScoreGauge score={score} size={gaugeSize} language={language} hasContent={hasFormContent} />
               </div>
-            </div>
+            )}
           </div>
 
           {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}
