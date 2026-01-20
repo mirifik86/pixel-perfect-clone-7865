@@ -158,6 +158,41 @@ const Index = () => {
   const currentSummaries = summariesByLanguage[language];
   const displayArticleSummary = currentSummaries?.articleSummary || null;
 
+  // Always run the actual analysis once (master), then translate for the other language.
+  // This guarantees identical scoring + web corroboration across the EN/FR toggle.
+  const runBilingualTextAnalysis = async ({
+    content,
+    analysisType,
+  }: {
+    content: string;
+    analysisType?: 'standard' | 'pro';
+  }): Promise<{ en: AnalysisData; fr: AnalysisData }> => {
+    // Master analysis is always in English for determinism.
+    const master = await supabase.functions.invoke('analyze', {
+      body: {
+        content,
+        language: 'en',
+        ...(analysisType ? { analysisType } : {}),
+      },
+    });
+
+    if (master.error) throw master.error;
+    if (master.data?.error) throw new Error(master.data.error);
+
+    const enData = master.data as AnalysisData;
+
+    const fr = await supabase.functions.invoke('translate-analysis', {
+      body: {
+        analysisData: enData,
+        targetLanguage: 'fr',
+      },
+    });
+
+    const frData = (!fr.error && fr.data && !fr.data.error ? (fr.data as AnalysisData) : enData);
+
+    return { en: enData, fr: frData };
+  };
+
   const handleReset = () => {
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
@@ -179,75 +214,14 @@ const Index = () => {
     setLastAnalyzedContent(input);
 
     try {
-      // Fetch both languages in parallel - summaries generated for BOTH languages upfront
-      const [enResult, frResult] = await Promise.all([
-        supabase.functions.invoke('analyze', {
-          body: { content: input, language: 'en' },
-        }),
-        supabase.functions.invoke('analyze', {
-          body: { content: input, language: 'fr' },
-        }),
-      ]);
+      const { en, fr } = await runBilingualTextAnalysis({ content: input, analysisType: 'standard' });
 
-      // Check for errors
-      if (enResult.error || frResult.error) {
-        console.error('Analysis error:', enResult.error || frResult.error);
-        toast.error(tLocal.errorAnalysis);
-        return;
-      }
-
-      if (enResult.data?.error || frResult.data?.error) {
-        console.error('API error:', enResult.data?.error || frResult.data?.error);
-        toast.error(enResult.data?.error || frResult.data?.error);
-        return;
-      }
-
-      // Use the primary language score as the master score for both
-      const masterScore = language === 'fr' ? frResult.data.score : enResult.data.score;
-      const masterConfidence = language === 'fr' ? frResult.data.confidence : enResult.data.confidence;
-      const masterBreakdownPoints = language === 'fr' ? frResult.data.breakdown : enResult.data.breakdown;
-      
-      // STORE BILINGUAL SUMMARIES: Both languages cached for instant toggle
       setSummariesByLanguage({
-        en: {
-          summary: enResult.data.summary || '',
-          articleSummary: enResult.data.articleSummary || '',
-        },
-        fr: {
-          summary: frResult.data.summary || '',
-          articleSummary: frResult.data.articleSummary || '',
-        },
+        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
+        fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
       });
 
-      // Ensure both languages have IDENTICAL numerical values
-      const normalizedEn: AnalysisData = {
-        ...enResult.data,
-        score: masterScore,
-        confidence: masterConfidence,
-        breakdown: {
-          sources: { ...enResult.data.breakdown.sources, points: masterBreakdownPoints.sources.points },
-          factual: { ...enResult.data.breakdown.factual, points: masterBreakdownPoints.factual.points },
-          tone: { ...enResult.data.breakdown.tone, points: masterBreakdownPoints.tone.points },
-          context: { ...enResult.data.breakdown.context, points: masterBreakdownPoints.context.points },
-          transparency: { ...enResult.data.breakdown.transparency, points: masterBreakdownPoints.transparency.points },
-        },
-      };
-
-      const normalizedFr: AnalysisData = {
-        ...frResult.data,
-        score: masterScore,
-        confidence: masterConfidence,
-        breakdown: {
-          sources: { ...frResult.data.breakdown.sources, points: masterBreakdownPoints.sources.points },
-          factual: { ...frResult.data.breakdown.factual, points: masterBreakdownPoints.factual.points },
-          tone: { ...frResult.data.breakdown.tone, points: masterBreakdownPoints.tone.points },
-          context: { ...frResult.data.breakdown.context, points: masterBreakdownPoints.context.points },
-          transparency: { ...frResult.data.breakdown.transparency, points: masterBreakdownPoints.transparency.points },
-        },
-      };
-
-      // Store both - language toggle is now purely local state
-      setAnalysisByLanguage({ en: normalizedEn, fr: normalizedFr });
+      setAnalysisByLanguage({ en, fr });
     } catch (err) {
       console.error('Unexpected error:', err);
       toast.error(tLocal.errorAnalysis);
@@ -397,56 +371,14 @@ const Index = () => {
     setIsProLoading(true);
 
     try {
-      const [enResult, frResult] = await Promise.all([
-        supabase.functions.invoke('analyze', {
-          body: { content: lastAnalyzedContent, language: 'en', analysisType: 'pro' },
-        }),
-        supabase.functions.invoke('analyze', {
-          body: { content: lastAnalyzedContent, language: 'fr', analysisType: 'pro' },
-        }),
-      ]);
-
-      if (enResult.error || frResult.error) {
-        console.error('Pro analysis error:', enResult.error || frResult.error);
-        toast.error(tLocal.errorAnalysis);
-        return;
-      }
-
-      if (enResult.data?.error || frResult.data?.error) {
-        console.error('API error:', enResult.data?.error || frResult.data?.error);
-        toast.error(enResult.data?.error || frResult.data?.error);
-        return;
-      }
-
-      const masterScore = language === 'fr' ? frResult.data.score : enResult.data.score;
-      const masterConfidence = language === 'fr' ? frResult.data.confidence : enResult.data.confidence;
+      const { en, fr } = await runBilingualTextAnalysis({ content: lastAnalyzedContent, analysisType: 'pro' });
 
       setSummariesByLanguage({
-        en: {
-          summary: enResult.data.summary || '',
-          articleSummary: enResult.data.articleSummary || '',
-        },
-        fr: {
-          summary: frResult.data.summary || '',
-          articleSummary: frResult.data.articleSummary || '',
-        },
+        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
+        fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
       });
 
-      const normalizedEn: AnalysisData = {
-        ...enResult.data,
-        score: masterScore,
-        confidence: masterConfidence,
-        analysisType: 'pro',
-      };
-
-      const normalizedFr: AnalysisData = {
-        ...frResult.data,
-        score: masterScore,
-        confidence: masterConfidence,
-        analysisType: 'pro',
-      };
-
-      setAnalysisByLanguage({ en: normalizedEn, fr: normalizedFr });
+      setAnalysisByLanguage({ en, fr });
       setIsProModalOpen(false);
       toast.success(language === 'fr' ? 'Analyse Pro terminée' : 'Pro Analysis complete');
     } catch (err) {

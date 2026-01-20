@@ -5,29 +5,100 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const getTranslationPrompt = (targetLanguage: string) => `You are a professional translator. Your task is to translate analysis text while preserving the exact meaning.
+const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+
+const getTranslationPrompt = (targetLanguage: string) => `You are a professional translator. Your task is to translate analysis JSON text while preserving the exact meaning.
 
 CRITICAL RULES:
-1. Translate ONLY the text content - NEVER change any numerical values
-2. Keep the same JSON structure exactly
+1. Translate ONLY human-readable text fields - NEVER change any numerical values
+2. Keep the same JSON structure exactly (keys, arrays, nesting)
 3. Translate to ${targetLanguage === 'fr' ? 'FRENCH' : 'ENGLISH'}
 4. Maintain the same professional, analytical tone
 5. Keep technical terms accurate
+6. DO NOT translate proper names of sources (media names, institutions, websites)
 
 You will receive a JSON object with analysis results. Translate ONLY these text fields:
-- breakdown.sources.reason
-- breakdown.factual.reason
-- breakdown.tone.reason
-- breakdown.context.reason
-- breakdown.transparency.reason
+- breakdown.*.reason (for both Standard and PRO breakdown keys)
+- webPresence.observation (if present)
 - summary
+- articleSummary (if present)
+- disclaimer / proDisclaimer (if present)
+- corroboration.summary (if present)
+- imageSignals.*.(explanation|reasoning) (if present)
 
 DO NOT modify:
 - score (number)
 - breakdown.*.points (numbers)
+- breakdown.*.weight (strings like "30%")
 - confidence (enum value)
+- analysisType
+- corroboration.outcome / sourcesConsulted / sourceTypes
+- corroboration.sources (keep EXACTLY as-is)
 
 Respond with the complete JSON object with translated text fields.`;
+
+// Merge translated text fields into the original analysis object.
+// This guarantees that scores, corroboration sources, enums, and all other data remain IDENTICAL.
+const mergeTranslatedText = (original: any, translated: any) => {
+  const out = deepClone(original);
+
+  const setIfString = (setter: () => void, value: any) => {
+    if (typeof value === 'string' && value.trim().length > 0) setter();
+  };
+
+  // Top-level fields
+  setIfString(() => (out.summary = translated?.summary), translated?.summary);
+  setIfString(() => (out.articleSummary = translated?.articleSummary), translated?.articleSummary);
+  setIfString(() => (out.disclaimer = translated?.disclaimer), translated?.disclaimer);
+  setIfString(() => (out.proDisclaimer = translated?.proDisclaimer), translated?.proDisclaimer);
+
+  // Standard web presence
+  if (out.webPresence?.observation) {
+    setIfString(
+      () => (out.webPresence.observation = translated?.webPresence?.observation),
+      translated?.webPresence?.observation,
+    );
+  }
+
+  // Breakdown reasons (standard + pro)
+  if (out.breakdown && typeof out.breakdown === 'object') {
+    for (const key of Object.keys(out.breakdown)) {
+      if (out.breakdown?.[key]?.reason) {
+        const nextReason = translated?.breakdown?.[key]?.reason;
+        setIfString(() => (out.breakdown[key].reason = nextReason), nextReason);
+      }
+    }
+  }
+
+  // PRO corroboration summary (preserve sources & all enums/numbers by keeping original object)
+  if (out.corroboration?.summary) {
+    setIfString(
+      () => (out.corroboration.summary = translated?.corroboration?.summary),
+      translated?.corroboration?.summary,
+    );
+  }
+
+  // Image signal explanatory text
+  if (out.imageSignals) {
+    const tImg = translated?.imageSignals;
+
+    if (out.imageSignals.coherence?.explanation) {
+      setIfString(
+        () => (out.imageSignals.coherence.explanation = tImg?.coherence?.explanation),
+        tImg?.coherence?.explanation,
+      );
+    }
+
+    if (out.imageSignals.scoring?.reasoning) {
+      setIfString(
+        () => (out.imageSignals.scoring.reasoning = tImg?.scoring?.reasoning),
+        tImg?.scoring?.reasoning,
+      );
+    }
+  }
+
+  return out;
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -104,17 +175,12 @@ serve(async (req) => {
       );
     }
 
-    // CRITICAL: Preserve original numerical values to ensure score consistency
-    translatedResult.score = analysisData.score;
-    translatedResult.confidence = analysisData.confidence;
-    translatedResult.breakdown.sources.points = analysisData.breakdown.sources.points;
-    translatedResult.breakdown.factual.points = analysisData.breakdown.factual.points;
-    translatedResult.breakdown.tone.points = analysisData.breakdown.tone.points;
-    translatedResult.breakdown.context.points = analysisData.breakdown.context.points;
-    translatedResult.breakdown.transparency.points = analysisData.breakdown.transparency.points;
+    // CRITICAL: Keep the original object as the single source of truth.
+    // Only copy translated text into it.
+    const merged = mergeTranslatedText(analysisData, translatedResult);
 
     return new Response(
-      JSON.stringify(translatedResult),
+      JSON.stringify(merged),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
