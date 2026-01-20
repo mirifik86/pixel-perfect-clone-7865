@@ -464,7 +464,7 @@ const Index = () => {
 
   return (
     <div 
-      className="relative flex min-h-screen flex-col overflow-hidden" 
+      className="relative flex h-screen flex-col overflow-hidden" 
       style={{
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
@@ -480,13 +480,13 @@ const Index = () => {
         }} 
       />
       
-      {/* Main content - unified layout for mobile and desktop */}
-      <main className="container-unified relative z-10 flex min-h-screen flex-col items-center justify-between py-6">
-        <div className="flex w-full flex-col items-center" style={{ paddingTop: 'var(--space-6)' }}>
+      {/* Main content - centered layout, everything visible without scroll */}
+      <main className="container-unified relative z-10 flex h-full flex-col items-center justify-center overflow-y-auto py-4">
+        <div className="flex w-full flex-col items-center">
           {/* Logo & branding with unified halo */}
           <div 
             className="relative flex animate-fade-in flex-col items-center" 
-            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-6)' }}
+            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
@@ -552,18 +552,18 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - unified spacing */}
+          {/* Language toggle - compact spacing */}
           <div 
             className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-6)' }}
+            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - unified size */}
+          {/* Score gauge - compact spacing */}
           <div 
             className="relative animate-scale-in"
-            style={{ animationDelay: '300ms', animationFillMode: 'both', marginBottom: 'var(--space-4)' }}
+            style={{ animationDelay: '300ms', animationFillMode: 'both', marginBottom: 'var(--space-3)' }}
           >
             <div className="relative flex justify-center">
               {/* Show loader during analysis, gauge otherwise */}
@@ -657,7 +657,7 @@ const Index = () => {
           {!hasAnyAnalysis && !isLoading && (
             <div 
               className="container-content w-full animate-fade-in"
-              style={{ animationDelay: '350ms', animationFillMode: 'both', marginTop: 'var(--space-2)' }}
+              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
             >
               <UnifiedAnalysisForm 
                 onAnalyzeText={handleAnalyze} 
@@ -711,20 +711,20 @@ const Index = () => {
           />
         </div>
 
-        {/* Footer - unified styling */}
+        {/* Footer - compact styling */}
         <footer 
-          className="animate-fade-in text-center"
+          className="animate-fade-in text-center shrink-0"
           style={{ 
             animationDelay: '500ms', 
             animationFillMode: 'both',
-            paddingTop: 'var(--space-8)',
-            paddingBottom: 'var(--space-6)'
+            paddingTop: 'var(--space-4)',
+            paddingBottom: 'var(--space-3)'
           }}
         >
           {/* Ethical positioning - premium institutional style */}
           <p 
-            className="mx-auto max-w-md border-t border-white/10 tracking-wide text-foreground/50"
-            style={{ paddingTop: 'var(--space-6)', fontSize: 'var(--text-xs)' }}
+            className="mx-auto max-w-md tracking-wide text-foreground/50"
+            style={{ fontSize: 'var(--text-xs)' }}
           >
             <span 
               className="font-serif italic"
@@ -736,7 +736,7 @@ const Index = () => {
           
           <p 
             className="font-medium tracking-[0.2em] text-primary/70"
-            style={{ marginTop: 'var(--space-4)', fontSize: 'var(--text-xs)' }}
+            style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)' }}
           >
             {t.developedBy}
           </p>
