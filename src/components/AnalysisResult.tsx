@@ -78,6 +78,7 @@ interface AnalysisResultProps {
   language: 'en' | 'fr';
   isProUnlocked?: boolean;
   articleSummary?: string;
+  hasImage?: boolean;
 }
 
 const translations = {
@@ -218,7 +219,7 @@ const corroborationStyles: Record<string, { bg: string; text: string; dot: strin
   constrained: { bg: 'bg-red-100 border-red-300', text: 'text-red-800', dot: 'bg-red-500' },
 };
 
-export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResultProps) => {
+export const AnalysisResult = ({ data, language, articleSummary, hasImage = false }: AnalysisResultProps) => {
   const t = translations[language];
   const isPro = data.analysisType === 'pro';
 
@@ -265,26 +266,30 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
     constrained: t.constrained,
   };
 
-  // Standard signal badges
+  // Standard signal badges - exclude visual signal when no image
   const standardSignalBadges = [
     { label: t.signalSource, level: getBadgeLevel(data.breakdown.sources?.points ?? 0) },
     { label: t.signalFactual, level: getBadgeLevel(data.breakdown.factual?.points ?? 0) },
     { label: t.signalContext, level: getBadgeLevel(data.breakdown.context?.points ?? 0) },
     { label: t.signalPrudence, level: getBadgeLevel(data.breakdown.prudence?.points ?? data.breakdown.tone?.points ?? 0) },
-    { label: t.signalVisual, level: getBadgeLevel(data.breakdown.visualCoherence?.points ?? 0) },
+    // Only include visual signal badge if an image was provided
+    ...(hasImage ? [{ label: t.signalVisual, level: getBadgeLevel(data.breakdown.visualCoherence?.points ?? 0) }] : []),
   ];
 
-  // PRO signal badges with LucideIcon type
+  // PRO signal badges with LucideIcon type - exclude image signal when no image
   const proSignalBadges: Array<{ label: string; level: number; icon: typeof Scale }> = [
     { label: t.signalGravity, level: getBadgeLevel(data.breakdown.claimGravity?.points ?? 0), icon: Scale },
     { label: t.signalCoherence, level: getBadgeLevel(data.breakdown.contextualCoherence?.points ?? 0), icon: GitBranch },
     { label: t.signalWeb, level: getBadgeLevel(data.breakdown.webCorroboration?.points ?? 0), icon: Search },
-    { label: t.signalImage, level: getBadgeLevel(data.breakdown.imageCoherence?.points ?? 0), icon: Image },
+    // Only include image signal badge if an image was provided
+    ...(hasImage ? [{ label: t.signalImage, level: getBadgeLevel(data.breakdown.imageCoherence?.points ?? 0), icon: Image }] : []),
   ];
 
   // Get keys for breakdown display
   const standardKeys = Object.keys(data.breakdown).filter((key) => standardCriteriaLabels[key] !== undefined);
-  const proKeys = ['claimGravity', 'contextualCoherence', 'webCorroboration', 'imageCoherence'].filter(
+  // Exclude imageCoherence from PRO breakdown when no image is provided
+  const proKeysBase = ['claimGravity', 'contextualCoherence', 'webCorroboration'];
+  const proKeys = [...proKeysBase, ...(hasImage ? ['imageCoherence'] : [])].filter(
     (key) => data.breakdown[key as keyof AnalysisBreakdown] !== undefined
   );
 
@@ -619,8 +624,8 @@ export const AnalysisResult = ({ data, language, articleSummary }: AnalysisResul
         </div>
       </div>
 
-      {/* PRO Image Signals detailed view */}
-      {isPro && data.imageSignals && (
+      {/* PRO Image Signals detailed view - only show when an image was actually provided */}
+      {isPro && hasImage && data.imageSignals && (
         <div className="analysis-card mt-6">
           <div className="mb-4 flex items-center gap-2">
             <Image className="h-5 w-5 text-cyan-600" />
