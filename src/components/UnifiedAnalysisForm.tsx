@@ -448,40 +448,48 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
       
       {/* Premium Analyze Button */}
       <div className="relative mt-4 md:mt-5 group">
-        {/* Outer glow ring - premium aura */}
-        <div 
-          className="absolute -inset-1.5 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
-          style={{
-            background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 80% 55% / 0.3), hsl(174 70% 50% / 0.5))',
-            animation: 'button-pulse 2s ease-in-out infinite',
-            filter: 'blur(12px)',
-          }}
-        />
-        
-        {/* Inner shimmer layer */}
-        <div 
-          className="absolute -inset-0.5 rounded-xl overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
-          }}
-        >
-          {/* Animated shine effect */}
+        {/* Outer glow ring - only visible when content is ready */}
+        {(hasText || hasImage) && (
           <div 
-            className="absolute inset-0"
+            className="absolute -inset-1.5 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
             style={{
-              background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 60%)',
-              animation: 'button-shine 3s ease-in-out infinite',
+              background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 80% 55% / 0.3), hsl(174 70% 50% / 0.5))',
+              animation: 'button-pulse 2s ease-in-out infinite',
+              filter: 'blur(12px)',
             }}
           />
-        </div>
+        )}
+        
+        {/* Inner shimmer layer - only visible when content is ready */}
+        {(hasText || hasImage) && (
+          <div 
+            className="absolute -inset-0.5 rounded-xl overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
+            }}
+          >
+            {/* Animated shine effect */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 60%)',
+                animation: 'button-shine 3s ease-in-out infinite',
+              }}
+            />
+          </div>
+        )}
         
         <Button
           type="submit"
           disabled={isLoading || (!hasText && !hasImage)}
-          className="relative w-full rounded-xl py-5 md:py-6 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 border-0"
+          className="relative w-full rounded-xl py-5 md:py-6 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 border-0"
           style={{
-            background: 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)',
-            boxShadow: '0 0 40px hsl(174 60% 50% / 0.4), 0 8px 24px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.1)',
+            background: (hasText || hasImage)
+              ? 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)'
+              : 'linear-gradient(135deg, hsl(174 40% 35% / 0.6) 0%, hsl(180 35% 30% / 0.6) 50%, hsl(174 40% 32% / 0.6) 100%)',
+            boxShadow: (hasText || hasImage)
+              ? '0 0 40px hsl(174 60% 50% / 0.4), 0 8px 24px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.1)'
+              : '0 4px 12px hsl(0 0% 0% / 0.2)',
             textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
           }}
         >
