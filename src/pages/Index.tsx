@@ -146,10 +146,13 @@ const Index = () => {
 
   const t = translations[language];
   const analysisData = analysisByLanguage[language];
-  const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr);
+  const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr || screenshotData?.analysis);
 
   // Score is consistent across both languages (same analysis, different text)
-  const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score ?? null;
+  // Also fallback to screenshotData.analysis.score for image analysis results
+  const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score 
+    ?? screenshotData?.analysis?.score 
+    ?? null;
   
   // INSTANT SUMMARY ACCESS: Pure synchronous lookup, no async operations
   const currentSummaries = summariesByLanguage[language];
