@@ -198,22 +198,40 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             />
           </div>
 
-          {/* Upload Icon - Right side (clickable) */}
+          {/* Upload Icon - Right side (clickable) - Premium & visible */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="absolute right-4 top-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110"
-            style={{ opacity: hasImage ? 1 : 0.5 }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all duration-200 hover:scale-105"
+            style={{ 
+              background: hasImage 
+                ? 'linear-gradient(135deg, hsl(174 70% 40%) 0%, hsl(174 60% 35%) 100%)'
+                : 'hsl(0 0% 100% / 0.08)',
+              border: hasImage ? 'none' : '1px solid hsl(0 0% 100% / 0.15)',
+              boxShadow: hasImage 
+                ? '0 0 12px hsl(174 60% 45% / 0.4)'
+                : '0 2px 8px hsl(0 0% 0% / 0.2)',
+            }}
             title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
           >
             <ImagePlus 
-              className="h-[18px] w-[18px] transition-colors duration-300" 
+              className="h-4 w-4" 
               style={{
                 color: hasImage 
-                  ? 'hsl(174 80% 45%)'
-                  : 'hsl(var(--muted-foreground) / 0.6)'
+                  ? 'white'
+                  : 'hsl(0 0% 100% / 0.7)'
               }}
             />
+            <span 
+              className="text-[10px] font-medium tracking-wide"
+              style={{
+                color: hasImage 
+                  ? 'white'
+                  : 'hsl(0 0% 100% / 0.6)'
+              }}
+            >
+              {language === 'fr' ? 'Image' : 'Image'}
+            </span>
           </button>
 
           {/* Image Preview */}
