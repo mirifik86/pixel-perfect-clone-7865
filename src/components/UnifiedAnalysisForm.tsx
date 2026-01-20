@@ -237,21 +237,34 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   {t.hint}
                 </p>
                 
-                {/* "Puis" hint with arrow - subtle transition cue */}
-                <div className="mt-2 flex flex-col items-center gap-0.5">
+                {/* "Puis" hint with arrow - synchronized with PRÊT À ANALYSER pulse */}
+                <div className="relative mt-2 flex flex-col items-center gap-0.5">
+                  {/* Subtle synchronized pulse glow - 50% intensity of PRÊT À ANALYSER */}
+                  <div 
+                    className="absolute -inset-x-4 -inset-y-2 rounded-full"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.15), hsl(174 70% 55% / 0.08), hsl(174 70% 50% / 0.15))',
+                      animation: 'puis-pulse 2s ease-in-out infinite',
+                      animationDelay: '1s',
+                      filter: 'blur(8px)',
+                    }}
+                  />
                   <span 
-                    className="text-[11px] font-medium tracking-[0.2em] uppercase"
+                    className="relative text-[11px] font-medium tracking-[0.2em] uppercase"
                     style={{
                       color: 'hsl(174 70% 55% / 0.75)',
-                      textShadow: '0 0 8px hsl(174 80% 50% / 0.25), 0 0 16px hsl(174 80% 45% / 0.15)',
+                      textShadow: '0 0 8px hsl(174 80% 50% / 0.2), 0 0 14px hsl(174 80% 45% / 0.1)',
+                      animation: 'puis-text-pulse 2s ease-in-out infinite',
+                      animationDelay: '1s',
                     }}
                   >
                     {language === 'fr' ? 'Puis' : 'Then'}
                   </span>
                   <div 
-                    className="flex flex-col items-center"
+                    className="relative flex flex-col items-center"
                     style={{
-                      filter: 'drop-shadow(0 0 4px hsl(174 80% 50% / 0.35)) drop-shadow(0 0 10px hsl(174 80% 45% / 0.2))',
+                      animation: 'puis-arrow-pulse 2s ease-in-out infinite',
+                      animationDelay: '1s',
                     }}
                   >
                     <svg 
@@ -259,8 +272,9 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                       height="10" 
                       viewBox="0 0 16 10" 
                       fill="none"
-                      className="animate-bounce"
-                      style={{ animationDuration: '2s' }}
+                      style={{
+                        filter: 'drop-shadow(0 0 3px hsl(174 80% 50% / 0.3)) drop-shadow(0 0 8px hsl(174 80% 45% / 0.15))',
+                      }}
                     >
                       <path 
                         d="M1 1L8 8L15 1" 
@@ -323,6 +337,18 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         @keyframes button-pulse {
           0%, 100% { opacity: 0.4; transform: scale(0.98); }
           50% { opacity: 0.8; transform: scale(1.01); }
+        }
+        @keyframes puis-pulse {
+          0%, 100% { opacity: 0.3; transform: scale(0.95); }
+          50% { opacity: 0.6; transform: scale(1.02); }
+        }
+        @keyframes puis-text-pulse {
+          0%, 100% { opacity: 0.7; }
+          50% { opacity: 0.9; }
+        }
+        @keyframes puis-arrow-pulse {
+          0%, 100% { transform: translateY(0); opacity: 0.8; }
+          50% { transform: translateY(2px); opacity: 1; }
         }
       `}</style>
     </form>
