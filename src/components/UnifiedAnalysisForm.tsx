@@ -305,63 +305,9 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                 />
               </div>
             ) : (
-              /* Empty state - Text input with image upload option */
+              /* Empty state - Text input with integrated image upload */
               <div className="flex flex-col items-center gap-3 w-full">
-                {/* Icon row with upload button */}
-                <div className="flex items-center gap-3">
-                  {/* Combined icon */}
-                  <div className="relative">
-                    <div 
-                      className="absolute -inset-2 rounded-full"
-                      style={{
-                        background: 'radial-gradient(circle, hsl(174 60% 50% / 0.15) 0%, transparent 70%)',
-                        animation: 'icon-pulse 2.5s ease-in-out infinite',
-                      }}
-                    />
-                    <div 
-                      className="relative flex items-center justify-center rounded-lg p-2.5"
-                      style={{
-                        background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))',
-                        border: '1px solid hsl(0 0% 100% / 0.08)',
-                      }}
-                    >
-                      <div className="relative">
-                        <FileText 
-                          className="h-5 w-5 md:h-6 md:w-6" 
-                          style={{ color: 'hsl(0 0% 100% / 0.4)' }}
-                        />
-                        <div 
-                          className="absolute -bottom-0.5 -right-1 rounded p-0.5"
-                          style={{
-                            background: 'linear-gradient(135deg, hsl(174 65% 50%), hsl(174 55% 45%))',
-                          }}
-                        >
-                          <Image className="h-2 w-2 md:h-2.5 md:w-2.5 text-white" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Image upload button */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider transition-all hover:scale-105"
-                    style={{
-                      background: 'hsl(0 0% 100% / 0.08)',
-                      border: '1px solid hsl(0 0% 100% / 0.12)',
-                      color: 'hsl(0 0% 100% / 0.6)',
-                    }}
-                  >
-                    <Image className="h-3 w-3" />
-                    {language === 'fr' ? 'Image' : 'Image'}
-                  </button>
-                </div>
-
-                {/* Visible textarea for text input */}
+                {/* Textarea with image upload button */}
                 <div className="w-full relative">
                   <Textarea
                     ref={textareaRef}
@@ -371,11 +317,31 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={t.primaryText}
-                    className="min-h-[80px] md:min-h-[90px] w-full resize-none rounded-xl border-0 bg-white/[0.04] px-4 py-3 text-center text-sm text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                    className="min-h-[90px] md:min-h-[100px] w-full resize-none rounded-xl border-0 bg-white/[0.04] px-4 py-4 pr-14 text-center text-sm text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
                       boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                     }}
                   />
+                  
+                  {/* Image upload button - positioned inside textarea */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-lg p-2.5 transition-all hover:scale-110 hover:bg-white/10"
+                    style={{
+                      background: 'hsl(0 0% 100% / 0.06)',
+                      border: '1px solid hsl(0 0% 100% / 0.1)',
+                    }}
+                    title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
+                  >
+                    <Image 
+                      className="h-5 w-5" 
+                      style={{ color: 'hsl(174 60% 55%)' }}
+                    />
+                  </button>
                 </div>
                 
                 {/* Secondary hint */}
