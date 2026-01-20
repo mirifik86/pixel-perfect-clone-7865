@@ -431,32 +431,53 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       )}
       
-      {/* Analyze Button */}
-      <div className="relative mt-4 md:mt-5">
+      {/* Premium Analyze Button */}
+      <div className="relative mt-4 md:mt-5 group">
+        {/* Outer glow ring - premium aura */}
         <div 
-          className="absolute -inset-1 rounded-xl"
+          className="absolute -inset-1.5 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
           style={{
-            background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.35), hsl(174 60% 55% / 0.2), hsl(174 60% 45% / 0.35))',
+            background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 80% 55% / 0.3), hsl(174 70% 50% / 0.5))',
             animation: 'button-pulse 2s ease-in-out infinite',
-            animationDelay: '0.5s',
-            filter: 'blur(10px)',
+            filter: 'blur(12px)',
           }}
         />
+        
+        {/* Inner shimmer layer */}
+        <div 
+          className="absolute -inset-0.5 rounded-xl overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
+          }}
+        >
+          {/* Animated shine effect */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 60%)',
+              animation: 'button-shine 3s ease-in-out infinite',
+            }}
+          />
+        </div>
         
         <Button
           type="submit"
           disabled={isLoading || (!hasText && !hasImage)}
-          className="relative w-full rounded-xl bg-primary py-5 md:py-6 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+          className="relative w-full rounded-xl py-5 md:py-6 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 border-0"
           style={{
-            boxShadow: '0 0 30px hsl(174 60% 45% / 0.35), 0 4px 16px hsl(0 0% 0% / 0.25)',
+            background: 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)',
+            boxShadow: '0 0 40px hsl(174 60% 50% / 0.4), 0 8px 24px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.1)',
+            textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
           }}
         >
           {isLoading ? (
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
-            <Search className="mr-2 h-5 w-5" />
+            <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2))' }} />
           )}
-          {t.analyze}
+          <span className="relative">
+            {t.analyze}
+          </span>
         </Button>
       </div>
       
@@ -471,8 +492,12 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
           50% { opacity: 0.8; transform: scale(1.05); }
         }
         @keyframes button-pulse {
-          0%, 100% { opacity: 0.4; transform: scale(0.98); }
-          50% { opacity: 0.8; transform: scale(1.01); }
+          0%, 100% { opacity: 0.5; transform: scale(0.98); }
+          50% { opacity: 1; transform: scale(1.02); }
+        }
+        @keyframes button-shine {
+          0% { transform: translateX(-100%); }
+          50%, 100% { transform: translateX(100%); }
         }
         @keyframes puis-pulse {
           0%, 100% { opacity: 0.4; transform: scale(0.96); }
