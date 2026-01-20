@@ -685,6 +685,7 @@ const Index = () => {
               data={analysisData} 
               language={language} 
               articleSummary={displayArticleSummary}
+              hasImage={isImageAnalysis}
             />
           )}
 
