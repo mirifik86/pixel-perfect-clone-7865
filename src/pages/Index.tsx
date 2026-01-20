@@ -8,8 +8,12 @@ import { AnalysisForm } from '@/components/AnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { ProAnalysisLoader } from '@/components/ProAnalysisLoader';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
+import { ScreenshotUpload } from '@/components/ScreenshotUpload';
+import { ScreenshotAnalysisLoader } from '@/components/ScreenshotAnalysisLoader';
+import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Camera, FileText } from 'lucide-react';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
 
 interface AnalysisBreakdown {
@@ -50,11 +54,32 @@ interface AnalysisData {
   };
 }
 
+interface ImageSignals {
+  screenshotLikelihood: 'likely' | 'uncertain';
+  blurLevel: 'low' | 'medium' | 'high';
+  compressionArtifacts: 'low' | 'medium' | 'high';
+  suspiciousEditingHints: 'none' | 'possible';
+  metadataPresent: 'yes' | 'no' | 'partial';
+}
+
+interface ScreenshotAnalysisData {
+  ocr: {
+    raw_text: string;
+    cleaned_text: string;
+    confidence: number;
+    text_length: number;
+  };
+  image_signals: ImageSignals;
+  analysis: AnalysisData | null;
+  warning?: string;
+}
+
 // Bilingual summaries stored at analysis time - no translation calls on toggle
 interface BilingualSummaries {
   en: { summary: string; articleSummary: string } | null;
   fr: { summary: string; articleSummary: string } | null;
 }
+
 const translations = {
   en: {
     tagline: 'See clearly through information.',
@@ -66,7 +91,10 @@ const translations = {
     version: 'VERSION 1',
     analyzing: 'Analyzing...',
     errorAnalysis: 'Analysis failed. Please try again.',
-    newAnalysis: 'New Analysis'
+    newAnalysis: 'New Analysis',
+    textTab: 'Text / URL',
+    screenshotTab: 'Screenshot',
+    launchAnalysis: 'Launch Analysis',
   },
   fr: {
     tagline: "Voir clair dans l'information.",
@@ -78,9 +106,13 @@ const translations = {
     version: 'VERSION 1',
     analyzing: 'Analyse en cours...',
     errorAnalysis: "L'analyse a échoué. Veuillez réessayer.",
-    newAnalysis: 'Faire autre analyse'
+    newAnalysis: 'Faire autre analyse',
+    textTab: 'Texte / URL',
+    screenshotTab: 'Capture d\'écran',
+    launchAnalysis: 'Lancer l\'analyse',
   }
 };
+
 const Index = () => {
   const isMobile = useIsMobile();
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
@@ -89,6 +121,15 @@ const Index = () => {
   const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [lastAnalyzedContent, setLastAnalyzedContent] = useState<string>('');
   
+  // Input mode: 'text' or 'screenshot'
+  const [inputMode, setInputMode] = useState<'text' | 'screenshot'>('text');
+  
+  // Screenshot state
+  const [uploadedFile, setUploadedFile] = useState<{ file: File; preview: string } | null>(null);
+  const [screenshotLoaderStep, setScreenshotLoaderStep] = useState(0);
+  const [screenshotData, setScreenshotData] = useState<ScreenshotAnalysisData | null>(null);
+  const [isRerunning, setIsRerunning] = useState(false);
+  
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
     en: null,
@@ -96,7 +137,6 @@ const Index = () => {
   });
   
   // BILINGUAL SUMMARIES: Both languages stored at analysis time for instant switching
-  // No translation calls, no async operations on language toggle
   const [summariesByLanguage, setSummariesByLanguage] = useState<BilingualSummaries>({
     en: null,
     fr: null,
@@ -117,6 +157,9 @@ const Index = () => {
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent('');
+    setUploadedFile(null);
+    setScreenshotData(null);
+    setScreenshotLoaderStep(0);
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -206,6 +249,137 @@ const Index = () => {
     }
   };
 
+  // Screenshot Analysis Handler
+  const handleScreenshotAnalysis = async (analysisType: 'standard' | 'pro' = 'standard') => {
+    if (!uploadedFile) return;
+    
+    const tLocal = translations[language];
+    setIsLoading(true);
+    setAnalysisByLanguage({ en: null, fr: null });
+    setSummariesByLanguage({ en: null, fr: null });
+    setScreenshotLoaderStep(0);
+
+    try {
+      // Step 1: OCR
+      setScreenshotLoaderStep(0);
+      await new Promise(r => setTimeout(r, 500)); // Brief delay for visual feedback
+      
+      // Step 2: Image Signals
+      setScreenshotLoaderStep(1);
+      await new Promise(r => setTimeout(r, 300));
+      
+      // Call the analyze-image endpoint
+      const result = await supabase.functions.invoke('analyze-image', {
+        body: { 
+          imageData: uploadedFile.preview, 
+          language: language,
+          analysisType: analysisType
+        },
+      });
+
+      // Step 3: LeenScore Analysis
+      setScreenshotLoaderStep(2);
+
+      if (result.error) {
+        console.error('Screenshot analysis error:', result.error);
+        toast.error(tLocal.errorAnalysis);
+        return;
+      }
+
+      if (result.data?.error) {
+        console.error('API error:', result.data.error);
+        toast.error(result.data.error);
+        return;
+      }
+
+      // Process the result
+      const data = result.data;
+      
+      // Transform image_signals from API format to component format
+      const apiSignals = data.image_signals || {};
+      const transformedSignals: ImageSignals = {
+        screenshotLikelihood: apiSignals.screenshot_likelihood || 'uncertain',
+        blurLevel: apiSignals.blur_level || 'medium',
+        compressionArtifacts: apiSignals.compression_artifacts || 'medium',
+        suspiciousEditingHints: apiSignals.suspicious_editing_hints || 'none',
+        metadataPresent: apiSignals.metadata_present || 'no',
+      };
+      
+      const processedData: ScreenshotAnalysisData = {
+        ocr: data.ocr,
+        image_signals: transformedSignals,
+        analysis: data.analysis,
+        warning: data.warning,
+      };
+      
+      setScreenshotData(processedData);
+      
+      // Store the extracted text for potential re-runs
+      setLastAnalyzedContent(data.ocr.cleaned_text);
+
+      // If analysis was successful, also fetch the other language
+      if (data.analysis) {
+        const otherLang = language === 'fr' ? 'en' : 'fr';
+        const otherResult = await supabase.functions.invoke('analyze', {
+          body: { content: data.ocr.cleaned_text, language: otherLang, analysisType },
+        });
+
+        if (otherResult.data && !otherResult.error) {
+          const primaryAnalysis = data.analysis;
+          const otherAnalysis = otherResult.data;
+
+          const newSummaries: BilingualSummaries = {
+            en: language === 'en' 
+              ? { summary: primaryAnalysis.summary || '', articleSummary: primaryAnalysis.articleSummary || '' }
+              : { summary: otherAnalysis.summary || '', articleSummary: otherAnalysis.articleSummary || '' },
+            fr: language === 'fr'
+              ? { summary: primaryAnalysis.summary || '', articleSummary: primaryAnalysis.articleSummary || '' }
+              : { summary: otherAnalysis.summary || '', articleSummary: otherAnalysis.articleSummary || '' },
+          };
+          setSummariesByLanguage(newSummaries);
+
+          const newAnalysis: Record<'en' | 'fr', AnalysisData | null> = {
+            en: language === 'en' ? primaryAnalysis : { ...otherAnalysis, score: primaryAnalysis.score, confidence: primaryAnalysis.confidence },
+            fr: language === 'fr' ? primaryAnalysis : { ...otherAnalysis, score: primaryAnalysis.score, confidence: primaryAnalysis.confidence },
+          };
+          setAnalysisByLanguage(newAnalysis);
+        } else {
+          // Fallback: just use the primary language
+          setSummariesByLanguage({
+            en: language === 'en' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+            fr: language === 'fr' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+          });
+          setAnalysisByLanguage({
+            en: language === 'en' ? data.analysis : null,
+            fr: language === 'fr' ? data.analysis : null,
+          });
+        }
+      }
+
+      // Show warning if applicable
+      if (data.warning) {
+        toast.warning(data.warning);
+      }
+
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      toast.error(tLocal.errorAnalysis);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Re-run analysis with edited text
+  const handleRerunAnalysis = async (editedText: string) => {
+    setIsRerunning(true);
+    try {
+      await handleAnalyze(editedText);
+      setLastAnalyzedContent(editedText);
+    } finally {
+      setIsRerunning(false);
+    }
+  };
+
   // PRO Analysis - uses the same content with analysisType: 'pro'
   const handleProAnalysis = async () => {
     if (!lastAnalyzedContent) return;
@@ -278,16 +452,24 @@ const Index = () => {
   const handleLanguageChange = (next: 'en' | 'fr') => {
     setLanguage(next);
   };
-  return <div className="relative flex min-h-screen flex-col overflow-hidden" style={{
-    background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
-  }}>
+
+  return (
+    <div 
+      className="relative flex min-h-screen flex-col overflow-hidden" 
+      style={{
+        background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
+      }}
+    >
       {/* Earth background */}
-      <div className="pointer-events-none fixed inset-0 opacity-80" style={{
-      backgroundImage: `url(${earthBg})`,
-      backgroundPosition: 'center 40%',
-      backgroundSize: 'cover',
-      backgroundAttachment: 'fixed'
-    }} />
+      <div 
+        className="pointer-events-none fixed inset-0 opacity-80" 
+        style={{
+          backgroundImage: `url(${earthBg})`,
+          backgroundPosition: 'center 40%',
+          backgroundSize: 'cover',
+          backgroundAttachment: 'fixed'
+        }} 
+      />
       
       {/* Main content - mobile-first: fit everything above fold */}
       <main className="relative z-10 flex min-h-screen flex-col items-center justify-between px-4 py-2 md:py-6">
@@ -368,9 +550,13 @@ const Index = () => {
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
             <div className="relative flex justify-center">
-              {/* Show loader during analysis, gauge otherwise - smaller on mobile */}
+              {/* Show loader during analysis, gauge otherwise */}
               {isLoading ? (
-                <AnalysisLoader size={isMobile ? 150 : 200} language={language} />
+                inputMode === 'screenshot' ? (
+                  <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
+                ) : (
+                  <AnalysisLoader size={isMobile ? 150 : 200} language={language} />
+                )
               ) : (
                 <ScoreGauge score={score} size={isMobile ? 150 : 200} language={language} />
               )}
@@ -449,10 +635,44 @@ const Index = () => {
             </div>
           )}
 
-
+          {/* Input Mode Tabs - Only show when no analysis */}
+          {!hasAnyAnalysis && !isLoading && (
+            <div 
+              className="mb-4 flex items-center gap-1 rounded-full p-1 animate-fade-in"
+              style={{ 
+                animationDelay: '350ms', 
+                animationFillMode: 'both',
+                background: 'hsl(0 0% 100% / 0.05)',
+                border: '1px solid hsl(0 0% 100% / 0.1)',
+              }}
+            >
+              <button
+                onClick={() => setInputMode('text')}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  inputMode === 'text' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'text-white/60 hover:text-white/90'
+                }`}
+              >
+                <FileText className="h-4 w-4" />
+                {t.textTab}
+              </button>
+              <button
+                onClick={() => setInputMode('screenshot')}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  inputMode === 'screenshot' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'text-white/60 hover:text-white/90'
+                }`}
+              >
+                <Camera className="h-4 w-4" />
+                {t.screenshotTab}
+              </button>
+            </div>
+          )}
 
           {/* Analysis form - hidden during loading and after analysis */}
-          {!hasAnyAnalysis && !isLoading && (
+          {!hasAnyAnalysis && !isLoading && inputMode === 'text' && (
             <div 
               className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
               style={{ animationDelay: '400ms', animationFillMode: 'both' }}
@@ -461,9 +681,55 @@ const Index = () => {
             </div>
           )}
 
+          {/* Screenshot Upload - hidden during loading and after analysis */}
+          {!hasAnyAnalysis && !isLoading && inputMode === 'screenshot' && (
+            <div 
+              className="mt-0 md:mt-2 w-full max-w-2xl animate-fade-in"
+              style={{ animationDelay: '400ms', animationFillMode: 'both' }}
+            >
+              <ScreenshotUpload
+                language={language}
+                uploadedFile={uploadedFile}
+                onImageReady={(file, preview) => setUploadedFile({ file, preview })}
+                onRemove={() => setUploadedFile(null)}
+              />
+              
+              {/* Launch Analysis Button */}
+              {uploadedFile && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => handleScreenshotAnalysis('standard')}
+                    className="w-full rounded-lg py-3 text-sm font-semibold text-primary-foreground transition-all"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(174 70% 40%) 0%, hsl(174 60% 35%) 100%)',
+                      boxShadow: '0 0 25px hsl(174 60% 45% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.25)',
+                    }}
+                  >
+                    {t.launchAnalysis}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* PRO Analysis loading skeleton */}
           {isProLoading && (
             <ProAnalysisLoader language={language} />
+          )}
+
+          {/* Screenshot Evidence Section - show after screenshot analysis */}
+          {screenshotData && hasAnyAnalysis && !isProLoading && (
+            <div className="w-full max-w-2xl mt-4 animate-fade-in">
+              <ScreenshotEvidence
+                extractedText={screenshotData.ocr.cleaned_text}
+                ocrConfidence={screenshotData.ocr.confidence}
+                imageSignals={screenshotData.image_signals}
+                onRerunAnalysis={handleRerunAnalysis}
+                isRerunning={isRerunning}
+                language={language}
+                imagePreview={uploadedFile?.preview}
+              />
+            </div>
           )}
 
           {/* Analysis result - detailed breakdown below */}
@@ -508,6 +774,8 @@ const Index = () => {
           </p>
         </footer>
       </main>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
