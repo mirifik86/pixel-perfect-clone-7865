@@ -656,7 +656,7 @@ const Index = () => {
 
         {/* Footer - minimal */}
         <footer 
-          className="animate-fade-in mt-auto text-center shrink-0 w-full"
+          className="animate-fade-in mt-auto text-center shrink-0 w-full flex flex-col items-center gap-1"
           style={{ 
             animationDelay: '500ms', 
             animationFillMode: 'both',
@@ -665,16 +665,25 @@ const Index = () => {
           }}
         >
           <p 
-            className="mx-auto tracking-wide text-foreground/40"
-            style={{ fontSize: '10px' }}
+            className="tracking-[0.08em] text-foreground/60"
+            style={{ fontSize: '11px' }}
           >
             <span 
               className="font-serif italic"
-              style={{ color: 'hsl(174 65% 55% / 0.8)' }}
+              style={{ color: 'hsl(174 50% 60% / 0.7)' }}
             >Leen</span>
-            <span className="font-serif text-foreground/60">Score</span>
-            <span className="mx-1">·</span>
-            <span className="tracking-[0.15em] text-primary/60">{t.developedBy.replace('OUTIL DÉVELOPPÉ PAR ', '').replace('TOOL DEVELOPED BY ', '')}</span>
+            <span className="font-serif" style={{ color: 'hsl(210 20% 80% / 0.6)' }}>Score</span>
+            <span className="mx-2" style={{ color: 'hsl(210 10% 60% / 0.5)' }}>—</span>
+            <span 
+              className="font-sans font-light"
+              style={{ color: 'hsl(210 20% 75% / 0.55)', letterSpacing: '0.05em' }}
+            >Trust, measured</span>
+          </p>
+          <p 
+            className="font-sans tracking-[0.12em]"
+            style={{ fontSize: '9px', color: 'hsl(210 15% 65% / 0.4)' }}
+          >
+            v1.0
           </p>
         </footer>
       </main>
