@@ -124,12 +124,13 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
     }
   };
 
-  const handleCardClick = () => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only trigger file picker if clicking on the icon/upload area, not the textarea
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TEXTAREA') return;
+    
     if (!hasImage && !hasText) {
-      // Show file picker on tap when empty
-      fileInputRef.current?.click();
-    } else if (!hasImage) {
-      // Focus textarea if there's text
+      // Focus textarea to allow typing
       textareaRef.current?.focus();
     }
   };
@@ -304,72 +305,86 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                 />
               </div>
             ) : (
-              /* Empty state - Premium drop zone */
-              <div className="flex flex-col items-center gap-4 py-2">
-                {/* Combined icon with aura */}
-                <div className="relative">
-                  {/* Icon aura */}
-                  <div 
-                    className="absolute -inset-3 rounded-full"
-                    style={{
-                      background: 'radial-gradient(circle, hsl(174 60% 50% / 0.2) 0%, transparent 70%)',
-                      animation: 'icon-pulse 2.5s ease-in-out infinite',
-                    }}
-                  />
-                  <div 
-                    className="relative flex items-center justify-center rounded-xl p-4"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.03))',
-                      border: '1px solid hsl(0 0% 100% / 0.1)',
-                      boxShadow: '0 4px 16px hsl(0 0% 0% / 0.2)',
-                    }}
-                  >
-                    {/* Combined document + image icon */}
-                    <div className="relative">
-                      <FileText 
-                        className="h-7 w-7 md:h-8 md:w-8" 
-                        style={{ color: 'hsl(0 0% 100% / 0.5)' }}
-                      />
-                      <div 
-                        className="absolute -bottom-1 -right-1.5 rounded p-0.5"
-                        style={{
-                          background: 'linear-gradient(135deg, hsl(174 65% 50%), hsl(174 55% 45%))',
-                          boxShadow: '0 2px 6px hsl(174 60% 40% / 0.4)',
-                        }}
-                      >
-                        <Image className="h-3 w-3 md:h-3.5 md:w-3.5 text-white" />
+              /* Empty state - Text input with image upload option */
+              <div className="flex flex-col items-center gap-3 w-full">
+                {/* Icon row with upload button */}
+                <div className="flex items-center gap-3">
+                  {/* Combined icon */}
+                  <div className="relative">
+                    <div 
+                      className="absolute -inset-2 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle, hsl(174 60% 50% / 0.15) 0%, transparent 70%)',
+                        animation: 'icon-pulse 2.5s ease-in-out infinite',
+                      }}
+                    />
+                    <div 
+                      className="relative flex items-center justify-center rounded-lg p-2.5"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))',
+                        border: '1px solid hsl(0 0% 100% / 0.08)',
+                      }}
+                    >
+                      <div className="relative">
+                        <FileText 
+                          className="h-5 w-5 md:h-6 md:w-6" 
+                          style={{ color: 'hsl(0 0% 100% / 0.4)' }}
+                        />
+                        <div 
+                          className="absolute -bottom-0.5 -right-1 rounded p-0.5"
+                          style={{
+                            background: 'linear-gradient(135deg, hsl(174 65% 50%), hsl(174 55% 45%))',
+                          }}
+                        >
+                          <Image className="h-2 w-2 md:h-2.5 md:w-2.5 text-white" />
+                        </div>
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Image upload button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider transition-all hover:scale-105"
+                    style={{
+                      background: 'hsl(0 0% 100% / 0.08)',
+                      border: '1px solid hsl(0 0% 100% / 0.12)',
+                      color: 'hsl(0 0% 100% / 0.6)',
+                    }}
+                  >
+                    <Image className="h-3 w-3" />
+                    {language === 'fr' ? 'Image' : 'Image'}
+                  </button>
                 </div>
 
-                {/* Primary text */}
-                <p 
-                  className="text-base md:text-lg font-medium text-center leading-snug"
-                  style={{ color: 'hsl(0 0% 100% / 0.85)' }}
-                >
-                  {t.primaryText}
-                </p>
+                {/* Visible textarea for text input */}
+                <div className="w-full relative">
+                  <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={handleInputChange}
+                    onPaste={handlePaste}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder={t.primaryText}
+                    className="min-h-[80px] md:min-h-[90px] w-full resize-none rounded-xl border-0 bg-white/[0.04] px-4 py-3 text-center text-sm text-white placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:ring-offset-0 transition-all"
+                    style={{
+                      boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                    }}
+                  />
+                </div>
                 
                 {/* Secondary hint */}
                 <p 
-                  className="text-[11px] md:text-xs font-medium tracking-wider uppercase"
-                  style={{ color: 'hsl(0 0% 100% / 0.35)' }}
+                  className="text-[10px] md:text-[11px] font-medium tracking-wider uppercase"
+                  style={{ color: 'hsl(0 0% 100% / 0.3)' }}
                 >
                   {t.hint}
                 </p>
-
-                {/* Hidden textarea for paste detection */}
-                <Textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={handleInputChange}
-                  onPaste={handlePaste}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  className="absolute inset-0 opacity-0 cursor-pointer resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
-                  style={{ minHeight: '100%' }}
-                />
               </div>
             )}
           </div>
