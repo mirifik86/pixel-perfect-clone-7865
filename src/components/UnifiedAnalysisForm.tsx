@@ -375,60 +375,44 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Transition cue: PUIS ↓ - Guided flow element */}
-      {!hasImage && !hasText && (
-        <div className="flex justify-center py-3">
-          <div className="relative flex flex-col items-center gap-1">
-            {/* Localized aura - synchronized with PRÊT À ANALYSER */}
-            <div 
-              className="absolute inset-0 rounded-lg"
+      {/* Arrow transition cue - pointing to Analyser button */}
+      <div className="flex justify-center py-3">
+        <div 
+          className="relative"
+          style={{
+            animation: 'arrow-bounce 2s ease-in-out infinite',
+          }}
+        >
+          {/* Glow behind arrow */}
+          <div 
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: 'radial-gradient(circle, hsl(174 70% 55% / 0.4), transparent 70%)',
+              animation: 'arrow-glow 2s ease-in-out infinite',
+              filter: 'blur(6px)',
+              transform: 'scale(2.5)',
+            }}
+          />
+          <svg 
+            width="18" 
+            height="10" 
+            viewBox="0 0 18 10" 
+            fill="none"
+            className="relative"
+          >
+            <path 
+              d="M1 1L9 9L17 1" 
+              stroke="hsl(174 70% 60%)" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
               style={{
-                background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 70% 55% / 0.3), hsl(174 70% 50% / 0.5))',
-                animation: 'puis-pulse 2s ease-in-out infinite',
-                filter: 'blur(8px)',
+                filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.6))',
               }}
             />
-            
-            {/* PUIS text */}
-            <span 
-              className="relative text-[10px] font-light tracking-[0.25em] uppercase"
-              style={{
-                color: 'hsl(174 65% 55% / 0.72)',
-                textShadow: '0 0 10px hsl(174 70% 50% / 0.3)',
-                animation: 'puis-text-pulse 2s ease-in-out infinite',
-              }}
-            >
-              {language === 'fr' ? 'Puis' : 'Then'}
-            </span>
-            
-            {/* Arrow - slightly brighter */}
-            <div 
-              className="relative"
-              style={{
-                animation: 'puis-arrow-pulse 2s ease-in-out infinite',
-              }}
-            >
-              <svg 
-                width="14" 
-                height="8" 
-                viewBox="0 0 14 8" 
-                fill="none"
-              >
-                <path 
-                  d="M1 1L7 7L13 1" 
-                  stroke="hsl(174 70% 58% / 0.85)" 
-                  strokeWidth="1.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  style={{
-                    filter: 'drop-shadow(0 0 4px hsl(174 70% 50% / 0.4))',
-                  }}
-                />
-              </svg>
-            </div>
-          </div>
+          </svg>
         </div>
-      )}
+      </div>
       
       {/* Premium Analyze Button */}
       <div className="relative mt-4 md:mt-5 group">
