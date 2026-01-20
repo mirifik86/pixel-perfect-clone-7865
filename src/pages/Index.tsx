@@ -656,32 +656,44 @@ const Index = () => {
 
         {/* Footer - minimal */}
         <footer 
-          className="animate-fade-in mt-auto text-center shrink-0 w-full flex flex-col items-center gap-1"
+          className="mt-auto text-center shrink-0 w-full flex flex-col items-center"
           style={{ 
-            animationDelay: '500ms', 
-            animationFillMode: 'both',
-            paddingTop: 'var(--space-4)',
-            paddingBottom: 'var(--space-4)'
+            paddingTop: 'var(--space-6)',
+            paddingBottom: 'var(--space-5)',
+            gap: '6px'
           }}
         >
           <p 
-            className="tracking-[0.08em] text-foreground/60"
-            style={{ fontSize: '11px' }}
+            className="tracking-[0.12em] font-medium"
+            style={{ fontSize: 'clamp(13px, 1.5vw, 15px)' }}
           >
             <span 
               className="font-serif italic"
-              style={{ color: 'hsl(174 50% 60% / 0.7)' }}
+              style={{ color: 'hsl(174 45% 55% / 0.72)' }}
             >Leen</span>
-            <span className="font-serif" style={{ color: 'hsl(210 20% 80% / 0.6)' }}>Score</span>
-            <span className="mx-2" style={{ color: 'hsl(210 10% 60% / 0.5)' }}>—</span>
             <span 
-              className="font-sans font-light"
-              style={{ color: 'hsl(210 20% 75% / 0.55)', letterSpacing: '0.05em' }}
+              className="font-serif"
+              style={{ color: 'hsl(210 15% 78% / 0.68)' }}
+            >Score</span>
+            <span 
+              className="mx-2 font-light"
+              style={{ color: 'hsl(210 10% 65% / 0.55)' }}
+            >—</span>
+            <span 
+              className="font-sans"
+              style={{ 
+                color: 'hsl(210 12% 72% / 0.65)', 
+                letterSpacing: '0.04em',
+                fontWeight: 450
+              }}
             >Trust, measured</span>
           </p>
           <p 
-            className="font-sans tracking-[0.12em]"
-            style={{ fontSize: '9px', color: 'hsl(210 15% 65% / 0.4)' }}
+            className="font-sans font-light tracking-[0.15em]"
+            style={{ 
+              fontSize: '10px', 
+              color: 'hsl(210 10% 60% / 0.45)' 
+            }}
           >
             v1.0
           </p>
