@@ -99,6 +99,8 @@ const translations = {
     analyzing: 'Analyzing...',
     errorAnalysis: 'Analysis failed. Please try again.',
     newAnalysis: 'New Analysis',
+    footerSlogan: 'Trust, measured',
+    footerAttribution: 'Developed by Sol&Air',
   },
   fr: {
     tagline: "Voir clair dans l'information.",
@@ -111,6 +113,8 @@ const translations = {
     analyzing: 'Analyse en cours...',
     errorAnalysis: "L'analyse a échoué. Veuillez réessayer.",
     newAnalysis: 'Faire autre analyse',
+    footerSlogan: 'La confiance, mesurée',
+    footerAttribution: 'Développé par Sol&Air',
   }
 };
 
@@ -660,9 +664,10 @@ const Index = () => {
           style={{ 
             paddingTop: 'var(--space-6)',
             paddingBottom: 'var(--space-5)',
-            gap: '6px'
+            gap: '5px'
           }}
         >
+          {/* Line 1: Brand & Slogan - Most prominent */}
           <p 
             className="tracking-[0.12em] font-medium"
             style={{ fontSize: 'clamp(13px, 1.5vw, 15px)' }}
@@ -673,7 +678,7 @@ const Index = () => {
             >Leen</span>
             <span 
               className="font-serif"
-              style={{ color: 'hsl(210 15% 78% / 0.68)' }}
+              style={{ color: 'hsl(210 15% 78% / 0.70)' }}
             >Score</span>
             <span 
               className="mx-2 font-light"
@@ -682,20 +687,33 @@ const Index = () => {
             <span 
               className="font-sans"
               style={{ 
-                color: 'hsl(210 12% 72% / 0.65)', 
+                color: 'hsl(210 12% 72% / 0.68)', 
                 letterSpacing: '0.04em',
                 fontWeight: 450
               }}
-            >Trust, measured</span>
+            >{t.footerSlogan}</span>
           </p>
+          
+          {/* Line 2: Version - Secondary */}
           <p 
             className="font-sans font-light tracking-[0.15em]"
             style={{ 
               fontSize: '10px', 
-              color: 'hsl(210 10% 60% / 0.45)' 
+              color: 'hsl(210 10% 60% / 0.55)' 
             }}
           >
             v1.0
+          </p>
+          
+          {/* Line 3: Attribution - Tertiary, discreet */}
+          <p 
+            className="font-sans font-light italic tracking-[0.06em]"
+            style={{ 
+              fontSize: '9px', 
+              color: 'hsl(174 25% 55% / 0.48)' 
+            }}
+          >
+            {t.footerAttribution}
           </p>
         </footer>
       </main>
