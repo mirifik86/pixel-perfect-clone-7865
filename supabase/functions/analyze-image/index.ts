@@ -9,7 +9,13 @@ const corsHeaders = {
 const getOcrPrompt = (language: string) => {
   const isFr = language === 'fr';
   
+  const langInstructions = isFr 
+    ? `IMPORTANT: Your "visual_description" field MUST be written in FRENCH (Français).`
+    : `IMPORTANT: Your "visual_description" field MUST be written in ENGLISH.`;
+  
   return `You are an expert OCR and image analysis system with STRICT CREDIBILITY GUARDRAILS. Analyze this screenshot/image.
+
+${langInstructions}
 
 ═══════════════════════════════════════════════════════════════════
 CRITICAL GUARDRAIL RULES — NON-NEGOTIABLE
@@ -65,6 +71,7 @@ Evaluate ONLY these observable signals:
 5. metadata_present: "yes" | "no" | "partial"
 
 TASK 4: VISUAL DESCRIPTION (STRICTLY FACTUAL)
+${isFr ? '- Write the description IN FRENCH' : '- Write the description IN ENGLISH'}
 - Describe ONLY what is visible
 - If a public figure is recognizable, state their name
 - Do NOT make claims about what the image "proves"
@@ -95,7 +102,7 @@ RESPONSE FORMAT (JSON only):
     "text_entity": "<who/what the text refers to, or null>",
     "mismatch_description": "<explanation if mismatch detected, or null>"
   },
-  "visual_description": "<strictly factual description of what is visible>",
+  "visual_description": "<strictly factual description ${isFr ? 'IN FRENCH' : 'IN ENGLISH'}>",
   "quality_notes": "<brief quality assessment>",
   "credibility_flags": {
     "is_social_media_screenshot": <true|false>,
