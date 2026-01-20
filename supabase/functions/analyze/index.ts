@@ -350,24 +350,30 @@ Distinguish plausibility from factual certainty.
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
-// Translation helper function - translates text fields while preserving numerical values
+// Deep clone utility to ensure original data is never mutated
+const deepClone = (obj: any): any => JSON.parse(JSON.stringify(obj));
+
+// Translation helper function - translates ONLY text fields while preserving ALL numerical values
 const translateAnalysisResult = async (analysisResult: any, targetLanguage: string, apiKey: string): Promise<any> => {
   if (targetLanguage === 'en') {
     return analysisResult; // Already in English
   }
 
+  // Store original values BEFORE any translation attempt
+  const originalData = deepClone(analysisResult);
+
   const translationPrompt = `You are a professional translator. Translate the following JSON analysis from English to French.
 
-CRITICAL RULES:
-1. Translate ONLY text content - NEVER change any numerical values or scores
-2. Keep the exact same JSON structure
-3. Maintain professional, analytical tone
-4. Keep source names (media names, websites) in their original form
-5. Translate these fields: reason, summary, articleSummary, observation, explanation, disclaimer, proDisclaimer
-6. For corroboration.sources arrays, keep source names unchanged but translate any descriptive text
-7. DO NOT modify: score, points, confidence values, sourcesConsulted numbers, outcome values
+CRITICAL RULES - YOU MUST FOLLOW EXACTLY:
+1. ONLY translate text content in these specific fields: reason, summary, articleSummary, observation, explanation, disclaimer, proDisclaimer, reasoning
+2. NEVER change ANY numerical values: score, points, sourcesConsulted, totalImpact, imageAsProof, aiWithClaims, metadataIssues, contextualSeverity
+3. NEVER change ANY enum/status values: outcome (corroborated/neutral/constrained), confidence (low/medium/high), level, classification, analysisType
+4. NEVER change weight percentages (30%, 40%, etc.)
+5. Keep source names (media names, websites, agency names) in their EXACT original form
+6. Keep the EXACT same JSON structure
+7. Maintain professional, analytical tone in French
 
-Respond with ONLY the complete translated JSON object.`;
+Respond with ONLY the translated JSON object, no other text.`;
 
   try {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -388,69 +394,133 @@ Respond with ONLY the complete translated JSON object.`;
 
     if (!response.ok) {
       console.error("Translation failed, returning English version");
-      return analysisResult;
+      return originalData;
     }
 
     const aiResponse = await response.json();
     const messageContent = aiResponse.choices?.[0]?.message?.content;
 
     if (!messageContent) {
-      return analysisResult;
+      return originalData;
     }
 
     const jsonMatch = messageContent.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const translated = JSON.parse(jsonMatch[0]);
       
-      // CRITICAL: Preserve all numerical values from original
-      translated.score = analysisResult.score;
-      translated.analysisType = analysisResult.analysisType;
-      translated.confidence = analysisResult.confidence;
+      // ===== STRICT ENFORCEMENT: Force ALL numerical and enum values from original =====
       
-      if (translated.breakdown && analysisResult.breakdown) {
-        // Standard breakdown
-        if (analysisResult.breakdown.sources) translated.breakdown.sources.points = analysisResult.breakdown.sources.points;
-        if (analysisResult.breakdown.factual) translated.breakdown.factual.points = analysisResult.breakdown.factual.points;
-        if (analysisResult.breakdown.tone) translated.breakdown.tone.points = analysisResult.breakdown.tone.points;
-        if (analysisResult.breakdown.context) translated.breakdown.context.points = analysisResult.breakdown.context.points;
-        if (analysisResult.breakdown.transparency) translated.breakdown.transparency.points = analysisResult.breakdown.transparency.points;
+      // Core fields
+      translated.score = originalData.score;
+      translated.analysisType = originalData.analysisType;
+      translated.confidence = originalData.confidence;
+      translated.inputType = originalData.inputType;
+      translated.domain = originalData.domain;
+      
+      // Standard breakdown - preserve all points
+      if (originalData.breakdown) {
+        if (!translated.breakdown) translated.breakdown = {};
         
-        // PRO breakdown
-        if (analysisResult.breakdown.claimGravity) translated.breakdown.claimGravity.points = analysisResult.breakdown.claimGravity.points;
-        if (analysisResult.breakdown.contextualCoherence) translated.breakdown.contextualCoherence.points = analysisResult.breakdown.contextualCoherence.points;
-        if (analysisResult.breakdown.webCorroboration) translated.breakdown.webCorroboration.points = analysisResult.breakdown.webCorroboration.points;
-        if (analysisResult.breakdown.imageCoherence) translated.breakdown.imageCoherence.points = analysisResult.breakdown.imageCoherence.points;
+        if (originalData.breakdown.sources) {
+          if (!translated.breakdown.sources) translated.breakdown.sources = {};
+          translated.breakdown.sources.points = originalData.breakdown.sources.points;
+        }
+        if (originalData.breakdown.factual) {
+          if (!translated.breakdown.factual) translated.breakdown.factual = {};
+          translated.breakdown.factual.points = originalData.breakdown.factual.points;
+        }
+        if (originalData.breakdown.tone) {
+          if (!translated.breakdown.tone) translated.breakdown.tone = {};
+          translated.breakdown.tone.points = originalData.breakdown.tone.points;
+        }
+        if (originalData.breakdown.context) {
+          if (!translated.breakdown.context) translated.breakdown.context = {};
+          translated.breakdown.context.points = originalData.breakdown.context.points;
+        }
+        if (originalData.breakdown.transparency) {
+          if (!translated.breakdown.transparency) translated.breakdown.transparency = {};
+          translated.breakdown.transparency.points = originalData.breakdown.transparency.points;
+        }
+        
+        // PRO breakdown - preserve all points AND weights
+        if (originalData.breakdown.claimGravity) {
+          if (!translated.breakdown.claimGravity) translated.breakdown.claimGravity = {};
+          translated.breakdown.claimGravity.points = originalData.breakdown.claimGravity.points;
+          translated.breakdown.claimGravity.weight = originalData.breakdown.claimGravity.weight;
+        }
+        if (originalData.breakdown.contextualCoherence) {
+          if (!translated.breakdown.contextualCoherence) translated.breakdown.contextualCoherence = {};
+          translated.breakdown.contextualCoherence.points = originalData.breakdown.contextualCoherence.points;
+          translated.breakdown.contextualCoherence.weight = originalData.breakdown.contextualCoherence.weight;
+        }
+        if (originalData.breakdown.webCorroboration) {
+          if (!translated.breakdown.webCorroboration) translated.breakdown.webCorroboration = {};
+          translated.breakdown.webCorroboration.points = originalData.breakdown.webCorroboration.points;
+          translated.breakdown.webCorroboration.weight = originalData.breakdown.webCorroboration.weight;
+        }
+        if (originalData.breakdown.imageCoherence) {
+          if (!translated.breakdown.imageCoherence) translated.breakdown.imageCoherence = {};
+          translated.breakdown.imageCoherence.points = originalData.breakdown.imageCoherence.points;
+        }
       }
       
-      // PRO corroboration - preserve structure
-      if (analysisResult.corroboration) {
-        translated.corroboration.outcome = analysisResult.corroboration.outcome;
-        translated.corroboration.sourcesConsulted = analysisResult.corroboration.sourcesConsulted;
-        translated.corroboration.sourceTypes = analysisResult.corroboration.sourceTypes;
-        // Keep source names exactly as found
-        translated.corroboration.sources = analysisResult.corroboration.sources;
+      // PRO corroboration - preserve EVERYTHING except summary text
+      if (originalData.corroboration) {
+        if (!translated.corroboration) translated.corroboration = {};
+        translated.corroboration.outcome = originalData.corroboration.outcome;
+        translated.corroboration.sourcesConsulted = originalData.corroboration.sourcesConsulted;
+        translated.corroboration.sourceTypes = originalData.corroboration.sourceTypes;
+        // CRITICAL: Keep source names exactly as found - no translation
+        translated.corroboration.sources = originalData.corroboration.sources;
       }
       
-      // PRO image signals - preserve all numerical scoring
-      if (analysisResult.imageSignals?.scoring) {
-        translated.imageSignals.scoring = analysisResult.imageSignals.scoring;
-        translated.imageSignals.origin.confidence = analysisResult.imageSignals.origin.confidence;
-        translated.imageSignals.origin.classification = analysisResult.imageSignals.origin.classification;
-        translated.imageSignals.coherence.classification = analysisResult.imageSignals.coherence.classification;
+      // PRO image signals - preserve ALL numerical scoring and classifications
+      if (originalData.imageSignals) {
+        if (!translated.imageSignals) translated.imageSignals = {};
+        
+        // Origin - preserve classification and confidence
+        if (originalData.imageSignals.origin) {
+          if (!translated.imageSignals.origin) translated.imageSignals.origin = {};
+          translated.imageSignals.origin.classification = originalData.imageSignals.origin.classification;
+          translated.imageSignals.origin.confidence = originalData.imageSignals.origin.confidence;
+          translated.imageSignals.origin.indicators = originalData.imageSignals.origin.indicators;
+        }
+        
+        // Metadata - preserve all status values
+        if (originalData.imageSignals.metadata) {
+          translated.imageSignals.metadata = originalData.imageSignals.metadata;
+        }
+        
+        // Coherence - preserve classification
+        if (originalData.imageSignals.coherence) {
+          if (!translated.imageSignals.coherence) translated.imageSignals.coherence = {};
+          translated.imageSignals.coherence.classification = originalData.imageSignals.coherence.classification;
+        }
+        
+        // Scoring - preserve ALL numerical values
+        if (originalData.imageSignals.scoring) {
+          translated.imageSignals.scoring = {
+            ...originalData.imageSignals.scoring,
+            reasoning: translated.imageSignals?.scoring?.reasoning || originalData.imageSignals.scoring.reasoning
+          };
+        }
       }
       
-      // Standard web presence
-      if (analysisResult.webPresence) {
-        translated.webPresence.level = analysisResult.webPresence.level;
+      // Standard web presence - preserve level
+      if (originalData.webPresence) {
+        if (!translated.webPresence) translated.webPresence = {};
+        translated.webPresence.level = originalData.webPresence.level;
       }
       
+      console.log("Translation complete. Score preserved:", translated.score, "=", originalData.score);
       return translated;
     }
   } catch (e) {
     console.error("Translation error:", e);
   }
   
-  return analysisResult;
+  // Always return original on any error
+  return originalData;
 };
 
 serve(async (req) => {
