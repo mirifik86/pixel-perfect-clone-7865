@@ -237,35 +237,35 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   {t.hint}
                 </p>
                 
-                {/* "Puis" hint with arrow pointing to Analyze button */}
-                <div className="mt-4 flex flex-col items-center">
+                {/* "Puis" hint with arrow - subtle transition cue */}
+                <div className="mt-2 flex flex-col items-center gap-0.5">
                   <span 
-                    className="text-xs font-semibold tracking-[0.25em] uppercase"
+                    className="text-[11px] font-medium tracking-[0.2em] uppercase"
                     style={{
-                      color: 'hsl(174 70% 55%)',
-                      textShadow: '0 0 12px hsl(174 80% 50% / 0.5), 0 0 24px hsl(174 80% 45% / 0.3)',
+                      color: 'hsl(174 70% 55% / 0.75)',
+                      textShadow: '0 0 8px hsl(174 80% 50% / 0.25), 0 0 16px hsl(174 80% 45% / 0.15)',
                     }}
                   >
                     {language === 'fr' ? 'Puis' : 'Then'}
                   </span>
                   <div 
-                    className="mt-1 flex flex-col items-center"
+                    className="flex flex-col items-center"
                     style={{
-                      filter: 'drop-shadow(0 0 6px hsl(174 80% 50% / 0.6)) drop-shadow(0 0 12px hsl(174 80% 45% / 0.4))',
+                      filter: 'drop-shadow(0 0 4px hsl(174 80% 50% / 0.35)) drop-shadow(0 0 10px hsl(174 80% 45% / 0.2))',
                     }}
                   >
                     <svg 
-                      width="20" 
-                      height="12" 
-                      viewBox="0 0 20 12" 
+                      width="16" 
+                      height="10" 
+                      viewBox="0 0 16 10" 
                       fill="none"
                       className="animate-bounce"
-                      style={{ animationDuration: '1.5s' }}
+                      style={{ animationDuration: '2s' }}
                     >
                       <path 
-                        d="M1 1L10 10L19 1" 
-                        stroke="hsl(174 70% 55%)" 
-                        strokeWidth="2" 
+                        d="M1 1L8 8L15 1" 
+                        stroke="hsl(174 70% 60% / 0.85)" 
+                        strokeWidth="1.5" 
                         strokeLinecap="round" 
                         strokeLinejoin="round"
                       />
