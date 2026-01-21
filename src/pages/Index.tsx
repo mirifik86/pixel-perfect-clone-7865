@@ -429,12 +429,13 @@ const Index = () => {
         }}
       >
         <div className="flex w-full flex-col items-center">
-          {/* Logo & branding with unified halo */}
+          {/* Logo & branding with unified halo - pushed down slightly */}
           <div 
             className="relative flex animate-fade-in flex-col items-center" 
             style={{ 
               animationDelay: '0ms', 
               animationFillMode: 'both', 
+              marginTop: isMobile ? 'var(--space-4)' : 'var(--space-6)',
               marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-6)'
             }}
           >
