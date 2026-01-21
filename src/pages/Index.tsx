@@ -565,8 +565,8 @@ const Index = () => {
               style={{ 
                 animationDelay: '250ms', 
                 animationFillMode: 'both',
-                marginTop: isMobile ? 'var(--space-4)' : 'var(--space-6)',
-                marginBottom: isMobile ? 'var(--space-4)' : 'var(--space-6)'
+                marginTop: isMobile ? 'var(--space-8)' : 'var(--space-12)',
+                marginBottom: isMobile ? 'var(--space-6)' : 'var(--space-8)'
               }}
             >
               <button
