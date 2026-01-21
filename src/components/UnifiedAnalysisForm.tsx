@@ -318,7 +318,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             ) : (
               /* Text/Image input state - touch-friendly layout */
               <div className="flex items-stretch w-full" style={{ gap: isMobile ? 'var(--space-3)' : 'var(--space-4)' }}>
-                {/* Text input zone - full width when hasText */}
+                {/* Text input zone - premium glass effect */}
                 <div className={`relative transition-all duration-200 ${hasText ? 'flex-1' : 'flex-1'}`} onClick={(e) => e.stopPropagation()}>
                   <Textarea
                     ref={textareaRef}
@@ -329,29 +329,33 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={t.primaryText}
-                    className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                    className="w-full resize-none rounded-xl text-left text-white placeholder:text-white/50 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
                       minHeight: isMobile ? '70px' : '80px',
                       padding: isMobile ? 'var(--space-2)' : 'var(--space-3)',
                       fontSize: isMobile ? '15px' : 'var(--text-sm)',
-                      boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                      background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.03))',
+                      border: '1px solid hsl(0 0% 100% / 0.1)',
+                      boxShadow: isFocused 
+                        ? '0 0 20px hsl(174 60% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
+                        : 'inset 0 1px 0 hsl(0 0% 100% / 0.06)',
                     }}
                   />
                 </div>
                 
-                {/* Vertical divider - hidden when text is entered */}
+                {/* Vertical divider - elegant gradient */}
                 {!hasText && (
                   <div 
                     className="w-px self-stretch"
                     style={{
                       marginTop: 'var(--space-2)',
                       marginBottom: 'var(--space-2)',
-                      background: 'linear-gradient(to bottom, transparent, hsl(0 0% 100% / 0.15), transparent)',
+                      background: 'linear-gradient(to bottom, transparent, hsl(174 50% 50% / 0.25), transparent)',
                     }}
                   />
                 )}
                 
-                {/* Image upload zone - refined, subtle, secondary to text input */}
+                {/* Image upload zone - premium luminous styling */}
                 {!hasText && (
                   <button
                     type="button"
@@ -359,40 +363,43 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                       e.stopPropagation();
                       fileInputRef.current?.click();
                     }}
-                    className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-[1.02] group/img"
+                    className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-105 group/img"
                     style={{
                       padding: isMobile ? '0 var(--space-4)' : '0 var(--space-6)',
-                      gap: 'var(--space-1)',
-                      background: 'hsl(0 0% 100% / 0.03)',
-                      border: '1px dashed hsl(0 0% 100% / 0.12)',
-                      boxShadow: 'inset 0 1px 2px hsl(0 0% 0% / 0.08)',
+                      gap: 'var(--space-2)',
+                      background: 'linear-gradient(145deg, hsl(174 40% 25% / 0.2), hsl(174 35% 20% / 0.1))',
+                      border: '1px solid hsl(174 50% 50% / 0.25)',
+                      boxShadow: '0 0 20px hsl(174 60% 50% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
                     }}
                     title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
                   >
-                    {/* Icon container - calm and understated */}
+                    {/* Icon container - luminous glow */}
                     <div 
-                      className="rounded-xl transition-all group-hover/img:scale-105"
+                      className="rounded-xl transition-all group-hover/img:scale-110"
                       style={{
                         padding: isMobile ? 'var(--space-2)' : 'var(--space-3)',
-                        background: 'hsl(0 0% 100% / 0.04)',
+                        background: 'linear-gradient(135deg, hsl(174 55% 45% / 0.25), hsl(174 45% 40% / 0.15))',
+                        boxShadow: '0 0 16px hsl(174 60% 50% / 0.25)',
                       }}
                     >
                       <Image 
                         className={isMobile ? "h-5 w-5" : "h-7 w-7"}
-                        strokeWidth={1.5}
+                        strokeWidth={1.75}
                         style={{ 
-                          color: 'hsl(0 0% 100% / 0.38)',
+                          color: 'hsl(174 70% 60%)',
+                          filter: 'drop-shadow(0 0 4px hsl(174 60% 55% / 0.5))',
                         }}
                       />
                     </div>
                     
-                    {/* Label - matching placeholder text style */}
+                    {/* Label - premium teal accent */}
                     <span 
-                      className="font-normal tracking-wide uppercase"
+                      className="font-medium tracking-wider uppercase"
                       style={{ 
-                        color: 'hsl(0 0% 100% / 0.38)', 
-                        fontSize: isMobile ? '9px' : 'var(--text-xs)',
-                        letterSpacing: '0.05em',
+                        color: 'hsl(174 55% 58%)', 
+                        fontSize: isMobile ? '9px' : '10px',
+                        letterSpacing: '0.12em',
+                        textShadow: '0 0 8px hsl(174 60% 50% / 0.4)',
                       }}
                     >
                       Image
