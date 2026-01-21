@@ -351,7 +351,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   />
                 )}
                 
-                {/* Image upload zone - touch-friendly, hidden when text is entered */}
+                {/* Image upload zone - refined, subtle, secondary to text input */}
                 {!hasText && (
                   <button
                     type="button"
@@ -359,35 +359,41 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                       e.stopPropagation();
                       fileInputRef.current?.click();
                     }}
-                    className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-105 group/img"
+                    className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-[1.02] group/img"
                     style={{
                       padding: isMobile ? '0 var(--space-4)' : '0 var(--space-6)',
                       gap: 'var(--space-1)',
-                      background: 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
-                      border: '1px dashed hsl(174 50% 50% / 0.35)',
-                      boxShadow: '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+                      background: 'hsl(0 0% 100% / 0.03)',
+                      border: '1px dashed hsl(0 0% 100% / 0.12)',
+                      boxShadow: 'inset 0 1px 2px hsl(0 0% 0% / 0.08)',
                     }}
                     title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
                   >
-                    {/* Icon container with glow */}
+                    {/* Icon container - calm and understated */}
                     <div 
-                      className="rounded-xl transition-all group-hover/img:scale-110"
+                      className="rounded-xl transition-all group-hover/img:scale-105"
                       style={{
                         padding: isMobile ? 'var(--space-2)' : 'var(--space-3)',
-                        background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
-                        boxShadow: '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.2)',
+                        background: 'hsl(0 0% 100% / 0.04)',
                       }}
                     >
                       <Image 
                         className={isMobile ? "h-5 w-5" : "h-7 w-7"}
-                        style={{ color: 'hsl(174 65% 60%)' }}
+                        strokeWidth={1.5}
+                        style={{ 
+                          color: 'hsl(0 0% 100% / 0.38)',
+                        }}
                       />
                     </div>
                     
-                    {/* Label */}
+                    {/* Label - matching placeholder text style */}
                     <span 
-                      className="font-medium tracking-wide uppercase"
-                      style={{ color: 'hsl(174 60% 55% / 0.8)', fontSize: isMobile ? '9px' : 'var(--text-xs)' }}
+                      className="font-normal tracking-wide uppercase"
+                      style={{ 
+                        color: 'hsl(0 0% 100% / 0.38)', 
+                        fontSize: isMobile ? '9px' : 'var(--text-xs)',
+                        letterSpacing: '0.05em',
+                      }}
                     >
                       Image
                     </span>
