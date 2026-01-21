@@ -376,22 +376,20 @@ CRITICAL RULES - YOU MUST FOLLOW EXACTLY:
 Respond with ONLY the translated JSON object, no other text.`;
 
   try {
-    const response = await fetch(
-  "https://ia11-api.onrender.com/analyze",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      input: analysisResult,
-      language: targetLanguage,
-      mode: "standard",
-    }),
-  }
-);
-
-
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: translationPrompt },
+          { role: "user", content: JSON.stringify(analysisResult, null, 2) }
+        ],
+        temperature: 0.1,
+      }),
     });
 
     if (!response.ok) {
