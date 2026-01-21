@@ -123,6 +123,33 @@ const extractBase64Data = (dataUrl: string): { mimeType: string; data: string } 
   return { mimeType: "image/png", data: dataUrl };
 };
 
+// Estimate base64 size in bytes
+const estimateBase64Size = (base64Data: string): number => {
+  // Base64 encodes 3 bytes into 4 characters
+  // Remove padding characters for accurate calculation
+  const padding = (base64Data.match(/=/g) || []).length;
+  return Math.floor((base64Data.length * 3) / 4) - padding;
+};
+
+// Compress base64 image by reducing quality (simple approach for edge function)
+const compressBase64Image = (base64Data: string, mimeType: string): { data: string; mimeType: string } => {
+  // For edge functions without Canvas, we'll just use the original data
+  // but ensure we're within reasonable limits
+  // The Gemini Vision API supports images up to 20MB, but we'll aim for smaller
+  const sizeBytes = estimateBase64Size(base64Data);
+  const sizeMB = sizeBytes / (1024 * 1024);
+  
+  console.log(`Image size: ${sizeMB.toFixed(2)} MB`);
+  
+  // If image is too large, we can't compress in Deno without additional libraries
+  // So we'll just warn and proceed - Gemini should handle reasonable sizes
+  if (sizeMB > 10) {
+    console.warn("Image is large, may encounter issues");
+  }
+  
+  return { data: base64Data, mimeType };
+};
+
 // Apply credibility guardrails to analysis result
 const applyCredibilityGuardrails = (analysisResult: any, ocrData: any, language: string): any => {
   if (!analysisResult) return analysisResult;
@@ -238,28 +265,49 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Starting OCR with STRICT credibility guardrails...");
+    console.log("Starting OCR with STRICT credibility guardrails via Gemini Vision...");
 
     const { mimeType, data } = extractBase64Data(imageData);
+    
+    // Check and log image size
+    const imageSize = estimateBase64Size(data);
+    const imageSizeMB = imageSize / (1024 * 1024);
+    console.log(`Processing image: ${imageSizeMB.toFixed(2)} MB, type: ${mimeType}`);
 
-    // Step 1: OCR + Image Signals + Mismatch Detection using Gemini Vision
-    const ocrResponse = await fetch("https://ia11-api.onrender.com/analyze", {
+    // Use Lovable AI Gateway with Gemini Vision for OCR
+    const ocrPrompt = getOcrPrompt(language || "en");
+    
+    const ocrResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        input: {
-          type: "image",
-          mimeType,
-          data,
-        },
-        language: language || "en",
-        mode: "image",
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: ocrPrompt,
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${mimeType};base64,${data}`,
+                },
+              },
+            ],
+          },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
       }),
     });
-    const ocrResponseStatus = ocrResponse.status;
-    console.log("IA11 OCR Response status:", ocrResponseStatus);
+
+    console.log("Gemini Vision response status:", ocrResponse.status);
 
     if (!ocrResponse.ok) {
       if (ocrResponse.status === 429) {
@@ -280,7 +328,7 @@ serve(async (req) => {
         );
       }
       const errorText = await ocrResponse.text();
-      console.error("OCR API error:", ocrResponse.status, errorText);
+      console.error("Gemini Vision API error:", ocrResponse.status, errorText);
       throw new Error(`OCR failed: ${ocrResponse.status}`);
     }
 
