@@ -516,13 +516,14 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - compact on mobile */}
+          {/* Language toggle - more separation from gauge */}
           <div 
             className="flex w-full justify-center animate-fade-in"
             style={{ 
               animationDelay: '200ms', 
-              animationFillMode: 'both', 
-              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-5)'
+              animationFillMode: 'both',
+              marginTop: isMobile ? 'var(--space-3)' : 'var(--space-6)',
+              marginBottom: isMobile ? 'var(--space-4)' : 'var(--space-8)'
             }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
