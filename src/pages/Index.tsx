@@ -737,7 +737,7 @@ const Index = () => {
           style={{ 
             paddingTop: isMobile ? 'var(--space-4)' : 'var(--space-8)',
             paddingBottom: isMobile ? 'var(--space-3)' : 'var(--space-6)',
-            gap: isMobile ? '3px' : '5px'
+            gap: isMobile ? '4px' : '6px'
           }}
         >
           {/* Line 1: Brand & Slogan */}
@@ -745,17 +745,36 @@ const Index = () => {
             className="tracking-[0.08em] font-medium"
             style={{ fontSize: isMobile ? '12px' : 'clamp(14px, 1.1rem, 16px)' }}
           >
-            <span className="font-serif italic" style={{ color: 'hsl(174 45% 55% / 0.75)' }}>Leen</span>
-            <span className="font-serif font-semibold" style={{ color: 'hsl(210 15% 82% / 0.72)' }}>Score</span>
+            <span className="font-serif italic" style={{ color: 'hsl(174 50% 58% / 0.82)' }}>Leen</span>
+            <span className="font-serif font-semibold" style={{ color: 'hsl(210 18% 85% / 0.78)' }}>Score</span>
             <span className="mx-1.5 font-light" style={{ color: 'hsl(210 10% 65% / 0.55)' }}>—</span>
-            <span className="font-sans" style={{ color: 'hsl(210 12% 75% / 0.70)', letterSpacing: '0.02em', fontWeight: 450 }}>{t.footerSlogan}</span>
+            <span className="font-sans" style={{ color: 'hsl(210 15% 78% / 0.75)', letterSpacing: '0.02em', fontWeight: 450 }}>{t.footerSlogan}</span>
           </p>
           
           {/* Line 2: Version */}
-          <p className="font-sans font-light tracking-[0.15em]" style={{ fontSize: isMobile ? '9px' : '10px', color: 'hsl(210 10% 62% / 0.55)' }}>v1.0</p>
+          <p className="font-sans font-light tracking-[0.15em]" style={{ fontSize: isMobile ? '9px' : '10px', color: 'hsl(210 12% 65% / 0.60)' }}>v1.0</p>
           
-          {/* Line 3: Attribution */}
-          <p className="font-sans font-extralight italic tracking-[0.04em]" style={{ fontSize: isMobile ? '8px' : '9px', color: 'hsl(174 25% 55% / 0.48)' }}>{t.footerAttribution}</p>
+          {/* Line 3: Attribution - PREMIUM & LUMINOUS */}
+          <p 
+            className="font-sans font-medium tracking-[0.1em]"
+            style={{ 
+              fontSize: isMobile ? '10px' : '11px', 
+              color: 'hsl(174 70% 62%)',
+              textShadow: '0 0 12px hsl(174 70% 55% / 0.6), 0 0 24px hsl(174 60% 50% / 0.35)',
+              letterSpacing: '0.08em',
+            }}
+          >
+            {language === 'fr' ? 'Développé par ' : 'Developed by '}
+            <span 
+              className="font-semibold"
+              style={{ 
+                color: 'hsl(174 80% 68%)',
+                textShadow: '0 0 14px hsl(174 75% 60% / 0.7), 0 0 28px hsl(174 65% 55% / 0.4)',
+              }}
+            >
+              Sol&Air
+            </span>
+          </p>
         </footer>
       </main>
     </div>
