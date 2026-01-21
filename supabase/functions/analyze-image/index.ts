@@ -258,8 +258,8 @@ serve(async (req) => {
         mode: "image",
       }),
     });
-    const ocrData = await ocrResponse.json();
-    console.log("IA11 OCR RESULT:", ocrData);
+    const ocrResponseStatus = ocrResponse.status;
+    console.log("IA11 OCR Response status:", ocrResponseStatus);
 
     if (!ocrResponse.ok) {
       if (ocrResponse.status === 429) {
