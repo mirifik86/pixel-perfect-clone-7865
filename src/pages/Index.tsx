@@ -525,21 +525,48 @@ const Index = () => {
               animationDelay: '200ms', 
               animationFillMode: 'both',
               marginTop: isMobile ? 'var(--space-5)' : 'var(--space-8)',
-              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-3)'
+              marginBottom: isMobile ? 'var(--space-6)' : 'var(--space-10)'
             }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Download icon - appears only after analysis, generously separated for premium feel */}
+          {/* Score gauge - compact on mobile for above-fold priority */}
+          <div 
+            className="relative flex justify-center items-center"
+            style={{ 
+              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-5)', 
+              minHeight: `${gaugeSize}px` 
+            }}
+          >
+            {/* Loader - shows during analysis */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
+                {isImageAnalysis ? (
+                  <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
+                ) : (
+                  <AnalysisLoader size={gaugeSize} language={language} />
+                )}
+              </div>
+            )}
+            
+            {/* Score Gauge - shows when not loading */}
+            {!isLoading && (
+              <div className="animate-scale-in" style={{ animationDuration: '500ms' }}>
+                <ScoreGauge score={score} size={gaugeSize} language={language} hasContent={hasFormContent} />
+              </div>
+            )}
+          </div>
+
+          {/* Download icon - appears only after analysis, BELOW the gauge, well separated */}
           {hasAnyAnalysis && (
             <div 
               className="flex w-full justify-center animate-fade-in"
               style={{ 
                 animationDelay: '250ms', 
                 animationFillMode: 'both',
-                marginTop: isMobile ? 'var(--space-6)' : 'var(--space-10)',
-                marginBottom: isMobile ? 'var(--space-6)' : 'var(--space-8)'
+                marginTop: isMobile ? 'var(--space-4)' : 'var(--space-6)',
+                marginBottom: isMobile ? 'var(--space-4)' : 'var(--space-6)'
               }}
             >
               <button
@@ -568,33 +595,6 @@ const Index = () => {
               </button>
             </div>
           )}
-
-          {/* Score gauge - compact on mobile for above-fold priority */}
-          <div 
-            className="relative flex justify-center items-center"
-            style={{ 
-              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-5)', 
-              minHeight: `${gaugeSize}px` 
-            }}
-          >
-            {/* Loader - shows during analysis */}
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
-                {isImageAnalysis ? (
-                  <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
-                ) : (
-                  <AnalysisLoader size={gaugeSize} language={language} />
-                )}
-              </div>
-            )}
-            
-            {/* Score Gauge - shows when not loading */}
-            {!isLoading && (
-              <div className="animate-scale-in" style={{ animationDuration: '500ms' }}>
-                <ScoreGauge score={score} size={gaugeSize} language={language} hasContent={hasFormContent} />
-              </div>
-            )}
-          </div>
 
           {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}
           {hasAnyAnalysis && (
