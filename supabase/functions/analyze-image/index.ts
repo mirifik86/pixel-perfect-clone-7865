@@ -7,12 +7,12 @@ const corsHeaders = {
 
 // OCR and Image Analysis using Gemini Vision with STRICT credibility guardrails
 const getOcrPrompt = (language: string) => {
-  const isFr = language === 'fr';
-  
-  const langInstructions = isFr 
+  const isFr = language === "fr";
+
+  const langInstructions = isFr
     ? `IMPORTANT: Your "visual_description" field MUST be written in FRENCH (Français).`
     : `IMPORTANT: Your "visual_description" field MUST be written in ENGLISH.`;
-  
+
   return `You are an expert OCR and image analysis system with STRICT CREDIBILITY GUARDRAILS. Analyze this screenshot/image.
 
 ${langInstructions}
@@ -71,7 +71,7 @@ Evaluate ONLY these observable signals:
 5. metadata_present: "yes" | "no" | "partial"
 
 TASK 4: VISUAL DESCRIPTION (STRICTLY FACTUAL)
-${isFr ? '- Write the description IN FRENCH' : '- Write the description IN ENGLISH'}
+${isFr ? "- Write the description IN FRENCH" : "- Write the description IN ENGLISH"}
 - Describe ONLY what is visible
 - If a public figure is recognizable, state their name
 - Do NOT make claims about what the image "proves"
@@ -102,7 +102,7 @@ RESPONSE FORMAT (JSON only):
     "text_entity": "<who/what the text refers to, or null>",
     "mismatch_description": "<explanation if mismatch detected, or null>"
   },
-  "visual_description": "<strictly factual description ${isFr ? 'IN FRENCH' : 'IN ENGLISH'}>",
+  "visual_description": "<strictly factual description ${isFr ? "IN FRENCH" : "IN ENGLISH"}>",
   "quality_notes": "<brief quality assessment>",
   "credibility_flags": {
     "is_social_media_screenshot": <true|false>,
@@ -120,64 +120,80 @@ const extractBase64Data = (dataUrl: string): { mimeType: string; data: string } 
   if (match) {
     return { mimeType: match[1], data: match[2] };
   }
-  return { mimeType: 'image/png', data: dataUrl };
+  return { mimeType: "image/png", data: dataUrl };
 };
 
 // Apply credibility guardrails to analysis result
-const applyCredibilityGuardrails = (
-  analysisResult: any, 
-  ocrData: any, 
-  language: string
-): any => {
+const applyCredibilityGuardrails = (analysisResult: any, ocrData: any, language: string): any => {
   if (!analysisResult) return analysisResult;
-  
-  const isFr = language === 'fr';
+
+  const isFr = language === "fr";
   let modifiedResult = { ...analysisResult };
   let guardrailsApplied: string[] = [];
   let maxAllowedScore = 98; // Default max
-  
+
   // RULE 1: Visual-Text Mismatch → Score capped at 50
   if (ocrData.visual_text_mismatch?.detected) {
     maxAllowedScore = Math.min(maxAllowedScore, 50);
-    guardrailsApplied.push('visual_text_mismatch');
-    
+    guardrailsApplied.push("visual_text_mismatch");
+
     const mismatchExplanation = isFr
       ? `⚠️ INCOHÉRENCE VISUEL-TEXTE: L'image montre "${ocrData.visual_text_mismatch.visible_entity}". Le texte fait référence à "${ocrData.visual_text_mismatch.text_entity}". Aucun lien vérifié entre l'image et l'affirmation spécifique du texte.`
       : `⚠️ VISUAL-TEXT MISMATCH: The image shows "${ocrData.visual_text_mismatch.visible_entity}". The text refers to "${ocrData.visual_text_mismatch.text_entity}". There is no verified link between the image and the specific claim made in the text.`;
-    
-    modifiedResult.explanation = mismatchExplanation + "\n\n" + (modifiedResult.explanation || '');
+
+    modifiedResult.explanation = mismatchExplanation + "\n\n" + (modifiedResult.explanation || "");
     modifiedResult.visualTextMismatch = ocrData.visual_text_mismatch;
   }
-  
+
   // RULE 3: Screenshot with no verified sources → Score in 30-50 range
   if (ocrData.credibility_flags?.is_social_media_screenshot) {
     maxAllowedScore = Math.min(maxAllowedScore, 50);
-    guardrailsApplied.push('social_media_screenshot');
+    guardrailsApplied.push("social_media_screenshot");
   }
-  
+
   // RULE 3: Unverifiable claims → Score capped
   if (ocrData.credibility_flags?.contains_unverifiable_claims) {
     maxAllowedScore = Math.min(maxAllowedScore, 55);
-    guardrailsApplied.push('unverifiable_claims');
+    guardrailsApplied.push("unverifiable_claims");
   }
-  
+
   // Check if score contains major geopolitical/financial/institutional claims
-  const textLower = (ocrData.cleaned_text || '').toLowerCase();
+  const textLower = (ocrData.cleaned_text || "").toLowerCase();
   const highRiskKeywords = [
-    'war', 'guerre', 'invasion', 'nuclear', 'nucléaire', 
-    'assassination', 'assassinat', 'coup', 'overthrow',
-    'billions', 'milliards', 'trillion', 'billion',
-    'president', 'président', 'prime minister', 'premier ministre',
-    'emergency', 'urgence', 'martial law', 'loi martiale',
-    'breaking', 'urgent', 'exclusive', 'leaked', 'fuite'
+    "war",
+    "guerre",
+    "invasion",
+    "nuclear",
+    "nucléaire",
+    "assassination",
+    "assassinat",
+    "coup",
+    "overthrow",
+    "billions",
+    "milliards",
+    "trillion",
+    "billion",
+    "president",
+    "président",
+    "prime minister",
+    "premier ministre",
+    "emergency",
+    "urgence",
+    "martial law",
+    "loi martiale",
+    "breaking",
+    "urgent",
+    "exclusive",
+    "leaked",
+    "fuite",
   ];
-  
-  const containsHighRiskClaims = highRiskKeywords.some(keyword => textLower.includes(keyword));
+
+  const containsHighRiskClaims = highRiskKeywords.some((keyword) => textLower.includes(keyword));
   if (containsHighRiskClaims) {
     maxAllowedScore = Math.min(maxAllowedScore, 50);
-    guardrailsApplied.push('high_risk_claims');
+    guardrailsApplied.push("high_risk_claims");
   }
-  
+
   // Apply score cap
   if (modifiedResult.score && modifiedResult.score > maxAllowedScore) {
     modifiedResult.originalScore = modifiedResult.score;
@@ -185,20 +201,20 @@ const applyCredibilityGuardrails = (
     modifiedResult.scoreCapped = true;
     modifiedResult.scoreCappedReason = guardrailsApplied;
   }
-  
+
   // Add mandatory credibility context to explanation
   const credibilityDisclaimer = isFr
     ? "\n\n📋 Cette analyse est basée sur le texte extrait et un contexte visuel limité. Les captures d'écran peuvent être partielles ou trompeuses et ne constituent pas une preuve de faits."
     : "\n\n📋 This analysis is based on extracted text and limited visual context. Screenshots can be partial or misleading and do not constitute proof of factual claims.";
-  
-  modifiedResult.explanation = (modifiedResult.explanation || '') + credibilityDisclaimer;
-  
+
+  modifiedResult.explanation = (modifiedResult.explanation || "") + credibilityDisclaimer;
+
   // Mark analysis as screenshot-based
   modifiedResult.isScreenshotAnalysis = true;
   modifiedResult.guardrailsApplied = guardrailsApplied;
   modifiedResult.visualDescription = ocrData.visual_description;
   modifiedResult.credibilityFlags = ocrData.credibility_flags;
-  
+
   return modifiedResult;
 };
 
@@ -209,12 +225,12 @@ serve(async (req) => {
 
   try {
     const { imageData, language, analysisType } = await req.json();
-    
+
     if (!imageData) {
-      return new Response(
-        JSON.stringify({ error: "Image data is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Image data is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -225,48 +241,42 @@ serve(async (req) => {
     console.log("Starting OCR with STRICT credibility guardrails...");
 
     const { mimeType, data } = extractBase64Data(imageData);
-    
+
     // Step 1: OCR + Image Signals + Mismatch Detection using Gemini Vision
-    const ocrResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const ocrResponse = await fetch("https://ia11-api.onrender.com/analyze", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { 
-            role: "user", 
-            content: [
-              {
-                type: "text",
-                text: getOcrPrompt(language || 'en')
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${mimeType};base64,${data}`
-                }
-              }
-            ]
-          }
-        ],
-        temperature: 0.1,
+        input: {
+          type: "image",
+          mimeType,
+          data,
+        },
+        language: language || "en",
+        mode: "image",
       }),
     });
+    const ocrData = await ocrResponse.json();
+    console.log("IA11 OCR RESULT:", ocrData);
 
     if (!ocrResponse.ok) {
       if (ocrResponse.status === 429) {
         return new Response(
-          JSON.stringify({ error: language === 'fr' ? "Limite de requêtes atteinte. Réessayez dans quelques instants." : "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            error:
+              language === "fr"
+                ? "Limite de requêtes atteinte. Réessayez dans quelques instants."
+                : "Rate limit exceeded. Please try again later.",
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
       if (ocrResponse.status === 402) {
         return new Response(
-          JSON.stringify({ error: language === 'fr' ? "Crédits IA épuisés." : "AI credits exhausted." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: language === "fr" ? "Crédits IA épuisés." : "AI credits exhausted." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
       const errorText = await ocrResponse.text();
@@ -304,21 +314,21 @@ serve(async (req) => {
           blur_level: "medium",
           compression_artifacts: "medium",
           suspicious_editing_hints: "none",
-          metadata_present: "no"
+          metadata_present: "no",
         },
         visual_text_mismatch: {
           detected: false,
           visible_entity: null,
           text_entity: null,
-          mismatch_description: null
+          mismatch_description: null,
         },
         visual_description: "Image analysis encountered issues",
         quality_notes: "OCR processing encountered issues",
         credibility_flags: {
           is_social_media_screenshot: true,
           contains_unverifiable_claims: true,
-          image_proves_nothing: true
-        }
+          image_proves_nothing: true,
+        },
       };
     }
 
@@ -327,16 +337,16 @@ serve(async (req) => {
       ocrData.credibility_flags = {
         is_social_media_screenshot: true,
         contains_unverifiable_claims: true,
-        image_proves_nothing: true
+        image_proves_nothing: true,
       };
     }
-    
+
     // Always mark that image proves nothing
     ocrData.credibility_flags.image_proves_nothing = true;
 
     const textToAnalyze = ocrData.cleaned_text || ocrData.raw_text || "";
     const confidence = ocrData.ocr_confidence || 0;
-    
+
     if (textToAnalyze.length < 10) {
       return new Response(
         JSON.stringify({
@@ -353,51 +363,53 @@ serve(async (req) => {
           credibility_flags: ocrData.credibility_flags,
           quality_notes: ocrData.quality_notes,
           analysis: null,
-          warning: language === 'fr' 
-            ? "Texte extrait insuffisant. Veuillez modifier ou coller le texte manuellement." 
-            : "Insufficient text extracted. Please edit or paste text manually."
+          warning:
+            language === "fr"
+              ? "Texte extrait insuffisant. Veuillez modifier ou coller le texte manuellement."
+              : "Insufficient text extracted. Please edit or paste text manually.",
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     // Call the existing analyze function using the correct Supabase URL
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || 'https://clejmxumuqhpjncjuuht.supabase.co';
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://clejmxumuqhpjncjuuht.supabase.co";
     const analyzeResponse = await fetch(`${SUPABASE_URL}/functions/v1/analyze`, {
       method: "POST",
       headers: {
-        Authorization: req.headers.get('authorization') || '',
+        Authorization: req.headers.get("authorization") || "",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         content: textToAnalyze,
-        language: language || 'en',
-        analysisType: analysisType || 'standard',
-        isScreenshot: true // Flag for downstream analysis
+        language: language || "en",
+        analysisType: analysisType || "standard",
+        isScreenshot: true, // Flag for downstream analysis
       }),
     });
 
     let analysisResult = null;
     if (analyzeResponse.ok) {
       analysisResult = await analyzeResponse.json();
-      
+
       // Apply STRICT credibility guardrails
-      analysisResult = applyCredibilityGuardrails(analysisResult, ocrData, language || 'en');
-      
+      analysisResult = applyCredibilityGuardrails(analysisResult, ocrData, language || "en");
+
       // Apply additional OCR uncertainty penalty
       if (confidence < 0.55 && analysisResult.score) {
         const penalty = Math.round((0.55 - confidence) * 15); // Increased penalty
         analysisResult.score = Math.max(5, analysisResult.score - penalty);
         analysisResult.ocrPenaltyApplied = penalty;
       }
-      
+
       // Ensure score never exceeds screenshot limits
       if (analysisResult.score > 70 && !analysisResult.proSources?.length) {
         analysisResult.score = 50; // No external verification = uncertainty zone
         analysisResult.scoreCapped = true;
-        analysisResult.scoreCappedReason = (analysisResult.scoreCappedReason || []).concat(['no_external_verification']);
+        analysisResult.scoreCappedReason = (analysisResult.scoreCappedReason || []).concat([
+          "no_external_verification",
+        ]);
       }
-      
     } else {
       console.error("LeenScore analysis failed:", await analyzeResponse.text());
     }
@@ -417,26 +429,27 @@ serve(async (req) => {
         credibility_flags: ocrData.credibility_flags,
         quality_notes: ocrData.quality_notes,
         analysis: analysisResult,
-        warning: confidence < 0.55 
-          ? (language === 'fr' 
-            ? "Confiance OCR faible. Le score reflète cette incertitude." 
-            : "Low OCR confidence. Score reflects this uncertainty.")
-          : null,
-        mandatory_disclaimer: language === 'fr'
-          ? "Cette analyse est basée sur le texte extrait et un contexte visuel limité. Les captures d'écran peuvent être partielles ou trompeuses et ne constituent pas une preuve de faits."
-          : "This analysis is based on extracted text and limited visual context. Screenshots can be partial or misleading and do not constitute proof of factual claims."
+        warning:
+          confidence < 0.55
+            ? language === "fr"
+              ? "Confiance OCR faible. Le score reflète cette incertitude."
+              : "Low OCR confidence. Score reflects this uncertainty."
+            : null,
+        mandatory_disclaimer:
+          language === "fr"
+            ? "Cette analyse est basée sur le texte extrait et un contexte visuel limité. Les captures d'écran peuvent être partielles ou trompeuses et ne constituent pas une preuve de faits."
+            : "This analysis is based on extracted text and limited visual context. Screenshots can be partial or misleading and do not constitute proof of factual claims.",
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-
   } catch (error) {
     console.error("Image analysis error:", error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error instanceof Error ? error.message : "Image analysis failed",
-        success: false
+        success: false,
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
