@@ -518,28 +518,28 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - more separation from gauge */}
+          {/* Language toggle - compact, secondary utility */}
           <div 
             className="flex w-full justify-center animate-fade-in"
             style={{ 
               animationDelay: '200ms', 
               animationFillMode: 'both',
               marginTop: isMobile ? 'var(--space-5)' : 'var(--space-8)',
-              marginBottom: isMobile ? 'var(--space-3)' : 'var(--space-4)'
+              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-3)'
             }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Download icon - appears only after analysis, clearly separated from language toggle */}
+          {/* Download icon - appears only after analysis, generously separated for premium feel */}
           {hasAnyAnalysis && (
             <div 
               className="flex w-full justify-center animate-fade-in"
               style={{ 
                 animationDelay: '250ms', 
                 animationFillMode: 'both',
-                marginTop: isMobile ? 'var(--space-4)' : 'var(--space-6)',
-                marginBottom: isMobile ? 'var(--space-4)' : 'var(--space-6)'
+                marginTop: isMobile ? 'var(--space-6)' : 'var(--space-10)',
+                marginBottom: isMobile ? 'var(--space-6)' : 'var(--space-8)'
               }}
             >
               <button
@@ -547,21 +547,22 @@ const Index = () => {
                   // Placeholder for download functionality
                   toast.success(language === 'fr' ? 'Téléchargement en cours...' : 'Downloading...');
                 }}
-                className="group flex items-center justify-center rounded-full transition-all duration-300 hover:scale-105"
+                className="group flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110"
                 style={{
-                  width: isMobile ? '44px' : '48px',
-                  height: isMobile ? '44px' : '48px',
-                  background: 'linear-gradient(135deg, hsl(220 25% 15% / 0.8) 0%, hsl(240 20% 12% / 0.9) 100%)',
-                  border: '1px solid hsl(174 60% 45% / 0.3)',
-                  boxShadow: '0 0 20px hsl(174 60% 45% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)'
+                  width: isMobile ? '48px' : '54px',
+                  height: isMobile ? '48px' : '54px',
+                  background: 'linear-gradient(145deg, hsl(220 25% 14% / 0.85) 0%, hsl(235 22% 10% / 0.95) 100%)',
+                  border: '1px solid hsl(174 60% 50% / 0.35)',
+                  boxShadow: '0 0 25px hsl(174 60% 45% / 0.2), 0 4px 16px hsl(0 0% 0% / 0.25), inset 0 1px 1px hsl(0 0% 100% / 0.08)'
                 }}
                 title={language === 'fr' ? 'Télécharger les résultats' : 'Download results'}
               >
                 <Download 
-                  size={isMobile ? 20 : 22} 
-                  className="text-primary transition-all duration-300 group-hover:text-primary-foreground"
+                  size={isMobile ? 22 : 24} 
+                  className="transition-all duration-300"
                   style={{
-                    filter: 'drop-shadow(0 0 6px hsl(174 60% 50% / 0.5))'
+                    color: 'hsl(174 70% 55%)',
+                    filter: 'drop-shadow(0 0 8px hsl(174 60% 50% / 0.6))'
                   }}
                 />
               </button>
