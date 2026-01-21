@@ -144,6 +144,18 @@ export const ScoreGauge = ({
     <div className={`relative flex flex-col items-center ${className || ''}`}>
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
+        {/* Subtle ambient glow behind gauge - always visible but muted */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: score === null 
+              ? 'radial-gradient(circle, hsl(174 40% 40% / 0.12) 0%, transparent 70%)'
+              : 'radial-gradient(circle, hsl(174 50% 45% / 0.2) 0%, transparent 70%)',
+            filter: 'blur(20px)',
+            transform: 'scale(1.3)',
+          }}
+        />
+        
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {/* No filters/shadows - clean instrument look */}
 
@@ -151,6 +163,8 @@ export const ScoreGauge = ({
           {colors.map((color, i) => {
             const segmentLength = segmentArc - gap;
             const rotation = 135 + i * 270 / 5;
+            // When no score, show segments with enhanced dormant visibility
+            const dormantOpacity = score === null ? 0.25 : 0.15;
             return (
               <circle
                 key={i}
@@ -165,8 +179,9 @@ export const ScoreGauge = ({
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center',
-                  opacity: getSegmentOpacity(i),
-                  transition: 'opacity 0.1s ease-out'
+                  opacity: score === null ? dormantOpacity : getSegmentOpacity(i),
+                  transition: 'opacity 0.1s ease-out',
+                  filter: score === null ? 'saturate(0.5)' : 'none',
                 }}
               />
             );
@@ -195,9 +210,14 @@ export const ScoreGauge = ({
             style={{
               fontSize: scoreFontSize,
               lineHeight: 1,
-              color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
+              color: score !== null 
+                ? getCurrentColor(animatedScore) 
+                : 'hsl(0 0% 100% / 0.35)',
               letterSpacing: '-0.02em',
-              transition: 'color 0.3s ease-out'
+              transition: 'color 0.3s ease-out',
+              textShadow: score === null 
+                ? '0 0 12px hsl(0 0% 100% / 0.15)' 
+                : 'none',
             }}
           >
             {score === null ? '—' : displayScore}
