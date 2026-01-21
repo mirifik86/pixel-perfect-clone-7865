@@ -522,8 +522,8 @@ const Index = () => {
             style={{ 
               animationDelay: '200ms', 
               animationFillMode: 'both',
-              marginTop: isMobile ? 'var(--space-3)' : 'var(--space-6)',
-              marginBottom: isMobile ? 'var(--space-4)' : 'var(--space-8)'
+              marginTop: isMobile ? 'var(--space-5)' : 'var(--space-8)',
+              marginBottom: isMobile ? 'var(--space-6)' : 'var(--space-10)'
             }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
