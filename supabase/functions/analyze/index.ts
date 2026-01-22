@@ -386,7 +386,7 @@ Respond with ONLY the translated JSON object, no other text.`;
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: translationPrompt },
-          { role: "user", content: JSON.stringify(analysisResult, null, 2) }
+          { role: "user", content: `Translate to French:\n\n${JSON.stringify(analysisResult, null, 2)}` }
         ],
         temperature: 0.1,
       }),

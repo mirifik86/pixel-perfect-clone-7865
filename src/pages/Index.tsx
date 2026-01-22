@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Download } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -13,8 +14,7 @@ import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import earthBg from '@/assets/earth-cosmic-bg.jpg';
-import { uploadImage, analyzeImageViaUrl, type UploadProgressCallback } from '@/lib/imageUploader';
-import { validateImage, formatBytes } from '@/lib/imageProcessor';
+
 interface AnalysisBreakdown {
   sources: {
     points: number;
@@ -137,9 +137,6 @@ const Index = () => {
   const [isRerunning, setIsRerunning] = useState(false);
   const [hasFormContent, setHasFormContent] = useState(false);
   
-  // Image upload progress state
-  const [uploadStage, setUploadStage] = useState<'validating' | 'optimizing' | 'uploading' | 'analyzing' | 'complete' | null>(null);
-  
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
     en: null,
@@ -238,7 +235,7 @@ const Index = () => {
     }
   };
 
-  // Screenshot Analysis Handler - NEW: Uses Storage upload + URL-based analysis
+  // Screenshot Analysis Handler - now called directly when image is ready
   const handleImageAnalysis = async (file: File, preview: string, analysisType: 'standard' | 'pro' = 'standard') => {
     const tLocal = translations[language];
     setUploadedFile({ file, preview });
@@ -247,66 +244,42 @@ const Index = () => {
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setScreenshotLoaderStep(0);
-    setUploadStage(null);
 
     try {
-      // Pre-validate the image before processing
-      const validation = validateImage(file);
-      if (!validation.valid) {
-        toast.error(validation.error || (language === 'fr' ? 'Image invalide' : 'Invalid image'));
-        setIsLoading(false);
-        return;
-      }
-
-      // Step 1: Validate & Optimize with progress
-      setUploadStage('validating');
+      // Step 1: OCR
       setScreenshotLoaderStep(0);
+      await new Promise(r => setTimeout(r, 500)); // Brief delay for visual feedback
+      
+      // Step 2: Image Signals
+      setScreenshotLoaderStep(1);
       await new Promise(r => setTimeout(r, 300));
       
-      setUploadStage('optimizing');
-      
-      // Upload to Storage with progress callback
-      const onProgress: UploadProgressCallback = (stage) => {
-        setUploadStage(stage === 'complete' ? 'analyzing' : stage);
-        if (stage === 'uploading') {
-          setScreenshotLoaderStep(1);
-        }
-      };
-      
-      const uploadResult = await uploadImage(file, onProgress);
-      
-      if (!uploadResult.success || !uploadResult.url) {
-        toast.error(uploadResult.error || (language === 'fr' ? 'Échec du téléchargement' : 'Upload failed'));
-        setIsLoading(false);
-        setUploadStage(null);
+      // Call the analyze-image endpoint
+      const result = await supabase.functions.invoke('analyze-image', {
+        body: { 
+          imageData: preview, 
+          language: language,
+          analysisType: analysisType
+        },
+      });
+
+      // Step 3: LeenScore Analysis
+      setScreenshotLoaderStep(2);
+
+      if (result.error) {
+        console.error('Screenshot analysis error:', result.error);
+        toast.error(tLocal.errorAnalysis);
         return;
       }
-      
-      console.log(`Image uploaded: ${formatBytes(uploadResult.processedImage?.processedSize || 0)}`);
-      
-      // Step 2: Analyze via URL
-      setUploadStage('analyzing');
-      setScreenshotLoaderStep(2);
-      
-      const result = await analyzeImageViaUrl(
-        uploadResult.url,
-        file.name,
-        uploadResult.processedImage?.mimeType || file.type,
-        language,
-        analysisType
-      );
 
-      // Handle errors gracefully
-      if (result.error && !result.success) {
-        console.error('Image analysis error:', result.error);
-        toast.error(result.error);
-        setIsLoading(false);
-        setUploadStage(null);
+      if (result.data?.error) {
+        console.error('API error:', result.data.error);
+        toast.error(result.data.error);
         return;
       }
 
       // Process the result
-      const data = result;
+      const data = result.data;
       
       // Transform image_signals from API format to component format
       const apiSignals = data.image_signals || {};
@@ -322,7 +295,7 @@ const Index = () => {
         ocr: data.ocr,
         image_signals: transformedSignals,
         analysis: data.analysis,
-        warning: data.warning || (data.warnings?.[0]),
+        warning: data.warning,
         visual_text_mismatch: data.visual_text_mismatch,
         visual_description: data.visual_description,
       };
@@ -330,7 +303,7 @@ const Index = () => {
       setScreenshotData(processedData);
       
       // Store the extracted text for potential re-runs
-      setLastAnalyzedContent(data.ocr?.cleaned_text || '');
+      setLastAnalyzedContent(data.ocr.cleaned_text);
 
       // If analysis was successful, also fetch the other language
       if (data.analysis) {
@@ -371,21 +344,16 @@ const Index = () => {
         }
       }
 
-      // Show warnings if applicable
-      if (data.warnings?.length > 0) {
-        data.warnings.forEach((w: string) => toast.warning(w));
-      } else if (data.warning) {
+      // Show warning if applicable
+      if (data.warning) {
         toast.warning(data.warning);
       }
-
-      setUploadStage('complete');
 
     } catch (err) {
       console.error('Unexpected error:', err);
       toast.error(tLocal.errorAnalysis);
     } finally {
       setIsLoading(false);
-      setUploadStage(null);
     }
   };
 
@@ -589,6 +557,44 @@ const Index = () => {
               </div>
             )}
           </div>
+
+          {/* Download icon - appears only after analysis, BELOW the gauge, well separated */}
+          {hasAnyAnalysis && (
+            <div 
+              className="flex w-full justify-center animate-fade-in"
+              style={{ 
+                animationDelay: '250ms', 
+                animationFillMode: 'both',
+                marginTop: isMobile ? 'var(--space-8)' : 'var(--space-12)',
+                marginBottom: isMobile ? 'var(--space-6)' : 'var(--space-8)'
+              }}
+            >
+              <button
+                onClick={() => {
+                  // Placeholder for download functionality
+                  toast.success(language === 'fr' ? 'Téléchargement en cours...' : 'Downloading...');
+                }}
+                className="group flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110"
+                style={{
+                  width: isMobile ? '48px' : '54px',
+                  height: isMobile ? '48px' : '54px',
+                  background: 'linear-gradient(145deg, hsl(220 25% 14% / 0.85) 0%, hsl(235 22% 10% / 0.95) 100%)',
+                  border: '1px solid hsl(174 60% 50% / 0.35)',
+                  boxShadow: '0 0 25px hsl(174 60% 45% / 0.2), 0 4px 16px hsl(0 0% 0% / 0.25), inset 0 1px 1px hsl(0 0% 100% / 0.08)'
+                }}
+                title={language === 'fr' ? 'Télécharger les résultats' : 'Download results'}
+              >
+                <Download 
+                  size={isMobile ? 22 : 24} 
+                  className="transition-all duration-300"
+                  style={{
+                    color: 'hsl(174 70% 55%)',
+                    filter: 'drop-shadow(0 0 8px hsl(174 60% 50% / 0.6))'
+                  }}
+                />
+              </button>
+            </div>
+          )}
 
           {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}
           {hasAnyAnalysis && (
