@@ -15,6 +15,7 @@ export const AnalysisLoader = ({
   className 
 }: AnalysisLoaderProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [percentage, setPercentage] = useState(0);
   
   const strokeWidth = 4;
   const radius = (size - strokeWidth) / 2;
@@ -33,6 +34,31 @@ export const AnalysisLoader = ({
     ],
   };
 
+  // Animate percentage smoothly
+  useEffect(() => {
+    const targetPercent = Math.min(((currentStep + 1) / 3) * 100, 99);
+    const duration = 2400;
+    const startPercent = percentage;
+    const startTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(startPercent + (targetPercent - startPercent) * eased);
+      
+      setPercentage(current);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [currentStep]);
+
   // Cycle through steps
   useEffect(() => {
     const interval = setInterval(() => {
@@ -41,7 +67,7 @@ export const AnalysisLoader = ({
     return () => clearInterval(interval);
   }, []);
 
-  const progress = ((currentStep + 1) / 3) * circumference;
+  const progress = (percentage / 100) * circumference;
 
   return (
     <div className={`flex flex-col items-center justify-center animate-fade-in ${className || ''}`}>
@@ -89,7 +115,7 @@ export const AnalysisLoader = ({
             strokeDasharray={circumference}
             strokeDashoffset={circumference - progress}
             style={{
-              transition: 'stroke-dashoffset 0.7s ease-out',
+              transition: 'stroke-dashoffset 0.3s ease-out',
               filter: 'drop-shadow(0 0 6px hsl(174 60% 50% / 0.5))',
             }}
           />
@@ -103,43 +129,42 @@ export const AnalysisLoader = ({
           </defs>
         </svg>
 
-        {/* Center content */}
+        {/* Center content - Percentage */}
         <div 
           className="absolute inset-0 flex flex-col items-center justify-center z-20"
         >
-          {/* Current step icon */}
-          <div 
-            className="flex items-center justify-center rounded-full mb-2"
-            style={{
-              width: 44,
-              height: 44,
-              background: 'linear-gradient(145deg, hsl(174 50% 40% / 0.3), hsl(174 40% 30% / 0.2))',
-              border: '1px solid hsl(174 55% 55% / 0.3)',
-              boxShadow: '0 0 20px hsl(174 60% 50% / 0.25)',
-            }}
-          >
-            {(() => {
-              const Icon = stepIcons[currentStep] || stepIcons[0];
-              return (
-                <Icon 
-                  className="h-5 w-5"
-                  style={{ 
-                    color: 'hsl(174 70% 65%)',
-                    animation: 'pulse 2s ease-in-out infinite',
-                  }}
-                />
-              );
-            })()}
+          {/* Percentage display */}
+          <div className="flex items-baseline">
+            <span 
+              className="font-semibold tabular-nums"
+              style={{
+                fontSize: size * 0.28,
+                color: 'hsl(174 70% 65%)',
+                textShadow: '0 0 20px hsl(174 60% 50% / 0.5)',
+                lineHeight: 1,
+              }}
+            >
+              {percentage}
+            </span>
+            <span 
+              className="font-medium"
+              style={{
+                fontSize: size * 0.12,
+                color: 'hsl(174 60% 60%)',
+                marginLeft: '2px',
+              }}
+            >
+              %
+            </span>
           </div>
 
           {/* Current step label */}
           <span 
-            className="text-center font-medium"
+            className="text-center font-medium mt-1"
             style={{
-              fontSize: '11px',
-              color: 'hsl(174 60% 68%)',
-              textShadow: '0 0 10px hsl(174 60% 50% / 0.4)',
-              maxWidth: '90px',
+              fontSize: '10px',
+              color: 'hsl(0 0% 100% / 0.6)',
+              maxWidth: '80px',
             }}
           >
             {steps[language][currentStep]?.label}
