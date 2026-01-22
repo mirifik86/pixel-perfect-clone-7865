@@ -34,37 +34,45 @@ export const AnalysisLoader = ({
     ],
   };
 
-  // Animate percentage smoothly
+  // Continuous smooth percentage animation
   useEffect(() => {
-    const targetPercent = Math.min(((currentStep + 1) / 3) * 100, 99);
-    const duration = 2400;
-    const startPercent = percentage;
-    const startTime = performance.now();
-
+    let animationId: number;
+    let startTime: number | null = null;
+    const totalDuration = 12000; // Total time to reach ~99%
+    
     const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
       const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+      const rawProgress = elapsed / totalDuration;
       
-      // Ease out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = Math.round(startPercent + (targetPercent - startPercent) * eased);
+      // Smooth easing with slight acceleration variations for natural feel
+      const eased = 1 - Math.pow(1 - Math.min(rawProgress, 1), 2.5);
       
-      setPercentage(current);
+      // Add micro-variations for more organic feel
+      const microVariation = Math.sin(elapsed / 200) * 0.5;
+      const targetPercent = Math.min(eased * 99 + microVariation, 99);
       
-      if (progress < 1) {
-        requestAnimationFrame(animate);
+      setPercentage(Math.max(0, Math.round(targetPercent)));
+      
+      // Update step based on percentage
+      if (targetPercent < 33) {
+        setCurrentStep(0);
+      } else if (targetPercent < 66) {
+        setCurrentStep(1);
+      } else {
+        setCurrentStep(2);
+      }
+      
+      if (rawProgress < 1) {
+        animationId = requestAnimationFrame(animate);
       }
     };
 
-    requestAnimationFrame(animate);
-  }, [currentStep]);
-
-  // Cycle through steps
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % 3);
-    }, 2500);
-    return () => clearInterval(interval);
+    animationId = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
   }, []);
 
   const progress = (percentage / 100) * circumference;

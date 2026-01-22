@@ -29,34 +29,44 @@ export const ScreenshotAnalysisLoader = ({ language, currentStep }: ScreenshotAn
   const t = translations[language];
   const [animatedStep, setAnimatedStep] = useState(0);
   const [percentage, setPercentage] = useState(0);
+  const [basePercentage, setBasePercentage] = useState(0);
 
   useEffect(() => {
     setAnimatedStep(currentStep);
+    // Set base percentage for this step
+    setBasePercentage(currentStep * 33);
   }, [currentStep]);
 
-  // Animate percentage based on current step
+  // Continuous smooth animation within each step
   useEffect(() => {
-    const targetPercent = Math.min(((animatedStep + 1) / 3) * 100, 99);
-    const startPercent = percentage;
-    const duration = 800;
+    let animationId: number;
+    const stepStart = animatedStep * 33;
+    const stepEnd = Math.min((animatedStep + 1) * 33, 99);
+    const duration = 4000; // Time to fill one step
     const startTime = performance.now();
+    const startPercent = Math.max(percentage, stepStart);
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
       
-      // Ease out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = Math.round(startPercent + (targetPercent - startPercent) * eased);
+      // Smooth ease with micro-variations
+      const eased = 1 - Math.pow(1 - progress, 2);
+      const microVariation = Math.sin(elapsed / 150) * 0.3;
+      const current = startPercent + (stepEnd - startPercent) * eased + microVariation;
       
-      setPercentage(current);
+      setPercentage(Math.min(Math.max(Math.round(current), stepStart), stepEnd));
       
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        animationId = requestAnimationFrame(animate);
       }
     };
 
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
   }, [animatedStep]);
 
   const size = 140;
