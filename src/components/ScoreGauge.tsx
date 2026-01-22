@@ -19,13 +19,13 @@ export const ScoreGauge = ({
   const [displayScore, setDisplayScore] = useState(0);
   const animationRef = useRef<number | null>(null);
   
-  // Professional, thinner stroke for instrument-like precision
-  const strokeWidth = 12;
+  // Premium thicker stroke for punch and impact
+  const strokeWidth = 14;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const totalArc = circumference * 0.75; // 270 degrees
   const segmentArc = totalArc / 5; // Each segment is 1/5 of the arc
-  const gap = 4; // Crisp gap between segments
+  const gap = 5; // Slightly larger gap for premium feel
 
   useEffect(() => {
     if (score !== null) {
@@ -123,9 +123,9 @@ export const ScoreGauge = ({
   const indicatorX = size / 2 + radius * Math.cos(indicatorRad);
   const indicatorY = size / 2 + radius * Math.sin(indicatorRad);
 
-  // Slightly smaller score for professional feel
-  const scoreFontSize = size * 0.30;
-  const labelFontSize = size * 0.085;
+  // Larger, bolder score for premium punch
+  const scoreFontSize = size * 0.32;
+  const labelFontSize = size * 0.075;
 
   // Get current credibility label and color
   const segmentIndex = score !== null ? getSegmentIndex(animatedScore) : null;
@@ -144,15 +144,28 @@ export const ScoreGauge = ({
     <div className={`relative flex flex-col items-center ${className || ''}`}>
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
+        {/* Premium outer glow ring */}
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            inset: '-8px',
+            background: score !== null 
+              ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
+              : 'radial-gradient(circle, hsl(174 50% 50% / 0.1) 0%, transparent 70%)',
+            filter: 'blur(12px)',
+            animation: score === null ? 'gauge-ambient-pulse 3s ease-in-out infinite' : 'none',
+          }}
+        />
+        
         {/* Subtle ambient glow behind gauge - with pulse when dormant */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: score === null 
-              ? 'radial-gradient(circle, hsl(174 40% 40% / 0.15) 0%, transparent 70%)'
-              : 'radial-gradient(circle, hsl(174 50% 45% / 0.2) 0%, transparent 70%)',
+              ? 'radial-gradient(circle, hsl(174 40% 40% / 0.18) 0%, transparent 70%)'
+              : `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.25)')} 0%, transparent 70%)`,
             filter: 'blur(20px)',
-            transform: 'scale(1.3)',
+            transform: 'scale(1.4)',
             animation: score === null ? 'gauge-ambient-pulse 3s ease-in-out infinite' : 'none',
           }}
         />
@@ -162,8 +175,21 @@ export const ScoreGauge = ({
           <div 
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              border: '1px solid hsl(174 50% 50% / 0.15)',
+              border: '2px solid hsl(174 50% 50% / 0.2)',
               animation: 'gauge-ring-pulse 3s ease-in-out infinite',
+            }}
+          />
+        )}
+        
+        {/* Active score outer ring glow */}
+        {score !== null && (
+          <div 
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              inset: '-3px',
+              border: `2px solid ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}`,
+              boxShadow: `0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.25)')}`,
+              transition: 'all 0.3s ease-out',
             }}
           />
         )}
