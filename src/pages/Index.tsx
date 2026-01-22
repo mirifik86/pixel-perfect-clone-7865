@@ -399,9 +399,9 @@ const Index = () => {
     setLanguage(next);
   };
 
-  // Compact gauge size to fit above fold
-  // Mobile-first: Compact gauge for instant above-fold visibility
-  const gaugeSize = isMobile ? 120 : 150;
+  // Premium gauge size - larger for punch and impact
+  // Mobile-first: Still optimized for above-fold but more impactful
+  const gaugeSize = isMobile ? 160 : 200;
 
   return (
     <div 
