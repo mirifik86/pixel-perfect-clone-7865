@@ -143,6 +143,10 @@ const Index = () => {
     "validating" | "optimizing" | "uploading" | "analyzing" | "complete" | null
   >(null);
 
+  // Error state - keeps UI on current screen and allows retry
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorDebugId, setErrorDebugId] = useState<string | null>(null);
+
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<"en" | "fr", AnalysisData | null>>({
     en: null,
@@ -210,6 +214,15 @@ const Index = () => {
     setScreenshotData(null);
     setScreenshotLoaderStep(0);
     setIsImageAnalysis(false);
+    setErrorMessage(null);
+    setErrorDebugId(null);
+    setUploadStage(null);
+  };
+
+  // Clear error state when starting a new analysis
+  const clearError = () => {
+    setErrorMessage(null);
+    setErrorDebugId(null);
   };
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -218,6 +231,7 @@ const Index = () => {
 
     setIsLoading(true);
     setIsImageAnalysis(false);
+    clearError();
 
     // ❌ NE PAS reset ici
     setLastAnalyzedContent(input);
@@ -234,12 +248,13 @@ const Index = () => {
       });
 
       setAnalysisByLanguage({ en, fr });
-    } catch (err) {
-      console.error("Unexpected error:", err);
+    } catch (err: any) {
+      console.error("Text analysis error:", err);
+      const debugId = err?.debugId || err?.requestId || null;
+      setErrorMessage(tLocal.errorAnalysis);
+      setErrorDebugId(debugId);
       toast.error(tLocal.errorAnalysis);
-
-      // ✅ ON NE RESET RIEN
-      // l'utilisateur reste sur la page
+      // ✅ ON NE RESET RIEN - l'utilisateur reste sur la page
       return;
     } finally {
       setIsLoading(false);
@@ -252,6 +267,7 @@ const Index = () => {
     setUploadedFile({ file, preview });
     setIsLoading(true);
     setIsImageAnalysis(true);
+    clearError(); // Clear any previous error
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setScreenshotLoaderStep(0);
@@ -261,8 +277,12 @@ const Index = () => {
       // Pre-validate the image before processing
       const validation = validateImage(file);
       if (!validation.valid) {
-        toast.error(validation.error || (language === "fr" ? "Image invalide" : "Invalid image"));
+        const errorMsg = validation.error || (language === "fr" ? "Image invalide" : "Invalid image");
+        console.error("Image validation failed:", errorMsg);
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
         setIsLoading(false);
+        // ✅ Keep uploadedFile intact for retry
         return;
       }
 
@@ -284,13 +304,17 @@ const Index = () => {
       const uploadResult = await uploadImage(file, onProgress);
 
       if (!uploadResult.success || !uploadResult.url) {
-        toast.error(uploadResult.error || (language === "fr" ? "Échec du téléchargement" : "Upload failed"));
+        const errorMsg = uploadResult.error || (language === "fr" ? "Échec du téléchargement" : "Upload failed");
+        console.error("Upload failed:", errorMsg, uploadResult);
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
         setIsLoading(false);
         setUploadStage(null);
+        // ✅ Keep uploadedFile intact for retry
         return;
       }
 
-      console.log(`Image uploaded: ${formatBytes(uploadResult.processedImage?.processedSize || 0)}`);
+      console.log(`Image uploaded successfully: ${formatBytes(uploadResult.processedImage?.processedSize || 0)}`);
 
       // Step 2: Analyze via URL
       setUploadStage("analyzing");
@@ -304,12 +328,18 @@ const Index = () => {
         analysisType,
       );
 
-      // Handle errors gracefully
+      console.log("Analysis result:", { success: result.success, hasError: !!result.error, debugId: result.debugId });
+
+      // Handle errors gracefully - DO NOT reset view
       if (result.error && !result.success) {
-        console.error("Image analysis error:", result.error);
-        toast.error(result.error);
+        const errorMsg = result.error || tLocal.errorAnalysis;
+        console.error("Image analysis error:", result.error, "debugId:", result.debugId);
+        setErrorMessage(errorMsg);
+        setErrorDebugId(result.debugId || null);
+        toast.error(errorMsg);
         setIsLoading(false);
         setUploadStage(null);
+        // ✅ Keep uploadedFile intact for retry
         return;
       }
 
@@ -401,9 +431,13 @@ const Index = () => {
       }
 
       setUploadStage("complete");
-    } catch (err) {
-      console.error("Unexpected error:", err);
+    } catch (err: any) {
+      console.error("Unexpected image analysis error:", err);
+      const debugId = err?.debugId || err?.requestId || null;
+      setErrorMessage(tLocal.errorAnalysis);
+      setErrorDebugId(debugId);
       toast.error(tLocal.errorAnalysis);
+      // ✅ DO NOT reset - keep uploadedFile and allow retry
     } finally {
       setIsLoading(false);
       setUploadStage(null);
@@ -702,8 +736,110 @@ const Index = () => {
             </div>
           )}
 
-          {/* Unified Analysis Form - hidden during loading and after analysis */}
-          {!hasAnyAnalysis && !isLoading && (
+          {/* Error State - shows when analysis failed but keeps user content */}
+          {errorMessage && !isLoading && (
+            <div
+              className="container-content w-full animate-fade-in"
+              style={{ animationDelay: "100ms", animationFillMode: "both" }}
+            >
+              <div
+                className="rounded-xl p-6 text-center"
+                style={{
+                  background: "hsl(0 0% 100% / 0.03)",
+                  border: "1px solid hsl(0 60% 50% / 0.3)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {/* Show uploaded image thumbnail if available */}
+                {uploadedFile?.preview && (
+                  <div className="mb-4 flex justify-center">
+                    <img
+                      src={uploadedFile.preview}
+                      alt="Uploaded"
+                      className="h-24 w-24 rounded-lg object-cover opacity-70"
+                      style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                    />
+                  </div>
+                )}
+
+                {/* Error icon */}
+                <div
+                  className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
+                  style={{ background: "hsl(0 60% 50% / 0.2)" }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="hsl(0 70% 60%)"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+
+                {/* Error message */}
+                <p
+                  className="mb-2 font-medium"
+                  style={{ color: "hsl(0 70% 65%)", fontSize: "var(--text-base)" }}
+                >
+                  {errorMessage}
+                </p>
+
+                {/* Debug ID if available */}
+                {errorDebugId && (
+                  <p
+                    className="mb-4 font-mono"
+                    style={{ color: "hsl(0 0% 60%)", fontSize: "var(--text-xs)" }}
+                  >
+                    Debug ID: {errorDebugId}
+                  </p>
+                )}
+
+                {/* Action buttons */}
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  {/* Retry button */}
+                  {uploadedFile && (
+                    <button
+                      onClick={() => {
+                        clearError();
+                        handleImageAnalysis(uploadedFile.file, uploadedFile.preview);
+                      }}
+                      className="btn-unified"
+                      style={{
+                        background: "linear-gradient(135deg, hsl(174 70% 40%) 0%, hsl(174 60% 35%) 100%)",
+                        color: "white",
+                        boxShadow: "0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)",
+                      }}
+                    >
+                      {language === "fr" ? "Réessayer" : "Retry"}
+                    </button>
+                  )}
+
+                  {/* New analysis button */}
+                  <button
+                    onClick={handleReset}
+                    className="btn-unified"
+                    style={{
+                      background: "hsl(0 0% 100% / 0.1)",
+                      color: "hsl(0 0% 85%)",
+                      border: "1px solid hsl(0 0% 100% / 0.2)",
+                    }}
+                  >
+                    {language === "fr" ? "Nouvelle analyse" : "New analysis"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Unified Analysis Form - hidden during loading, after analysis, and when error is shown */}
+          {!hasAnyAnalysis && !isLoading && !errorMessage && (
             <div
               className="container-content w-full animate-fade-in"
               style={{ animationDelay: "350ms", animationFillMode: "both" }}
