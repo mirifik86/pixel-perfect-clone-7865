@@ -492,7 +492,7 @@ const Index = () => {
 
   return (
     <div
-      className="relative flex h-screen flex-col overflow-hidden"
+      className="relative flex min-h-[100dvh] w-full flex-col overflow-hidden"
       style={{
         background: "linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)",
       }}
@@ -504,13 +504,16 @@ const Index = () => {
           backgroundImage: `url(${earthBg})`,
           backgroundPosition: "center 40%",
           backgroundSize: "cover",
-          backgroundAttachment: "fixed",
+          // NOTE: background-attachment: fixed is buggy on mobile browsers and can cause white gaps.
+          // This element is already fixed-positioned, so attachment isn't needed.
+          transform: "translateZ(0)",
+          willChange: "transform",
         }}
       />
 
       {/* Main content - mobile-first: tighter spacing, desktop: more air */}
       <main
-        className="container-unified relative z-10 flex min-h-full flex-col items-center overflow-y-auto"
+        className="container-unified relative z-10 flex w-full flex-1 min-h-0 flex-col items-center overflow-y-auto overscroll-y-none"
         style={{
           paddingTop: isMobile ? "var(--space-3)" : "var(--space-6)",
           paddingBottom: isMobile ? "var(--space-2)" : "var(--space-4)",
