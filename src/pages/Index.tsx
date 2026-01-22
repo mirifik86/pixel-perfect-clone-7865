@@ -531,17 +531,19 @@ const Index = () => {
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - compact on mobile for above-fold priority */}
+          {/* Score gauge / Loader area - centered with proper spacing */}
           <div 
             className="relative flex justify-center items-center"
             style={{ 
-              marginBottom: isMobile ? 'var(--space-2)' : 'var(--space-5)', 
-              minHeight: `${gaugeSize}px` 
+              marginTop: isLoading && isImageAnalysis ? (isMobile ? 'var(--space-8)' : 'var(--space-12)') : '0',
+              marginBottom: isMobile ? 'var(--space-4)' : 'var(--space-6)', 
+              minHeight: isLoading && isImageAnalysis ? (isMobile ? '200px' : '220px') : `${gaugeSize}px`,
+              transition: 'all 0.3s ease-out',
             }}
           >
             {/* Loader - shows during analysis */}
             {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
+              <div className="flex items-center justify-center animate-fade-in">
                 {isImageAnalysis ? (
                   <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
                 ) : (
