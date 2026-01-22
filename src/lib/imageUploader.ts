@@ -3,8 +3,8 @@
  * Uploads processed images and returns URLs for edge function
  */
 
-import { supabase } from '@/integrations/supabase/client';
-import { processImage, validateImage, formatBytes, type ProcessedImage } from './imageProcessor';
+import { supabase } from "@/integrations/supabase/client";
+import { processImage, validateImage, formatBytes, type ProcessedImage } from "./imageProcessor";
 
 export interface UploadResult {
   success: boolean;
@@ -14,10 +14,13 @@ export interface UploadResult {
   path?: string;
 }
 
-export type UploadProgressCallback = (stage: 'validating' | 'optimizing' | 'uploading' | 'complete', progress?: number) => void;
+export type UploadProgressCallback = (
+  stage: "validating" | "optimizing" | "uploading" | "complete",
+  progress?: number,
+) => void;
 
-const BUCKET_NAME = 'uploads';
-const UPLOAD_PATH_PREFIX = 'leenscore';
+const BUCKET_NAME = "uploads";
+const UPLOAD_PATH_PREFIX = "leenscore";
 
 /**
  * Generate a unique file path for the upload
@@ -25,8 +28,8 @@ const UPLOAD_PATH_PREFIX = 'leenscore';
 const generateFilePath = (mimeType: string): string => {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 10);
-  const extension = mimeType === 'image/png' ? 'png' : 'jpg';
-  
+  const extension = mimeType === "image/png" ? "png" : "jpg";
+
   // Use 'anon' for anonymous uploads
   return `${UPLOAD_PATH_PREFIX}/anon/${timestamp}-${random}.${extension}`;
 };
@@ -38,64 +41,59 @@ const generateFilePath = (mimeType: string): string => {
  * 3. Uploads to storage
  * 4. Returns the public URL
  */
-export const uploadImage = async (
-  file: File,
-  onProgress?: UploadProgressCallback
-): Promise<UploadResult> => {
+export const uploadImage = async (file: File, onProgress?: UploadProgressCallback): Promise<UploadResult> => {
   try {
     // Step 1: Validate
-    onProgress?.('validating');
+    onProgress?.("validating");
     const validation = validateImage(file);
-    
+
     if (!validation.valid) {
       return {
         success: false,
         error: validation.error,
       };
     }
-    
+
     // Step 2: Process/compress
-    onProgress?.('optimizing');
+    onProgress?.("optimizing");
     const processedImage = await processImage(file);
-    
+
     console.log(
       `Image processed: ${formatBytes(processedImage.originalSize)} → ${formatBytes(processedImage.processedSize)} ` +
-      `(${processedImage.compressionRatio.toFixed(1)}x compression)`
+        `(${processedImage.compressionRatio.toFixed(1)}x compression)`,
     );
-    
+
     // Step 3: Upload to storage
-    onProgress?.('uploading');
+    onProgress?.("uploading");
     const filePath = generateFilePath(processedImage.mimeType);
-    
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filePath, processedImage.blob, {
         contentType: processedImage.mimeType,
         upsert: false,
       });
-    
+
     if (uploadError) {
-      console.error('Storage upload error:', uploadError);
+      console.error("Storage upload error:", uploadError);
       return {
         success: false,
         error: `Échec du téléchargement: ${uploadError.message}`,
       };
     }
-    
+
     // Step 4: Get public URL
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-    
+    const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+
     if (!urlData?.publicUrl) {
       return {
         success: false,
-        error: 'Impossible d\'obtenir l\'URL de l\'image',
+        error: "Impossible d'obtenir l'URL de l'image",
       };
     }
-    
-    onProgress?.('complete');
-    
+
+    onProgress?.("complete");
+
     return {
       success: true,
       url: urlData.publicUrl,
@@ -103,10 +101,10 @@ export const uploadImage = async (
       processedImage,
     };
   } catch (error) {
-    console.error('Image upload error:', error);
+    console.error("Image upload error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erreur de téléchargement',
+      error: error instanceof Error ? error.message : "Erreur de téléchargement",
     };
   }
 };
@@ -116,10 +114,8 @@ export const uploadImage = async (
  */
 export const deleteUploadedImage = async (path: string): Promise<boolean> => {
   try {
-    const { error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .remove([path]);
-    
+    const { error } = await supabase.storage.from(BUCKET_NAME).remove([path]);
+
     return !error;
   } catch {
     return false;
@@ -134,23 +130,27 @@ export const analyzeImageViaUrl = async (
   imageUrl: string,
   originalFilename: string,
   mimeType: string,
-  language: string = 'en',
-  analysisType: 'standard' | 'pro' = 'standard'
+  language: string = "en",
+  analysisType: "standard" | "pro" = "standard",
 ): Promise<any> => {
-  const { data, error } = await supabase.functions.invoke('analyze-image', {
-    body: {
+  const res = await fetch("https://TON-DOMAINE-IA11/analyze-image", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
       image_url: imageUrl,
       original_filename: originalFilename,
       mime: mimeType,
       language,
       analysisType,
-      mode: 'ocr+vision',
-    },
+      mode: "ocr+vision",
+    }),
   });
-  
+
+  const data = await res.json();
+
   if (error) {
     throw error;
   }
-  
+
   return data;
 };
