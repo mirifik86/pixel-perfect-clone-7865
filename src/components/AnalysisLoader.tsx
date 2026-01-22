@@ -84,13 +84,23 @@ export const AnalysisLoader = ({
         className="relative"
         style={{ width: size, height: size }}
       >
-        {/* Ambient glow */}
+        {/* Ambient glow with pulse */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: 'radial-gradient(circle, hsl(174 50% 45% / 0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, hsl(174 50% 45% / 0.18) 0%, transparent 70%)',
             filter: 'blur(15px)',
             transform: 'scale(1.4)',
+            animation: 'loader-ambient-pulse 2s ease-in-out infinite',
+          }}
+        />
+        
+        {/* Pulsating outer ring */}
+        <div 
+          className="absolute inset-0 rounded-full pointer-events-none"
+          style={{
+            border: '1px solid hsl(174 55% 55% / 0.2)',
+            animation: 'loader-ring-pulse 1.5s ease-in-out infinite',
           }}
         />
 
@@ -111,7 +121,7 @@ export const AnalysisLoader = ({
             strokeWidth={strokeWidth}
           />
           
-          {/* Progress ring */}
+          {/* Progress ring with pulse animation */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -125,6 +135,7 @@ export const AnalysisLoader = ({
             style={{
               transition: 'stroke-dashoffset 0.3s ease-out',
               filter: 'drop-shadow(0 0 6px hsl(174 60% 50% / 0.5))',
+              animation: 'loader-stroke-pulse 1.5s ease-in-out infinite',
             }}
           />
 
@@ -136,6 +147,28 @@ export const AnalysisLoader = ({
             </linearGradient>
           </defs>
         </svg>
+        
+        {/* CSS Animations */}
+        <style>{`
+          @keyframes loader-ambient-pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1.35); }
+            50% { opacity: 1; transform: scale(1.5); }
+          }
+          @keyframes loader-ring-pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.03); }
+          }
+          @keyframes loader-stroke-pulse {
+            0%, 100% { 
+              filter: drop-shadow(0 0 6px hsl(174 60% 50% / 0.5));
+              stroke-width: ${strokeWidth}px;
+            }
+            50% { 
+              filter: drop-shadow(0 0 12px hsl(174 60% 55% / 0.7));
+              stroke-width: ${strokeWidth + 0.5}px;
+            }
+          }
+        `}</style>
 
         {/* Center content - Percentage */}
         <div 
