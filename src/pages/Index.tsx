@@ -10,6 +10,7 @@ import { ProAnalysisLoader } from "@/components/ProAnalysisLoader";
 import { ProAnalysisModal } from "@/components/ProAnalysisModal";
 import { ScreenshotAnalysisLoader } from "@/components/ScreenshotAnalysisLoader";
 import { ScreenshotEvidence } from "@/components/ScreenshotEvidence";
+import { ImageUploadProgress } from "@/components/ImageUploadProgress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import earthBg from "@/assets/earth-cosmic-bg.jpg";
@@ -592,6 +593,13 @@ const Index = () => {
               minHeight: `${gaugeSize}px`,
             }}
           >
+            {/* Image Upload Progress - shows during image preprocessing */}
+            {uploadStage && !isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
+                <ImageUploadProgress stage={uploadStage} language={language} />
+              </div>
+            )}
+
             {/* Loader - shows during analysis */}
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
@@ -603,8 +611,8 @@ const Index = () => {
               </div>
             )}
 
-            {/* Score Gauge - shows when not loading */}
-            {!isLoading && (
+            {/* Score Gauge - shows when not loading and no upload in progress */}
+            {!isLoading && !uploadStage && (
               <div className="animate-scale-in" style={{ animationDuration: "500ms" }}>
                 <ScoreGauge score={score} size={gaugeSize} language={language} hasContent={hasFormContent} />
               </div>
