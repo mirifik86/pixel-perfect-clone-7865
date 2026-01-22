@@ -207,6 +207,7 @@ const Index = () => {
   };
 
   const handleReset = () => {
+    if (isLoading) return; // ⛔ empêche reset pendant analyse
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent("");
@@ -787,19 +788,13 @@ const Index = () => {
                 </div>
 
                 {/* Error message */}
-                <p
-                  className="mb-2 font-medium"
-                  style={{ color: "hsl(0 70% 65%)", fontSize: "var(--text-base)" }}
-                >
+                <p className="mb-2 font-medium" style={{ color: "hsl(0 70% 65%)", fontSize: "var(--text-base)" }}>
                   {errorMessage}
                 </p>
 
                 {/* Debug ID if available */}
                 {errorDebugId && (
-                  <p
-                    className="mb-4 font-mono"
-                    style={{ color: "hsl(0 0% 60%)", fontSize: "var(--text-xs)" }}
-                  >
+                  <p className="mb-4 font-mono" style={{ color: "hsl(0 0% 60%)", fontSize: "var(--text-xs)" }}>
                     Debug ID: {errorDebugId}
                   </p>
                 )}
