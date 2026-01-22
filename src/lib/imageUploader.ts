@@ -131,7 +131,7 @@ export const analyzeImageViaUrl = async (
   originalFilename: string,
   mimeType: string,
   language: string = "en",
-  analysisType: "standard" | "pro" = "standard"
+  analysisType: "standard" | "pro" = "standard",
 ): Promise<any> => {
   const res = await fetch("https://REPLACE_WITH_YOUR_IA11_DOMAIN/analyze-image", {
     method: "POST",
@@ -151,14 +151,6 @@ export const analyzeImageViaUrl = async (
     throw new Error(`IA11 error ${res.status}: ${text}`);
   }
 
-  return await res.json();
-};
-
   const data = await res.json();
-
-  if (error) {
-    throw error;
-  }
-
   return data;
 };
