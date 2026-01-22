@@ -294,7 +294,76 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   );
 
   return (
-    <div className="container-content w-full animate-fade-in" style={{ marginTop: 'var(--space-8)' }}>
+    <div 
+      className="container-content w-full" 
+      style={{ 
+        marginTop: 'var(--space-8)',
+        animation: 'results-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      }}
+    >
+      {/* Premium reveal animation styles */}
+      <style>{`
+        @keyframes results-reveal {
+          0% {
+            opacity: 0;
+            transform: translateY(30px) scale(0.97);
+            filter: blur(8px);
+          }
+          40% {
+            opacity: 0.6;
+            filter: blur(2px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
+        }
+        
+        @keyframes card-stagger-in {
+          0% {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .analysis-card {
+          animation: card-stagger-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation-delay: var(--card-delay, 0ms);
+        }
+        
+        @keyframes shimmer-reveal {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        
+        @keyframes glow-pulse-in {
+          0%, 100% {
+            box-shadow: 0 0 20px hsl(174 60% 50% / 0.15);
+          }
+          50% {
+            box-shadow: 0 0 40px hsl(174 60% 50% / 0.25);
+          }
+        }
+      `}</style>
+      
+      {/* Top reveal glow bar */}
+      <div 
+        className="absolute left-1/2 -translate-x-1/2 h-px w-32 mb-6"
+        style={{
+          background: 'linear-gradient(90deg, transparent, hsl(174 60% 55% / 0.6), transparent)',
+          animation: 'shimmer-reveal 1.5s ease-out forwards',
+          backgroundSize: '200% 100%',
+        }}
+      />
       {/* PRO badge indicator - Premium visual */}
       {isPro && (
         <div className="mb-6 flex justify-center">
@@ -368,7 +437,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
 
       {/* Standard: Summary card */}
       {!isPro && (
-        <div className="analysis-card mb-6">
+        <div className="analysis-card mb-6" style={{ '--card-delay': '100ms' } as React.CSSProperties}>
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
@@ -386,10 +455,11 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         <div 
           className="analysis-card mb-6 overflow-hidden"
           style={{
+            '--card-delay': '150ms',
             background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(200 20% 98%) 100%)',
             border: '1px solid hsl(200 40% 88%)',
             boxShadow: '0 4px 24px hsl(200 40% 50% / 0.08), 0 1px 3px hsl(0 0% 0% / 0.05)',
-          }}
+          } as React.CSSProperties}
         >
           {/* Explication PRO Section */}
           {data.summary && (
