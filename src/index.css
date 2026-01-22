@@ -102,26 +102,9 @@
     @apply border-border;
   }
 
-  /* Prevent overscroll bounce and white bars on mobile */
-  html {
-    overflow-x: hidden;
-    overscroll-behavior: none;
-    background: hsl(var(--background));
-  }
-
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
-    overflow-x: hidden;
-    overscroll-behavior: none;
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height for mobile */
-  }
-
-  #root {
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden;
   }
 
   h1, h2, h3 {

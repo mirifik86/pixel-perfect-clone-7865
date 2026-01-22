@@ -126,80 +126,31 @@ export const deleteUploadedImage = async (path: string): Promise<boolean> => {
  * Analyze an image via the edge function
  * Uses URL-based approach to avoid 413 errors
  */
-export interface AnalysisResult {
-  success: boolean;
-  error?: string;
-  debugId?: string;
-  ocr?: {
-    raw_text: string;
-    cleaned_text: string;
-    confidence: number;
-    text_length: number;
-  };
-  image_signals?: any;
-  analysis?: any;
-  warnings?: string[];
-  warning?: string;
-  visual_text_mismatch?: any;
-  visual_description?: string;
-  ocr_success?: boolean;
-  ocr_error?: string;
-  [key: string]: any;
-}
-
 export const analyzeImageViaUrl = async (
   imageUrl: string,
   originalFilename: string,
   mimeType: string,
   language: string = "en",
   analysisType: "standard" | "pro" = "standard",
-): Promise<AnalysisResult> => {
-  try {
-    const res = await supabase.functions.invoke("analyze-image", {
-      body: {
-        image_url: imageUrl,
-        original_filename: originalFilename,
-        mime: mimeType,
-        language,
-        analysisType,
-        mode: "ocr+vision",
-      },
-    });
+): Promise<any> => {
+  const res = await fetch("https://TON-DOMAINE-IA11/analyze-image", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      image_url: imageUrl,
+      original_filename: originalFilename,
+      mime: mimeType,
+      language,
+      analysisType,
+      mode: "ocr+vision",
+    }),
+  });
 
-    // Handle Supabase function errors
-    if (res.error) {
-      console.error("Edge function error:", res.error);
-      return {
-        success: false,
-        error: res.error.message || "Analyse impossible",
-        debugId: res.error.context?.debugId || undefined,
-      };
-    }
+  const data = await res.json();
 
-    const data = res.data;
-
-    // Handle API-level errors in response body
-    if (data?.error && !data?.success) {
-      console.error("API returned error:", data.error, "debugId:", data.debugId);
-      return {
-        success: false,
-        error: data.error,
-        debugId: data.debugId || data.requestId || undefined,
-      };
-    }
-
-    // Return successful result
-    return {
-      success: true,
-      ...data,
-      debugId: data.debugId || data.requestId || undefined,
-    };
-  } catch (error: any) {
-    console.error("analyzeImageViaUrl error:", error);
-    return {
-      success: false,
-      error: error?.message || "Erreur inattendue lors de l'analyse",
-      debugId: error?.debugId || undefined,
-    };
+  if (error) {
+    throw error;
   }
+
+  return data;
 };
