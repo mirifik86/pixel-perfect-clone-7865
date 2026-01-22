@@ -131,9 +131,9 @@ export const analyzeImageViaUrl = async (
   originalFilename: string,
   mimeType: string,
   language: string = "en",
-  analysisType: "standard" | "pro" = "standard",
+  analysisType: "standard" | "pro" = "standard"
 ): Promise<any> => {
-  const res = await fetch("https://TON-DOMAINE-IA11/analyze-image", {
+  const res = await fetch("https://REPLACE_WITH_YOUR_IA11_DOMAIN/analyze-image", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -145,6 +145,14 @@ export const analyzeImageViaUrl = async (
       mode: "ocr+vision",
     }),
   });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`IA11 error ${res.status}: ${text}`);
+  }
+
+  return await res.json();
+};
 
   const data = await res.json();
 
