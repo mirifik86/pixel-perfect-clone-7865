@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -558,43 +558,6 @@ const Index = () => {
             )}
           </div>
 
-          {/* Download icon - appears only after analysis, BELOW the gauge, well separated */}
-          {hasAnyAnalysis && (
-            <div 
-              className="flex w-full justify-center animate-fade-in"
-              style={{ 
-                animationDelay: '250ms', 
-                animationFillMode: 'both',
-                marginTop: isMobile ? 'var(--space-8)' : 'var(--space-12)',
-                marginBottom: isMobile ? 'var(--space-6)' : 'var(--space-8)'
-              }}
-            >
-              <button
-                onClick={() => {
-                  // Placeholder for download functionality
-                  toast.success(language === 'fr' ? 'Téléchargement en cours...' : 'Downloading...');
-                }}
-                className="group flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110"
-                style={{
-                  width: isMobile ? '48px' : '54px',
-                  height: isMobile ? '48px' : '54px',
-                  background: 'linear-gradient(145deg, hsl(220 25% 14% / 0.85) 0%, hsl(235 22% 10% / 0.95) 100%)',
-                  border: '1px solid hsl(174 60% 50% / 0.35)',
-                  boxShadow: '0 0 25px hsl(174 60% 45% / 0.2), 0 4px 16px hsl(0 0% 0% / 0.25), inset 0 1px 1px hsl(0 0% 100% / 0.08)'
-                }}
-                title={language === 'fr' ? 'Télécharger les résultats' : 'Download results'}
-              >
-                <Download 
-                  size={isMobile ? 22 : 24} 
-                  className="transition-all duration-300"
-                  style={{
-                    color: 'hsl(174 70% 55%)',
-                    filter: 'drop-shadow(0 0 8px hsl(174 60% 50% / 0.6))'
-                  }}
-                />
-              </button>
-            </div>
-          )}
 
           {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}
           {hasAnyAnalysis && (
