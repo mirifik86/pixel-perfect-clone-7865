@@ -144,17 +144,29 @@ export const ScoreGauge = ({
     <div className={`relative flex flex-col items-center ${className || ''}`}>
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
-        {/* Subtle ambient glow behind gauge - always visible but muted */}
+        {/* Subtle ambient glow behind gauge - with pulse when dormant */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: score === null 
-              ? 'radial-gradient(circle, hsl(174 40% 40% / 0.12) 0%, transparent 70%)'
+              ? 'radial-gradient(circle, hsl(174 40% 40% / 0.15) 0%, transparent 70%)'
               : 'radial-gradient(circle, hsl(174 50% 45% / 0.2) 0%, transparent 70%)',
             filter: 'blur(20px)',
             transform: 'scale(1.3)',
+            animation: score === null ? 'gauge-ambient-pulse 3s ease-in-out infinite' : 'none',
           }}
         />
+        
+        {/* Outer ring pulse effect when dormant */}
+        {score === null && (
+          <div 
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              border: '1px solid hsl(174 50% 50% / 0.15)',
+              animation: 'gauge-ring-pulse 3s ease-in-out infinite',
+            }}
+          />
+        )}
         
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {/* No filters/shadows - clean instrument look */}
@@ -259,12 +271,32 @@ export const ScoreGauge = ({
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
         </span>
         
-        {/* CSS for pulse animation */}
-        {score === null && !hasContent && (
+        {/* CSS for pulse animations */}
+        {score === null && (
           <style>{`
             @keyframes ready-pulse {
               0%, 100% { opacity: 0.4; transform: scale(0.96); }
               50% { opacity: 1; transform: scale(1.04); }
+            }
+            @keyframes gauge-ambient-pulse {
+              0%, 100% { 
+                opacity: 0.6; 
+                transform: scale(1.25);
+              }
+              50% { 
+                opacity: 1; 
+                transform: scale(1.4);
+              }
+            }
+            @keyframes gauge-ring-pulse {
+              0%, 100% { 
+                opacity: 0.3; 
+                transform: scale(1);
+              }
+              50% { 
+                opacity: 0.6; 
+                transform: scale(1.02);
+              }
             }
           `}</style>
         )}
