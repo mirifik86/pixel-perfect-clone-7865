@@ -1,4 +1,5 @@
-import { CheckCircle, XCircle, AlertCircle, Search, Scale, GitBranch, Image, Sparkles } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Search, Scale, GitBranch, Image, Sparkles, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AnalysisBreakdown {
   // Core criteria (Standard)
@@ -434,6 +435,18 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                     <path d="M12 2l7 4v6c0 5-3.5 9.7-7 10-3.5-.3-7-5-7-10V6l7-4z" stroke="currentColor" strokeWidth="1.5"/>
                   </svg>
                   <h3 className="font-serif text-lg font-semibold text-slate-900">{t.corroborationTitle}</h3>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                          <Info className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[200px] text-center">
+                        <p className="text-xs">{language === 'fr' ? 'Les badges indiquent le poids de chaque source dans le score PRO.' : 'Badges indicate the weight of each source in the PRO score.'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 {/* Credibility Seal */}
                 <span 
@@ -457,53 +470,85 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               {/* Source Cards Grid */}
               {data.corroboration.sources && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Corroborated Sources */}
-                  {data.corroboration.sources.corroborated?.map((source, idx) => (
-                    <div
-                      key={`corr-${idx}`}
-                      className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 
-                                 p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  {/* Corroborated Sources - Official/Major Media/Reference */}
+                  {data.corroboration.sources.corroborated?.map((source, idx) => {
+                    // Determine badge type based on source name patterns
+                    const sourceLower = source.toLowerCase();
+                    const isOfficial = /gov|\.gov|official|government|archive|institution|ministry|department/.test(sourceLower);
+                    const isMajorMedia = /reuters|associated press|ap news|bbc|nyt|new york times|washington post|guardian|afp|cnn|npr/.test(sourceLower);
+                    const isReference = /britannica|encyclopedia|wikipedia|oxford|cambridge|merriam|dictionary/.test(sourceLower);
+                    
+                    let badgeLabel = language === 'fr' ? 'Source officielle' : 'Official Source';
+                    let badgeStyle = 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+                    
+                    if (isMajorMedia) {
+                      badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
+                      badgeStyle = 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+                    } else if (isReference) {
+                      badgeLabel = language === 'fr' ? 'Référence' : 'Reference';
+                      badgeStyle = 'bg-violet-500/10 text-violet-600 border-violet-500/20';
+                    } else if (!isOfficial) {
+                      // Default to Official Source for corroborated
+                      badgeLabel = language === 'fr' ? 'Source officielle' : 'Official Source';
+                    }
+                    
+                    return (
+                      <div
+                        key={`corr-${idx}`}
+                        className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 
+                                   p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <CheckCircle className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-slate-800">{source}</div>
+                            <div className="text-xs text-slate-400">{t.sourceGroupCorroborated}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-sm font-semibold text-slate-800">{source}</div>
-                          <div className="text-xs text-slate-400">{t.sourceGroupCorroborated}</div>
-                        </div>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium tracking-wide border whitespace-nowrap ${badgeStyle}`}>
+                          {badgeLabel}
+                        </span>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide
-                                       bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                        Authority
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
 
-                  {/* Neutral Sources */}
-                  {data.corroboration.sources.neutral?.map((source, idx) => (
-                    <div
-                      key={`neut-${idx}`}
-                      className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 
-                                 p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                          <AlertCircle className="w-4 h-4 text-amber-600" />
+                  {/* Neutral Sources - Reference type */}
+                  {data.corroboration.sources.neutral?.map((source, idx) => {
+                    const sourceLower = source.toLowerCase();
+                    const isReference = /britannica|encyclopedia|wikipedia|oxford|cambridge|merriam|dictionary/.test(sourceLower);
+                    
+                    const badgeLabel = isReference 
+                      ? (language === 'fr' ? 'Référence' : 'Reference')
+                      : (language === 'fr' ? 'Média majeur' : 'Major Media');
+                    const badgeStyle = isReference 
+                      ? 'bg-violet-500/10 text-violet-600 border-violet-500/20'
+                      : 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+                    
+                    return (
+                      <div
+                        key={`neut-${idx}`}
+                        className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 
+                                   p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <AlertCircle className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-slate-800">{source}</div>
+                            <div className="text-xs text-slate-400">{t.sourceGroupNeutral}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-sm font-semibold text-slate-800">{source}</div>
-                          <div className="text-xs text-slate-400">{t.sourceGroupNeutral}</div>
-                        </div>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium tracking-wide border whitespace-nowrap ${badgeStyle}`}>
+                          {badgeLabel}
+                        </span>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide
-                                       bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                        Reputable
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
 
-                  {/* Constrained Sources */}
+                  {/* Constrained Sources - Context type */}
                   {data.corroboration.sources.constrained?.map((source, idx) => (
                     <div
                       key={`const-${idx}`}
@@ -519,9 +564,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                           <div className="text-xs text-slate-400">{t.sourceGroupConstrained}</div>
                         </div>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide
-                                       bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                        Context
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium tracking-wide border whitespace-nowrap
+                                       bg-slate-500/10 text-slate-600 border-slate-500/20">
+                        {language === 'fr' ? 'Contexte' : 'Context'}
                       </span>
                     </div>
                   ))}
