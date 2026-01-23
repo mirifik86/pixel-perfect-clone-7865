@@ -121,6 +121,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isProLoading, setIsProLoading] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
+  const [isLoaderExiting, setIsLoaderExiting] = useState(false); // Track loader exit animation
   const [lastAnalyzedContent, setLastAnalyzedContent] = useState<string>('');
   
   // Error state for robust error handling (no redirect to home)
@@ -256,7 +257,12 @@ const Index = () => {
       setAnalysisError({ message: errorMessage, code: errorCode });
       toast.error(tLocal.errorAnalysis);
     } finally {
-      setIsLoading(false);
+      // Trigger exit animation before hiding loader
+      setIsLoaderExiting(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsLoaderExiting(false);
+      }, 500); // Match exit animation duration
     }
   }, [language, runBilingualTextAnalysis]);
 
@@ -384,7 +390,12 @@ const Index = () => {
       setAnalysisError({ message: errorMessage, code: errorCode });
       toast.error(tLocal.errorAnalysis);
     } finally {
-      setIsLoading(false);
+      // Trigger exit animation before hiding loader
+      setIsLoaderExiting(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsLoaderExiting(false);
+      }, 500); // Match exit animation duration
     }
   }, [language, runBilingualTextAnalysis]);
 
@@ -526,9 +537,15 @@ const Index = () => {
             className="relative flex justify-center items-center"
             style={{ marginBottom: 'var(--space-6)', minHeight: `${gaugeSize + 40}px` }}
           >
-            {/* Loader - shows during analysis */}
+            {/* Loader - shows during analysis with smooth exit */}
             {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
+              <div 
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out ${
+                  isLoaderExiting 
+                    ? 'opacity-0 translate-y-8 scale-95' 
+                    : 'opacity-100 translate-y-0 scale-100 animate-fade-in'
+                }`}
+              >
                 {isImageAnalysis ? (
                   <MissionControlLoader language={language} />
                 ) : (
