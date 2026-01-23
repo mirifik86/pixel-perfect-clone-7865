@@ -178,7 +178,7 @@ export const ScoreGauge = ({
 
   return (
     <div className={`relative flex flex-col items-center ${className || ''}`}>
-      {/* Sparkle particles - visible when score is shown */}
+      {/* Sparkle particles with light trails - visible when score is shown */}
       {showSparkles && score !== null && (
         <>
           {sparkles.map((sparkle, index) => {
@@ -187,6 +187,7 @@ export const ScoreGauge = ({
             const finalY = Math.sin(rad) * size * sparkle.distance;
             // Staggered spiral entry delay based on particle index
             const spiralDelay = index * 0.08;
+            const particleColor = getInterpolatedColor(animatedScore);
             
             return (
               <div
@@ -196,18 +197,39 @@ export const ScoreGauge = ({
                   '--final-x': `${finalX}px`,
                   '--final-y': `${finalY}px`,
                   '--sparkle-angle': `${sparkle.angle + 720}deg`,
-                  width: sparkle.size,
-                  height: sparkle.size,
+                  '--trail-color': particleColor,
                   left: '50%',
                   top: '50%',
-                  background: getInterpolatedColor(animatedScore),
-                  borderRadius: '50%',
-                  boxShadow: `0 0 ${sparkle.size * 2}px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.8)')}, 0 0 ${sparkle.size * 4}px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.4)')}`,
-                  animation: `sparkle-spiral-in 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${spiralDelay}s forwards, sparkle-twinkle ${sparkle.duration}s ease-in-out ${spiralDelay + 1.2 + sparkle.delay}s infinite`,
+                  width: sparkle.size,
+                  height: sparkle.size,
                   opacity: 0,
-                  transform: 'translate(-50%, -50%) scale(0)'
+                  transform: 'translate(-50%, -50%) scale(0)',
+                  animation: `sparkle-spiral-in 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${spiralDelay}s forwards, sparkle-twinkle ${sparkle.duration}s ease-in-out ${spiralDelay + 1.2 + sparkle.delay}s infinite`,
                 } as React.CSSProperties}
-              />
+              >
+                {/* Light trail effect - multiple fading copies behind the particle */}
+                {[0, 1, 2, 3, 4].map((trailIndex) => (
+                  <div
+                    key={trailIndex}
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: particleColor,
+                      opacity: 0.6 - trailIndex * 0.12,
+                      transform: `scale(${1 - trailIndex * 0.15})`,
+                      filter: `blur(${trailIndex * 1.5}px)`,
+                      animation: `trail-fade 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${spiralDelay + trailIndex * 0.05}s forwards`,
+                    }}
+                  />
+                ))}
+                {/* Main particle with glow */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: particleColor,
+                    boxShadow: `0 0 ${sparkle.size * 2}px ${particleColor.replace(')', ' / 0.9)')}, 0 0 ${sparkle.size * 4}px ${particleColor.replace(')', ' / 0.5)')}, 0 0 ${sparkle.size * 6}px ${particleColor.replace(')', ' / 0.3)')}`,
+                  }}
+                />
+              </div>
             );
           })}
           <style>{`
@@ -216,12 +238,23 @@ export const ScoreGauge = ({
                 opacity: 0;
                 transform: translate(-50%, -50%) rotate(0deg) scale(0);
               }
-              30% {
-                opacity: 0.8;
+              10% {
+                opacity: 1;
               }
               100% { 
                 opacity: 1;
                 transform: translate(calc(-50% + var(--final-x)), calc(-50% + var(--final-y))) rotate(var(--sparkle-angle)) scale(1);
+              }
+            }
+            @keyframes trail-fade {
+              0% {
+                opacity: 0.8;
+              }
+              60% {
+                opacity: 0.4;
+              }
+              100% {
+                opacity: 0;
               }
             }
             @keyframes sparkle-twinkle {
