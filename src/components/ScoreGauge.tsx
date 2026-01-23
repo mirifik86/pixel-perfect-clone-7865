@@ -76,15 +76,17 @@ export const ScoreGauge = ({
     }
   }, [score]);
 
-  // Professional muted colors - reduced saturation for serious, instrument-like feel
-  // Leen Blue reserved ONLY for highest category
-  const colors = [
-    'hsl(0 65% 48%)',      // Red - Very Low (desaturated)
-    'hsl(25 80% 50%)',     // Orange - Low (desaturated)
-    'hsl(45 75% 48%)',     // Yellow - Moderate (desaturated)
-    'hsl(145 50% 42%)',    // Green - Good (desaturated)
-    'hsl(174 55% 45%)'     // Leen Blue - High (reserved for top tier only)
+  // Premium gradient colors with smooth transitions
+  // Each color has a base and a lighter variant for gradient effect
+  const colorPairs = [
+    { base: 'hsl(0 70% 45%)', light: 'hsl(0 75% 55%)' },      // Red - Very Low
+    { base: 'hsl(25 85% 48%)', light: 'hsl(30 90% 58%)' },    // Orange - Low
+    { base: 'hsl(45 80% 45%)', light: 'hsl(50 85% 55%)' },    // Yellow - Moderate
+    { base: 'hsl(145 55% 40%)', light: 'hsl(150 60% 50%)' },  // Green - Good
+    { base: 'hsl(174 60% 42%)', light: 'hsl(174 70% 52%)' }   // Leen Blue - High
   ];
+  
+  const colors = colorPairs.map(c => c.base);
 
   // Credibility labels for each segment (uppercase for institutional authority)
   const credibilityLabels = [
@@ -102,6 +104,19 @@ export const ScoreGauge = ({
     if (value < 60) return 2;
     if (value < 80) return 3;
     return 4;
+  };
+
+  // Smooth interpolated color for fluid transitions
+  const getInterpolatedColor = (value: number) => {
+    const segmentIndex = getSegmentIndex(value);
+    const segmentStart = segmentIndex * 20;
+    const progress = (value - segmentStart) / 20;
+    
+    // Use the light variant when progressing through a segment
+    if (progress > 0.5) {
+      return colorPairs[segmentIndex].light;
+    }
+    return colorPairs[segmentIndex].base;
   };
 
   const getCurrentColor = (value: number) => colors[getSegmentIndex(value)];
@@ -173,12 +188,38 @@ export const ScoreGauge = ({
         />
         
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          {/* No filters/shadows - clean instrument look */}
+          {/* Gradient definitions for smooth color transitions */}
+          <defs>
+            {colorPairs.map((pair, i) => (
+              <linearGradient 
+                key={`gradient-${i}`} 
+                id={`segment-gradient-${i}`}
+                gradientUnits="userSpaceOnUse"
+                x1="0%" y1="0%" x2="100%" y2="100%"
+              >
+                <stop offset="0%" stopColor={pair.base} />
+                <stop offset="50%" stopColor={pair.light} />
+                <stop offset="100%" stopColor={pair.base} />
+              </linearGradient>
+            ))}
+            
+            {/* Glow filter for active segments */}
+            <filter id="segment-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
 
-          {/* 5 equal color segments with crisp separation */}
-          {colors.map((color, i) => {
+          {/* 5 equal color segments with gradient fills */}
+          {colorPairs.map((pair, i) => {
             const segmentLength = segmentArc - gap;
             const rotation = 135 + i * 270 / 5;
+            const opacity = getSegmentOpacity(i);
+            const isActive = opacity > 0.5;
+            
             return (
               <circle
                 key={i}
@@ -186,34 +227,45 @@ export const ScoreGauge = ({
                 cy={size / 2}
                 r={radius}
                 fill="none"
-                stroke={color}
+                stroke={`url(#segment-gradient-${i})`}
                 strokeWidth={strokeWidth}
                 strokeLinecap="butt"
                 strokeDasharray={`${segmentLength} ${circumference}`}
+                filter={isActive ? 'url(#segment-glow)' : undefined}
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center',
-                  opacity: getSegmentOpacity(i),
-                  transition: 'opacity 0.1s ease-out'
+                  opacity: opacity,
+                  transition: 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               />
             );
           })}
 
-          {/* Position indicator - smaller, no shadow, off-white for premium look */}
+          {/* Position indicator - glowing for premium look */}
           {score !== null && (
-            <circle
-              cx={indicatorX}
-              cy={indicatorY}
-              r={3}
-              fill="hsl(220 10% 90%)"
-              stroke="hsl(220 10% 70%)"
-              strokeWidth={1}
-            />
+            <g>
+              <circle
+                cx={indicatorX}
+                cy={indicatorY}
+                r={5}
+                fill={getInterpolatedColor(animatedScore)}
+                style={{
+                  filter: 'drop-shadow(0 0 4px currentColor)',
+                  transition: 'fill 0.3s ease-out'
+                }}
+              />
+              <circle
+                cx={indicatorX}
+                cy={indicatorY}
+                r={2.5}
+                fill="hsl(0 0% 100%)"
+              />
+            </g>
           )}
         </svg>
 
-        {/* Center content - score number only */}
+        {/* Center content - score number with premium glow */}
         <div 
           className="absolute inset-0 flex items-center justify-center"
           style={{ marginTop: -verticalOffset }}
@@ -223,9 +275,12 @@ export const ScoreGauge = ({
             style={{
               fontSize: scoreFontSize,
               lineHeight: 1,
-              color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
+              color: score !== null ? getInterpolatedColor(animatedScore) : 'hsl(var(--muted-foreground))',
               letterSpacing: '-0.02em',
-              transition: 'color 0.3s ease-out'
+              transition: 'color 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+              textShadow: score !== null 
+                ? `0 0 20px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.4)')}, 0 0 40px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.2)')}`
+                : 'none'
             }}
           >
             {score === null ? '—' : displayScore}
