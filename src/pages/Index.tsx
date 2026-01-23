@@ -9,7 +9,7 @@ import { AnalysisResult } from '@/components/AnalysisResult';
 import { AnalysisError } from '@/components/AnalysisError';
 import { ProAnalysisLoader } from '@/components/ProAnalysisLoader';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
-import { ScreenshotAnalysisLoader } from '@/components/ScreenshotAnalysisLoader';
+import { MissionControlLoader } from '@/components/MissionControlLoader';
 import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -530,7 +530,7 @@ const Index = () => {
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
                 {isImageAnalysis ? (
-                  <ScreenshotAnalysisLoader language={language} currentStep={screenshotLoaderStep} />
+                  <MissionControlLoader language={language} />
                 ) : (
                   <AnalysisLoader size={gaugeSize} language={language} />
                 )}
