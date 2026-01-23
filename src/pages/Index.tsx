@@ -650,27 +650,13 @@ const Index = () => {
         <div className="flex-grow" />
 
         {/* Footer - minimal */}
-        <footer 
-          className="animate-fade-in mt-auto text-center shrink-0 w-full"
-          style={{ 
-            animationDelay: '500ms', 
-            animationFillMode: 'both',
-            paddingTop: 'var(--space-4)',
-            paddingBottom: 'var(--space-4)'
-          }}
-        >
-          <p 
-            className="mx-auto tracking-wide text-foreground/40"
-            style={{ fontSize: '10px' }}
-          >
-            <span 
-              className="font-serif italic"
-              style={{ color: 'hsl(174 65% 55% / 0.8)' }}
-            >Leen</span>
-            <span className="font-serif text-foreground/60">Score</span>
-            <span className="mx-1">·</span>
-            <span className="tracking-[0.15em] text-primary/60">{t.developedBy.replace('OUTIL DÉVELOPPÉ PAR ', '').replace('TOOL DEVELOPED BY ', '')}</span>
-          </p>
+        <footer className="absolute bottom-4 left-0 right-0 flex flex-col items-center text-center pointer-events-none">
+          <div className="text-sm text-white/85 tracking-wide">
+            <span className="font-semibold">LeenScore</span> — La crédibilité mesurée.
+          </div>
+          <div className="mt-1 text-xs text-white/50 tracking-widest uppercase">
+            Built by Sol&Air · Version 1.2 BETA
+          </div>
         </footer>
       </main>
     </div>
