@@ -230,34 +230,39 @@ const Index = () => {
   // Try IA11 external API first, fallback to Lovable if it fails
   const tryIA11Analysis = useCallback(async (text: string): Promise<{ success: boolean; data?: AnalysisData; engineUsed: string }> => {
     try {
-      console.log('[IA11] Attempting external API call...');
+      console.log('[Engine] Attempting IA11 external API call...');
       const response = await supabase.functions.invoke('analyze-ia11', {
         body: { text, mode: 'standard' },
       });
 
       if (response.error) {
-        console.log('[IA11] Edge function error:', response.error);
+        console.log('[Engine] IA11 edge function error:', response.error);
+        console.log('[Engine] Used: Lovable');
         return { success: false, engineUsed: 'Lovable' };
       }
 
       const data = response.data;
       
-      // Check if fallback was signaled
-      if (data?.fallback) {
-        console.log('[IA11] Fallback signaled:', data.reason);
+      // Check if fallback was signaled or status is error
+      if (data?.fallback === true || data?.status === 'error') {
+        console.log('[Engine] IA11 fallback/error signaled:', data.error || data.reason);
+        console.log('[Engine] Used: Lovable');
         return { success: false, engineUsed: 'Lovable' };
       }
 
-      // Validate we have a proper response
-      if (typeof data?.score !== 'number' || !data?.summary) {
-        console.log('[IA11] Invalid response structure');
+      // Validate we have a proper response with required fields
+      if (typeof data?.score !== 'number') {
+        console.log('[Engine] IA11 invalid response structure (missing score)');
+        console.log('[Engine] Used: Lovable');
         return { success: false, engineUsed: 'Lovable' };
       }
 
-      console.log('[IA11] Success! Engine:', data.engineUsed, 'Score:', data.score);
+      console.log('[Engine] Used: IA11');
+      console.log('[Engine] IA11 Score:', data.score);
       return { success: true, data: data as AnalysisData, engineUsed: 'IA11' };
     } catch (err) {
-      console.log('[IA11] Unexpected error:', err);
+      console.log('[Engine] IA11 unexpected error:', err);
+      console.log('[Engine] Used: Lovable');
       return { success: false, engineUsed: 'Lovable' };
     }
   }, []);
