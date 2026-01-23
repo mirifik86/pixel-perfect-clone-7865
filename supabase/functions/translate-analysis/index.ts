@@ -122,67 +122,96 @@ serve(async (req) => {
 
     console.log("Translating analysis to:", targetLanguage);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: getTranslationPrompt(targetLanguage) },
-          { role: "user", content: `Translate this analysis JSON to ${targetLanguage === 'fr' ? 'French' : 'English'}:\n\n${JSON.stringify(analysisData, null, 2)}` }
-        ],
-        temperature: 0.1, // Low temperature for consistent translation
-      }),
-    });
+    // Retry logic with exponential backoff for rate limits
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      if (attempt > 0) {
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
+        console.log(`Retry attempt ${attempt + 1}, waiting ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
 
-    if (!response.ok) {
-      if (response.status === 429) {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: getTranslationPrompt(targetLanguage) },
+            { role: "user", content: `Translate this analysis JSON to ${targetLanguage === 'fr' ? 'French' : 'English'}:\n\n${JSON.stringify(analysisData, null, 2)}` }
+          ],
+          temperature: 0.1,
+        }),
+      });
+
+      if (response.ok) {
+        const aiResponse = await response.json();
+        const messageContent = aiResponse.choices?.[0]?.message?.content;
+
+        if (!messageContent) {
+          console.warn("Empty AI response, returning original data");
+          return new Response(
+            JSON.stringify(analysisData),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // Parse the translated JSON
+        let translatedResult;
+        try {
+          const jsonMatch = messageContent.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            translatedResult = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error("No JSON found in response");
+          }
+        } catch (parseError) {
+          console.error("Failed to parse translation response:", parseError);
+          return new Response(
+            JSON.stringify(analysisData),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // CRITICAL: Keep the original object as the single source of truth
+        const merged = mergeTranslatedText(analysisData, translatedResult);
+
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded" }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify(merged),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      if (response.status === 429) {
+        console.warn(`Rate limited on attempt ${attempt + 1}`);
+        lastError = new Error("Rate limit exceeded");
+        continue; // Retry
+      }
+
+      // Non-retryable error
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
-    }
-
-    const aiResponse = await response.json();
-    const messageContent = aiResponse.choices?.[0]?.message?.content;
-
-    if (!messageContent) {
-      throw new Error("No response from AI");
-    }
-
-    // Parse the translated JSON
-    let translatedResult;
-    try {
-      const jsonMatch = messageContent.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        translatedResult = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("No JSON found in response");
-      }
-    } catch (parseError) {
-      console.error("Failed to parse translation response:", parseError);
-      // Return original data if translation fails
+      
+      // Fallback: return original untranslated data instead of failing
+      console.warn("Returning original data due to API error");
       return new Response(
         JSON.stringify(analysisData),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // CRITICAL: Keep the original object as the single source of truth.
-    // Only copy translated text into it.
-    const merged = mergeTranslatedText(analysisData, translatedResult);
-
+    // All retries exhausted - return original data as graceful fallback
+    console.warn("All retries exhausted, returning original (English) data");
     return new Response(
-      JSON.stringify(merged),
+      JSON.stringify(analysisData),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
 
   } catch (error) {
     console.error("Translation error:", error);
