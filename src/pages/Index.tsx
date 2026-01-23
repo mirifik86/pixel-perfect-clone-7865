@@ -652,7 +652,20 @@ const Index = () => {
         {/* Footer - minimal */}
         <footer className="absolute bottom-4 left-0 right-0 flex flex-col items-center text-center pointer-events-none">
           <div className="text-sm text-white/85 tracking-wide">
-            <span className="font-semibold">LeenScore</span> — La crédibilité mesurée.
+            <span 
+              className="italic"
+              style={{
+                color: 'hsl(174 65% 52%)',
+                textShadow: '0 0 40px hsl(174 60% 45% / 0.4), 0 0 80px hsl(40 100% 60% / 0.2), 0 2px 20px hsl(30 90% 55% / 0.15)'
+              }}
+            >Leen</span>
+            <span 
+              className="font-semibold not-italic" 
+              style={{
+                color: 'hsl(0 0% 98%)',
+                textShadow: '0 0 30px hsl(40 100% 70% / 0.25), 0 2px 15px hsl(30 90% 55% / 0.1)'
+              }}
+            >Score</span> — La crédibilité mesurée.
           </div>
           <div className="mt-1 text-xs text-white/50 tracking-widest uppercase">
             Built by Sol&Air · Version 1.2 BETA
