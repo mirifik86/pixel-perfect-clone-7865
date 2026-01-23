@@ -98,12 +98,20 @@ const translations = {
     contextualCoherence: 'Contextual Coherence',
     webCorroboration: 'Web Corroboration',
     imageCoherence: 'Image Signals',
-    // Corroboration
+    // Corroboration - Standard
+    limitedVerificationTitle: 'Limited Verification (Standard)',
+    noSourceFound: 'No corroborating source found.',
+    oneSourceFound: '1 corroborating source found:',
+    limitedVerificationNote: 'Standard analysis checks for one corroborating source. Upgrade to PRO for extended verification.',
+    // Corroboration - PRO
+    extendedVerificationTitle: 'Extended Verification (PRO)',
     corroborationTitle: 'Web Corroboration',
     corroborated: 'Clear Corroboration',
     neutral: 'Neutral Mentions',
     constrained: 'Limited Coverage',
     sourcesConsulted: 'sources consulted',
+    corroborationBonus: 'Corroboration Bonus',
+    maxBonus: 'max +18 pts',
     // Source group labels
     sourceGroupCorroborated: 'Clear corroboration',
     sourceGroupNeutral: 'Neutral or contextual mentions',
@@ -144,12 +152,20 @@ const translations = {
     contextualCoherence: 'Cohérence Contextuelle',
     webCorroboration: 'Corroboration Web',
     imageCoherence: 'Signaux Image',
-    // Corroboration
+    // Corroboration - Standard
+    limitedVerificationTitle: 'Vérification Limitée (Standard)',
+    noSourceFound: 'Aucune source de corroboration trouvée.',
+    oneSourceFound: '1 source de corroboration trouvée :',
+    limitedVerificationNote: 'L\'analyse Standard recherche une seule source. Passez en PRO pour une vérification étendue.',
+    // Corroboration - PRO
+    extendedVerificationTitle: 'Vérification Étendue (PRO)',
     corroborationTitle: 'Corroboration Web',
     corroborated: 'Corroboration claire',
     neutral: 'Mentions neutres',
     constrained: 'Couverture limitée',
     sourcesConsulted: 'sources consultées',
+    corroborationBonus: 'Bonus Corroboration',
+    maxBonus: 'max +18 pts',
     // Source group labels
     sourceGroupCorroborated: 'Corroboration claire',
     sourceGroupNeutral: 'Mentions neutres ou contextuelles',
@@ -218,6 +234,26 @@ const corroborationStyles: Record<string, { bg: string; text: string; dot: strin
   corroborated: { bg: 'bg-emerald-100 border-emerald-300', text: 'text-emerald-800', dot: 'bg-emerald-500' },
   neutral: { bg: 'bg-amber-100 border-amber-300', text: 'text-amber-800', dot: 'bg-amber-500' },
   constrained: { bg: 'bg-red-100 border-red-300', text: 'text-red-800', dot: 'bg-red-500' },
+};
+
+// Calculate progressive corroboration bonus for PRO analysis
+// Source 1: +5, Source 2: +4, Source 3: +3, Source 4: +2, Sources 5-8: +1 each
+// Maximum: 5+4+3+2+1+1+1+1 = 18 points
+const calculateCorroborationBonus = (corroboration: Corroboration): number => {
+  const sourceCount = Math.min(
+    (corroboration.sources?.corroborated?.length || 0) +
+    (corroboration.sources?.neutral?.length || 0),
+    8
+  );
+  
+  if (sourceCount === 0) return 0;
+  
+  const pointsPerSource = [5, 4, 3, 2, 1, 1, 1, 1];
+  let bonus = 0;
+  for (let i = 0; i < sourceCount; i++) {
+    bonus += pointsPerSource[i];
+  }
+  return bonus;
 };
 
 export const AnalysisResult = ({ data, language, articleSummary, hasImage = false }: AnalysisResultProps) => {
@@ -382,6 +418,43 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
+      {/* Standard: Limited Verification Section */}
+      {!isPro && (
+        <div className="analysis-card mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Search className="h-5 w-5 text-slate-500" />
+            <h3 className="font-serif text-lg font-semibold text-slate-900">{t.limitedVerificationTitle}</h3>
+          </div>
+          
+          {data.corroboration && data.corroboration.sourcesConsulted > 0 && data.corroboration.sources?.corroborated?.[0] ? (
+            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="h-4 w-4 text-emerald-600" />
+                <span className="text-sm font-semibold text-emerald-800">{t.oneSourceFound}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-slate-700">
+                  {data.corroboration.sources.corroborated[0]}
+                </span>
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  +5 pts
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-slate-500" />
+                <span className="text-sm font-medium text-slate-600">{t.noSourceFound}</span>
+              </div>
+              <span className="text-xs text-slate-400 mt-1 block">+0 pts</span>
+            </div>
+          )}
+          
+          <p className="text-xs text-slate-500 mt-3 italic">{t.limitedVerificationNote}</p>
+        </div>
+      )}
+
       {/* PRO: Unified Explanation + Corroboration Card */}
       {isPro && (data.summary || data.corroboration) && (
         <div 
@@ -425,7 +498,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
             </div>
           )}
           
-          {/* Corroboration Web Section */}
+          {/* Corroboration Web Section - Extended Verification (PRO) */}
           {data.corroboration && (
             <div className="pt-1">
               {/* Header */}
@@ -434,7 +507,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   <svg className="w-5 h-5 text-cyan-600" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2l7 4v6c0 5-3.5 9.7-7 10-3.5-.3-7-5-7-10V6l7-4z" stroke="currentColor" strokeWidth="1.5"/>
                   </svg>
-                  <h3 className="font-serif text-lg font-semibold text-slate-900">{t.corroborationTitle}</h3>
+                  <h3 className="font-serif text-lg font-semibold text-slate-900">{t.extendedVerificationTitle}</h3>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -442,29 +515,29 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                           <Info className="w-4 h-4" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[200px] text-center">
-                        <p className="text-xs">{language === 'fr' ? 'Les badges indiquent le poids de chaque source dans le score PRO.' : 'Badges indicate the weight of each source in the PRO score.'}</p>
+                      <TooltipContent side="top" className="max-w-[240px] text-center">
+                        <p className="text-xs">{language === 'fr' 
+                          ? 'PRO vérifie jusqu\'à 8 sources avec scoring progressif : +5, +4, +3, +2, puis +1 par source (max +18 pts).' 
+                          : 'PRO checks up to 8 sources with progressive scoring: +5, +4, +3, +2, then +1 per source (max +18 pts).'}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                {/* Credibility Seal */}
-                <span 
-                  className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border
-                    ${data.corroboration.outcome === 'corroborated' 
-                      ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30'
-                      : data.corroboration.outcome === 'neutral'
-                        ? 'bg-amber-500/15 text-amber-600 border-amber-500/30'
-                        : 'bg-red-500/15 text-red-600 border-red-500/30'
-                    }`}
-                >
-                  {corroborationLabels[data.corroboration.outcome]}
-                </span>
+                {/* Corroboration Bonus Badge */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500">{t.corroborationBonus}:</span>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-700 border border-cyan-500/30">
+                    +{calculateCorroborationBonus(data.corroboration)} pts
+                  </span>
+                </div>
               </div>
 
               {/* Microcopy */}
-              <div className="mb-4 text-sm text-slate-500">
-                <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span> {t.sourcesConsulted}
+              <div className="mb-4 flex items-center justify-between text-sm">
+                <span className="text-slate-500">
+                  <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span> {t.sourcesConsulted}
+                </span>
+                <span className="text-xs text-slate-400">({t.maxBonus})</span>
               </div>
 
               {/* Source Cards Grid */}
