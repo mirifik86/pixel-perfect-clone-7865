@@ -651,23 +651,26 @@ const Index = () => {
             }}
           />
           
-          {/* LeenScore brand */}
+          {/* LeenScore brand - same style as main title */}
           <div 
-            className="tracking-wide"
-            style={{ fontSize: 'clamp(0.95rem, 0.9rem + 0.3vw, 1.1rem)' }}
+            className="brand-text tracking-tight"
+            style={{ 
+              fontSize: 'clamp(1.3rem, 1.2rem + 0.5vw, 1.6rem)',
+              letterSpacing: '-0.03em'
+            }}
           >
             <span 
-              className="italic font-medium"
+              className="italic"
               style={{
-                color: 'hsl(174 65% 55%)',
-                textShadow: '0 0 25px hsl(174 60% 45% / 0.5)'
+                color: 'hsl(174 65% 52%)',
+                textShadow: '0 0 30px hsl(174 60% 45% / 0.5), 0 0 60px hsl(40 100% 60% / 0.2)'
               }}
             >Leen</span>
             <span 
               className="font-semibold not-italic" 
               style={{
-                color: 'hsl(0 0% 95%)',
-                textShadow: '0 0 20px hsl(0 0% 100% / 0.15)'
+                color: 'hsl(0 0% 98%)',
+                textShadow: '0 0 25px hsl(40 100% 70% / 0.25), 0 2px 12px hsl(30 90% 55% / 0.1)'
               }}
             >Score</span>
           </div>

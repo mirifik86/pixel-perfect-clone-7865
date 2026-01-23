@@ -84,13 +84,13 @@ export const LeenScoreLogo = () => {
         
         <h1 
           className="relative brand-text font-normal tracking-tight"
-          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(3rem, 2.5rem + 4vw, 5.5rem)' }}
+          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(3.5rem, 3rem + 5vw, 6.5rem)' }}
         >
           <span 
             className="brand-accent italic"
             style={{
               color: 'hsl(174 65% 52%)',
-              textShadow: '0 0 50px hsl(174 60% 45% / 0.5), 0 0 100px hsl(40 100% 60% / 0.25), 0 4px 30px hsl(30 90% 55% / 0.2)'
+              textShadow: '0 0 60px hsl(174 60% 45% / 0.6), 0 0 120px hsl(40 100% 60% / 0.3), 0 4px 40px hsl(30 90% 55% / 0.25)'
             }}
           >
             Leen
@@ -99,7 +99,7 @@ export const LeenScoreLogo = () => {
             className="font-semibold not-italic" 
             style={{
               color: 'hsl(0 0% 98%)',
-              textShadow: '0 0 40px hsl(40 100% 70% / 0.3), 0 4px 20px hsl(30 90% 55% / 0.15)'
+              textShadow: '0 0 50px hsl(40 100% 70% / 0.35), 0 4px 25px hsl(30 90% 55% / 0.2)'
             }}
           >
             Score
