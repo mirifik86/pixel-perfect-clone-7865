@@ -397,13 +397,13 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Transition cue - compact */}
-      <div className="flex justify-center py-2">
-        <div className="relative flex flex-col items-center gap-1">
-          {/* "Puis" text - only visible on empty state */}
+      {/* Transition cue - MOBILE: hidden "Puis" text to save space */}
+      <div className="flex justify-center py-1 md:py-2">
+        <div className="relative flex flex-col items-center gap-0.5 md:gap-1">
+          {/* "Puis" text - HIDDEN on mobile to save vertical space */}
           {!hasContent && (
             <span 
-              className="text-[10px] font-light tracking-[0.25em] uppercase transition-opacity duration-300"
+              className="hidden md:block text-[10px] font-light tracking-[0.25em] uppercase transition-opacity duration-300"
               style={{
                 color: 'hsl(174 65% 55% / 0.72)',
                 textShadow: '0 0 10px hsl(174 70% 50% / 0.3)',

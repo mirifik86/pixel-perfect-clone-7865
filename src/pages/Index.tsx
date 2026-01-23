@@ -463,12 +463,12 @@ const Index = () => {
       />
       
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
-      <main className="container-unified relative z-10 flex flex-1 flex-col items-center py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <main className="container-unified relative z-10 flex flex-1 flex-col items-center py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div className="flex w-full flex-col items-center">
-          {/* Logo & branding with unified halo */}
+          {/* Logo & branding with unified halo - MOBILE OPTIMIZED */}
           <div 
             className="relative flex animate-fade-in flex-col items-center" 
-            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: 'var(--space-1)' }}
+            style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: '0' }}
           >
             {/* Unified halo effect behind logo + subtitles */}
             <div 
@@ -524,22 +524,21 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - premium spacing */}
+          {/* Language toggle - MOBILE: compact spacing to keep action above fold */}
           <div 
-            className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both', marginTop: 'var(--space-6)', marginBottom: 'var(--space-4)' }}
+            className="flex w-full justify-center animate-fade-in mt-2 mb-1 md:mt-6 md:mb-4"
+            style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - premium spacing with visual impact */}
+          {/* Score gauge - MOBILE: reduced height to keep button above fold */}
           <div 
-            className="relative flex justify-center items-center"
+            className="relative flex justify-center items-center mb-2 md:mb-6"
             style={{ 
-              marginBottom: 'var(--space-6)', 
               minHeight: isLoading && isImageAnalysis 
-                ? 'clamp(340px, 50vh, 400px)' // Taller container for Mission Control loader
-                : `${gaugeSize + 40}px` 
+                ? 'clamp(280px, 45vh, 400px)' // MOBILE: smaller container
+                : `clamp(${gaugeSize}px, 18vh, ${gaugeSize + 40}px)` // MOBILE: dynamic height
             }}
           >
             {/* Loader - shows during analysis with smooth exit */}
