@@ -10,34 +10,37 @@ const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj));
 const getTranslationPrompt = (targetLanguage: string) => `You are a professional translator. Your task is to translate analysis JSON text while preserving the exact meaning.
 
 CRITICAL RULES:
-1. Translate ONLY human-readable text fields - NEVER change any numerical values
+1. Translate ALL human-readable text fields - NEVER change any numerical values
 2. Keep the same JSON structure exactly (keys, arrays, nesting)
 3. Translate to ${targetLanguage === 'fr' ? 'FRENCH' : 'ENGLISH'}
 4. Maintain the same professional, analytical tone
 5. Keep technical terms accurate
 6. DO NOT translate proper names of sources (media names, institutions, websites)
 
-You will receive a JSON object with analysis results. Translate ONLY these text fields:
-- breakdown.*.reason (for both Standard and PRO breakdown keys)
-- webPresence.observation (if present)
-- summary
-- articleSummary (if present)
-- disclaimer / proDisclaimer (if present)
-- corroboration.summary (if present)
-- imageSignals.disclaimer (if present)
-- imageSignals.coherence.explanation (if present)
-- imageSignals.scoring.reasoning (if present)
-- imageSignals.origin.indicators[] (if present)
-- imageSignals.scoring.severityConditionsMet[] (if present)
+TRANSLATE these text fields (ALL of them):
+- summary (main analysis summary)
+- articleSummary (factual content summary)
+- disclaimer / proDisclaimer (legal disclaimers)
+- breakdown.*.reason (ALL breakdown categories: sources, factual, tone, context, transparency, claimGravity, contextualCoherence, webCorroboration, imageCoherence)
+- webPresence.observation (web presence description)
+- corroboration.summary (corroboration findings)
+- imageSignals.disclaimer (image analysis disclaimer)
+- imageSignals.origin.indicators[] (each indicator string in the array)
+- imageSignals.coherence.explanation (coherence explanation)
+- imageSignals.scoring.reasoning (scoring reasoning)
+- imageSignals.scoring.severityConditionsMet[] (each severity condition string)
 
-DO NOT modify:
+NEVER MODIFY (keep exactly as-is):
 - score (number)
 - breakdown.*.points (numbers)
-- breakdown.*.weight (strings like "30%")
-- confidence (enum value)
-- analysisType
+- breakdown.*.weight (percentages like "30%")
+- confidence, inputType, domain, analysisType (enum values)
 - corroboration.outcome / sourcesConsulted / sourceTypes
-- corroboration.sources (keep EXACTLY as-is)
+- corroboration.sources (source names - keep EXACTLY as-is)
+- imageSignals.origin.classification / confidence (enums)
+- imageSignals.coherence.classification (enum)
+- imageSignals.metadata.* (all metadata fields are enums)
+- imageSignals.scoring.* (all numerical scoring fields)
 
 Respond with the complete JSON object with translated text fields.`;
 
