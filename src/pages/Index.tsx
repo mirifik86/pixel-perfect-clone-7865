@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -6,6 +6,7 @@ import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
 import { UnifiedAnalysisForm } from '@/components/UnifiedAnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
+import { AnalysisError } from '@/components/AnalysisError';
 import { ProAnalysisLoader } from '@/components/ProAnalysisLoader';
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
 import { ScreenshotAnalysisLoader } from '@/components/ScreenshotAnalysisLoader';
@@ -122,6 +123,12 @@ const Index = () => {
   const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [lastAnalyzedContent, setLastAnalyzedContent] = useState<string>('');
   
+  // Error state for robust error handling (no redirect to home)
+  const [analysisError, setAnalysisError] = useState<{ message: string; code: string } | null>(null);
+  
+  // Track the last input for retry functionality
+  const lastInputRef = useRef<{ type: 'text' | 'image'; content: string; file?: File; preview?: string } | null>(null);
+  
   // Track if current analysis is from an image (for loader display)
   const [isImageAnalysis, setIsImageAnalysis] = useState(false);
   
@@ -193,7 +200,7 @@ const Index = () => {
     return { en: enData, fr: frData };
   };
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent('');
@@ -201,17 +208,36 @@ const Index = () => {
     setScreenshotData(null);
     setScreenshotLoaderStep(0);
     setIsImageAnalysis(false);
-  };
+    setAnalysisError(null);
+    lastInputRef.current = null;
+  }, []);
+  
+  // Retry the last analysis (for error recovery)
+  const handleRetry = useCallback(() => {
+    if (!lastInputRef.current) return;
+    
+    setAnalysisError(null);
+    
+    if (lastInputRef.current.type === 'text') {
+      handleAnalyze(lastInputRef.current.content);
+    } else if (lastInputRef.current.file && lastInputRef.current.preview) {
+      handleImageAnalysis(lastInputRef.current.file, lastInputRef.current.preview);
+    }
+  }, []);
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
-  const handleAnalyze = async (input: string) => {
+  const handleAnalyze = useCallback(async (input: string) => {
     const tLocal = translations[language];
 
+    // Store input for retry
+    lastInputRef.current = { type: 'text', content: input };
+    
     setIsLoading(true);
     setIsImageAnalysis(false);
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent(input);
+    setAnalysisError(null);
 
     try {
       const { en, fr } = await runBilingualTextAnalysis({ content: input, analysisType: 'standard' });
@@ -224,21 +250,30 @@ const Index = () => {
       setAnalysisByLanguage({ en, fr });
     } catch (err) {
       console.error('Unexpected error:', err);
+      // Stay on page, show error panel instead of toast only
+      const errorMessage = err instanceof Error ? err.message : tLocal.errorAnalysis;
+      const errorCode = `ERR_${Date.now().toString(36).toUpperCase()}`;
+      setAnalysisError({ message: errorMessage, code: errorCode });
       toast.error(tLocal.errorAnalysis);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [language, runBilingualTextAnalysis]);
 
   // Screenshot Analysis Handler - now called directly when image is ready
-  const handleImageAnalysis = async (file: File, preview: string, analysisType: 'standard' | 'pro' = 'standard') => {
+  const handleImageAnalysis = useCallback(async (file: File, preview: string, analysisType: 'standard' | 'pro' = 'standard') => {
     const tLocal = translations[language];
+    
+    // Store input for retry
+    lastInputRef.current = { type: 'image', content: preview, file, preview };
+    
     setUploadedFile({ file, preview });
     setIsLoading(true);
     setIsImageAnalysis(true);
     setAnalysisByLanguage({ en: null, fr: null });
     setSummariesByLanguage({ en: null, fr: null });
     setScreenshotLoaderStep(0);
+    setAnalysisError(null);
 
     try {
       // Step 1: OCR
@@ -263,13 +298,15 @@ const Index = () => {
 
       if (result.error) {
         console.error('Screenshot analysis error:', result.error);
-        toast.error(tLocal.errorAnalysis);
+        const errorCode = `IMG_${Date.now().toString(36).toUpperCase()}`;
+        setAnalysisError({ message: tLocal.errorAnalysis, code: errorCode });
         return;
       }
 
       if (result.data?.error) {
         console.error('API error:', result.data.error);
-        toast.error(result.data.error);
+        const errorCode = `API_${Date.now().toString(36).toUpperCase()}`;
+        setAnalysisError({ message: result.data.error, code: errorCode });
         return;
       }
 
@@ -341,11 +378,15 @@ const Index = () => {
 
     } catch (err) {
       console.error('Unexpected error:', err);
+      // Stay on page with error panel
+      const errorMessage = err instanceof Error ? err.message : tLocal.errorAnalysis;
+      const errorCode = `ERR_${Date.now().toString(36).toUpperCase()}`;
+      setAnalysisError({ message: errorMessage, code: errorCode });
       toast.error(tLocal.errorAnalysis);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [language, runBilingualTextAnalysis]);
 
   // Re-run analysis with edited text
   const handleRerunAnalysis = async (editedText: string) => {
@@ -394,7 +435,7 @@ const Index = () => {
 
   return (
     <div 
-      className="relative flex h-screen flex-col overflow-hidden" 
+      className="relative flex min-h-screen flex-col" 
       style={{
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
@@ -410,8 +451,8 @@ const Index = () => {
         }} 
       />
       
-      {/* Main content - scrollable layout for results */}
-      <main className="container-unified relative z-10 flex min-h-full flex-col items-center overflow-y-auto py-3">
+      {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
+      <main className="container-unified relative z-10 flex flex-1 flex-col items-center py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div className="flex w-full flex-col items-center">
           {/* Logo & branding with unified halo */}
           <div 
@@ -578,8 +619,19 @@ const Index = () => {
             </div>
           )}
 
-          {/* Unified Analysis Form - hidden during loading and after analysis */}
-          {!hasAnyAnalysis && !isLoading && (
+          {/* Error Panel - shown when analysis fails (stays on page, no redirect) */}
+          {analysisError && !isLoading && (
+            <AnalysisError
+              language={language}
+              errorMessage={analysisError.message}
+              errorCode={analysisError.code}
+              onRetry={handleRetry}
+              onNewAnalysis={handleReset}
+            />
+          )}
+
+          {/* Unified Analysis Form - hidden during loading, after analysis, or during error */}
+          {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
               className="container-content w-full animate-fade-in"
               style={{ animationDelay: '350ms', animationFillMode: 'both' }}
