@@ -455,23 +455,13 @@ const Index = () => {
               />
             </div>
             
-            {/* Subtitle - compact styling */}
+            {/* Byline - premium styling */}
             <p 
-              className="animate-fade-in text-center font-medium text-foreground/95"
-              style={{ 
-                animationDelay: '100ms', 
-                animationFillMode: 'both',
-                fontSize: 'var(--text-base)'
-              }}
-            >
-              {t.tagline}
-            </p>
-            <p 
-              className="animate-fade-in font-bold uppercase"
+              className="animate-fade-in font-bold uppercase text-center"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
-                marginTop: 'var(--space-1)',
+                marginTop: 'var(--space-2)',
                 fontSize: 'var(--text-xs)',
                 letterSpacing: '0.35em',
                 color: 'hsl(174 80% 65%)',
