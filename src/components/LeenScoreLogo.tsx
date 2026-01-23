@@ -84,13 +84,13 @@ export const LeenScoreLogo = () => {
         
         <h1 
           className="relative brand-text font-normal tracking-tight"
-          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(2rem, 1.6rem + 2vw, 3.5rem)' }}
+          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(3rem, 2.5rem + 4vw, 5.5rem)' }}
         >
           <span 
             className="brand-accent italic"
             style={{
               color: 'hsl(174 65% 52%)',
-              textShadow: '0 0 40px hsl(174 60% 45% / 0.4), 0 0 80px hsl(40 100% 60% / 0.2), 0 2px 20px hsl(30 90% 55% / 0.15)'
+              textShadow: '0 0 50px hsl(174 60% 45% / 0.5), 0 0 100px hsl(40 100% 60% / 0.25), 0 4px 30px hsl(30 90% 55% / 0.2)'
             }}
           >
             Leen
@@ -99,12 +99,24 @@ export const LeenScoreLogo = () => {
             className="font-semibold not-italic" 
             style={{
               color: 'hsl(0 0% 98%)',
-              textShadow: '0 0 30px hsl(40 100% 70% / 0.25), 0 2px 15px hsl(30 90% 55% / 0.1)'
+              textShadow: '0 0 40px hsl(40 100% 70% / 0.3), 0 4px 20px hsl(30 90% 55% / 0.15)'
             }}
           >
             Score
           </span>
         </h1>
+        
+        {/* Tagline */}
+        <p 
+          className="relative text-white/70 tracking-widest uppercase"
+          style={{ 
+            fontSize: 'clamp(0.7rem, 0.6rem + 0.5vw, 0.9rem)',
+            marginTop: 'var(--space-2)',
+            letterSpacing: '0.2em'
+          }}
+        >
+          La crédibilité mesurée.
+        </p>
       </div>
     </div>
   );
