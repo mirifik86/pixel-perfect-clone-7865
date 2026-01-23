@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// OCR and Image Analysis using Gemini Vision with STRICT credibility guardrails
+// OCR and Image Analysis using Gemini Vision with 3-SCORE ARCHITECTURE
 const getOcrPrompt = (language: string) => {
   const isFr = language === 'fr';
   
@@ -13,69 +13,73 @@ const getOcrPrompt = (language: string) => {
     ? `IMPORTANT: Your "visual_description" field MUST be written in FRENCH (Français).`
     : `IMPORTANT: Your "visual_description" field MUST be written in ENGLISH.`;
   
-  return `You are an expert OCR and image analysis system with STRICT CREDIBILITY GUARDRAILS. Analyze this screenshot/image.
+  return `You are an expert image credibility analyst. Analyze this screenshot/image using a STRICT 3-SCORE ARCHITECTURE.
 
 ${langInstructions}
 
 ═══════════════════════════════════════════════════════════════════
-CRITICAL GUARDRAIL RULES — NON-NEGOTIABLE
+MANDATORY 3-SCORE ARCHITECTURE
 ═══════════════════════════════════════════════════════════════════
 
-RULE 1: VISUAL IDENTITY VS TEXT MISMATCH DETECTION
-- If the image shows a CLEARLY IDENTIFIABLE PUBLIC FIGURE
-- AND the text refers to a DIFFERENT person, country, or authority
-→ You MUST flag "visual_text_mismatch": true
-→ Describe exactly who is visible vs who the text mentions
+You MUST produce exactly THREE sub-scores (0-100 each):
 
-RULE 2: IMAGE DOES NOT PROVE CLAIMS
-- NEVER state the image "confirms", "supports", or "proves" anything
-- Images are ONLY "illustrative context"
-- Images NEVER constitute evidence of factual announcements
+1. VISUAL_AUTHENTICITY (0-100)
+   Evaluate: image quality, natural appearance, lighting consistency, edge coherence
+   - 90-100: High-quality, natural-looking image with consistent elements
+   - 70-89: Good quality with minor inconsistencies
+   - 50-69: Moderate quality, some concerning signals
+   - 30-49: Poor quality or notable inconsistencies
+   - 0-29: Clear signs of poor source or heavy degradation
 
-RULE 3: SCREENSHOT = HIGH-RISK INPUT
-- All screenshots (especially social media) are HIGH-RISK
-- Default assumption: unverified until proven otherwise
+2. TEXT_IMAGE_COHERENCE (0-100)
+   Evaluate: alignment between visible content and any text/claims
+   - 90-100: Text and image content fully align
+   - 70-89: Mostly coherent, minor ambiguities
+   - 50-69: Partial alignment, some mismatches
+   - 30-49: Significant misalignment between text and visual
+   - 0-29: Clear mismatch between visible entity and text claims
 
-RULE 4: NO STORYTELLING
-- Do NOT invent political logic
-- Do NOT claim hypothetical media coverage
-- Do NOT infer institutional processes
-- ONLY describe what is VISIBLE and what the text EXPLICITLY claims
+3. MANIPULATION_STAGING_SIGNALS (0-100)
+   NOTE: 100 = NO manipulation, 0 = CLEAR manipulation
+   Evaluate: editing artifacts, AI generation signs, staging indicators
+   - 90-100: No detectable manipulation or staging
+   - 70-89: Minor artifacts, likely compression only
+   - 50-69: Some suspicious signals, uncertain origin
+   - 30-49: Notable manipulation indicators
+   - 0-29: Clear signs of editing, AI generation, or staging
 
-RULE 5: FACTUAL SIGNALS ONLY
-- Describe ONLY observable facts
-- No identity assumptions beyond clearly visible
-- No political role assumptions
-- No authority confirmation
+SCORING RULES:
+- Apply CONSISTENT evaluation logic
+- Do NOT reinterpret criteria
+- Do NOT explain scoring in output
+- Screenshots of social media = automatic -20 on visual_authenticity
+- Identifiable mismatch (person A shown, text mentions person B) = text_image_coherence capped at 30
 
+═══════════════════════════════════════════════════════════════════
+ADDITIONAL TASKS
 ═══════════════════════════════════════════════════════════════════
 
 TASK 1: TEXT EXTRACTION (OCR)
 - Extract ALL visible text from the image
-- Preserve meaningful structure (paragraphs, lists)
+- Preserve meaningful structure
 - Normalize whitespace
-- Remove obvious OCR garbage
 
 TASK 2: VISUAL-TEXT MISMATCH CHECK
 - Identify any clearly recognizable public figures in the image
 - Compare with entities mentioned in the text
 - Flag mismatch if the visible person differs from text subject
 
-TASK 3: IMAGE SIGNAL ANALYSIS (RESTRICTED)
-Evaluate ONLY these observable signals:
-
+TASK 3: IMAGE SIGNALS (Observable Only)
 1. screenshot_likelihood: "likely" | "uncertain"
 2. blur_level: "low" | "medium" | "high"
 3. compression_artifacts: "low" | "medium" | "high"
-4. suspicious_editing_hints: "none" | "possible" (low confidence only)
+4. suspicious_editing_hints: "none" | "possible"
 5. metadata_present: "yes" | "no" | "partial"
 
-TASK 4: VISUAL DESCRIPTION (STRICTLY FACTUAL)
-${isFr ? '- Write the description IN FRENCH' : '- Write the description IN ENGLISH'}
+TASK 4: VISUAL DESCRIPTION
+${isFr ? '- Write IN FRENCH' : '- Write IN ENGLISH'}
 - Describe ONLY what is visible
-- If a public figure is recognizable, state their name
-- Do NOT make claims about what the image "proves"
-- State explicitly what CANNOT be verified from the image alone
+- State what CANNOT be verified from the image alone
 
 OCR CONFIDENCE (0.0 to 1.0):
 - 0.9-1.0: Crystal clear
@@ -89,6 +93,11 @@ RESPONSE FORMAT (JSON only):
   "cleaned_text": "<post-processed text>",
   "ocr_confidence": <0.0-1.0>,
   "text_length": <character count>,
+  "sub_scores": {
+    "visual_authenticity": <0-100>,
+    "text_image_coherence": <0-100>,
+    "manipulation_staging_signals": <0-100>
+  },
   "image_signals": {
     "screenshot_likelihood": "<likely|uncertain>",
     "blur_level": "<low|medium|high>",
@@ -121,6 +130,23 @@ const extractBase64Data = (dataUrl: string): { mimeType: string; data: string } 
     return { mimeType: match[1], data: match[2] };
   }
   return { mimeType: 'image/png', data: dataUrl };
+};
+
+// Calculate final LeenScore from 3 sub-scores
+const calculateLeenScore = (subScores: { 
+  visual_authenticity: number; 
+  text_image_coherence: number; 
+  manipulation_staging_signals: number; 
+}): number => {
+  // Weighted average: Visual 25%, Coherence 35%, Manipulation 40%
+  const weightedScore = (
+    subScores.visual_authenticity * 0.25 +
+    subScores.text_image_coherence * 0.35 +
+    subScores.manipulation_staging_signals * 0.40
+  );
+  
+  // Clamp between 5-98 (never absolute)
+  return Math.max(5, Math.min(98, Math.round(weightedScore)));
 };
 
 // Apply credibility guardrails to analysis result
@@ -299,6 +325,11 @@ serve(async (req) => {
         cleaned_text: "",
         ocr_confidence: 0.3,
         text_length: 0,
+        sub_scores: {
+          visual_authenticity: 40,
+          text_image_coherence: 40,
+          manipulation_staging_signals: 50
+        },
         image_signals: {
           screenshot_likelihood: "uncertain",
           blur_level: "medium",
@@ -322,6 +353,15 @@ serve(async (req) => {
       };
     }
 
+    // Ensure sub_scores exist with defaults
+    if (!ocrData.sub_scores) {
+      ocrData.sub_scores = {
+        visual_authenticity: 50,
+        text_image_coherence: 50,
+        manipulation_staging_signals: 50
+      };
+    }
+
     // Ensure credibility_flags exists with default high-risk values
     if (!ocrData.credibility_flags) {
       ocrData.credibility_flags = {
@@ -338,6 +378,9 @@ serve(async (req) => {
     const confidence = ocrData.ocr_confidence || 0;
     
     if (textToAnalyze.length < 10) {
+      // Calculate image-only LeenScore from sub-scores
+      const imageOnlyScore = calculateLeenScore(ocrData.sub_scores);
+      
       return new Response(
         JSON.stringify({
           success: true,
@@ -347,6 +390,8 @@ serve(async (req) => {
             confidence: confidence,
             text_length: textToAnalyze.length,
           },
+          sub_scores: ocrData.sub_scores,
+          image_score: imageOnlyScore,
           image_signals: ocrData.image_signals,
           visual_text_mismatch: ocrData.visual_text_mismatch,
           visual_description: ocrData.visual_description,
@@ -361,7 +406,11 @@ serve(async (req) => {
       );
     }
 
-    // Call the existing analyze function using the correct Supabase URL
+    // Calculate image LeenScore from 3 sub-scores
+    const imageScore = calculateLeenScore(ocrData.sub_scores);
+    console.log("Image sub-scores:", ocrData.sub_scores, "→ Image LeenScore:", imageScore);
+
+    // Call the existing analyze function for TEXT analysis
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || 'https://clejmxumuqhpjncjuuht.supabase.co';
     const analyzeResponse = await fetch(`${SUPABASE_URL}/functions/v1/analyze`, {
       method: "POST",
@@ -373,33 +422,49 @@ serve(async (req) => {
         content: textToAnalyze,
         language: language || 'en',
         analysisType: analysisType || 'standard',
-        isScreenshot: true // Flag for downstream analysis
+        isScreenshot: true
       }),
     });
 
     let analysisResult = null;
+    let textScore = 50; // Default
+    
     if (analyzeResponse.ok) {
       analysisResult = await analyzeResponse.json();
+      textScore = analysisResult.score || 50;
       
       // Apply STRICT credibility guardrails
       analysisResult = applyCredibilityGuardrails(analysisResult, ocrData, language || 'en');
       
       // Apply additional OCR uncertainty penalty
       if (confidence < 0.55 && analysisResult.score) {
-        const penalty = Math.round((0.55 - confidence) * 15); // Increased penalty
+        const penalty = Math.round((0.55 - confidence) * 15);
         analysisResult.score = Math.max(5, analysisResult.score - penalty);
         analysisResult.ocrPenaltyApplied = penalty;
       }
       
       // Ensure score never exceeds screenshot limits
       if (analysisResult.score > 70 && !analysisResult.proSources?.length) {
-        analysisResult.score = 50; // No external verification = uncertainty zone
+        analysisResult.score = 50;
         analysisResult.scoreCapped = true;
         analysisResult.scoreCappedReason = (analysisResult.scoreCappedReason || []).concat(['no_external_verification']);
       }
       
     } else {
       console.error("LeenScore analysis failed:", await analyzeResponse.text());
+    }
+
+    // Calculate FINAL combined score: Image (40%) + Text (60%)
+    const finalScore = Math.round(imageScore * 0.40 + textScore * 0.60);
+    const cappedFinalScore = Math.max(5, Math.min(98, finalScore));
+    
+    // Apply guardrails to final score
+    let finalCappedScore = cappedFinalScore;
+    if (ocrData.visual_text_mismatch?.detected) {
+      finalCappedScore = Math.min(finalCappedScore, 50);
+    }
+    if (ocrData.credibility_flags?.is_social_media_screenshot) {
+      finalCappedScore = Math.min(finalCappedScore, 50);
     }
 
     return new Response(
@@ -411,12 +476,22 @@ serve(async (req) => {
           confidence: confidence,
           text_length: textToAnalyze.length,
         },
+        sub_scores: ocrData.sub_scores,
+        image_score: imageScore,
+        text_score: textScore,
+        final_score: finalCappedScore,
+        score_breakdown: {
+          image_weight: "40%",
+          text_weight: "60%",
+          raw_combined: finalScore,
+          after_caps: finalCappedScore
+        },
         image_signals: ocrData.image_signals,
         visual_text_mismatch: ocrData.visual_text_mismatch,
         visual_description: ocrData.visual_description,
         credibility_flags: ocrData.credibility_flags,
         quality_notes: ocrData.quality_notes,
-        analysis: analysisResult,
+        analysis: analysisResult ? { ...analysisResult, score: finalCappedScore } : null,
         warning: confidence < 0.55 
           ? (language === 'fr' 
             ? "Confiance OCR faible. Le score reflète cette incertitude." 
