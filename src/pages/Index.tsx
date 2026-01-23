@@ -455,78 +455,21 @@ const Index = () => {
               />
             </div>
             
-            {/* Premium signature block - single elegant separator */}
-            <div 
-              className="animate-fade-in flex flex-col items-center"
+            {/* Byline - clean, compact, premium */}
+            <p 
+              className="animate-fade-in font-semibold uppercase text-center"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
-                marginTop: 'var(--space-5)'
+                marginTop: 'var(--space-2)',
+                fontSize: 'clamp(0.65rem, 0.6rem + 0.3vw, 0.8rem)',
+                letterSpacing: '0.3em',
+                color: 'hsl(174 85% 68%)',
+                textShadow: '0 0 15px hsl(174 90% 60% / 0.7), 0 0 30px hsl(174 80% 55% / 0.5)'
               }}
             >
-              {/* Single premium separator with animated glow */}
-              <div 
-                className="flex items-center justify-center gap-4"
-                style={{ width: '100%', maxWidth: '320px', marginBottom: 'var(--space-4)' }}
-              >
-                <div 
-                  className="flex-1 h-px"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent 0%, hsl(174 75% 60% / 0.7) 100%)'
-                  }}
-                />
-                <div 
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(174 90% 70%) 0%, hsl(174 80% 55%) 100%)',
-                    boxShadow: '0 0 10px hsl(174 90% 65% / 1), 0 0 20px hsl(174 80% 55% / 0.8), 0 0 35px hsl(174 70% 50% / 0.5)',
-                    animation: 'separator-pulse 2s ease-in-out infinite'
-                  }}
-                />
-                <div 
-                  className="flex-1 h-px"
-                  style={{
-                    background: 'linear-gradient(90deg, hsl(174 75% 60% / 0.7) 0%, transparent 100%)'
-                  }}
-                />
-              </div>
-              
-              {/* Byline text - enhanced premium glow */}
-              <p 
-                className="font-extrabold uppercase text-center"
-                style={{ 
-                  fontSize: 'clamp(0.9rem, 0.8rem + 0.5vw, 1.1rem)',
-                  letterSpacing: '0.4em',
-                  color: 'hsl(174 90% 75%)',
-                  textShadow: '0 0 20px hsl(174 95% 65% / 1), 0 0 40px hsl(174 85% 55% / 0.8), 0 0 60px hsl(174 75% 50% / 0.5), 0 0 80px hsl(174 65% 45% / 0.3)',
-                  animation: 'byline-glow 3s ease-in-out infinite alternate'
-                }}
-              >
-                {t.byLine}
-              </p>
-              
-              {/* CSS animations for premium effects */}
-              <style>{`
-                @keyframes separator-pulse {
-                  0%, 100% { 
-                    transform: scale(1);
-                    box-shadow: 0 0 10px hsl(174 90% 65% / 1), 0 0 20px hsl(174 80% 55% / 0.8), 0 0 35px hsl(174 70% 50% / 0.5);
-                  }
-                  50% { 
-                    transform: scale(1.3);
-                    box-shadow: 0 0 15px hsl(174 95% 70% / 1), 0 0 30px hsl(174 85% 60% / 0.9), 0 0 50px hsl(174 75% 55% / 0.6);
-                  }
-                }
-                @keyframes byline-glow {
-                  0% {
-                    text-shadow: 0 0 20px hsl(174 95% 65% / 1), 0 0 40px hsl(174 85% 55% / 0.8), 0 0 60px hsl(174 75% 50% / 0.5), 0 0 80px hsl(174 65% 45% / 0.3);
-                  }
-                  100% {
-                    text-shadow: 0 0 25px hsl(174 100% 70% / 1), 0 0 50px hsl(174 90% 60% / 0.9), 0 0 75px hsl(174 80% 55% / 0.6), 0 0 100px hsl(174 70% 50% / 0.4);
-                  }
-                }
-              `}</style>
-            </div>
+              {t.byLine}
+            </p>
           </div>
 
           {/* Language toggle - premium spacing */}
