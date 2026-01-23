@@ -584,54 +584,97 @@ serve(async (req) => {
 
     console.log(`Calling Lovable AI Gateway for ${isPro ? 'Pro' : 'Standard'} analysis (English base)...`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: isPro ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.3,
-      }),
-    });
+    // Retry logic for transient failures
+    const maxRetries = 3;
+    let messageContent: string | null = null;
+    let lastError: Error | null = null;
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        const errorMsg = language === 'fr' 
-          ? "Limite de requêtes atteinte. Réessayez dans quelques instants."
-          : "Rate limit exceeded. Please try again later.";
-        return new Response(
-          JSON.stringify({ error: errorMsg }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      if (attempt > 0) {
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
+        console.log(`Retry attempt ${attempt + 1}, waiting ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
-      if (response.status === 402) {
-        const errorMsg = language === 'fr'
-          ? "Crédits IA épuisés. Veuillez ajouter des crédits dans Settings → Workspace → Usage."
-          : "AI credits exhausted. Please add credits in Settings → Workspace → Usage.";
-        return new Response(
-          JSON.stringify({ error: errorMsg }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+
+      try {
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: isPro ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            temperature: 0.3,
+          }),
+        });
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            console.warn(`Rate limited on attempt ${attempt + 1}`);
+            lastError = new Error("Rate limit exceeded");
+            continue; // Retry
+          }
+          if (response.status === 402) {
+            const errorMsg = language === 'fr'
+              ? "Crédits IA épuisés. Veuillez ajouter des crédits dans Settings → Workspace → Usage."
+              : "AI credits exhausted. Please add credits in Settings → Workspace → Usage.";
+            return new Response(
+              JSON.stringify({ error: errorMsg }),
+              { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          const errorText = await response.text();
+          console.error("AI gateway error:", response.status, errorText);
+          lastError = new Error(`AI gateway error: ${response.status}`);
+          continue; // Retry for other errors
+        }
+
+        const aiResponse = await response.json();
+        messageContent = aiResponse.choices?.[0]?.message?.content;
+
+        if (messageContent) {
+          console.log("AI response received (English):", messageContent.substring(0, 200));
+          break; // Success!
+        } else {
+          console.warn(`Empty response on attempt ${attempt + 1}`);
+          lastError = new Error("Empty AI response");
+        }
+      } catch (fetchError) {
+        console.error(`Fetch error on attempt ${attempt + 1}:`, fetchError);
+        lastError = fetchError instanceof Error ? fetchError : new Error("Network error");
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
     }
 
-    const aiResponse = await response.json();
-    const messageContent = aiResponse.choices?.[0]?.message?.content;
-
+    // If all retries failed, return a graceful fallback
     if (!messageContent) {
-      throw new Error("No response from AI");
+      console.error("All retries exhausted, returning fallback response");
+      const fallbackMsg = language === 'fr'
+        ? "L'analyse n'a pas pu être complétée. Veuillez réessayer dans quelques instants."
+        : "Analysis could not be completed. Please try again in a moment.";
+      
+      return new Response(
+        JSON.stringify({
+          score: 50,
+          analysisType: isPro ? 'pro' : 'standard',
+          breakdown: {
+            sources: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+            factual: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+            tone: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+            context: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+            transparency: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" }
+          },
+          summary: fallbackMsg,
+          confidence: "low",
+          isRetryFallback: true
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-
-    console.log("AI response received (English):", messageContent.substring(0, 200));
 
     // Parse the JSON response from AI
     let analysisResult;
