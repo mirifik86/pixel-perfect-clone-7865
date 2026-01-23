@@ -122,37 +122,24 @@ export const MissionControlLoader = ({ language }: MissionControlLoaderProps) =>
         className="relative z-10 flex flex-col items-center"
         style={{ padding: 'var(--space-8) var(--space-6)' }}
       >
-        {/* LeenScore mini logo */}
+        {/* Processing status indicator - replaces branding during analysis */}
         <div 
           className="mb-6 flex items-center justify-center"
           style={{
             opacity: 0.9,
           }}
         >
-          <div 
-            className="relative flex items-center gap-1.5"
+          <span 
+            className="font-sans font-medium uppercase tracking-wider"
             style={{
-              fontSize: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)',
+              fontSize: 'clamp(0.8rem, 0.75rem + 0.3vw, 0.95rem)',
+              color: 'hsl(174 50% 65%)',
+              letterSpacing: '0.15em',
+              textShadow: '0 0 15px hsl(174 60% 50% / 0.4)',
             }}
           >
-            <span 
-              className="font-serif font-semibold"
-              style={{
-                color: 'hsl(174 65% 52%)',
-                textShadow: '0 0 20px hsl(174 70% 50% / 0.5)',
-              }}
-            >
-              Leen
-            </span>
-            <span 
-              className="font-serif font-semibold"
-              style={{
-                color: 'hsl(0 0% 92%)',
-              }}
-            >
-              Score
-            </span>
-          </div>
+            {language === 'fr' ? 'En traitement…' : 'Processing…'}
+          </span>
         </div>
 
         {/* Scanning visualization container */}
