@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
@@ -7,6 +7,19 @@ interface ScoreGaugeProps {
   language?: 'en' | 'fr';
   hasContent?: boolean; // When true, disables pulse effects on "Ready" label
 }
+
+// Generate sparkle particles configuration
+const generateSparkles = (count: number) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    angle: (i / count) * 360,
+    distance: 0.55 + Math.random() * 0.15,
+    size: 2 + Math.random() * 3,
+    delay: Math.random() * 2,
+    duration: 1.5 + Math.random() * 1.5,
+    opacity: 0.4 + Math.random() * 0.6
+  }));
+};
 
 export const ScoreGauge = ({
   score,
@@ -17,7 +30,11 @@ export const ScoreGauge = ({
 }: ScoreGaugeProps) => {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
+  const [showSparkles, setShowSparkles] = useState(false);
   const animationRef = useRef<number | null>(null);
+  
+  // Memoize sparkles to prevent regeneration on each render
+  const sparkles = useMemo(() => generateSparkles(16), []);
   
   // Premium thicker stroke for visual impact
   const strokeWidth = 16;
@@ -33,6 +50,9 @@ export const ScoreGauge = ({
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      
+      // Trigger sparkles when score appears
+      setShowSparkles(true);
       
       const startValue = 0;
       const endValue = score;
@@ -73,6 +93,7 @@ export const ScoreGauge = ({
     } else {
       setAnimatedScore(0);
       setDisplayScore(0);
+      setShowSparkles(false);
     }
   }, [score]);
 
@@ -157,6 +178,48 @@ export const ScoreGauge = ({
 
   return (
     <div className={`relative flex flex-col items-center ${className || ''}`}>
+      {/* Sparkle particles - visible when score is shown */}
+      {showSparkles && score !== null && (
+        <>
+          {sparkles.map((sparkle) => {
+            const rad = (sparkle.angle * Math.PI) / 180;
+            const x = Math.cos(rad) * size * sparkle.distance;
+            const y = Math.sin(rad) * size * sparkle.distance;
+            
+            return (
+              <div
+                key={sparkle.id}
+                className="absolute pointer-events-none"
+                style={{
+                  width: sparkle.size,
+                  height: sparkle.size,
+                  left: '50%',
+                  top: '50%',
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                  background: getInterpolatedColor(animatedScore),
+                  borderRadius: '50%',
+                  boxShadow: `0 0 ${sparkle.size * 2}px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.8)')}, 0 0 ${sparkle.size * 4}px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.4)')}`,
+                  animation: `sparkle-twinkle ${sparkle.duration}s ease-in-out ${sparkle.delay}s infinite`,
+                  opacity: sparkle.opacity
+                }}
+              />
+            );
+          })}
+          <style>{`
+            @keyframes sparkle-twinkle {
+              0%, 100% { 
+                opacity: 0.2; 
+                transform: translate(var(--tx), var(--ty)) scale(0.5);
+              }
+              50% { 
+                opacity: 1; 
+                transform: translate(var(--tx), var(--ty)) scale(1.2);
+              }
+            }
+          `}</style>
+        </>
+      )}
+      
       {/* Premium ambient glow behind gauge */}
       <div 
         className="absolute rounded-full"
