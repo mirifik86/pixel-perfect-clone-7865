@@ -455,21 +455,54 @@ const Index = () => {
               />
             </div>
             
-            {/* Byline - premium luminous styling */}
-            <p 
-              className="animate-fade-in font-bold uppercase text-center"
+            {/* Premium signature block with separator */}
+            <div 
+              className="animate-fade-in flex flex-col items-center"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
-                marginTop: 'var(--space-3)',
-                fontSize: 'var(--text-sm)',
-                letterSpacing: '0.35em',
-                color: 'hsl(174 85% 70%)',
-                textShadow: '0 0 15px hsl(174 90% 60% / 0.8), 0 0 30px hsl(174 80% 55% / 0.6), 0 0 50px hsl(174 70% 50% / 0.4), 0 0 70px hsl(174 60% 45% / 0.3)'
+                marginTop: 'var(--space-4)'
               }}
             >
-              {t.byLine}
-            </p>
+              {/* Premium separator line */}
+              <div 
+                className="flex items-center justify-center gap-3 mb-3"
+                style={{ width: '100%', maxWidth: '280px' }}
+              >
+                <div 
+                  className="flex-1 h-px"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, hsl(174 70% 55% / 0.5) 100%)'
+                  }}
+                />
+                <div 
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{
+                    background: 'hsl(174 80% 65%)',
+                    boxShadow: '0 0 8px hsl(174 80% 60% / 0.8), 0 0 16px hsl(174 70% 55% / 0.5)'
+                  }}
+                />
+                <div 
+                  className="flex-1 h-px"
+                  style={{
+                    background: 'linear-gradient(90deg, hsl(174 70% 55% / 0.5) 0%, transparent 100%)'
+                  }}
+                />
+              </div>
+              
+              {/* Byline text */}
+              <p 
+                className="font-bold uppercase text-center"
+                style={{ 
+                  fontSize: 'var(--text-sm)',
+                  letterSpacing: '0.35em',
+                  color: 'hsl(174 85% 70%)',
+                  textShadow: '0 0 15px hsl(174 90% 60% / 0.8), 0 0 30px hsl(174 80% 55% / 0.6), 0 0 50px hsl(174 70% 50% / 0.4), 0 0 70px hsl(174 60% 45% / 0.3)'
+                }}
+              >
+                {t.byLine}
+              </p>
+            </div>
           </div>
 
           {/* Language toggle - compact spacing */}
