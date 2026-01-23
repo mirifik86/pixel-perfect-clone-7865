@@ -1,8 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Search, Loader2, CheckCircle2, Image, X } from 'lucide-react';
+import { Search, Loader2, CheckCircle2, FileText, Image, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UnifiedAnalysisFormProps {
   onAnalyzeText: (input: string) => void;
@@ -37,7 +36,6 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, language, onContentChange }: UnifiedAnalysisFormProps) => {
-  const isMobile = useIsMobile();
   const [input, setInput] = useState('');
   const [uploadedImage, setUploadedImage] = useState<{ file: File; preview: string } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -49,7 +47,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
   const hasImage = Boolean(uploadedImage);
   const hasText = input.trim().length > 0;
   const hasContent = hasText || hasImage;
-  const isActive = isDragOver;
+  const isActive = isDragOver; // Only drag-over triggers card glow, not focus
 
   // Notify parent when content state changes
   useEffect(() => {
@@ -257,21 +255,21 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             </div>
           )}
 
-          {/* Main content area - touch-friendly padding */}
-          <div style={{ padding: isMobile ? 'var(--space-3)' : 'var(--space-4)' }}>
+          {/* Main content area - compact padding */}
+          <div style={{ padding: 'var(--space-4)' }}>
             
             {/* Image uploaded state */}
             {uploadedImage ? (
-              <div className="flex flex-col items-center" style={{ gap: 'var(--space-3)' }}>
-                {/* Image preview - smaller on mobile */}
+              <div className="flex flex-col items-center" style={{ gap: 'var(--space-4)' }}>
+                {/* Image preview */}
                 <div className="relative">
                   <img 
                     src={uploadedImage.preview} 
                     alt="Preview" 
                     className="rounded-xl object-cover"
                     style={{ 
-                      width: isMobile ? '4rem' : '5rem',
-                      height: isMobile ? '4rem' : '5rem',
+                      width: '5rem',
+                      height: '5rem',
                       boxShadow: '0 4px 20px hsl(0 0% 0% / 0.4), 0 0 30px hsl(174 60% 50% / 0.2)',
                       border: '2px solid hsl(174 60% 50% / 0.3)',
                     }}
@@ -284,16 +282,16 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                       boxShadow: '0 2px 8px hsl(0 0% 0% / 0.3)',
                     }}
                   >
-                    <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                    <CheckCircle2 className="h-4 w-4 text-white" />
                   </div>
                 </div>
                 
                 {/* File info */}
                 <div className="text-center">
-                  <p className="font-medium text-white/90 truncate" style={{ fontSize: 'var(--text-sm)', maxWidth: isMobile ? '160px' : '200px' }}>
+                  <p className="font-medium text-white/90 truncate max-w-[200px]" style={{ fontSize: 'var(--text-sm)' }}>
                     {uploadedImage.file.name}
                   </p>
-                  <p className="text-white/50" style={{ marginTop: '2px', fontSize: 'var(--text-xs)' }}>
+                  <p className="text-white/50" style={{ marginTop: 'var(--space-1)', fontSize: 'var(--text-xs)' }}>
                     {(uploadedImage.file.size / 1024).toFixed(0)} KB · {t.imageReady}
                   </p>
                 </div>
@@ -305,20 +303,20 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   className="flex items-center rounded-full font-medium transition-all hover:bg-white/10"
                   style={{ 
                     gap: 'var(--space-2)',
-                    padding: 'var(--space-1) var(--space-3)',
+                    padding: 'var(--space-2) var(--space-4)',
                     fontSize: 'var(--text-xs)',
                     color: 'hsl(0 0% 100% / 0.6)',
                     border: '1px solid hsl(0 0% 100% / 0.1)',
                   }}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3.5 w-3.5" />
                   {t.removeImage}
                 </button>
               </div>
             ) : (
-              /* Text/Image input state - touch-friendly layout */
-              <div className="flex items-stretch w-full" style={{ gap: isMobile ? 'var(--space-3)' : 'var(--space-4)' }}>
-                {/* Text input zone - premium glass effect */}
+              /* Text/Image input state - unified layout */
+              <div className="flex items-stretch w-full" style={{ gap: 'var(--space-4)' }}>
+                {/* Text input zone - always visible, full width when hasText */}
                 <div className={`relative transition-all duration-200 ${hasText ? 'flex-1' : 'flex-1'}`} onClick={(e) => e.stopPropagation()}>
                   <Textarea
                     ref={textareaRef}
@@ -329,33 +327,29 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={t.primaryText}
-                    className="w-full resize-none rounded-xl text-left text-white placeholder:text-white/50 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                    className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
-                      minHeight: isMobile ? '70px' : '80px',
-                      padding: isMobile ? 'var(--space-2)' : 'var(--space-3)',
-                      fontSize: isMobile ? '15px' : 'var(--text-sm)',
-                      background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.03))',
-                      border: '1px solid hsl(0 0% 100% / 0.1)',
-                      boxShadow: isFocused 
-                        ? '0 0 20px hsl(174 60% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
-                        : 'inset 0 1px 0 hsl(0 0% 100% / 0.06)',
+                      minHeight: '80px',
+                      padding: 'var(--space-3)',
+                      fontSize: 'var(--text-sm)',
+                      boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                     }}
                   />
                 </div>
                 
-                {/* Vertical divider - elegant gradient */}
+                {/* Vertical divider - hidden when text is entered */}
                 {!hasText && (
                   <div 
                     className="w-px self-stretch"
                     style={{
                       marginTop: 'var(--space-2)',
                       marginBottom: 'var(--space-2)',
-                      background: 'linear-gradient(to bottom, transparent, hsl(174 50% 50% / 0.25), transparent)',
+                      background: 'linear-gradient(to bottom, transparent, hsl(0 0% 100% / 0.15), transparent)',
                     }}
                   />
                 )}
                 
-                {/* Image upload zone - premium luminous styling */}
+                {/* Image upload zone - hidden when text is entered */}
                 {!hasText && (
                   <button
                     type="button"
@@ -365,42 +359,33 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     }}
                     className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-105 group/img"
                     style={{
-                      padding: isMobile ? '0 var(--space-4)' : '0 var(--space-6)',
+                      padding: '0 var(--space-6)',
                       gap: 'var(--space-2)',
-                      background: 'linear-gradient(145deg, hsl(174 40% 25% / 0.2), hsl(174 35% 20% / 0.1))',
-                      border: '1px solid hsl(174 50% 50% / 0.25)',
-                      boxShadow: '0 0 20px hsl(174 60% 50% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
+                      background: 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
+                      border: '1px dashed hsl(174 50% 50% / 0.35)',
+                      boxShadow: '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
                     }}
                     title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
                   >
-                    {/* Icon container - luminous glow */}
+                    {/* Icon container with glow */}
                     <div 
                       className="rounded-xl transition-all group-hover/img:scale-110"
                       style={{
-                        padding: isMobile ? 'var(--space-2)' : 'var(--space-3)',
-                        background: 'linear-gradient(135deg, hsl(174 55% 45% / 0.25), hsl(174 45% 40% / 0.15))',
-                        boxShadow: '0 0 16px hsl(174 60% 50% / 0.25)',
+                        padding: 'var(--space-3)',
+                        background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
+                        boxShadow: '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.2)',
                       }}
                     >
                       <Image 
-                        className={isMobile ? "h-5 w-5" : "h-7 w-7"}
-                        strokeWidth={1.75}
-                        style={{ 
-                          color: 'hsl(174 70% 60%)',
-                          filter: 'drop-shadow(0 0 4px hsl(174 60% 55% / 0.5))',
-                        }}
+                        className="h-7 w-7" 
+                        style={{ color: 'hsl(174 65% 60%)' }}
                       />
                     </div>
                     
-                    {/* Label - premium teal accent */}
+                    {/* Label */}
                     <span 
-                      className="font-medium tracking-wider uppercase"
-                      style={{ 
-                        color: 'hsl(174 55% 58%)', 
-                        fontSize: isMobile ? '9px' : '10px',
-                        letterSpacing: '0.12em',
-                        textShadow: '0 0 8px hsl(174 60% 50% / 0.4)',
-                      }}
+                      className="font-medium tracking-wide uppercase"
+                      style={{ color: 'hsl(174 60% 55% / 0.8)', fontSize: 'var(--text-xs)' }}
                     >
                       Image
                     </span>
@@ -412,11 +397,11 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Transition cue - minimal on mobile */}
-      <div className="flex justify-center" style={{ paddingTop: isMobile ? '4px' : '8px', paddingBottom: isMobile ? '4px' : '8px' }}>
-        <div className="relative flex flex-col items-center" style={{ gap: isMobile ? '2px' : '4px' }}>
-          {/* "Puis" text - only visible on empty state, hidden on mobile for space */}
-          {!hasContent && !isMobile && (
+      {/* Transition cue - compact */}
+      <div className="flex justify-center py-2">
+        <div className="relative flex flex-col items-center gap-1">
+          {/* "Puis" text - only visible on empty state */}
+          {!hasContent && (
             <span 
               className="text-[10px] font-light tracking-[0.25em] uppercase transition-opacity duration-300"
               style={{
@@ -428,17 +413,17 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             </span>
           )}
           
-          {/* Arrow - smaller on mobile, intensified when content is present */}
+          {/* Arrow - always visible, intensified when content is present */}
           <div 
             className="relative transition-transform duration-300"
             style={{
               animation: hasContent 
                 ? 'arrow-bounce-intense 1.5s ease-in-out infinite' 
                 : 'arrow-bounce 2s ease-in-out infinite',
-              transform: hasContent ? 'scale(1.2)' : 'scale(1)',
+              transform: hasContent ? 'scale(1.3)' : 'scale(1)',
             }}
           >
-            {/* Glow behind arrow */}
+            {/* Glow behind arrow - intensified when content is present */}
             <div 
               className="absolute inset-0 rounded-full transition-all duration-300"
               style={{
@@ -448,13 +433,13 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                 animation: hasContent 
                   ? 'arrow-glow-intense 1.5s ease-in-out infinite' 
                   : 'arrow-glow 2s ease-in-out infinite',
-                filter: hasContent ? 'blur(8px)' : 'blur(6px)',
-                transform: hasContent ? 'scale(3)' : 'scale(2.5)',
+                filter: hasContent ? 'blur(10px)' : 'blur(6px)',
+                transform: hasContent ? 'scale(3.5)' : 'scale(2.5)',
               }}
             />
             <svg 
-              width={isMobile ? (hasContent ? "18" : "14") : (hasContent ? "22" : "18")}
-              height={isMobile ? (hasContent ? "10" : "8") : (hasContent ? "12" : "10")}
+              width={hasContent ? "22" : "18"}
+              height={hasContent ? "12" : "10"}
               viewBox="0 0 18 10" 
               fill="none"
               className="relative transition-all duration-300"
@@ -476,16 +461,16 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         </div>
       </div>
       
-      {/* Premium Analyze Button - touch-friendly */}
-      <div className="relative group" style={{ marginTop: isMobile ? '4px' : '8px' }}>
+      {/* Premium Analyze Button - compact */}
+      <div className="relative mt-2 group">
         {/* Outer glow ring - only visible when content is ready */}
         {(hasText || hasImage) && (
           <div 
-            className="absolute -inset-1 rounded-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+            className="absolute -inset-1.5 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
             style={{
               background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 80% 55% / 0.3), hsl(174 70% 50% / 0.5))',
               animation: 'button-pulse 2s ease-in-out infinite',
-              filter: 'blur(10px)',
+              filter: 'blur(12px)',
             }}
           />
         )}
@@ -512,10 +497,8 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
         <Button
           type="submit"
           disabled={isLoading || (!hasText && !hasImage)}
-          className="relative w-full rounded-xl font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 border-0"
+          className="relative w-full rounded-xl py-4 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 border-0"
           style={{
-            padding: isMobile ? '14px 20px' : '16px 24px',
-            fontSize: isMobile ? '14px' : '15px',
             background: (hasText || hasImage)
               ? 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)'
               : 'linear-gradient(135deg, hsl(174 40% 35% / 0.6) 0%, hsl(180 35% 30% / 0.6) 50%, hsl(174 40% 32% / 0.6) 100%)',
@@ -526,9 +509,9 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
           }}
         >
           {isLoading ? (
-            <Loader2 className={`mr-2 animate-spin ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
-            <Search className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} style={{ filter: 'drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2))' }} />
+            <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2))' }} />
           )}
           <span className="relative">
             {t.analyze}

@@ -294,237 +294,70 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   );
 
   return (
-    <div 
-      className="container-content w-full" 
-      style={{ 
-        marginTop: 'var(--space-8)',
-        animation: 'results-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-      }}
-    >
-      {/* Premium reveal animation styles */}
-      <style>{`
-        @keyframes results-reveal {
-          0% {
-            opacity: 0;
-            transform: translateY(30px) scale(0.97);
-            filter: blur(8px);
-          }
-          40% {
-            opacity: 0.6;
-            filter: blur(2px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            filter: blur(0);
-          }
-        }
-        
-        @keyframes card-stagger-in {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .analysis-card {
-          animation: card-stagger-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          animation-delay: var(--card-delay, 0ms);
-        }
-        
-        @keyframes shimmer-reveal {
-          0% {
-            background-position: -200% 0;
-          }
-          100% {
-            background-position: 200% 0;
-          }
-        }
-        
-        @keyframes glow-pulse-in {
-          0%, 100% {
-            box-shadow: 0 0 20px hsl(174 60% 50% / 0.15);
-          }
-          50% {
-            box-shadow: 0 0 40px hsl(174 60% 50% / 0.25);
-          }
-        }
-      `}</style>
-      
-      {/* Top reveal glow bar */}
-      <div 
-        className="absolute left-1/2 -translate-x-1/2 h-px w-32 mb-6"
-        style={{
-          background: 'linear-gradient(90deg, transparent, hsl(174 60% 55% / 0.6), transparent)',
-          animation: 'shimmer-reveal 1.5s ease-out forwards',
-          backgroundSize: '200% 100%',
-        }}
-      />
-      {/* PRO badge indicator - Ultra Premium visual */}
+    <div className="container-content w-full animate-fade-in" style={{ marginTop: 'var(--space-8)' }}>
+      {/* PRO badge indicator - Premium visual */}
       {isPro && (
         <div className="mb-6 flex justify-center">
-          {/* PRO Badge Animations */}
-          <style>{`
-            @keyframes pro-badge-shine-sweep {
-              0% { transform: translateX(-100%) skewX(-15deg); }
-              100% { transform: translateX(200%) skewX(-15deg); }
-            }
-            @keyframes pro-badge-glow-pulse {
-              0%, 100% { 
-                opacity: 0.6; 
-                transform: scale(1);
-                filter: blur(8px);
-              }
-              50% { 
-                opacity: 1; 
-                transform: scale(1.05);
-                filter: blur(12px);
-              }
-            }
-            @keyframes pro-sparkle-rotate {
-              0%, 100% { 
-                transform: rotate(0deg) scale(1);
-                filter: drop-shadow(0 0 6px hsl(45 100% 60% / 0.8));
-              }
-              25% { 
-                transform: rotate(-8deg) scale(1.1);
-                filter: drop-shadow(0 0 10px hsl(45 100% 65% / 1));
-              }
-              50% { 
-                transform: rotate(0deg) scale(1);
-                filter: drop-shadow(0 0 6px hsl(45 100% 60% / 0.8));
-              }
-              75% { 
-                transform: rotate(8deg) scale(1.1);
-                filter: drop-shadow(0 0 10px hsl(45 100% 65% / 1));
-              }
-            }
-            @keyframes pro-text-shimmer {
-              0%, 100% { background-position: 0% 50%; }
-              50% { background-position: 100% 50%; }
-            }
-            @keyframes pro-verified-pulse {
-              0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 0 10px hsl(45 100% 55% / 0.6);
-              }
-              50% { 
-                transform: scale(1.08);
-                box-shadow: 0 0 18px hsl(45 100% 60% / 0.9);
-              }
-            }
-            @keyframes pro-border-glow {
-              0%, 100% { border-color: hsl(200 80% 55% / 0.4); }
-              33% { border-color: hsl(280 60% 55% / 0.5); }
-              66% { border-color: hsl(45 100% 55% / 0.4); }
-            }
-            @keyframes pro-particle-float {
-              0%, 100% { 
-                transform: translateY(0) translateX(0) scale(1);
-                opacity: 0;
-              }
-              10% { opacity: 1; }
-              90% { opacity: 1; }
-              100% { 
-                transform: translateY(-20px) translateX(10px) scale(0);
-                opacity: 0;
-              }
-            }
-          `}</style>
-          
           <div 
-            className="group relative flex items-center gap-3 rounded-full px-7 py-3 overflow-hidden"
+            className="group relative flex items-center gap-3 rounded-full px-6 py-2.5 overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, hsl(220 25% 14%) 0%, hsl(240 22% 10%) 100%)',
-              border: '1.5px solid hsl(200 80% 55% / 0.4)',
-              boxShadow: '0 0 40px hsl(200 80% 55% / 0.25), 0 0 80px hsl(280 60% 55% / 0.15), 0 8px 32px hsl(0 0% 0% / 0.4), inset 0 1px 1px hsl(200 80% 70% / 0.12)',
-              animation: 'pro-border-glow 4s ease-in-out infinite',
+              background: 'linear-gradient(135deg, hsl(220 25% 12%) 0%, hsl(240 20% 8%) 100%)',
+              border: '1px solid hsl(200 80% 55% / 0.4)',
+              boxShadow: '0 0 30px hsl(200 80% 55% / 0.2), 0 0 60px hsl(280 60% 55% / 0.15), inset 0 1px 0 hsl(200 80% 70% / 0.15)',
             }}
           >
-            {/* Animated shine sweep - more pronounced */}
+            {/* Animated shine sweep */}
             <div 
-              className="absolute inset-0 overflow-hidden"
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: 'linear-gradient(105deg, transparent 0%, hsl(45 100% 80% / 0.15) 45%, hsl(200 80% 80% / 0.2) 50%, hsl(280 60% 80% / 0.15) 55%, transparent 100%)',
-                  animation: 'pro-badge-shine-sweep 2.5s ease-in-out infinite',
-                  width: '50%',
-                }}
-              />
-            </div>
-            
-            {/* Outer glow ring - intensified */}
-            <div 
-              className="absolute -inset-1 -z-10 rounded-full"
+              className="absolute inset-0 opacity-60"
               style={{
-                background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.4) 0%, hsl(280 60% 55% / 0.35) 50%, hsl(45 100% 55% / 0.3) 100%)',
-                animation: 'pro-badge-glow-pulse 2s ease-in-out infinite',
+                background: 'linear-gradient(105deg, transparent 20%, hsl(200 80% 70% / 0.1) 40%, hsl(280 60% 70% / 0.15) 50%, transparent 80%)',
+                animation: 'pro-badge-shine 3s ease-in-out infinite',
               }}
             />
             
-            {/* Floating particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute rounded-full"
-                  style={{
-                    width: '3px',
-                    height: '3px',
-                    background: 'hsl(45 100% 70%)',
-                    left: `${25 + i * 25}%`,
-                    bottom: '30%',
-                    animation: `pro-particle-float 2.5s ease-out infinite`,
-                    animationDelay: `${i * 0.5}s`,
-                  }}
-                />
-              ))}
-            </div>
+            {/* Outer glow ring */}
+            <div 
+              className="absolute -inset-0.5 -z-10 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, hsl(200 80% 55% / 0.3) 0%, hsl(280 60% 55% / 0.3) 100%)',
+                filter: 'blur(6px)',
+                animation: 'pro-badge-pulse 2.5s ease-in-out infinite',
+              }}
+            />
             
-            {/* Sparkles icon with enhanced animation */}
+            {/* Sparkles icon with glow */}
             <div className="relative">
               <Sparkles 
                 className="h-5 w-5"
                 style={{
                   color: 'hsl(45 100% 70%)',
-                  animation: 'pro-sparkle-rotate 3s ease-in-out infinite',
+                  filter: 'drop-shadow(0 0 6px hsl(45 100% 60% / 0.8))',
+                  animation: 'pro-sparkle 2s ease-in-out infinite',
                 }}
               />
             </div>
             
-            {/* PRO text with animated shimmer gradient */}
+            {/* PRO text with premium gradient */}
             <span 
-              className="relative text-base font-bold tracking-wider"
+              className="relative text-base font-bold tracking-wide"
               style={{
-                background: 'linear-gradient(90deg, hsl(45 100% 75%) 0%, hsl(35 100% 65%) 20%, hsl(200 80% 70%) 40%, hsl(280 60% 75%) 60%, hsl(45 100% 75%) 80%, hsl(35 100% 65%) 100%)',
-                backgroundSize: '200% 100%',
+                background: 'linear-gradient(135deg, hsl(45 100% 75%) 0%, hsl(35 100% 65%) 30%, hsl(200 80% 70%) 70%, hsl(280 60% 75%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                animation: 'pro-text-shimmer 4s ease-in-out infinite',
-                letterSpacing: '0.1em',
+                textShadow: '0 0 30px hsl(45 100% 60% / 0.5)',
               }}
             >
               PRO ANALYSIS
             </span>
             
-            {/* Premium verified badge with pulse */}
+            {/* Premium verified badge */}
             <div 
               className="flex items-center justify-center rounded-full"
               style={{
-                width: '22px',
-                height: '22px',
-                background: 'linear-gradient(135deg, hsl(45 100% 60%) 0%, hsl(35 100% 52%) 100%)',
-                animation: 'pro-verified-pulse 2s ease-in-out infinite',
+                width: '20px',
+                height: '20px',
+                background: 'linear-gradient(135deg, hsl(45 100% 55%) 0%, hsl(35 100% 50%) 100%)',
+                boxShadow: '0 0 10px hsl(45 100% 55% / 0.6)',
               }}
             >
               <CheckCircle className="h-3.5 w-3.5 text-slate-900" strokeWidth={3} />
@@ -535,7 +368,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
 
       {/* Standard: Summary card */}
       {!isPro && (
-        <div className="analysis-card mb-6" style={{ '--card-delay': '100ms' } as React.CSSProperties}>
+        <div className="analysis-card mb-6">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-serif text-lg font-semibold text-slate-900">{t.summary}</h3>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${confidenceColors[data.confidence]}`}>
@@ -553,11 +386,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         <div 
           className="analysis-card mb-6 overflow-hidden"
           style={{
-            '--card-delay': '150ms',
             background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(200 20% 98%) 100%)',
             border: '1px solid hsl(200 40% 88%)',
             boxShadow: '0 4px 24px hsl(200 40% 50% / 0.08), 0 1px 3px hsl(0 0% 0% / 0.05)',
-          } as React.CSSProperties}
+          }}
         >
           {/* Explication PRO Section */}
           {data.summary && (

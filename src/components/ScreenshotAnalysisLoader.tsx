@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ScanText, ImageIcon, Sparkles, CheckCircle2 } from 'lucide-react';
+import { FileSearch, ImageIcon, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface ScreenshotAnalysisLoaderProps {
   language: 'en' | 'fr';
@@ -9,277 +9,140 @@ interface ScreenshotAnalysisLoaderProps {
 const translations = {
   en: {
     steps: [
-      { label: 'Extracting text…', short: 'OCR' },
-      { label: 'Checking signals…', short: 'Signals' },
-      { label: 'Analyzing…', short: 'Analysis' },
+      { label: 'Extracting text (OCR)…', description: 'Reading visible text from your screenshot' },
+      { label: 'Checking image signals…', description: 'Analyzing visual authenticity indicators' },
+      { label: 'Running LeenScore analysis…', description: 'Evaluating credibility signals' },
     ],
+    title: 'Analyzing Screenshot',
   },
   fr: {
     steps: [
-      { label: 'Extraction du texte…', short: 'OCR' },
-      { label: 'Vérification signaux…', short: 'Signaux' },
-      { label: 'Analyse en cours…', short: 'Analyse' },
+      { label: 'Extraction du texte (OCR)…', description: 'Lecture du texte visible sur la capture' },
+      { label: 'Vérification des signaux image…', description: 'Analyse des indicateurs visuels' },
+      { label: 'Analyse LeenScore en cours…', description: 'Évaluation des signaux de crédibilité' },
     ],
+    title: 'Analyse de la capture',
   },
 };
 
-const stepIcons = [ScanText, ImageIcon, Sparkles];
+const stepIcons = [FileSearch, ImageIcon, Sparkles];
 
 export const ScreenshotAnalysisLoader = ({ language, currentStep }: ScreenshotAnalysisLoaderProps) => {
   const t = translations[language];
   const [animatedStep, setAnimatedStep] = useState(0);
-  const [percentage, setPercentage] = useState(0);
-  const [basePercentage, setBasePercentage] = useState(0);
 
+  // Smooth step transitions
   useEffect(() => {
     setAnimatedStep(currentStep);
-    // Set base percentage for this step
-    setBasePercentage(currentStep * 33);
   }, [currentStep]);
 
-  // Continuous smooth animation within each step
-  useEffect(() => {
-    let animationId: number;
-    const stepStart = animatedStep * 33;
-    const stepEnd = Math.min((animatedStep + 1) * 33, 99);
-    const duration = 4000; // Time to fill one step
-    const startTime = performance.now();
-    const startPercent = Math.max(percentage, stepStart);
-
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Smooth ease with micro-variations
-      const eased = 1 - Math.pow(1 - progress, 2);
-      const microVariation = Math.sin(elapsed / 150) * 0.3;
-      const current = startPercent + (stepEnd - startPercent) * eased + microVariation;
-      
-      setPercentage(Math.min(Math.max(Math.round(current), stepStart), stepEnd));
-      
-      if (progress < 1) {
-        animationId = requestAnimationFrame(animate);
-      }
-    };
-
-    animationId = requestAnimationFrame(animate);
-    
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-    };
-  }, [animatedStep]);
-
-  const size = 140;
-  const strokeWidth = 4;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = (percentage / 100) * circumference;
-
   return (
-    <div className="flex flex-col items-center justify-center animate-fade-in">
-      {/* Circular loader */}
-      <div 
-        className="relative"
-        style={{ width: size, height: size }}
+    <div className="w-full max-w-md animate-fade-in">
+      {/* Title */}
+      <h3 
+        className="text-center text-lg font-semibold text-white mb-6"
+        style={{
+          textShadow: '0 0 20px hsl(174 60% 45% / 0.4)',
+        }}
       >
-        {/* Ambient glow with pulse */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, hsl(174 50% 45% / 0.18) 0%, transparent 70%)',
-            filter: 'blur(15px)',
-            transform: 'scale(1.4)',
-            animation: 'screenshot-loader-ambient-pulse 2s ease-in-out infinite',
-          }}
-        />
-        
-        {/* Pulsating outer ring */}
-        <div 
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{
-            border: '1px solid hsl(174 55% 55% / 0.2)',
-            animation: 'screenshot-loader-ring-pulse 1.5s ease-in-out infinite',
-          }}
-        />
+        {t.title}
+      </h3>
 
-        {/* SVG Ring */}
-        <svg
-          width={size}
-          height={size}
-          className="relative z-10"
-          style={{ transform: 'rotate(-90deg)' }}
-        >
-          {/* Background ring */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="hsl(220 20% 18% / 0.8)"
-            strokeWidth={strokeWidth}
-          />
-          
-          {/* Progress ring with pulse animation */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="url(#screenshotProgressGradient)"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference - progress}
-            style={{
-              transition: 'stroke-dashoffset 0.3s ease-out',
-              filter: 'drop-shadow(0 0 6px hsl(174 60% 50% / 0.5))',
-              animation: 'screenshot-loader-stroke-pulse 1.5s ease-in-out infinite',
-            }}
-          />
-
-          {/* Gradient definition */}
-          <defs>
-            <linearGradient id="screenshotProgressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(174 60% 50%)" />
-              <stop offset="100%" stopColor="hsl(160 70% 55%)" />
-            </linearGradient>
-          </defs>
-        </svg>
-        
-        {/* CSS Animations */}
-        <style>{`
-          @keyframes screenshot-loader-ambient-pulse {
-            0%, 100% { opacity: 0.7; transform: scale(1.35); }
-            50% { opacity: 1; transform: scale(1.5); }
-          }
-          @keyframes screenshot-loader-ring-pulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.03); }
-          }
-          @keyframes screenshot-loader-stroke-pulse {
-            0%, 100% { 
-              filter: drop-shadow(0 0 6px hsl(174 60% 50% / 0.5));
-              stroke-width: ${strokeWidth}px;
-            }
-            50% { 
-              filter: drop-shadow(0 0 12px hsl(174 60% 55% / 0.7));
-              stroke-width: ${strokeWidth + 0.5}px;
-            }
-          }
-        `}</style>
-
-        {/* Center content - Percentage */}
-        <div 
-          className="absolute inset-0 flex flex-col items-center justify-center z-20"
-        >
-          {/* Percentage display */}
-          <div className="flex items-baseline">
-            <span 
-              className="font-semibold tabular-nums"
-              style={{
-                fontSize: size * 0.28,
-                color: 'hsl(174 70% 65%)',
-                textShadow: '0 0 20px hsl(174 60% 50% / 0.5)',
-                lineHeight: 1,
-              }}
-            >
-              {percentage}
-            </span>
-            <span 
-              className="font-medium"
-              style={{
-                fontSize: size * 0.12,
-                color: 'hsl(174 60% 60%)',
-                marginLeft: '2px',
-              }}
-            >
-              %
-            </span>
-          </div>
-
-          {/* Current step label */}
-          <span 
-            className="text-center font-medium mt-1"
-            style={{
-              fontSize: '10px',
-              color: 'hsl(0 0% 100% / 0.6)',
-              maxWidth: '80px',
-            }}
-          >
-            {t.steps[animatedStep]?.label}
-          </span>
-        </div>
-      </div>
-
-      {/* Step indicators below */}
-      <div 
-        className="flex items-center justify-center gap-3 mt-4"
-      >
+      {/* Stepper */}
+      <div className="space-y-4">
         {t.steps.map((step, index) => {
+          const Icon = stepIcons[index];
           const isActive = index === animatedStep;
           const isComplete = index < animatedStep;
-          const Icon = stepIcons[index];
 
           return (
             <div
               key={index}
-              className="flex items-center gap-1.5 transition-all duration-500"
+              className={`
+                relative flex items-center gap-4 rounded-xl p-4 transition-all duration-500
+                ${isActive 
+                  ? 'bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30' 
+                  : isComplete 
+                    ? 'bg-white/5 border border-emerald-500/30' 
+                    : 'bg-white/[0.02] border border-white/10 opacity-50'
+                }
+              `}
               style={{
-                opacity: isActive ? 1 : isComplete ? 0.8 : 0.35,
+                boxShadow: isActive 
+                  ? '0 0 30px hsl(174 60% 45% / 0.15), 0 4px 16px hsl(0 0% 0% / 0.3)'
+                  : '0 2px 8px hsl(0 0% 0% / 0.2)',
               }}
             >
+              {/* Step number / icon */}
               <div 
-                className="flex items-center justify-center rounded-full transition-all duration-500"
+                className={`
+                  relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-500
+                  ${isActive 
+                    ? 'bg-primary text-primary-foreground' 
+                    : isComplete 
+                      ? 'bg-emerald-500 text-white' 
+                      : 'bg-white/10 text-white/40'
+                  }
+                `}
                 style={{
-                  width: 22,
-                  height: 22,
-                  background: isComplete 
-                    ? 'hsl(160 65% 45%)'
-                    : isActive 
-                      ? 'hsl(174 55% 45%)'
-                      : 'hsl(220 20% 20%)',
-                  border: isComplete
-                    ? '1.5px solid hsl(160 70% 55% / 0.6)'
-                    : isActive
-                      ? '1.5px solid hsl(174 60% 55% / 0.5)'
-                      : '1.5px solid hsl(0 0% 100% / 0.1)',
                   boxShadow: isActive 
-                    ? '0 0 12px hsl(174 60% 50% / 0.5)'
+                    ? '0 0 20px hsl(174 60% 45% / 0.5)'
                     : isComplete
-                      ? '0 0 8px hsl(160 70% 50% / 0.4)'
+                      ? '0 0 15px hsl(160 80% 45% / 0.4)'
                       : 'none',
                 }}
               >
                 {isComplete ? (
-                  <CheckCircle2 
-                    className="h-3 w-3"
-                    style={{ color: 'white' }}
-                  />
+                  <CheckCircle2 className="h-5 w-5" />
                 ) : (
-                  <Icon 
-                    className="h-3 w-3"
-                    style={{ color: isActive ? 'white' : 'hsl(0 0% 100% / 0.4)' }}
-                  />
+                  <Icon className={`h-5 w-5 ${isActive ? 'animate-pulse' : ''}`} />
                 )}
               </div>
-              
-              <span 
-                className="font-medium transition-colors duration-300 hidden sm:inline"
-                style={{
-                  fontSize: '10px',
-                  color: isComplete 
-                    ? 'hsl(160 60% 58%)' 
-                    : isActive 
-                      ? 'hsl(174 65% 65%)' 
-                      : 'hsl(0 0% 100% / 0.4)',
-                  letterSpacing: '0.02em',
-                }}
-              >
-                {step.short}
-              </span>
+
+              {/* Step text */}
+              <div className="flex-1">
+                <p 
+                  className={`text-sm font-semibold transition-colors duration-300 ${
+                    isActive ? 'text-white' : isComplete ? 'text-emerald-400' : 'text-white/50'
+                  }`}
+                >
+                  {step.label}
+                </p>
+                <p 
+                  className={`text-xs transition-colors duration-300 ${
+                    isActive ? 'text-white/70' : 'text-white/40'
+                  }`}
+                >
+                  {step.description}
+                </p>
+              </div>
+
+              {/* Active indicator animation */}
+              {isActive && (
+                <div className="absolute right-4">
+                  <div 
+                    className="h-2 w-2 rounded-full bg-primary"
+                    style={{
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                      boxShadow: '0 0 10px hsl(174 60% 45% / 0.8)',
+                    }}
+                  />
+                </div>
+              )}
             </div>
           );
         })}
+      </div>
+
+      {/* Progress line connecting steps */}
+      <div className="absolute left-[2.25rem] top-16 h-[calc(100%-5rem)] w-0.5 -z-10">
+        <div 
+          className="h-full w-full bg-gradient-to-b from-primary/50 via-primary/20 to-transparent"
+          style={{
+            clipPath: `inset(0 0 ${100 - (animatedStep / 2) * 100}% 0)`,
+            transition: 'clip-path 0.5s ease-out',
+          }}
+        />
       </div>
     </div>
   );

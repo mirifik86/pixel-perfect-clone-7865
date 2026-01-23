@@ -1,11 +1,7 @@
-import { useIsMobile } from '@/hooks/use-mobile';
-
 export const LeenScoreLogo = () => {
-  const isMobile = useIsMobile();
-  
   return (
-    <div className="flex flex-col items-center" style={{ gap: isMobile ? 'var(--space-1)' : 'var(--space-2)' }}>
-      {/* Premium icon with layered glow effects - compact on mobile */}
+    <div className="flex flex-col items-center" style={{ gap: 'var(--space-2)' }}>
+      {/* Premium icon with layered glow effects - compact */}
       <div className="relative">
         {/* Outer glow ring */}
         <div 
@@ -16,16 +12,16 @@ export const LeenScoreLogo = () => {
           }}
         />
         
-        {/* Icon container with premium styling - responsive size */}
+        {/* Icon container with premium styling - compact size */}
         <div 
           className="relative rounded-lg border border-primary/40 backdrop-blur-md"
           style={{
-            padding: isMobile ? '6px' : 'var(--space-2)',
+            padding: 'var(--space-2)',
             background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.15) 0%, hsl(240 20% 10% / 0.8) 100%)',
             boxShadow: '0 0 15px hsl(174 60% 45% / 0.2), inset 0 1px 1px hsl(0 0% 100% / 0.1), 0 6px 24px hsl(0 0% 0% / 0.4)'
           }}
         >
-          <div className="relative" style={{ width: isMobile ? '1.5rem' : '1.75rem', height: isMobile ? '1.5rem' : '1.75rem' }}>
+          <div className="relative" style={{ width: '1.75rem', height: '1.75rem' }}>
             {/* Document icon - white with subtle shadow */}
             <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full drop-shadow-lg" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="hsl(0 0% 95%)" stroke="hsl(0 0% 85%)" strokeWidth="0.5" />
@@ -44,8 +40,8 @@ export const LeenScoreLogo = () => {
               style={{
                 bottom: '-0.25rem',
                 right: '-0.25rem',
-                width: isMobile ? '1rem' : '1.125rem',
-                height: isMobile ? '1rem' : '1.125rem',
+                width: '1.125rem',
+                height: '1.125rem',
                 filter: 'drop-shadow(0 2px 4px hsl(0 0% 0% / 0.3)) drop-shadow(0 0 6px hsl(174 60% 45% / 0.4))'
               }}
             >
@@ -68,7 +64,7 @@ export const LeenScoreLogo = () => {
         </div>
       </div>
       
-      {/* Title with solar halo reflection effect - responsive sizing */}
+      {/* Title with solar halo reflection effect */}
       <div className="relative">
         {/* Solar halo glow behind title */}
         <div 
@@ -87,12 +83,8 @@ export const LeenScoreLogo = () => {
         />
         
         <h1 
-          className="relative brand-text font-semibold tracking-tight"
-          style={{ 
-            letterSpacing: '-0.02em', 
-            fontSize: isMobile ? 'clamp(2.75rem, 12vw, 3.25rem)' : 'clamp(3.5rem, 3rem + 3vw, 5rem)',
-            lineHeight: 1.05
-          }}
+          className="relative brand-text font-normal tracking-tight"
+          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(2rem, 1.6rem + 2vw, 3.5rem)' }}
         >
           <span 
             className="brand-accent italic"

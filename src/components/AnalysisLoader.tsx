@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Search, Shield, Sparkles } from 'lucide-react';
 
 interface AnalysisLoaderProps {
   size?: number;
@@ -7,280 +6,120 @@ interface AnalysisLoaderProps {
   className?: string;
 }
 
-const stepIcons = [Search, Shield, Sparkles];
-
 export const AnalysisLoader = ({ 
-  size = 140, 
+  size = 160, 
   language = 'fr',
   className 
 }: AnalysisLoaderProps) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [percentage, setPercentage] = useState(0);
+  const [textIndex, setTextIndex] = useState(0);
   
-  const strokeWidth = 4;
+  // Match the gauge's professional stroke width
+  const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  const steps = {
+  
+  // Methodological loading messages - calm, professional
+  const loadingTexts = {
     fr: [
-      { label: 'Analyse des sources…', short: 'Sources' },
-      { label: 'Vérification signaux…', short: 'Signaux' },
-      { label: 'Évaluation finale…', short: 'Évaluation' },
+      'Analyse des sources et de la cohérence contextuelle…',
+      'Évaluation des signaux linguistiques et de la fiabilité…',
+      'Traitement de l\'analyse structurée de crédibilité…'
     ],
     en: [
-      { label: 'Analyzing sources…', short: 'Sources' },
-      { label: 'Checking signals…', short: 'Signals' },
-      { label: 'Final evaluation…', short: 'Evaluation' },
-    ],
+      'Analyzing sources and contextual consistency…',
+      'Evaluating linguistic signals and source reliability…',
+      'Processing structured credibility analysis…'
+    ]
   };
 
-  // Continuous smooth percentage animation
+  // Slowly cycle through texts
   useEffect(() => {
-    let animationId: number;
-    let startTime: number | null = null;
-    const totalDuration = 12000; // Total time to reach ~99%
+    const interval = setInterval(() => {
+      setTextIndex((prev) => (prev + 1) % loadingTexts[language].length);
+    }, 3500);
     
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime;
-      const elapsed = currentTime - startTime;
-      const rawProgress = elapsed / totalDuration;
-      
-      // Smooth easing with slight acceleration variations for natural feel
-      const eased = 1 - Math.pow(1 - Math.min(rawProgress, 1), 2.5);
-      
-      // Add micro-variations for more organic feel
-      const microVariation = Math.sin(elapsed / 200) * 0.5;
-      const targetPercent = Math.min(eased * 99 + microVariation, 99);
-      
-      setPercentage(Math.max(0, Math.round(targetPercent)));
-      
-      // Update step based on percentage
-      if (targetPercent < 33) {
-        setCurrentStep(0);
-      } else if (targetPercent < 66) {
-        setCurrentStep(1);
-      } else {
-        setCurrentStep(2);
-      }
-      
-      if (rawProgress < 1) {
-        animationId = requestAnimationFrame(animate);
-      }
-    };
+    return () => clearInterval(interval);
+  }, [language]);
 
-    animationId = requestAnimationFrame(animate);
-    
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-    };
-  }, []);
-
-  const progress = (percentage / 100) * circumference;
+  // Match gauge label sizing
+  const labelFontSize = size * 0.085;
 
   return (
-    <div className={`flex flex-col items-center justify-center animate-fade-in ${className || ''}`}>
-      {/* Circular loader */}
+    <div className={`flex flex-col items-center justify-center ${className || ''}`} style={{ width: size }}>
+      {/* Rotating ring container - centered */}
       <div 
-        className="relative"
+        className="relative flex items-center justify-center" 
         style={{ width: size, height: size }}
       >
-        {/* Ambient glow with pulse */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, hsl(174 50% 45% / 0.18) 0%, transparent 70%)',
-            filter: 'blur(15px)',
-            transform: 'scale(1.4)',
-            animation: 'loader-ambient-pulse 2s ease-in-out infinite',
-          }}
-        />
-        
-        {/* Pulsating outer ring */}
-        <div 
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{
-            border: '1px solid hsl(174 55% 55% / 0.2)',
-            animation: 'loader-ring-pulse 1.5s ease-in-out infinite',
-          }}
-        />
-
-        {/* SVG Ring */}
-        <svg
-          width={size}
-          height={size}
-          className="relative z-10"
-          style={{ transform: 'rotate(-90deg)' }}
+        {/* Background static ring - matches gauge segment style */}
+        <svg 
+          width={size} 
+          height={size} 
+          viewBox={`0 0 ${size} ${size}`}
+          className="absolute inset-0"
         >
-          {/* Background ring */}
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="hsl(220 20% 18% / 0.8)"
+            stroke="hsl(220 10% 25%)"
             strokeWidth={strokeWidth}
+            opacity={0.3}
           />
-          
-          {/* Progress ring with pulse animation */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="url(#analysisProgressGradient)"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference - progress}
-            style={{
-              transition: 'stroke-dashoffset 0.3s ease-out',
-              filter: 'drop-shadow(0 0 6px hsl(174 60% 50% / 0.5))',
-              animation: 'loader-stroke-pulse 1.5s ease-in-out infinite',
-            }}
-          />
-
-          {/* Gradient definition */}
-          <defs>
-            <linearGradient id="analysisProgressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(174 60% 50%)" />
-              <stop offset="100%" stopColor="hsl(160 70% 55%)" />
-            </linearGradient>
-          </defs>
         </svg>
         
-        {/* CSS Animations */}
-        <style>{`
-          @keyframes loader-ambient-pulse {
-            0%, 100% { opacity: 0.7; transform: scale(1.35); }
-            50% { opacity: 1; transform: scale(1.5); }
-          }
-          @keyframes loader-ring-pulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.03); }
-          }
-          @keyframes loader-stroke-pulse {
-            0%, 100% { 
-              filter: drop-shadow(0 0 6px hsl(174 60% 50% / 0.5));
-              stroke-width: ${strokeWidth}px;
-            }
-            50% { 
-              filter: drop-shadow(0 0 12px hsl(174 60% 55% / 0.7));
-              stroke-width: ${strokeWidth + 0.5}px;
-            }
-          }
-        `}</style>
-
-        {/* Center content - Percentage */}
-        <div 
-          className="absolute inset-0 flex flex-col items-center justify-center z-20"
+        {/* Rotating arc - professional muted teal matching gauge's Leen color */}
+        <svg 
+          width={size} 
+          height={size} 
+          viewBox={`0 0 ${size} ${size}`}
+          className="absolute inset-0 animate-spin"
+          style={{ animationDuration: '5s', animationTimingFunction: 'linear' }}
         >
-          {/* Percentage display */}
-          <div className="flex items-baseline">
-            <span 
-              className="font-semibold tabular-nums"
-              style={{
-                fontSize: size * 0.28,
-                color: 'hsl(174 70% 65%)',
-                textShadow: '0 0 20px hsl(174 60% 50% / 0.5)',
-                lineHeight: 1,
-              }}
-            >
-              {percentage}
-            </span>
-            <span 
-              className="font-medium"
-              style={{
-                fontSize: size * 0.12,
-                color: 'hsl(174 60% 60%)',
-                marginLeft: '2px',
-              }}
-            >
-              %
-            </span>
-          </div>
-
-          {/* Current step label */}
-          <span 
-            className="text-center font-medium mt-1"
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="hsl(174 55% 45%)"
+            strokeWidth={strokeWidth}
+            strokeLinecap="butt"
+            strokeDasharray={`${radius * Math.PI * 0.4} ${radius * Math.PI * 2}`}
+          />
+        </svg>
+        
+        {/* Center dash indicator - matching gauge typography */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className="tabular-nums"
             style={{
-              fontSize: '10px',
-              color: 'hsl(0 0% 100% / 0.6)',
-              maxWidth: '80px',
+              fontSize: size * 0.30,
+              lineHeight: 1,
+              letterSpacing: '-0.02em',
+              color: 'hsl(var(--muted-foreground))',
+              fontWeight: 600
             }}
           >
-            {steps[language][currentStep]?.label}
+            —
           </span>
         </div>
       </div>
 
-      {/* Step indicators below */}
-      <div 
-        className="flex items-center justify-center gap-3 mt-4"
-      >
-        {steps[language].map((step, index) => {
-          const isActive = index === currentStep;
-          const isComplete = index < currentStep;
-          const Icon = stepIcons[index];
-
-          return (
-            <div
-              key={index}
-              className="flex items-center gap-1.5 transition-all duration-500"
-              style={{
-                opacity: isActive ? 1 : isComplete ? 0.8 : 0.35,
-              }}
-            >
-              <div 
-                className="flex items-center justify-center rounded-full transition-all duration-500"
-                style={{
-                  width: 22,
-                  height: 22,
-                  background: isComplete 
-                    ? 'hsl(160 65% 45%)'
-                    : isActive 
-                      ? 'hsl(174 55% 45%)'
-                      : 'hsl(220 20% 20%)',
-                  border: isComplete
-                    ? '1.5px solid hsl(160 70% 55% / 0.6)'
-                    : isActive
-                      ? '1.5px solid hsl(174 60% 55% / 0.5)'
-                      : '1.5px solid hsl(0 0% 100% / 0.1)',
-                  boxShadow: isActive 
-                    ? '0 0 12px hsl(174 60% 50% / 0.5)'
-                    : isComplete
-                      ? '0 0 8px hsl(160 70% 50% / 0.4)'
-                      : 'none',
-                }}
-              >
-                {isComplete ? (
-                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                ) : (
-                  <Icon 
-                    className="h-3 w-3"
-                    style={{ color: isActive ? 'white' : 'hsl(0 0% 100% / 0.4)' }}
-                  />
-                )}
-              </div>
-              
-              <span 
-                className="font-medium transition-colors duration-300 hidden sm:inline"
-                style={{
-                  fontSize: '10px',
-                  color: isComplete 
-                    ? 'hsl(160 60% 58%)' 
-                    : isActive 
-                      ? 'hsl(174 65% 65%)' 
-                      : 'hsl(0 0% 100% / 0.4)',
-                  letterSpacing: '0.02em',
-                }}
-              >
-                {step.short}
-              </span>
-            </div>
-          );
-        })}
+      {/* Methodological loading text - matching gauge label style */}
+      <div className="flex w-full justify-center mt-1">
+        <span
+          className="text-center transition-opacity duration-700"
+          style={{
+            fontSize: labelFontSize,
+            color: 'hsl(var(--muted-foreground))',
+            fontWeight: 500,
+            letterSpacing: '0.15em',
+            fontFamily: 'var(--font-sans)',
+            maxWidth: size * 2
+          }}
+        >
+          {loadingTexts[language][textIndex]}
+        </span>
       </div>
     </div>
   );

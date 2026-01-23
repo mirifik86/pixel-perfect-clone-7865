@@ -19,13 +19,13 @@ export const ScoreGauge = ({
   const [displayScore, setDisplayScore] = useState(0);
   const animationRef = useRef<number | null>(null);
   
-  // Premium thicker stroke for punch and impact
-  const strokeWidth = 14;
+  // Professional, thinner stroke for instrument-like precision
+  const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const totalArc = circumference * 0.75; // 270 degrees
   const segmentArc = totalArc / 5; // Each segment is 1/5 of the arc
-  const gap = 5; // Slightly larger gap for premium feel
+  const gap = 4; // Crisp gap between segments
 
   useEffect(() => {
     if (score !== null) {
@@ -123,9 +123,9 @@ export const ScoreGauge = ({
   const indicatorX = size / 2 + radius * Math.cos(indicatorRad);
   const indicatorY = size / 2 + radius * Math.sin(indicatorRad);
 
-  // Larger, bolder score for premium punch
-  const scoreFontSize = size * 0.32;
-  const labelFontSize = size * 0.075;
+  // Slightly smaller score for professional feel
+  const scoreFontSize = size * 0.30;
+  const labelFontSize = size * 0.085;
 
   // Get current credibility label and color
   const segmentIndex = score !== null ? getSegmentIndex(animatedScore) : null;
@@ -144,56 +144,6 @@ export const ScoreGauge = ({
     <div className={`relative flex flex-col items-center ${className || ''}`}>
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
-        {/* Premium outer glow ring */}
-        <div 
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            inset: '-8px',
-            background: score !== null 
-              ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
-              : 'radial-gradient(circle, hsl(174 50% 50% / 0.1) 0%, transparent 70%)',
-            filter: 'blur(12px)',
-            animation: score === null ? 'gauge-ambient-pulse 3s ease-in-out infinite' : 'none',
-          }}
-        />
-        
-        {/* Subtle ambient glow behind gauge - with pulse when dormant */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: score === null 
-              ? 'radial-gradient(circle, hsl(174 40% 40% / 0.18) 0%, transparent 70%)'
-              : `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.25)')} 0%, transparent 70%)`,
-            filter: 'blur(20px)',
-            transform: 'scale(1.4)',
-            animation: score === null ? 'gauge-ambient-pulse 3s ease-in-out infinite' : 'none',
-          }}
-        />
-        
-        {/* Outer ring pulse effect when dormant */}
-        {score === null && (
-          <div 
-            className="absolute inset-0 rounded-full pointer-events-none"
-            style={{
-              border: '2px solid hsl(174 50% 50% / 0.2)',
-              animation: 'gauge-ring-pulse 3s ease-in-out infinite',
-            }}
-          />
-        )}
-        
-        {/* Active score outer ring glow */}
-        {score !== null && (
-          <div 
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              inset: '-3px',
-              border: `2px solid ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}`,
-              boxShadow: `0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.25)')}`,
-              transition: 'all 0.3s ease-out',
-            }}
-          />
-        )}
-        
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {/* No filters/shadows - clean instrument look */}
 
@@ -201,8 +151,6 @@ export const ScoreGauge = ({
           {colors.map((color, i) => {
             const segmentLength = segmentArc - gap;
             const rotation = 135 + i * 270 / 5;
-            // When no score, show segments with enhanced dormant visibility
-            const dormantOpacity = score === null ? 0.25 : 0.15;
             return (
               <circle
                 key={i}
@@ -217,9 +165,8 @@ export const ScoreGauge = ({
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center',
-                  opacity: score === null ? dormantOpacity : getSegmentOpacity(i),
-                  transition: 'opacity 0.1s ease-out',
-                  filter: score === null ? 'saturate(0.5)' : 'none',
+                  opacity: getSegmentOpacity(i),
+                  transition: 'opacity 0.1s ease-out'
                 }}
               />
             );
@@ -248,14 +195,9 @@ export const ScoreGauge = ({
             style={{
               fontSize: scoreFontSize,
               lineHeight: 1,
-              color: score !== null 
-                ? getCurrentColor(animatedScore) 
-                : 'hsl(0 0% 100% / 0.35)',
+              color: score !== null ? getCurrentColor(animatedScore) : 'hsl(var(--muted-foreground))',
               letterSpacing: '-0.02em',
-              transition: 'color 0.3s ease-out',
-              textShadow: score === null 
-                ? '0 0 12px hsl(0 0% 100% / 0.15)' 
-                : 'none',
+              transition: 'color 0.3s ease-out'
             }}
           >
             {score === null ? '—' : displayScore}
@@ -297,32 +239,12 @@ export const ScoreGauge = ({
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
         </span>
         
-        {/* CSS for pulse animations */}
-        {score === null && (
+        {/* CSS for pulse animation */}
+        {score === null && !hasContent && (
           <style>{`
             @keyframes ready-pulse {
               0%, 100% { opacity: 0.4; transform: scale(0.96); }
               50% { opacity: 1; transform: scale(1.04); }
-            }
-            @keyframes gauge-ambient-pulse {
-              0%, 100% { 
-                opacity: 0.6; 
-                transform: scale(1.25);
-              }
-              50% { 
-                opacity: 1; 
-                transform: scale(1.4);
-              }
-            }
-            @keyframes gauge-ring-pulse {
-              0%, 100% { 
-                opacity: 0.3; 
-                transform: scale(1);
-              }
-              50% { 
-                opacity: 0.6; 
-                transform: scale(1.02);
-              }
             }
           `}</style>
         )}
