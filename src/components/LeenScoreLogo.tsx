@@ -108,11 +108,13 @@ export const LeenScoreLogo = () => {
         
         {/* Tagline */}
         <p 
-          className="relative text-white/70 tracking-widest uppercase"
+          className="relative tracking-widest uppercase text-center"
           style={{ 
-            fontSize: 'clamp(0.7rem, 0.6rem + 0.5vw, 0.9rem)',
-            marginTop: 'var(--space-2)',
-            letterSpacing: '0.2em'
+            fontSize: 'clamp(0.75rem, 0.65rem + 0.6vw, 1rem)',
+            marginTop: 'var(--space-3)',
+            letterSpacing: '0.25em',
+            color: 'hsl(0 0% 92%)',
+            textShadow: '0 0 20px hsl(0 0% 100% / 0.2)'
           }}
         >
           La crédibilité mesurée.
