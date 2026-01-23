@@ -389,8 +389,8 @@ const Index = () => {
     setLanguage(next);
   };
 
-  // Compact gauge size to fit above fold
-  const gaugeSize = 150;
+  // Premium gauge size - larger and more imposing
+  const gaugeSize = isMobile ? 180 : 220;
 
   return (
     <div 
@@ -505,18 +505,18 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Language toggle - compact spacing */}
+          {/* Language toggle - premium spacing */}
           <div 
             className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both', marginBottom: 'var(--space-1)' }}
+            style={{ animationDelay: '200ms', animationFillMode: 'both', marginTop: 'var(--space-6)', marginBottom: 'var(--space-4)' }}
           >
             <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
           </div>
 
-          {/* Score gauge - compact spacing with smooth transition */}
+          {/* Score gauge - premium spacing with visual impact */}
           <div 
             className="relative flex justify-center items-center"
-            style={{ marginBottom: 'var(--space-1)', minHeight: `${gaugeSize}px` }}
+            style={{ marginBottom: 'var(--space-6)', minHeight: `${gaugeSize + 40}px` }}
           >
             {/* Loader - shows during analysis */}
             {isLoading && (

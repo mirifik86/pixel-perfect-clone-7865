@@ -19,8 +19,8 @@ export const ScoreGauge = ({
   const [displayScore, setDisplayScore] = useState(0);
   const animationRef = useRef<number | null>(null);
   
-  // Professional, thinner stroke for instrument-like precision
-  const strokeWidth = 12;
+  // Premium thicker stroke for visual impact
+  const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const totalArc = circumference * 0.75; // 270 degrees
@@ -142,8 +142,36 @@ export const ScoreGauge = ({
 
   return (
     <div className={`relative flex flex-col items-center ${className || ''}`}>
+      {/* Premium ambient glow behind gauge */}
+      <div 
+        className="absolute rounded-full"
+        style={{
+          width: size * 1.3,
+          height: size * 1.3,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: score !== null 
+            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
+            : 'radial-gradient(circle, hsl(174 60% 45% / 0.08) 0%, transparent 70%)',
+          filter: 'blur(20px)',
+          pointerEvents: 'none'
+        }}
+      />
+      
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
+        {/* Premium outer ring glow */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            boxShadow: score !== null 
+              ? `0 0 30px ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}, 0 0 60px ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')}, inset 0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.1)')}`
+              : '0 0 20px hsl(174 60% 45% / 0.1), 0 0 40px hsl(174 60% 45% / 0.05)',
+            transition: 'box-shadow 0.5s ease-out'
+          }}
+        />
+        
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {/* No filters/shadows - clean instrument look */}
 
