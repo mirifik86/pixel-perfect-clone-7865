@@ -353,7 +353,7 @@ ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 // Deep clone utility to ensure original data is never mutated
 const deepClone = (obj: any): any => JSON.parse(JSON.stringify(obj));
 
-// Translation helper function - translates ONLY text fields while preserving ALL numerical values
+// Translation helper function - translates ALL text fields while preserving ALL numerical values
 const translateAnalysisResult = async (analysisResult: any, targetLanguage: string, apiKey: string): Promise<any> => {
   if (targetLanguage === 'en') {
     return analysisResult; // Already in English
@@ -365,9 +365,19 @@ const translateAnalysisResult = async (analysisResult: any, targetLanguage: stri
   const translationPrompt = `You are a professional translator. Translate the following JSON analysis from English to French.
 
 CRITICAL RULES - YOU MUST FOLLOW EXACTLY:
-1. ONLY translate text content in these specific fields: reason, summary, articleSummary, observation, explanation, disclaimer, proDisclaimer, reasoning
+1. Translate ALL human-readable text in these fields:
+   - summary, articleSummary, disclaimer, proDisclaimer
+   - breakdown.*.reason (ALL breakdown items)
+   - webPresence.observation
+   - corroboration.summary
+   - imageSignals.disclaimer
+   - imageSignals.origin.indicators[] (translate each string in the array)
+   - imageSignals.coherence.explanation
+   - imageSignals.scoring.reasoning
+   - imageSignals.scoring.severityConditionsMet[] (translate each string if present)
+
 2. NEVER change ANY numerical values: score, points, sourcesConsulted, totalImpact, imageAsProof, aiWithClaims, metadataIssues, contextualSeverity
-3. NEVER change ANY enum/status values: outcome (corroborated/neutral/constrained), confidence (low/medium/high), level, classification, analysisType
+3. NEVER change ANY enum/status values: outcome, confidence, level, classification, analysisType, exifPresence, dateConsistency
 4. NEVER change weight percentages (30%, 40%, etc.)
 5. Keep source names (media names, websites, agency names) in their EXACT original form
 6. Keep the EXACT same JSON structure
@@ -474,35 +484,55 @@ Respond with ONLY the translated JSON object, no other text.`;
         translated.corroboration.sources = originalData.corroboration.sources;
       }
       
-      // PRO image signals - preserve ALL numerical scoring and classifications
+      // PRO image signals - preserve ALL numerical scoring and classifications, BUT allow translated text
       if (originalData.imageSignals) {
         if (!translated.imageSignals) translated.imageSignals = {};
         
-        // Origin - preserve classification and confidence
+        // Origin - preserve classification and confidence, allow translated indicators
         if (originalData.imageSignals.origin) {
           if (!translated.imageSignals.origin) translated.imageSignals.origin = {};
           translated.imageSignals.origin.classification = originalData.imageSignals.origin.classification;
           translated.imageSignals.origin.confidence = originalData.imageSignals.origin.confidence;
-          translated.imageSignals.origin.indicators = originalData.imageSignals.origin.indicators;
+          // Keep translated indicators if valid, otherwise use original
+          if (!Array.isArray(translated.imageSignals.origin.indicators) || 
+              translated.imageSignals.origin.indicators.length !== originalData.imageSignals.origin.indicators?.length) {
+            translated.imageSignals.origin.indicators = originalData.imageSignals.origin.indicators;
+          }
         }
         
-        // Metadata - preserve all status values
+        // Metadata - preserve all status values (these are enums, not text)
         if (originalData.imageSignals.metadata) {
           translated.imageSignals.metadata = originalData.imageSignals.metadata;
         }
         
-        // Coherence - preserve classification
+        // Coherence - preserve classification, allow translated explanation
         if (originalData.imageSignals.coherence) {
           if (!translated.imageSignals.coherence) translated.imageSignals.coherence = {};
           translated.imageSignals.coherence.classification = originalData.imageSignals.coherence.classification;
+          // Keep translated explanation if present
+          if (!translated.imageSignals.coherence.explanation) {
+            translated.imageSignals.coherence.explanation = originalData.imageSignals.coherence.explanation;
+          }
         }
         
-        // Scoring - preserve ALL numerical values
+        // Scoring - preserve ALL numerical values, allow translated reasoning
         if (originalData.imageSignals.scoring) {
+          const translatedReasoning = translated.imageSignals?.scoring?.reasoning;
+          const translatedSeverity = translated.imageSignals?.scoring?.severityConditionsMet;
+          
           translated.imageSignals.scoring = {
             ...originalData.imageSignals.scoring,
-            reasoning: translated.imageSignals?.scoring?.reasoning || originalData.imageSignals.scoring.reasoning
+            reasoning: translatedReasoning || originalData.imageSignals.scoring.reasoning,
+            severityConditionsMet: (Array.isArray(translatedSeverity) && 
+              translatedSeverity.length === originalData.imageSignals.scoring.severityConditionsMet?.length)
+              ? translatedSeverity
+              : originalData.imageSignals.scoring.severityConditionsMet
           };
+        }
+        
+        // Keep translated disclaimer if present
+        if (!translated.imageSignals.disclaimer) {
+          translated.imageSignals.disclaimer = originalData.imageSignals.disclaimer;
         }
       }
       
