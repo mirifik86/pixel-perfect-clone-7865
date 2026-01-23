@@ -153,8 +153,13 @@ serve(async (req) => {
     const aiResponse = await response.json();
     const messageContent = aiResponse.choices?.[0]?.message?.content;
 
+    // Graceful fallback: if no content, return original data instead of failing
     if (!messageContent) {
-      throw new Error("No response from AI");
+      console.warn("No content from AI translation - returning original data");
+      return new Response(
+        JSON.stringify(analysisData),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Parse the translated JSON
@@ -164,7 +169,11 @@ serve(async (req) => {
       if (jsonMatch) {
         translatedResult = JSON.parse(jsonMatch[0]);
       } else {
-        throw new Error("No JSON found in response");
+        console.warn("No JSON found in translation response - returning original");
+        return new Response(
+          JSON.stringify(analysisData),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
     } catch (parseError) {
       console.error("Failed to parse translation response:", parseError);
