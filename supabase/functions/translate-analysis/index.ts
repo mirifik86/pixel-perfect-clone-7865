@@ -24,7 +24,11 @@ You will receive a JSON object with analysis results. Translate ONLY these text 
 - articleSummary (if present)
 - disclaimer / proDisclaimer (if present)
 - corroboration.summary (if present)
-- imageSignals.*.(explanation|reasoning) (if present)
+- imageSignals.disclaimer (if present)
+- imageSignals.coherence.explanation (if present)
+- imageSignals.scoring.reasoning (if present)
+- imageSignals.origin.indicators[] (if present)
+- imageSignals.scoring.severityConditionsMet[] (if present)
 
 DO NOT modify:
 - score (number)
@@ -82,6 +86,22 @@ const mergeTranslatedText = (original: any, translated: any) => {
   if (out.imageSignals) {
     const tImg = translated?.imageSignals;
 
+    // Nested image disclaimer
+    if (out.imageSignals.disclaimer) {
+      setIfString(
+        () => (out.imageSignals.disclaimer = tImg?.disclaimer),
+        tImg?.disclaimer,
+      );
+    }
+
+    // Origin indicators (these are human-readable signals, not enums)
+    if (Array.isArray(out.imageSignals.origin?.indicators) && Array.isArray(tImg?.origin?.indicators)) {
+      const nextIndicators = tImg.origin.indicators.filter((x: any) => typeof x === 'string' && x.trim().length > 0);
+      if (nextIndicators.length === out.imageSignals.origin.indicators.length) {
+        out.imageSignals.origin.indicators = nextIndicators;
+      }
+    }
+
     if (out.imageSignals.coherence?.explanation) {
       setIfString(
         () => (out.imageSignals.coherence.explanation = tImg?.coherence?.explanation),
@@ -94,6 +114,17 @@ const mergeTranslatedText = (original: any, translated: any) => {
         () => (out.imageSignals.scoring.reasoning = tImg?.scoring?.reasoning),
         tImg?.scoring?.reasoning,
       );
+    }
+
+    // Optional severity conditions list (if present)
+    if (
+      Array.isArray(out.imageSignals.scoring?.severityConditionsMet) &&
+      Array.isArray(tImg?.scoring?.severityConditionsMet)
+    ) {
+      const next = tImg.scoring.severityConditionsMet.filter((x: any) => typeof x === 'string' && x.trim().length > 0);
+      if (next.length === out.imageSignals.scoring.severityConditionsMet.length) {
+        out.imageSignals.scoring.severityConditionsMet = next;
+      }
     }
   }
 
