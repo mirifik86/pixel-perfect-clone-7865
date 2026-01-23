@@ -402,8 +402,8 @@ export const ScoreGauge = ({
         </div>
       </div>
 
-      {/* Status label - seamlessly connected to gauge */}
-      <div className="relative w-full flex justify-center mt-2">
+      {/* Status label - premium visible styling */}
+      <div className="relative w-full flex flex-col items-center justify-center mt-4">
         {/* Pulse effect for ready state - only when no content */}
         {score === null && !hasContent && (
           <div 
@@ -416,35 +416,53 @@ export const ScoreGauge = ({
             }}
           />
         )}
+        
+        {/* Premium glow behind label when score is shown */}
+        {score !== null && (
+          <div 
+            className="absolute rounded-full"
+            style={{
+              width: '100%',
+              height: '100%',
+              background: `radial-gradient(ellipse at center, ${currentLabelColor.replace(')', ' / 0.2)')} 0%, transparent 70%)`,
+              filter: 'blur(15px)',
+              animation: 'label-glow 2s ease-in-out infinite alternate'
+            }}
+          />
+        )}
+        
         <span
-          className="relative text-center transition-all duration-300"
+          className="relative text-center transition-all duration-500 uppercase font-bold"
           style={{
-            fontSize: size * 0.095,
+            fontSize: score !== null ? size * 0.13 : size * 0.095,
             color: score === null 
               ? hasContent 
-                ? 'hsl(0 0% 100% / 0.4)' // Dimmed when content is present
-                : 'hsl(0 0% 100%)' // Bright when empty
+                ? 'hsl(0 0% 100% / 0.4)'
+                : 'hsl(0 0% 100%)'
               : currentLabelColor,
-            fontWeight: 600,
-            letterSpacing: '0.18em',
+            letterSpacing: '0.2em',
             fontFamily: 'var(--font-sans)',
-            textShadow: score === null && !hasContent 
-              ? '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)' 
-              : 'none',
+            textShadow: score !== null 
+              ? `0 0 20px ${currentLabelColor.replace(')', ' / 0.8)')}, 0 0 40px ${currentLabelColor.replace(')', ' / 0.5)')}, 0 0 60px ${currentLabelColor.replace(')', ' / 0.3)')}`
+              : score === null && !hasContent 
+                ? '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)' 
+                : 'none',
           }}
         >
           {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
         </span>
         
-        {/* CSS for pulse animation */}
-        {score === null && !hasContent && (
-          <style>{`
-            @keyframes ready-pulse {
-              0%, 100% { opacity: 0.4; transform: scale(0.96); }
-              50% { opacity: 1; transform: scale(1.04); }
-            }
-          `}</style>
-        )}
+        {/* CSS animations */}
+        <style>{`
+          @keyframes ready-pulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.96); }
+            50% { opacity: 1; transform: scale(1.04); }
+          }
+          @keyframes label-glow {
+            0% { opacity: 0.5; transform: scale(0.95); }
+            100% { opacity: 0.8; transform: scale(1.05); }
+          }
+        `}</style>
       </div>
     </div>
   );
