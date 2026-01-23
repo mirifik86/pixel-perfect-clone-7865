@@ -1,6 +1,6 @@
 export const LeenScoreLogo = () => {
   return (
-    <div className="flex flex-col items-center" style={{ gap: 'var(--space-2)' }}>
+    <div className="flex flex-col items-center gap-1 md:gap-2">
       {/* Premium icon with layered glow effects - compact */}
       <div className="relative">
         {/* Outer glow ring */}
@@ -84,7 +84,7 @@ export const LeenScoreLogo = () => {
         
         <h1 
           className="relative brand-text font-normal tracking-tight"
-          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(3.5rem, 3rem + 5vw, 6.5rem)' }}
+          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(2.75rem, 2.5rem + 4vw, 6.5rem)' }}
         >
           <span 
             className="brand-accent italic"
@@ -106,13 +106,12 @@ export const LeenScoreLogo = () => {
           </span>
         </h1>
         
-        {/* Tagline */}
+        {/* Tagline - MOBILE: tighter spacing */}
         <p 
-          className="relative tracking-widest uppercase text-center"
+          className="relative tracking-widest uppercase text-center mt-1 md:mt-3"
           style={{ 
-            fontSize: 'clamp(0.75rem, 0.65rem + 0.6vw, 1rem)',
-            marginTop: 'var(--space-3)',
-            letterSpacing: '0.25em',
+            fontSize: 'clamp(0.625rem, 0.55rem + 0.5vw, 1rem)',
+            letterSpacing: '0.2em',
             color: 'hsl(0 0% 92%)',
             textShadow: '0 0 20px hsl(0 0% 100% / 0.2)'
           }}
