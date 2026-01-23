@@ -260,6 +260,20 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   const t = translations[language];
   const isPro = data.analysisType === 'pro';
 
+  // CRITICAL: Determine if we have REAL corroborating sources
+  // Only count as corroborated if at least one actual source exists
+  const hasRealCorroboration = Boolean(
+    data.corroboration?.sources?.corroborated?.length && 
+    data.corroboration.sources.corroborated.length > 0
+  );
+  
+  // Calculate the REAL sources points based on actual corroboration
+  // For Standard: +5 if source found, 0 otherwise
+  // For PRO: use progressive bonus
+  const realSourcesPoints = isPro 
+    ? (data.corroboration ? calculateCorroborationBonus(data.corroboration) : 0)
+    : (hasRealCorroboration ? 5 : 0);
+
   // Standard criteria labels
   const standardCriteriaLabels: Record<string, string> = {
     sources: t.sources,
@@ -304,8 +318,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   };
 
   // Standard signal badges - exclude visual signal when no image
+  // CRITICAL: Use realSourcesPoints for sources badge to ensure consistency
   const standardSignalBadges = [
-    { label: t.signalSource, level: getBadgeLevel(data.breakdown.sources?.points ?? 0) },
+    { label: t.signalSource, level: getBadgeLevel(realSourcesPoints) },
     { label: t.signalFactual, level: getBadgeLevel(data.breakdown.factual?.points ?? 0) },
     { label: t.signalContext, level: getBadgeLevel(data.breakdown.context?.points ?? 0) },
     { label: t.signalPrudence, level: getBadgeLevel(data.breakdown.prudence?.points ?? data.breakdown.tone?.points ?? 0) },
@@ -753,18 +768,25 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
             standardKeys.map((key) => {
               const item = data.breakdown[key as keyof AnalysisBreakdown];
               if (!item) return null;
+              
+              // CRITICAL: Override sources points with real corroboration-based value
+              const displayPoints = key === 'sources' ? realSourcesPoints : item.points;
+              const displayReason = key === 'sources' && !hasRealCorroboration
+                ? (language === 'fr' ? 'Aucune source de corroboration trouvée.' : 'No corroborating source found.')
+                : item.reason;
+              
               return (
                 <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {getPointsIcon(item.points)}
+                      {getPointsIcon(displayPoints)}
                       <span className="font-semibold text-slate-800">{standardCriteriaLabels[key]}</span>
                     </div>
-                    <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
-                      {item.points > 0 ? '+' : ''}{item.points}
+                    <span className={`font-mono text-sm font-bold ${getPointsColor(displayPoints)}`}>
+                      {displayPoints > 0 ? '+' : ''}{displayPoints}
                     </span>
                   </div>
-                  <p className="ml-6 text-sm font-medium text-slate-600">{item.reason}</p>
+                  <p className="ml-6 text-sm font-medium text-slate-600">{displayReason}</p>
                 </div>
               );
             })
