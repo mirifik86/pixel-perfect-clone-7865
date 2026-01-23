@@ -51,6 +51,7 @@ interface AnalysisData {
     sourceTypes: string[];
     summary: string;
   };
+  engineUsed?: 'IA11' | 'Lovable'; // DEV DEBUG: tracks which engine was used
 }
 
 interface ImageSignals {
@@ -226,7 +227,43 @@ const Index = () => {
     }
   }, []);
 
+  // Try IA11 external API first, fallback to Lovable if it fails
+  const tryIA11Analysis = useCallback(async (text: string): Promise<{ success: boolean; data?: AnalysisData; engineUsed: string }> => {
+    try {
+      console.log('[IA11] Attempting external API call...');
+      const response = await supabase.functions.invoke('analyze-ia11', {
+        body: { text, mode: 'standard' },
+      });
+
+      if (response.error) {
+        console.log('[IA11] Edge function error:', response.error);
+        return { success: false, engineUsed: 'Lovable' };
+      }
+
+      const data = response.data;
+      
+      // Check if fallback was signaled
+      if (data?.fallback) {
+        console.log('[IA11] Fallback signaled:', data.reason);
+        return { success: false, engineUsed: 'Lovable' };
+      }
+
+      // Validate we have a proper response
+      if (typeof data?.score !== 'number' || !data?.summary) {
+        console.log('[IA11] Invalid response structure');
+        return { success: false, engineUsed: 'Lovable' };
+      }
+
+      console.log('[IA11] Success! Engine:', data.engineUsed, 'Score:', data.score);
+      return { success: true, data: data as AnalysisData, engineUsed: 'IA11' };
+    } catch (err) {
+      console.log('[IA11] Unexpected error:', err);
+      return { success: false, engineUsed: 'Lovable' };
+    }
+  }, []);
+
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
+  // For pasted text: tries IA11 first, falls back to Lovable
   const handleAnalyze = useCallback(async (input: string) => {
     const tLocal = translations[language];
 
@@ -240,17 +277,55 @@ const Index = () => {
     setLastAnalyzedContent(input);
     setAnalysisError(null);
 
+    // DEV DEBUG: Track which engine was used
+    let engineUsed = 'Lovable';
+
     try {
-      const { en, fr } = await runBilingualTextAnalysis({ content: input, analysisType: 'standard' });
+      let enData: AnalysisData;
+      let frData: AnalysisData;
+
+      // STEP 1: Try IA11 external API first (pasted text only)
+      const ia11Result = await tryIA11Analysis(input);
+      
+      if (ia11Result.success && ia11Result.data) {
+        // IA11 succeeded - use its response
+        engineUsed = 'IA11';
+        enData = ia11Result.data;
+        
+        // Translate to French
+        const fr = await supabase.functions.invoke('translate-analysis', {
+          body: {
+            analysisData: enData,
+            targetLanguage: 'fr',
+          },
+        });
+        frData = (!fr.error && fr.data && !fr.data.error ? (fr.data as AnalysisData) : enData);
+        
+        console.log('[Analysis] Used engine:', engineUsed);
+      } else {
+        // STEP 2: Fallback to Lovable analysis
+        engineUsed = 'Lovable';
+        console.log('[Analysis] Falling back to Lovable engine...');
+        
+        const result = await runBilingualTextAnalysis({ content: input, analysisType: 'standard' });
+        enData = result.en;
+        frData = result.fr;
+        
+        console.log('[Analysis] Used engine:', engineUsed);
+      }
 
       setSummariesByLanguage({
-        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
-        fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
+        en: { summary: enData.summary || '', articleSummary: enData.articleSummary || '' },
+        fr: { summary: frData.summary || '', articleSummary: frData.articleSummary || '' },
       });
 
-      setAnalysisByLanguage({ en, fr });
+      // Add engineUsed to data for dev debugging (non-breaking addition)
+      setAnalysisByLanguage({ 
+        en: { ...enData, engineUsed } as AnalysisData, 
+        fr: { ...frData, engineUsed } as AnalysisData 
+      });
     } catch (err) {
-      console.error('Unexpected error:', err);
+      console.error('Both IA11 and Lovable failed:', err);
       // Stay on page, show error panel instead of toast only
       const errorMessage = err instanceof Error ? err.message : tLocal.errorAnalysis;
       const errorCode = `ERR_${Date.now().toString(36).toUpperCase()}`;
@@ -264,7 +339,7 @@ const Index = () => {
         setIsLoaderExiting(false);
       }, 500); // Match exit animation duration
     }
-  }, [language, runBilingualTextAnalysis]);
+  }, [language, runBilingualTextAnalysis, tryIA11Analysis]);
 
   // Screenshot Analysis Handler - now called directly when image is ready
   const handleImageAnalysis = useCallback(async (file: File, preview: string, analysisType: 'standard' | 'pro' = 'standard') => {
