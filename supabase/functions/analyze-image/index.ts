@@ -132,12 +132,58 @@ const extractBase64Data = (dataUrl: string): { mimeType: string; data: string } 
   return { mimeType: 'image/png', data: dataUrl };
 };
 
+// HIGH-IMPACT CLAIM KEYWORDS for strict corroboration rules
+const HIGH_IMPACT_KEYWORDS = [
+  // War / Military
+  'war', 'guerre', 'invasion', 'nuclear', 'nucléaire', 'attack', 'attaque',
+  'missile', 'bomb', 'bombe', 'military strike', 'frappe militaire',
+  // Geopolitical
+  'assassination', 'assassinat', 'coup', 'overthrow', 'renversement',
+  'sanctions', 'embargo', 'treaty', 'traité', 'alliance',
+  // National emergencies  
+  'emergency', 'urgence', 'martial law', 'loi martiale', 'curfew', 'couvre-feu',
+  'state of emergency', 'état d\'urgence', 'lockdown', 'confinement',
+  // Leadership / Institutional
+  'president', 'président', 'prime minister', 'premier ministre',
+  'government', 'gouvernement', 'parliament', 'parlement',
+  'resignation', 'démission', 'impeachment', 'destitution',
+  // Breaking / Sensational
+  'breaking', 'urgent', 'exclusive', 'leaked', 'fuite', 'confirmed dead',
+  'déclaré mort', 'massive', 'unprecedented', 'sans précédent'
+];
+
+// Check if text contains high-impact claims
+const containsHighImpactClaims = (text: string): boolean => {
+  const textLower = (text || '').toLowerCase();
+  return HIGH_IMPACT_KEYWORDS.some(keyword => textLower.includes(keyword));
+};
+
 // Calculate final LeenScore from 3 sub-scores with DYNAMIC LOWER BOUND
-const calculateLeenScore = (subScores: { 
-  visual_authenticity: number; 
-  text_image_coherence: number; 
-  manipulation_staging_signals: number; 
-}, hasCorroboration: boolean = false): number => {
+// AND STRICT HIGH-IMPACT CLAIM HANDLING
+const calculateLeenScore = (
+  subScores: { 
+    visual_authenticity: number; 
+    text_image_coherence: number; 
+    manipulation_staging_signals: number; 
+  }, 
+  options: {
+    hasCorroboration?: boolean;
+    hasOfficialConfirmation?: boolean;
+    hasMajorMediaCoverage?: boolean;
+    hasGovernmentalAnnouncement?: boolean;
+    isHighImpactClaim?: boolean;
+    extractedText?: string;
+  } = {}
+): number => {
+  const {
+    hasCorroboration = false,
+    hasOfficialConfirmation = false,
+    hasMajorMediaCoverage = false,
+    hasGovernmentalAnnouncement = false,
+    isHighImpactClaim = false,
+    extractedText = ''
+  } = options;
+
   // Weighted average: Visual 25%, Coherence 35%, Manipulation 40%
   const weightedScore = (
     subScores.visual_authenticity * 0.25 +
@@ -146,39 +192,79 @@ const calculateLeenScore = (subScores: {
   );
   
   // ═══════════════════════════════════════════════════════════════════
-  // DYNAMIC LOWER BOUND RULE
+  // EXTREME NEGATIVE CASE RULE (STRICT)
   // ═══════════════════════════════════════════════════════════════════
-  // Default minimum: 5%
-  // Allow 2-3% ONLY if ALL signals are strongly negative:
-  //   • No reliable corroborating sources
-  //   • Very low visual authenticity (< 15)
-  //   • Near-zero text-image coherence (< 15)
-  //   • High manipulation indicators (< 20)
-  // Never output 0%
+  // For HIGH-IMPACT claims (war, geopolitical events, emergencies):
+  // - Absence of official confirmation = STRONGLY NEGATIVE signal
+  // - "Limited coverage" is NOT neutral, it's a failure
+  // 
+  // Corroboration is FAILED if:
+  //   • No official confirmation exists
+  //   • No major international media confirms
+  //   • No governmental announcement found
+  // 
+  // If FAILED corroboration + strongly negative signals → 2-3% score
+  // ═══════════════════════════════════════════════════════════════════
   
-  const isExtremeNegative = (
-    !hasCorroboration &&
-    subScores.visual_authenticity < 15 &&
-    subScores.text_image_coherence < 15 &&
-    subScores.manipulation_staging_signals < 20
+  // Auto-detect high-impact claims from text if not explicitly set
+  const isActuallyHighImpact = isHighImpactClaim || containsHighImpactClaims(extractedText);
+  
+  // For high-impact claims, corroboration FAILS without official sources
+  const corroborationFailed = isActuallyHighImpact 
+    ? (!hasOfficialConfirmation && !hasMajorMediaCoverage && !hasGovernmentalAnnouncement)
+    : !hasCorroboration;
+  
+  // Determine if this is an extreme negative case
+  const signalsStronglyNegative = (
+    subScores.visual_authenticity < 20 &&
+    subScores.text_image_coherence < 20 &&
+    subScores.manipulation_staging_signals < 25
   );
   
-  const minimumScore = isExtremeNegative ? 2 : 5;
+  const isExtremeNegative = corroborationFailed && signalsStronglyNegative;
   
-  // If extreme case, allow floor of 2-3 based on how bad it is
+  // For high-impact claims with failed corroboration, apply stricter thresholds
+  const isHighImpactExtremeNegative = isActuallyHighImpact && corroborationFailed && (
+    subScores.visual_authenticity < 30 ||
+    subScores.text_image_coherence < 25 ||
+    subScores.manipulation_staging_signals < 30
+  );
+  
+  // Calculate minimum score
+  let minimumScore = 5; // Default
+  if (isExtremeNegative || isHighImpactExtremeNegative) {
+    minimumScore = 2;
+  }
+  
   let finalScore = Math.round(weightedScore);
   
-  if (isExtremeNegative && finalScore < 5) {
-    // Allow 2 or 3 based on severity
+  // Force score into 2-3% range for extreme cases
+  if (isExtremeNegative || isHighImpactExtremeNegative) {
     const extremeSeverity = (
       subScores.visual_authenticity + 
       subScores.text_image_coherence + 
       subScores.manipulation_staging_signals
     ) / 3;
-    finalScore = extremeSeverity < 10 ? 2 : 3;
+    
+    // 2% for truly extreme cases, 3% for severe but not absolute
+    if (extremeSeverity < 15) {
+      finalScore = 2;
+    } else if (extremeSeverity < 25) {
+      finalScore = 3;
+    } else if (isHighImpactExtremeNegative && !hasCorroboration) {
+      // High-impact without any corroboration = cap at 5
+      finalScore = Math.min(finalScore, 5);
+    }
+  }
+  
+  // For high-impact claims with limited/no coverage, cap score aggressively
+  if (isActuallyHighImpact && corroborationFailed) {
+    // "Limited coverage" is NOT neutral for high-impact claims
+    finalScore = Math.min(finalScore, 15);
   }
   
   // Clamp: minimum is dynamic (2 or 5), maximum is 98 (never absolute certainty)
+  // NEVER output 0%
   return Math.max(minimumScore, Math.min(98, finalScore));
 };
 
@@ -411,8 +497,12 @@ serve(async (req) => {
     const confidence = ocrData.ocr_confidence || 0;
     
     if (textToAnalyze.length < 10) {
-      // Calculate image-only LeenScore from sub-scores
-      const imageOnlyScore = calculateLeenScore(ocrData.sub_scores);
+      // Calculate image-only LeenScore from sub-scores (no text = no high-impact detection)
+      const imageOnlyScore = calculateLeenScore(ocrData.sub_scores, {
+        hasCorroboration: false,
+        isHighImpactClaim: false,
+        extractedText: ''
+      });
       
       return new Response(
         JSON.stringify({
@@ -439,9 +529,14 @@ serve(async (req) => {
       );
     }
 
-    // Calculate image LeenScore from 3 sub-scores
-    const imageScore = calculateLeenScore(ocrData.sub_scores);
-    console.log("Image sub-scores:", ocrData.sub_scores, "→ Image LeenScore:", imageScore);
+    // Calculate image LeenScore from 3 sub-scores with HIGH-IMPACT detection
+    const isHighImpact = containsHighImpactClaims(textToAnalyze);
+    const imageScore = calculateLeenScore(ocrData.sub_scores, {
+      hasCorroboration: false, // Will be updated after text analysis
+      isHighImpactClaim: isHighImpact,
+      extractedText: textToAnalyze
+    });
+    console.log("Image sub-scores:", ocrData.sub_scores, "→ Image LeenScore:", imageScore, "| High-impact claim:", isHighImpact);
 
     // Call the existing analyze function for TEXT analysis
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || 'https://clejmxumuqhpjncjuuht.supabase.co';
@@ -487,11 +582,45 @@ serve(async (req) => {
       console.error("LeenScore analysis failed:", await analyzeResponse.text());
     }
 
-    // Calculate FINAL combined score: Image (40%) + Text (60%)
-    const finalScore = Math.round(imageScore * 0.40 + textScore * 0.60);
-    const cappedFinalScore = Math.max(5, Math.min(98, finalScore));
+    // ═══════════════════════════════════════════════════════════════════
+    // STRICT CORROBORATION CHECK FOR HIGH-IMPACT CLAIMS
+    // ═══════════════════════════════════════════════════════════════════
+    const hasAnyCorroboration = !!(analysisResult?.proSources?.length);
     
-    // Apply guardrails to final score
+    // For high-impact claims, "limited coverage" = FAILED corroboration
+    const corroborationFailed = isHighImpact && !hasAnyCorroboration;
+    
+    // Calculate FINAL combined score: Image (40%) + Text (60%)
+    let finalScore = Math.round(imageScore * 0.40 + textScore * 0.60);
+    
+    // Apply EXTREME NEGATIVE CASE RULE for high-impact claims
+    if (corroborationFailed) {
+      // Check if signals are strongly negative
+      const signalsNegative = (
+        ocrData.sub_scores.visual_authenticity < 30 ||
+        ocrData.sub_scores.text_image_coherence < 25 ||
+        ocrData.sub_scores.manipulation_staging_signals < 30
+      );
+      
+      if (signalsNegative) {
+        // Extreme case: force to 2-3% range
+        const avgSignal = (
+          ocrData.sub_scores.visual_authenticity +
+          ocrData.sub_scores.text_image_coherence +
+          ocrData.sub_scores.manipulation_staging_signals
+        ) / 3;
+        finalScore = avgSignal < 20 ? 2 : 3;
+        console.log("EXTREME NEGATIVE: High-impact claim with failed corroboration + negative signals → Score:", finalScore);
+      } else {
+        // High-impact without corroboration = cap at 15%
+        finalScore = Math.min(finalScore, 15);
+        console.log("HIGH-IMPACT NO CORROBORATION: Score capped to", finalScore);
+      }
+    }
+    
+    const cappedFinalScore = Math.max(2, Math.min(98, finalScore)); // Min 2, never 0
+    
+    // Apply additional guardrails to final score
     let finalCappedScore = cappedFinalScore;
     if (ocrData.visual_text_mismatch?.detected) {
       finalCappedScore = Math.min(finalCappedScore, 50);
