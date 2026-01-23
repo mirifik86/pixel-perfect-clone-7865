@@ -29,6 +29,7 @@ export const MissionControlLoader = ({ language }: MissionControlLoaderProps) =>
   const t = translations[language];
   const [secondaryIndex, setSecondaryIndex] = useState(0);
   const [scanPosition, setScanPosition] = useState(0);
+  const [horizontalScanPosition, setHorizontalScanPosition] = useState(0);
   const [activeNodes, setActiveNodes] = useState<boolean[]>([false, false, false, false, false]);
 
   // Rotate secondary text every 3.5 seconds
@@ -39,20 +40,26 @@ export const MissionControlLoader = ({ language }: MissionControlLoaderProps) =>
     return () => clearInterval(interval);
   }, [t.secondary.length]);
 
-  // Smooth scanning line animation
+  // Smooth scanning line animations (vertical and horizontal)
   useEffect(() => {
     let animationFrame: number;
     let startTime: number;
-    const duration = 4000; // 4 seconds per full cycle
+    const verticalDuration = 4000; // 4 seconds per full cycle
+    const horizontalDuration = 5500; // Slightly offset timing for visual interest
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
-      const progress = (elapsed % duration) / duration;
       
-      // Smooth sine wave motion for natural scanning feel
-      const position = Math.sin(progress * Math.PI * 2) * 0.5 + 0.5;
-      setScanPosition(position);
+      // Vertical scanning - smooth sine wave
+      const verticalProgress = (elapsed % verticalDuration) / verticalDuration;
+      const verticalPosition = Math.sin(verticalProgress * Math.PI * 2) * 0.5 + 0.5;
+      setScanPosition(verticalPosition);
+      
+      // Horizontal scanning - offset phase for depth
+      const horizontalProgress = (elapsed % horizontalDuration) / horizontalDuration;
+      const horizontalPosition = Math.sin(horizontalProgress * Math.PI * 2 + Math.PI / 3) * 0.5 + 0.5;
+      setHorizontalScanPosition(horizontalPosition);
       
       animationFrame = requestAnimationFrame(animate);
     };
@@ -176,6 +183,32 @@ export const MissionControlLoader = ({ language }: MissionControlLoaderProps) =>
               background: 'linear-gradient(180deg, transparent 0%, hsl(174 70% 55%) 30%, hsl(174 80% 60%) 50%, hsl(174 70% 55%) 70%, transparent 100%)',
               boxShadow: '0 0 20px 4px hsl(174 70% 50% / 0.6), 0 0 40px 8px hsl(174 60% 45% / 0.3)',
               filter: 'blur(0.5px)',
+            }}
+          />
+
+          {/* Horizontal scanning line */}
+          <div 
+            className="absolute w-full transition-none"
+            style={{
+              height: '1.5px',
+              top: `${horizontalScanPosition * 100}%`,
+              background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.7) 20%, hsl(174 75% 58%) 50%, hsl(174 60% 50% / 0.7) 80%, transparent 100%)',
+              boxShadow: '0 0 15px 3px hsl(174 65% 48% / 0.5), 0 0 30px 6px hsl(174 55% 42% / 0.25)',
+              filter: 'blur(0.3px)',
+            }}
+          />
+
+          {/* Intersection glow - where lines cross */}
+          <div 
+            className="absolute rounded-full pointer-events-none transition-none"
+            style={{
+              width: '10px',
+              height: '10px',
+              left: `calc(${scanPosition * 100}% - 5px)`,
+              top: `calc(${horizontalScanPosition * 100}% - 5px)`,
+              background: 'radial-gradient(circle, hsl(174 85% 65%) 0%, hsl(174 70% 55% / 0.6) 40%, transparent 70%)',
+              boxShadow: '0 0 16px 4px hsl(174 80% 55% / 0.7)',
+              opacity: 0.9,
             }}
           />
 
