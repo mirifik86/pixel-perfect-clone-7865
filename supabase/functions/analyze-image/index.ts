@@ -132,12 +132,12 @@ const extractBase64Data = (dataUrl: string): { mimeType: string; data: string } 
   return { mimeType: 'image/png', data: dataUrl };
 };
 
-// Calculate final LeenScore from 3 sub-scores
+// Calculate final LeenScore from 3 sub-scores with DYNAMIC LOWER BOUND
 const calculateLeenScore = (subScores: { 
   visual_authenticity: number; 
   text_image_coherence: number; 
   manipulation_staging_signals: number; 
-}): number => {
+}, hasCorroboration: boolean = false): number => {
   // Weighted average: Visual 25%, Coherence 35%, Manipulation 40%
   const weightedScore = (
     subScores.visual_authenticity * 0.25 +
@@ -145,8 +145,41 @@ const calculateLeenScore = (subScores: {
     subScores.manipulation_staging_signals * 0.40
   );
   
-  // Clamp between 5-98 (never absolute)
-  return Math.max(5, Math.min(98, Math.round(weightedScore)));
+  // ═══════════════════════════════════════════════════════════════════
+  // DYNAMIC LOWER BOUND RULE
+  // ═══════════════════════════════════════════════════════════════════
+  // Default minimum: 5%
+  // Allow 2-3% ONLY if ALL signals are strongly negative:
+  //   • No reliable corroborating sources
+  //   • Very low visual authenticity (< 15)
+  //   • Near-zero text-image coherence (< 15)
+  //   • High manipulation indicators (< 20)
+  // Never output 0%
+  
+  const isExtremeNegative = (
+    !hasCorroboration &&
+    subScores.visual_authenticity < 15 &&
+    subScores.text_image_coherence < 15 &&
+    subScores.manipulation_staging_signals < 20
+  );
+  
+  const minimumScore = isExtremeNegative ? 2 : 5;
+  
+  // If extreme case, allow floor of 2-3 based on how bad it is
+  let finalScore = Math.round(weightedScore);
+  
+  if (isExtremeNegative && finalScore < 5) {
+    // Allow 2 or 3 based on severity
+    const extremeSeverity = (
+      subScores.visual_authenticity + 
+      subScores.text_image_coherence + 
+      subScores.manipulation_staging_signals
+    ) / 3;
+    finalScore = extremeSeverity < 10 ? 2 : 3;
+  }
+  
+  // Clamp: minimum is dynamic (2 or 5), maximum is 98 (never absolute certainty)
+  return Math.max(minimumScore, Math.min(98, finalScore));
 };
 
 // Apply credibility guardrails to analysis result
