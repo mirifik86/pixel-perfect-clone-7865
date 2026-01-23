@@ -639,67 +639,69 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - persistent premium signature */}
-        <footer className="relative mt-auto flex flex-col items-center text-center py-4">
-          {/* Premium separator line */}
+        {/* Footer - premium signature */}
+        <footer className="relative mt-auto flex flex-col items-center text-center py-5">
+          {/* Subtle premium separator */}
           <div 
-            className="flex items-center justify-center mb-4"
-            style={{ width: '100%', maxWidth: '200px' }}
-          >
-            <div 
-              className="flex-1 h-px"
-              style={{
-                background: 'linear-gradient(90deg, transparent 0%, hsl(174 70% 55% / 0.4) 100%)'
-              }}
-            />
-            <div 
-              className="w-1 h-1 rounded-full mx-3"
-              style={{
-                background: 'hsl(174 75% 60%)',
-                boxShadow: '0 0 6px hsl(174 80% 55% / 0.8), 0 0 12px hsl(174 70% 50% / 0.5)'
-              }}
-            />
-            <div 
-              className="flex-1 h-px"
-              style={{
-                background: 'linear-gradient(90deg, hsl(174 70% 55% / 0.4) 0%, transparent 100%)'
-              }}
-            />
-          </div>
+            className="mb-4"
+            style={{ 
+              width: '60px',
+              height: '1px',
+              background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.3) 50%, transparent 100%)',
+            }}
+          />
           
-          {/* Brand name */}
-          <div className="text-sm text-white/85 tracking-wide">
+          {/* LeenScore brand */}
+          <div 
+            className="tracking-wide"
+            style={{ fontSize: 'clamp(0.95rem, 0.9rem + 0.3vw, 1.1rem)' }}
+          >
             <span 
-              className="italic"
+              className="italic font-medium"
               style={{
-                color: 'hsl(174 65% 52%)',
-                textShadow: '0 0 40px hsl(174 60% 45% / 0.4), 0 0 80px hsl(40 100% 60% / 0.2), 0 2px 20px hsl(30 90% 55% / 0.15)'
+                color: 'hsl(174 65% 55%)',
+                textShadow: '0 0 25px hsl(174 60% 45% / 0.5)'
               }}
             >Leen</span>
             <span 
               className="font-semibold not-italic" 
               style={{
-                color: 'hsl(0 0% 98%)',
-                textShadow: '0 0 30px hsl(40 100% 70% / 0.25), 0 2px 15px hsl(30 90% 55% / 0.1)'
+                color: 'hsl(0 0% 95%)',
+                textShadow: '0 0 20px hsl(0 0% 100% / 0.15)'
               }}
             >Score</span>
           </div>
           
-          {/* Byline signature */}
+          {/* Developed by */}
           <p 
-            className="mt-2 font-semibold uppercase"
+            className="mt-2"
             style={{ 
-              fontSize: '0.65rem',
-              letterSpacing: '0.25em',
-              color: 'hsl(174 80% 65%)',
-              textShadow: '0 0 12px hsl(174 85% 55% / 0.6), 0 0 25px hsl(174 75% 50% / 0.4)'
+              fontSize: '0.7rem',
+              letterSpacing: '0.08em',
+              color: 'hsl(0 0% 60%)',
             }}
           >
-            {language === 'fr' ? 'PAR SOL&AIR' : 'BY SOL&AIR'}
+            {language === 'fr' ? 'Développé et conçu par' : 'Developed and designed by'}{' '}
+            <span 
+              style={{ 
+                color: 'hsl(174 70% 60%)',
+                fontWeight: 600,
+                textShadow: '0 0 10px hsl(174 70% 50% / 0.4)'
+              }}
+            >
+              Sol&Air
+            </span>
           </p>
           
           {/* Version */}
-          <div className="mt-1 text-xs text-white/40 tracking-widest uppercase">
+          <div 
+            className="mt-1 uppercase"
+            style={{ 
+              fontSize: '0.6rem',
+              letterSpacing: '0.15em',
+              color: 'hsl(0 0% 45%)'
+            }}
+          >
             Version 1.2 BETA
           </div>
         </footer>
