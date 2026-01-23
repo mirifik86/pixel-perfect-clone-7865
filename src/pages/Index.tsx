@@ -455,17 +455,17 @@ const Index = () => {
               />
             </div>
             
-            {/* Byline - premium styling */}
+            {/* Byline - premium luminous styling */}
             <p 
               className="animate-fade-in font-bold uppercase text-center"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
-                marginTop: 'var(--space-2)',
-                fontSize: 'var(--text-xs)',
+                marginTop: 'var(--space-3)',
+                fontSize: 'var(--text-sm)',
                 letterSpacing: '0.35em',
-                color: 'hsl(174 80% 65%)',
-                textShadow: '0 0 10px hsl(174 80% 55% / 0.6), 0 0 20px hsl(174 60% 45% / 0.4), 0 0 30px hsl(174 60% 45% / 0.2)'
+                color: 'hsl(174 85% 70%)',
+                textShadow: '0 0 15px hsl(174 90% 60% / 0.8), 0 0 30px hsl(174 80% 55% / 0.6), 0 0 50px hsl(174 70% 50% / 0.4), 0 0 70px hsl(174 60% 45% / 0.3)'
               }}
             >
               {t.byLine}
