@@ -535,7 +535,12 @@ const Index = () => {
           {/* Score gauge - premium spacing with visual impact */}
           <div 
             className="relative flex justify-center items-center"
-            style={{ marginBottom: 'var(--space-6)', minHeight: `${gaugeSize + 40}px` }}
+            style={{ 
+              marginBottom: 'var(--space-6)', 
+              minHeight: isLoading && isImageAnalysis 
+                ? 'clamp(340px, 50vh, 400px)' // Taller container for Mission Control loader
+                : `${gaugeSize + 40}px` 
+            }}
           >
             {/* Loader - shows during analysis with smooth exit */}
             {isLoading && (
@@ -545,6 +550,10 @@ const Index = () => {
                     ? 'opacity-0 translate-y-8 scale-95' 
                     : 'opacity-100 translate-y-0 scale-100 animate-fade-in'
                 }`}
+                style={{
+                  // Push Mission Control loader down for clean visual separation
+                  paddingTop: isImageAnalysis ? 'clamp(24px, 6vh, 48px)' : '0'
+                }}
               >
                 {isImageAnalysis ? (
                   <MissionControlLoader language={language} />
