@@ -202,7 +202,21 @@ const getPointsIcon = (points: number) => {
 const getPointsColor = (points: number) => {
   if (points > 0) return 'text-emerald-600';
   if (points < 0) return 'text-red-600';
-  return 'text-amber-600';
+  return 'text-slate-500'; // Neutral = slate, never red for 0
+};
+
+// Get image signals impact color (never red for 0/neutral)
+const getImageImpactColor = (impact: number) => {
+  if (impact > 0) return 'text-emerald-600';
+  if (impact < 0) return 'text-red-600';
+  return 'text-slate-500'; // Neutral signals = slate
+};
+
+// Get image signals impact background
+const getImageImpactBg = (impact: number) => {
+  if (impact > 0) return 'bg-emerald-50 border-emerald-200';
+  if (impact < 0) return 'bg-red-50 border-red-200';
+  return 'bg-slate-50 border-slate-200'; // Neutral = slate
 };
 
 const getBadgeLevel = (points: number): number => {
@@ -795,76 +809,194 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
       </div>
 
       {/* PRO Image Signals detailed view - only show when an image was actually provided */}
-      {isPro && hasImage && data.imageSignals && (
-        <div className="analysis-card mt-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Image className="h-5 w-5 text-cyan-600" />
-            <h3 className="font-serif text-lg font-semibold text-slate-900">
-              {language === 'fr' ? 'Analyse des Signaux Image' : 'Image Signal Analysis'}
-            </h3>
-          </div>
-          
-          <div className="space-y-3">
-            {/* Origin */}
-            {data.imageSignals.origin && (
-              <div className="rounded-lg bg-slate-50 p-3">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-700">
-                    {language === 'fr' ? 'Origine probable' : 'Probable origin'}
-                  </span>
-                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
-                    {data.imageSignals.origin.classification}
-                  </span>
-                </div>
-                {data.imageSignals.origin.indicators && data.imageSignals.origin.indicators.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {data.imageSignals.origin.indicators.map((indicator, idx) => (
-                      <span key={idx} className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
-                        {indicator}
-                      </span>
-                    ))}
+      {isPro && hasImage && data.imageSignals && (() => {
+        const impact = data.imageSignals.scoring?.totalImpact ?? 0;
+        const cappedImpact = Math.min(Math.max(impact, -10), 3); // Cap positive at +3
+        
+        // Determine status level
+        const isPositive = cappedImpact > 0;
+        const isNegative = cappedImpact < 0;
+        const isNeutral = cappedImpact === 0;
+        
+        // Expert status labels
+        const statusLabel = isNegative 
+          ? (language === 'fr' ? 'Anomalies détectées' : 'Anomalies detected')
+          : isPositive 
+            ? (language === 'fr' ? 'Signaux positifs' : 'Positive signals')
+            : (language === 'fr' ? 'Aucune anomalie critique' : 'No critical anomalies');
+        
+        // Impact display text
+        const impactDisplayText = isNeutral
+          ? (language === 'fr' ? 'Neutre (0 points)' : 'Neutral (0 points)')
+          : isPositive
+            ? (language === 'fr' ? `+${cappedImpact} pts (renforcement mineur)` : `+${cappedImpact} pts (minor reinforcement)`)
+            : `${cappedImpact} pts`;
+        
+        return (
+          <div className="analysis-card mt-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Image className="h-5 w-5 text-cyan-600" />
+                <h3 className="font-serif text-lg font-semibold text-slate-900">
+                  {language === 'fr' ? 'Analyse des Signaux Image' : 'Image Signal Analysis'}
+                </h3>
+              </div>
+              {/* Status badge */}
+              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                isNegative ? 'bg-red-100 text-red-700' :
+                isPositive ? 'bg-emerald-100 text-emerald-700' :
+                'bg-slate-100 text-slate-600'
+              }`}>
+                {statusLabel}
+              </span>
+            </div>
+            
+            <div className="space-y-3">
+              {/* Expert checklist - what was verified */}
+              <div className="rounded-lg bg-gradient-to-br from-slate-50 to-slate-100/50 p-3 border border-slate-200/60">
+                <p className="text-xs font-semibold text-slate-600 mb-2.5">
+                  {language === 'fr' ? 'Signaux vérifiés :' : 'Signals verified:'}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Image consistency */}
+                  <div className="flex items-center gap-2">
+                    <span className={`h-1.5 w-1.5 rounded-full ${isNegative ? 'bg-red-400' : 'bg-emerald-400'}`} />
+                    <span className="text-xs text-slate-600">
+                      {language === 'fr' ? 'Intégrité image' : 'Image integrity'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 ml-auto">
+                      {isNegative ? (language === 'fr' ? 'Suspect' : 'Suspect') : (language === 'fr' ? 'Normal' : 'Normal')}
+                    </span>
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Coherence */}
-            {data.imageSignals.coherence && (
-              <div className="rounded-lg bg-slate-50 p-3">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-700">
-                    {language === 'fr' ? 'Cohérence visuelle' : 'Visual coherence'}
-                  </span>
-                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
-                    {data.imageSignals.coherence.classification}
-                  </span>
+                  
+                  {/* Manipulation artifacts */}
+                  <div className="flex items-center gap-2">
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      data.imageSignals.scoring && data.imageSignals.scoring.totalImpact < -3 ? 'bg-red-400' : 'bg-emerald-400'
+                    }`} />
+                    <span className="text-xs text-slate-600">
+                      {language === 'fr' ? 'Artefacts' : 'Artifacts'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 ml-auto">
+                      {data.imageSignals.scoring && data.imageSignals.scoring.totalImpact < -3 
+                        ? (language === 'fr' ? 'Détectés' : 'Detected')
+                        : (language === 'fr' ? 'Aucun' : 'None')}
+                    </span>
+                  </div>
+                  
+                  {/* Visual context alignment */}
+                  <div className="flex items-center gap-2">
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      data.imageSignals.coherence?.classification?.toLowerCase().includes('high') ||
+                      data.imageSignals.coherence?.classification?.toLowerCase().includes('strong') ||
+                      data.imageSignals.coherence?.classification?.toLowerCase().includes('élevé') ||
+                      data.imageSignals.coherence?.classification?.toLowerCase().includes('fort')
+                        ? 'bg-emerald-400' 
+                        : data.imageSignals.coherence?.classification?.toLowerCase().includes('low') ||
+                          data.imageSignals.coherence?.classification?.toLowerCase().includes('weak') ||
+                          data.imageSignals.coherence?.classification?.toLowerCase().includes('faible')
+                          ? 'bg-red-400'
+                          : 'bg-amber-400'
+                    }`} />
+                    <span className="text-xs text-slate-600">
+                      {language === 'fr' ? 'Contexte visuel' : 'Visual context'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 ml-auto">
+                      {data.imageSignals.coherence?.classification || (language === 'fr' ? 'Cohérent' : 'Coherent')}
+                    </span>
+                  </div>
+                  
+                  {/* Source metadata */}
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                    <span className="text-xs text-slate-600">
+                      {language === 'fr' ? 'Métadonnées' : 'Metadata'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 ml-auto">
+                      {language === 'fr' ? 'Non concluant' : 'Inconclusive'}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500">{data.imageSignals.coherence.explanation}</p>
               </div>
-            )}
 
-            {/* Scoring impact */}
-            {data.imageSignals.scoring && (
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
+              {/* Origin - if available */}
+              {data.imageSignals.origin && (
+                <div className="rounded-lg bg-slate-50 p-3">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-700">
+                      {language === 'fr' ? 'Origine probable' : 'Probable origin'}
+                    </span>
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
+                      {data.imageSignals.origin.classification}
+                    </span>
+                  </div>
+                  {data.imageSignals.origin.indicators && data.imageSignals.origin.indicators.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {data.imageSignals.origin.indicators.map((indicator, idx) => (
+                        <span key={idx} className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
+                          {indicator}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Coherence - detailed explanation */}
+              {data.imageSignals.coherence && (
+                <div className="rounded-lg bg-slate-50 p-3">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-700">
+                      {language === 'fr' ? 'Cohérence visuelle' : 'Visual coherence'}
+                    </span>
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
+                      {data.imageSignals.coherence.classification}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">{data.imageSignals.coherence.explanation}</p>
+                </div>
+              )}
+
+              {/* Scoring impact - enhanced with proper neutral display */}
+              <div className={`rounded-lg border p-3 ${getImageImpactBg(cappedImpact)}`}>
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-semibold text-slate-700">
                     {language === 'fr' ? 'Impact sur le score' : 'Score impact'}
                   </span>
-                  <span className={`font-mono text-sm font-bold ${getPointsColor(data.imageSignals.scoring.totalImpact)}`}>
-                    {data.imageSignals.scoring.totalImpact}
+                  <span className={`font-mono text-sm font-bold ${getImageImpactColor(cappedImpact)}`}>
+                    {impactDisplayText}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">{data.imageSignals.scoring.reasoning}</p>
+                <p className="text-xs text-slate-500">
+                  {isNeutral 
+                    ? (language === 'fr' 
+                        ? 'Aucune anomalie visuelle critique détectée. L\'absence de signaux négatifs est neutre et n\'affecte pas le score.'
+                        : 'No critical visual anomalies detected. Absence of negative signals is neutral and does not affect the score.')
+                    : isPositive
+                      ? (language === 'fr'
+                          ? 'L\'analyse visuelle montre une forte cohérence avec le contenu. Cela renforce légèrement la crédibilité.'
+                          : 'Visual analysis shows strong coherence with the claim. This slightly reinforces credibility.')
+                      : data.imageSignals.scoring?.reasoning}
+                </p>
+                {isPositive && (
+                  <p className="text-[10px] text-emerald-600/70 mt-1.5 italic">
+                    {language === 'fr' 
+                      ? 'Impact plafonné à +3 pts maximum. Les signaux image ne peuvent pas surpasser la corroboration web.'
+                      : 'Impact capped at +3 pts maximum. Image signals cannot outweigh web corroboration.'}
+                  </p>
+                )}
               </div>
-            )}
 
-            {/* Disclaimer */}
-            {data.imageSignals.disclaimer && (
-              <p className="text-[10px] italic text-slate-400">{data.imageSignals.disclaimer}</p>
-            )}
+              {/* Expert disclaimer */}
+              <p className="text-[10px] italic text-slate-400">
+                {data.imageSignals.disclaimer || (language === 'fr'
+                  ? 'L\'analyse d\'image est un signal de soutien, pas une preuve. Elle ne remplace pas la vérification des sources.'
+                  : 'Image analysis is a supporting signal, not proof. It does not replace source verification.')}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
