@@ -181,39 +181,57 @@ export const ScoreGauge = ({
       {/* Sparkle particles - visible when score is shown */}
       {showSparkles && score !== null && (
         <>
-          {sparkles.map((sparkle) => {
+          {sparkles.map((sparkle, index) => {
             const rad = (sparkle.angle * Math.PI) / 180;
-            const x = Math.cos(rad) * size * sparkle.distance;
-            const y = Math.sin(rad) * size * sparkle.distance;
+            const finalX = Math.cos(rad) * size * sparkle.distance;
+            const finalY = Math.sin(rad) * size * sparkle.distance;
+            // Staggered spiral entry delay based on particle index
+            const spiralDelay = index * 0.08;
             
             return (
               <div
                 key={sparkle.id}
                 className="absolute pointer-events-none"
                 style={{
+                  '--final-x': `${finalX}px`,
+                  '--final-y': `${finalY}px`,
+                  '--sparkle-angle': `${sparkle.angle + 720}deg`,
                   width: sparkle.size,
                   height: sparkle.size,
                   left: '50%',
                   top: '50%',
-                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                   background: getInterpolatedColor(animatedScore),
                   borderRadius: '50%',
                   boxShadow: `0 0 ${sparkle.size * 2}px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.8)')}, 0 0 ${sparkle.size * 4}px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.4)')}`,
-                  animation: `sparkle-twinkle ${sparkle.duration}s ease-in-out ${sparkle.delay}s infinite`,
-                  opacity: sparkle.opacity
-                }}
+                  animation: `sparkle-spiral-in 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${spiralDelay}s forwards, sparkle-twinkle ${sparkle.duration}s ease-in-out ${spiralDelay + 1.2 + sparkle.delay}s infinite`,
+                  opacity: 0,
+                  transform: 'translate(-50%, -50%) scale(0)'
+                } as React.CSSProperties}
               />
             );
           })}
           <style>{`
+            @keyframes sparkle-spiral-in {
+              0% { 
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(0deg) scale(0);
+              }
+              30% {
+                opacity: 0.8;
+              }
+              100% { 
+                opacity: 1;
+                transform: translate(calc(-50% + var(--final-x)), calc(-50% + var(--final-y))) rotate(var(--sparkle-angle)) scale(1);
+              }
+            }
             @keyframes sparkle-twinkle {
               0%, 100% { 
-                opacity: 0.2; 
-                transform: translate(var(--tx), var(--ty)) scale(0.5);
+                opacity: 0.3; 
+                transform: translate(calc(-50% + var(--final-x)), calc(-50% + var(--final-y))) scale(0.6);
               }
               50% { 
                 opacity: 1; 
-                transform: translate(var(--tx), var(--ty)) scale(1.2);
+                transform: translate(calc(-50% + var(--final-x)), calc(-50% + var(--final-y))) scale(1.3);
               }
             }
           `}</style>
