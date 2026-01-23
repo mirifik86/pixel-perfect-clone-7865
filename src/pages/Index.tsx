@@ -665,7 +665,7 @@ const Index = () => {
                 color: 'hsl(0 0% 98%)',
                 textShadow: '0 0 30px hsl(40 100% 70% / 0.25), 0 2px 15px hsl(30 90% 55% / 0.1)'
               }}
-            >Score</span> — La crédibilité mesurée.
+            >Score</span>
           </div>
           <div className="mt-1 text-xs text-white/50 tracking-widest uppercase">
             Built by Sol&Air · Version 1.2 BETA
