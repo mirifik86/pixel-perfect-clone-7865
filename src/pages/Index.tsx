@@ -639,8 +639,35 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - minimal */}
-        <footer className="absolute bottom-4 left-0 right-0 flex flex-col items-center text-center pointer-events-none">
+        {/* Footer - persistent premium signature */}
+        <footer className="relative mt-auto flex flex-col items-center text-center py-4">
+          {/* Premium separator line */}
+          <div 
+            className="flex items-center justify-center mb-4"
+            style={{ width: '100%', maxWidth: '200px' }}
+          >
+            <div 
+              className="flex-1 h-px"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, hsl(174 70% 55% / 0.4) 100%)'
+              }}
+            />
+            <div 
+              className="w-1 h-1 rounded-full mx-3"
+              style={{
+                background: 'hsl(174 75% 60%)',
+                boxShadow: '0 0 6px hsl(174 80% 55% / 0.8), 0 0 12px hsl(174 70% 50% / 0.5)'
+              }}
+            />
+            <div 
+              className="flex-1 h-px"
+              style={{
+                background: 'linear-gradient(90deg, hsl(174 70% 55% / 0.4) 0%, transparent 100%)'
+              }}
+            />
+          </div>
+          
+          {/* Brand name */}
           <div className="text-sm text-white/85 tracking-wide">
             <span 
               className="italic"
@@ -657,8 +684,23 @@ const Index = () => {
               }}
             >Score</span>
           </div>
-          <div className="mt-1 text-xs text-white/50 tracking-widest uppercase">
-            Built by Sol&Air · Version 1.2 BETA
+          
+          {/* Byline signature */}
+          <p 
+            className="mt-2 font-semibold uppercase"
+            style={{ 
+              fontSize: '0.65rem',
+              letterSpacing: '0.25em',
+              color: 'hsl(174 80% 65%)',
+              textShadow: '0 0 12px hsl(174 85% 55% / 0.6), 0 0 25px hsl(174 75% 50% / 0.4)'
+            }}
+          >
+            {language === 'fr' ? 'PAR SOL&AIR' : 'BY SOL&AIR'}
+          </p>
+          
+          {/* Version */}
+          <div className="mt-1 text-xs text-white/40 tracking-widest uppercase">
+            Version 1.2 BETA
           </div>
         </footer>
       </main>
