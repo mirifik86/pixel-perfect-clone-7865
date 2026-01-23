@@ -111,7 +111,7 @@ const translations = {
     constrained: 'Limited Coverage',
     sourcesConsulted: 'sources consulted',
     corroborationBonus: 'Corroboration Bonus',
-    maxBonus: 'max +18 pts',
+    maxBonus: 'max +20 pts',
     // Source group labels
     sourceGroupCorroborated: 'Clear corroboration',
     sourceGroupNeutral: 'Neutral or contextual mentions',
@@ -165,7 +165,7 @@ const translations = {
     constrained: 'Couverture limitée',
     sourcesConsulted: 'sources consultées',
     corroborationBonus: 'Bonus Corroboration',
-    maxBonus: 'max +18 pts',
+    maxBonus: 'max +20 pts',
     // Source group labels
     sourceGroupCorroborated: 'Corroboration claire',
     sourceGroupNeutral: 'Mentions neutres ou contextuelles',
@@ -237,18 +237,18 @@ const corroborationStyles: Record<string, { bg: string; text: string; dot: strin
 };
 
 // Calculate progressive corroboration bonus for PRO analysis
-// Source 1: +5, Source 2: +4, Source 3: +3, Source 4: +2, Sources 5-8: +1 each
-// Maximum: 5+4+3+2+1+1+1+1 = 18 points
+// Source 1: +5, Source 2: +4, Source 3: +3, Source 4: +2, Sources 5-10: +1 each
+// Maximum: 5+4+3+2+1+1+1+1+1+1 = 20 points
 const calculateCorroborationBonus = (corroboration: Corroboration): number => {
   const sourceCount = Math.min(
     (corroboration.sources?.corroborated?.length || 0) +
     (corroboration.sources?.neutral?.length || 0),
-    8
+    10
   );
   
   if (sourceCount === 0) return 0;
   
-  const pointsPerSource = [5, 4, 3, 2, 1, 1, 1, 1];
+  const pointsPerSource = [5, 4, 3, 2, 1, 1, 1, 1, 1, 1];
   let bonus = 0;
   for (let i = 0; i < sourceCount; i++) {
     bonus += pointsPerSource[i];
@@ -517,8 +517,8 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-[240px] text-center">
                         <p className="text-xs">{language === 'fr' 
-                          ? 'PRO vérifie jusqu\'à 8 sources avec scoring progressif : +5, +4, +3, +2, puis +1 par source (max +18 pts).' 
-                          : 'PRO checks up to 8 sources with progressive scoring: +5, +4, +3, +2, then +1 per source (max +18 pts).'}</p>
+                          ? 'PRO vérifie jusqu\'à 10 sources avec scoring progressif : +5, +4, +3, +2, puis +1 par source (max +20 pts).' 
+                          : 'PRO checks up to 10 sources with progressive scoring: +5, +4, +3, +2, then +1 per source (max +20 pts).'}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
