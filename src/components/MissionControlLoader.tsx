@@ -6,21 +6,23 @@ interface MissionControlLoaderProps {
 
 const translations = {
   en: {
-    primary: 'Analyzing captured content',
+    primary: 'Analysis in progress…',
+    subtitle: 'Building a Trust Score',
     secondary: [
       'Extracting visual signals',
       'Evaluating credibility indicators',
       'Cross-verifying factual consistency',
-      'Building Trust Score',
+      'Finalizing assessment',
     ],
   },
   fr: {
-    primary: 'Analyse du contenu capturé',
+    primary: 'Analyse en cours…',
+    subtitle: 'Construction du Score de confiance',
     secondary: [
       'Extraction des signaux visuels',
       'Évaluation des indicateurs de crédibilité',
       'Vérification croisée de la cohérence factuelle',
-      'Construction du score de confiance',
+      'Finalisation de l\'évaluation',
     ],
   },
 };
@@ -259,7 +261,7 @@ export const MissionControlLoader = ({ language }: MissionControlLoaderProps) =>
 
         {/* Primary text */}
         <h3 
-          className="text-center font-sans font-medium mb-3"
+          className="text-center font-sans font-medium mb-1"
           style={{
             fontSize: 'clamp(1rem, 0.95rem + 0.3vw, 1.125rem)',
             color: 'hsl(0 0% 95%)',
@@ -270,15 +272,28 @@ export const MissionControlLoader = ({ language }: MissionControlLoaderProps) =>
           {t.primary}
         </h3>
 
+        {/* Subtitle - static, smaller */}
+        <p 
+          className="text-center font-sans mb-4"
+          style={{
+            fontSize: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem)',
+            color: 'hsl(174 50% 70%)',
+            letterSpacing: '0.04em',
+            opacity: 0.9,
+          }}
+        >
+          {t.subtitle}
+        </p>
+
         {/* Secondary rotating text */}
         <p 
           key={secondaryIndex}
           className="text-center font-sans animate-fade-in"
           style={{
-            fontSize: 'clamp(0.8rem, 0.75rem + 0.2vw, 0.875rem)',
-            color: 'hsl(174 40% 65%)',
+            fontSize: 'clamp(0.7rem, 0.65rem + 0.15vw, 0.8rem)',
+            color: 'hsl(220 15% 55%)',
             letterSpacing: '0.03em',
-            opacity: 0.85,
+            opacity: 0.7,
           }}
         >
           {t.secondary[secondaryIndex]}
