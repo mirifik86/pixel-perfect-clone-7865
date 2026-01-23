@@ -472,24 +472,31 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* Corroborated Sources - Official/Major Media/Reference */}
                   {data.corroboration.sources.corroborated?.map((source, idx) => {
-                    // Determine badge type based on source name patterns
+                    // Comprehensive domain detection patterns
                     const sourceLower = source.toLowerCase();
-                    const isOfficial = /gov|\.gov|official|government|archive|institution|ministry|department/.test(sourceLower);
-                    const isMajorMedia = /reuters|associated press|ap news|bbc|nyt|new york times|washington post|guardian|afp|cnn|npr/.test(sourceLower);
-                    const isReference = /britannica|encyclopedia|wikipedia|oxford|cambridge|merriam|dictionary/.test(sourceLower);
+                    
+                    // Official Sources: Government, institutional archives, official bodies
+                    const officialPatterns = /\.(gov|gouv|gob|govt)\b|\.gov\.|government|official|ministry|ministère|department|département|senate|sénat|congress|parlement|parliament|white\s*house|élysée|downing|bundesregierung|archives?\s*(national|federal)|national\s*archives|library\s*of\s*congress|europarl|europa\.eu|who\.int|un\.org|unesco|interpol|fbi|cia|nsa|cdc|fda|epa|nasa|esa|nih|state\.gov|justice\.gov|treasury|défense|defense\.gov|bundesamt|préfecture|mairie|city\s*hall|municipal|conseil|court\s*(supreme|constitutional)|tribunal|homeland|immigration/i.test(sourceLower);
+                    
+                    // Major Media: International news agencies, major newspapers, broadcast networks
+                    const majorMediaPatterns = /reuters|associated\s*press|\bap\s*news|agence\s*france|afp|bloomberg|bbc|cnn|nbc|abc\s*news|cbs\s*news|fox\s*news|msnbc|npr|pbs|c-span|new\s*york\s*times|nyt|washington\s*post|wall\s*street\s*journal|wsj|los\s*angeles\s*times|usa\s*today|chicago\s*tribune|boston\s*globe|the\s*guardian|daily\s*telegraph|the\s*times|independent|financial\s*times|economist|le\s*monde|le\s*figaro|libération|l'express|la\s*croix|der\s*spiegel|zeit|süddeutsche|faz|frankfurter|bild|el\s*país|la\s*vanguardia|corriere|la\s*repubblica|stampa|asahi|yomiuri|mainichi|nikkei|al\s*jazeera|haaretz|times\s*of\s*india|hindu|straits\s*times|south\s*china|globe\s*and\s*mail|toronto\s*star|sydney\s*morning|abc\s*australia|sky\s*news|euronews|france24|dw\.com|radio\s*france|france\s*info|rtbf|politico|axios|vox|huffpost|huffington|buzzfeed\s*news|vice\s*news|propublica|intercept|atlantic|newyorker|new\s*yorker|time\s*magazine|\btime\.com/i.test(sourceLower);
+                    
+                    // Reference: Encyclopedias, academic sources, dictionaries
+                    const referencePatterns = /britannica|encyclopedia|encyclopédie|encyclopaedia|wikipedia|wikimedia|wiktionary|oxford|cambridge|merriam|webster|larousse|robert|duden|treccani|scholarpedia|stanford\s*encyclopedia|plato\.stanford|jstor|pubmed|ncbi|nature\.com|science\.org|sciencedirect|springer|wiley|elsevier|academic|scholarly|peer\s*review|arxiv|ssrn|researchgate|google\s*scholar|worldcat|library|bibliothèque|snopes|factcheck|politifact|full\s*fact|les\s*décodeurs|checknews|hoaxbuster/i.test(sourceLower);
                     
                     let badgeLabel = language === 'fr' ? 'Source officielle' : 'Official Source';
                     let badgeStyle = 'bg-blue-500/10 text-blue-600 border-blue-500/20';
                     
-                    if (isMajorMedia) {
+                    if (majorMediaPatterns) {
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
                       badgeStyle = 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
-                    } else if (isReference) {
+                    } else if (referencePatterns) {
                       badgeLabel = language === 'fr' ? 'Référence' : 'Reference';
                       badgeStyle = 'bg-violet-500/10 text-violet-600 border-violet-500/20';
-                    } else if (!isOfficial) {
-                      // Default to Official Source for corroborated
-                      badgeLabel = language === 'fr' ? 'Source officielle' : 'Official Source';
+                    } else if (!officialPatterns) {
+                      // Default to Major Media for unrecognized corroborated sources
+                      badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
+                      badgeStyle = 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
                     }
                     
                     return (
@@ -517,14 +524,23 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   {/* Neutral Sources - Reference type */}
                   {data.corroboration.sources.neutral?.map((source, idx) => {
                     const sourceLower = source.toLowerCase();
-                    const isReference = /britannica|encyclopedia|wikipedia|oxford|cambridge|merriam|dictionary/.test(sourceLower);
                     
-                    const badgeLabel = isReference 
-                      ? (language === 'fr' ? 'Référence' : 'Reference')
-                      : (language === 'fr' ? 'Média majeur' : 'Major Media');
-                    const badgeStyle = isReference 
-                      ? 'bg-violet-500/10 text-violet-600 border-violet-500/20'
-                      : 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+                    // Reference: Encyclopedias, academic sources, dictionaries, fact-checkers
+                    const isReference = /britannica|encyclopedia|encyclopédie|encyclopaedia|wikipedia|wikimedia|wiktionary|oxford|cambridge|merriam|webster|larousse|robert|duden|treccani|scholarpedia|stanford\s*encyclopedia|plato\.stanford|jstor|pubmed|ncbi|nature\.com|science\.org|sciencedirect|springer|wiley|elsevier|academic|scholarly|peer\s*review|arxiv|ssrn|researchgate|google\s*scholar|worldcat|library|bibliothèque|snopes|factcheck|politifact|full\s*fact|les\s*décodeurs|checknews|hoaxbuster/i.test(sourceLower);
+                    
+                    // Major Media patterns for neutral sources
+                    const isMajorMedia = /reuters|associated\s*press|\bap\s*news|afp|bloomberg|bbc|cnn|nbc|abc\s*news|cbs|fox\s*news|msnbc|npr|pbs|new\s*york\s*times|nyt|washington\s*post|wsj|guardian|telegraph|times|independent|financial\s*times|economist|le\s*monde|figaro|spiegel|al\s*jazeera|politico|axios|vox|huffpost|atlantic|newyorker|time\.com/i.test(sourceLower);
+                    
+                    let badgeLabel = language === 'fr' ? 'Contexte' : 'Context';
+                    let badgeStyle = 'bg-slate-500/10 text-slate-600 border-slate-500/20';
+                    
+                    if (isReference) {
+                      badgeLabel = language === 'fr' ? 'Référence' : 'Reference';
+                      badgeStyle = 'bg-violet-500/10 text-violet-600 border-violet-500/20';
+                    } else if (isMajorMedia) {
+                      badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
+                      badgeStyle = 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+                    }
                     
                     return (
                       <div
