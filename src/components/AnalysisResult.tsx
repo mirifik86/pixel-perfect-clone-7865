@@ -818,12 +818,29 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         const isNegative = cappedImpact < 0;
         const isNeutral = cappedImpact === 0;
         
+        // Visual relevance classification based on coherence
+        const coherenceClass = data.imageSignals.coherence?.classification?.toLowerCase() || '';
+        const getVisualRelevance = () => {
+          if (coherenceClass.includes('high') || coherenceClass.includes('strong') || 
+              coherenceClass.includes('élevé') || coherenceClass.includes('fort')) {
+            return { level: 'high', label: language === 'fr' ? 'Pertinence élevée' : 'High relevance', color: 'bg-emerald-100 text-emerald-700' };
+          }
+          if (coherenceClass.includes('low') || coherenceClass.includes('weak') || 
+              coherenceClass.includes('faible') || coherenceClass.includes('none') ||
+              coherenceClass.includes('aucun') || coherenceClass.includes('unrelated')) {
+            return { level: 'none', label: language === 'fr' ? 'Aucune pertinence visuelle' : 'No visual relevance', color: 'bg-red-100 text-red-700' };
+          }
+          return { level: 'partial', label: language === 'fr' ? 'Pertinence partielle' : 'Partial relevance', color: 'bg-amber-100 text-amber-700' };
+        };
+        
+        const visualRelevance = getVisualRelevance();
+        
         // Expert status labels
         const statusLabel = isNegative 
-          ? (language === 'fr' ? 'Anomalies détectées' : 'Anomalies detected')
+          ? (language === 'fr' ? 'Incohérence détectée' : 'Incoherence detected')
           : isPositive 
-            ? (language === 'fr' ? 'Signaux positifs' : 'Positive signals')
-            : (language === 'fr' ? 'Aucune anomalie critique' : 'No critical anomalies');
+            ? (language === 'fr' ? 'Cohérence confirmée' : 'Coherence confirmed')
+            : (language === 'fr' ? 'Neutre' : 'Neutral');
         
         // Impact display text
         const impactDisplayText = isNeutral
@@ -832,13 +849,34 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
             ? (language === 'fr' ? `+${cappedImpact} pts (renforcement mineur)` : `+${cappedImpact} pts (minor reinforcement)`)
             : `${cappedImpact} pts`;
         
+        // Generate expert visual summary based on coherence explanation
+        const getExpertSummary = () => {
+          const explanation = data.imageSignals.coherence?.explanation;
+          if (explanation) return explanation;
+          
+          if (visualRelevance.level === 'high') {
+            return language === 'fr' 
+              ? 'L\'image fournie présente une cohérence visuelle avec le contenu analysé. Les éléments visuels soutiennent le contexte de l\'affirmation.'
+              : 'The provided image shows visual coherence with the analyzed content. Visual elements support the claim context.';
+          }
+          if (visualRelevance.level === 'none') {
+            return language === 'fr'
+              ? 'L\'image fournie ne présente pas de lien visuel direct avec l\'affirmation. Le contenu visuel ne soutient pas et ne contredit pas le texte.'
+              : 'The provided image shows no direct visual connection to the claim. Visual content neither supports nor contradicts the text.';
+          }
+          return language === 'fr'
+            ? 'L\'image fournie présente un lien partiel avec le contenu. Certains éléments visuels peuvent être pertinents mais sans confirmation claire.'
+            : 'The provided image shows a partial connection to the content. Some visual elements may be relevant but without clear confirmation.';
+        };
+        
         return (
           <div className="analysis-card mt-6">
+            {/* Header with clear image acknowledgment */}
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image className="h-5 w-5 text-cyan-600" />
                 <h3 className="font-serif text-lg font-semibold text-slate-900">
-                  {language === 'fr' ? 'Analyse des Signaux Image' : 'Image Signal Analysis'}
+                  {language === 'fr' ? 'Analyse Visuelle Expert' : 'Expert Visual Analysis'}
                 </h3>
               </div>
               {/* Status badge */}
@@ -851,7 +889,91 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               </span>
             </div>
             
+            {/* Image presence acknowledgment - ALWAYS visible */}
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-cyan-50 border border-cyan-200/60 px-3 py-2">
+              <CheckCircle className="h-4 w-4 text-cyan-600 flex-shrink-0" />
+              <span className="text-sm font-medium text-cyan-800">
+                {language === 'fr' ? 'Image fournie et analysée' : 'Image provided and analyzed'}
+              </span>
+            </div>
+            
             <div className="space-y-3">
+              {/* A) IMAGE PRESENCE - Always confirmed */}
+              {/* Already shown above in cyan banner */}
+              
+              {/* B) VISUAL RELEVANCE TO CLAIM - Mandatory evaluation */}
+              <div className="rounded-lg bg-gradient-to-br from-slate-50 to-slate-100/50 p-3 border border-slate-200/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-slate-700">
+                    {language === 'fr' ? 'Pertinence visuelle' : 'Visual Relevance to Claim'}
+                  </span>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${visualRelevance.color}`}>
+                    {visualRelevance.label}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {visualRelevance.level === 'high' 
+                    ? (language === 'fr' 
+                        ? 'L\'image soutient visuellement le contenu de l\'affirmation.'
+                        : 'The image visually supports the claim content.')
+                    : visualRelevance.level === 'none'
+                      ? (language === 'fr'
+                          ? 'L\'image n\'a pas de rapport visuel avec l\'affirmation.'
+                          : 'The image has no visual connection to the claim.')
+                      : (language === 'fr'
+                          ? 'L\'image présente un lien partiel avec le contenu.'
+                          : 'The image shows a partial connection to the content.')}
+                </p>
+              </div>
+              
+              {/* C) CONTEXTUAL COHERENCE - Alignment evaluation */}
+              <div className="rounded-lg bg-gradient-to-br from-slate-50 to-slate-100/50 p-3 border border-slate-200/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-slate-700">
+                    {language === 'fr' ? 'Cohérence contextuelle' : 'Contextual Coherence'}
+                  </span>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                    isNegative ? 'bg-red-100 text-red-700' :
+                    isPositive ? 'bg-emerald-100 text-emerald-700' :
+                    'bg-slate-100 text-slate-600'
+                  }`}>
+                    {isNegative 
+                      ? (language === 'fr' ? 'Incohérent' : 'Incoherent')
+                      : isPositive 
+                        ? (language === 'fr' ? 'Cohérent' : 'Coherent')
+                        : (language === 'fr' ? 'Neutre' : 'Neutral')}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {isNegative
+                    ? (language === 'fr'
+                        ? 'Le contenu visuel ne correspond pas au sujet de l\'affirmation.'
+                        : 'The image content does not match the subject of the claim.')
+                    : isPositive
+                      ? (language === 'fr'
+                          ? 'Alignement confirmé entre le contenu visuel et l\'affirmation.'
+                          : 'Confirmed alignment between visual content and the claim.')
+                      : (language === 'fr'
+                          ? 'Aucune contradiction visuelle détectée, mais sans confirmation forte.'
+                          : 'No visual contradiction detected, but without strong confirmation.')}
+                </p>
+              </div>
+              
+              {/* D) EXPERT VISUAL SUMMARY - Clear sentence */}
+              <div className="rounded-lg bg-cyan-50/50 border border-cyan-200/40 p-3">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="h-4 w-4 text-cyan-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-cyan-800 mb-1">
+                      {language === 'fr' ? 'Synthèse Expert' : 'Expert Summary'}
+                    </p>
+                    <p className="text-sm text-slate-700 leading-relaxed">
+                      {getExpertSummary()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Expert checklist - what was verified */}
               <div className="rounded-lg bg-gradient-to-br from-slate-50 to-slate-100/50 p-3 border border-slate-200/60">
                 <p className="text-xs font-semibold text-slate-600 mb-2.5">
@@ -887,22 +1009,19 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   {/* Visual context alignment */}
                   <div className="flex items-center gap-2">
                     <span className={`h-1.5 w-1.5 rounded-full ${
-                      data.imageSignals.coherence?.classification?.toLowerCase().includes('high') ||
-                      data.imageSignals.coherence?.classification?.toLowerCase().includes('strong') ||
-                      data.imageSignals.coherence?.classification?.toLowerCase().includes('élevé') ||
-                      data.imageSignals.coherence?.classification?.toLowerCase().includes('fort')
-                        ? 'bg-emerald-400' 
-                        : data.imageSignals.coherence?.classification?.toLowerCase().includes('low') ||
-                          data.imageSignals.coherence?.classification?.toLowerCase().includes('weak') ||
-                          data.imageSignals.coherence?.classification?.toLowerCase().includes('faible')
-                          ? 'bg-red-400'
-                          : 'bg-amber-400'
+                      visualRelevance.level === 'high' ? 'bg-emerald-400' 
+                        : visualRelevance.level === 'none' ? 'bg-red-400'
+                        : 'bg-amber-400'
                     }`} />
                     <span className="text-xs text-slate-600">
                       {language === 'fr' ? 'Contexte visuel' : 'Visual context'}
                     </span>
                     <span className="text-[10px] text-slate-400 ml-auto">
-                      {data.imageSignals.coherence?.classification || (language === 'fr' ? 'Cohérent' : 'Coherent')}
+                      {visualRelevance.level === 'high' 
+                        ? (language === 'fr' ? 'Aligné' : 'Aligned')
+                        : visualRelevance.level === 'none'
+                          ? (language === 'fr' ? 'Non lié' : 'Unrelated')
+                          : (language === 'fr' ? 'Partiel' : 'Partial')}
                     </span>
                   </div>
                   
@@ -942,26 +1061,11 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                 </div>
               )}
 
-              {/* Coherence - detailed explanation */}
-              {data.imageSignals.coherence && (
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-700">
-                      {language === 'fr' ? 'Cohérence visuelle' : 'Visual coherence'}
-                    </span>
-                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
-                      {data.imageSignals.coherence.classification}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500">{data.imageSignals.coherence.explanation}</p>
-                </div>
-              )}
-
-              {/* Scoring impact - enhanced with proper neutral display */}
+              {/* SCORE IMPACT - Controlled display */}
               <div className={`rounded-lg border p-3 ${getImageImpactBg(cappedImpact)}`}>
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-semibold text-slate-700">
-                    {language === 'fr' ? 'Impact sur le score' : 'Score impact'}
+                    {language === 'fr' ? 'Impact sur le score' : 'Score Impact'}
                   </span>
                   <span className={`font-mono text-sm font-bold ${getImageImpactColor(cappedImpact)}`}>
                     {impactDisplayText}
@@ -970,19 +1074,28 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                 <p className="text-xs text-slate-500">
                   {isNeutral 
                     ? (language === 'fr' 
-                        ? 'Aucune anomalie visuelle critique détectée. L\'absence de signaux négatifs est neutre et n\'affecte pas le score.'
-                        : 'No critical visual anomalies detected. Absence of negative signals is neutral and does not affect the score.')
+                        ? 'Image analysée sans anomalie critique. L\'absence de signaux négatifs est neutre.'
+                        : 'Image analyzed with no critical anomalies. Absence of negative signals is neutral.')
                     : isPositive
                       ? (language === 'fr'
-                          ? 'L\'analyse visuelle montre une forte cohérence avec le contenu. Cela renforce légèrement la crédibilité.'
+                          ? 'L\'analyse visuelle montre une forte cohérence avec l\'affirmation. Cela renforce légèrement la crédibilité.'
                           : 'Visual analysis shows strong coherence with the claim. This slightly reinforces credibility.')
-                      : data.imageSignals.scoring?.reasoning}
+                      : (language === 'fr'
+                          ? 'Incohérence visuelle détectée. L\'image contredit ou ne correspond pas au contenu de l\'affirmation.'
+                          : 'Visual incoherence detected. The image contradicts or does not match the claim content.')}
                 </p>
                 {isPositive && (
                   <p className="text-[10px] text-emerald-600/70 mt-1.5 italic">
                     {language === 'fr' 
                       ? 'Impact plafonné à +3 pts maximum. Les signaux image ne peuvent pas surpasser la corroboration web.'
                       : 'Impact capped at +3 pts maximum. Image signals cannot outweigh web corroboration.'}
+                  </p>
+                )}
+                {isNegative && (
+                  <p className="text-[10px] text-red-600/70 mt-1.5 italic">
+                    {language === 'fr' 
+                      ? 'Impact négatif limité à -3 pts maximum. L\'image ne peut pas à elle seule invalider une affirmation.'
+                      : 'Negative impact capped at -3 pts maximum. Image alone cannot invalidate a claim.'}
                   </p>
                 )}
               </div>
