@@ -300,37 +300,32 @@ const Index = () => {
       // Store the extracted text for potential re-runs
       setLastAnalyzedContent(data.ocr.cleaned_text);
 
-      // If analysis was successful, also fetch the other language
-      if (data.analysis) {
-        const otherLang = language === 'fr' ? 'en' : 'fr';
-        const otherResult = await supabase.functions.invoke('analyze', {
-          body: { content: data.ocr.cleaned_text, language: otherLang, analysisType },
-        });
+      // If OCR extracted text, run a single master analysis (EN) then translate (FR).
+      // This keeps ALL sections (Explication PRO, détails, corroboration, etc.) coherent across the FR/EN toggle.
+      if (data?.ocr?.cleaned_text) {
+        try {
+          const { en, fr } = await runBilingualTextAnalysis({
+            content: data.ocr.cleaned_text,
+            analysisType,
+          });
 
-        if (otherResult.data && !otherResult.error) {
-          const primaryAnalysis = data.analysis;
-          const otherAnalysis = otherResult.data;
-
-          const newSummaries: BilingualSummaries = {
-            en: language === 'en' 
-              ? { summary: primaryAnalysis.summary || '', articleSummary: primaryAnalysis.articleSummary || '' }
-              : { summary: otherAnalysis.summary || '', articleSummary: otherAnalysis.articleSummary || '' },
-            fr: language === 'fr'
-              ? { summary: primaryAnalysis.summary || '', articleSummary: primaryAnalysis.articleSummary || '' }
-              : { summary: otherAnalysis.summary || '', articleSummary: otherAnalysis.articleSummary || '' },
-          };
-          setSummariesByLanguage(newSummaries);
-
-          const newAnalysis: Record<'en' | 'fr', AnalysisData | null> = {
-            en: language === 'en' ? primaryAnalysis : { ...otherAnalysis, score: primaryAnalysis.score, confidence: primaryAnalysis.confidence },
-            fr: language === 'fr' ? primaryAnalysis : { ...otherAnalysis, score: primaryAnalysis.score, confidence: primaryAnalysis.confidence },
-          };
-          setAnalysisByLanguage(newAnalysis);
-        } else {
-          // Fallback: just use the primary language
           setSummariesByLanguage({
-            en: language === 'en' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
-            fr: language === 'fr' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+            en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
+            fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
+          });
+
+          setAnalysisByLanguage({ en, fr });
+
+          // Keep screenshotData.analysis aligned with the currently selected UI language
+          setScreenshotData({
+            ...processedData,
+            analysis: language === 'fr' ? fr : en,
+          });
+        } catch (e) {
+          // Fallback: keep analyze-image provided analysis (single language)
+          setSummariesByLanguage({
+            en: language === 'en' && data.analysis ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+            fr: language === 'fr' && data.analysis ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
           });
           setAnalysisByLanguage({
             en: language === 'en' ? data.analysis : null,
