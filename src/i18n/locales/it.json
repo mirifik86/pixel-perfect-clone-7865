@@ -47,7 +47,8 @@
     "tapToUpload": "Tocca per caricare",
     "addImage": "Aggiungi immagine",
     "then": "Poi",
-    "disclaimer": "LeenScore non dichiara fatti. Ti aiuta a valutare la credibilità delle informazioni."
+    "disclaimer": "LeenScore non dichiara fatti. Ti aiuta a valutare la credibilità delle informazioni.",
+    "disclaimerText": "non dichiara fatti. Ti aiuta a valutare la credibilità delle informazioni."
   },
   "gauge": {
     "pending": "In attesa",

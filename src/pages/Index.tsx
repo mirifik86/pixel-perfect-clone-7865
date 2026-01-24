@@ -3,6 +3,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/i18n/useLanguage';
 import { type SupportedLanguage, type LanguageMode } from '@/i18n/config';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
+import { LeenScoreBrand } from '@/components/LeenScoreBrand';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { LanguageSuggestionPrompt } from '@/components/LanguageSuggestionPrompt';
 import { ScoreGauge } from '@/components/ScoreGauge';
@@ -725,7 +726,7 @@ const Index = () => {
               
               {/* Disclaimer note - subtle, informational, centered */}
               <p 
-                className="text-center animate-fade-in"
+                className="text-center animate-fade-in flex items-center justify-center flex-wrap gap-1"
                 style={{ 
                   marginTop: 'var(--space-3)',
                   fontSize: 'clamp(0.65rem, 0.6rem + 0.2vw, 0.75rem)',
@@ -735,7 +736,8 @@ const Index = () => {
                   animationFillMode: 'both',
                 }}
               >
-                {i18nT('form.disclaimer')}
+                <LeenScoreBrand size="xs" />
+                <span>{i18nT('form.disclaimerText')}</span>
               </p>
             </div>
           )}
@@ -785,17 +787,27 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - minimal and clean */}
+        {/* Footer - minimal and clean with branded LeenScore */}
         <footer className="relative mt-auto flex flex-col items-center text-center py-4">
-          {/* Simple footer text */}
           <p 
+            className="flex items-center gap-1"
             style={{ 
               fontSize: 'clamp(0.7rem, 0.65rem + 0.2vw, 0.8rem)',
-              letterSpacing: '0.05em',
-              color: 'hsl(0 0% 50%)',
+              letterSpacing: '0.03em',
+              color: 'hsl(0 0% 55%)',
             }}
           >
-            {i18nT('index.footer')}
+            <LeenScoreBrand size="xs" />
+            <span>—</span>
+            <span>Built by </span>
+            <span 
+              style={{ 
+                color: 'hsl(174 65% 52%)',
+                textShadow: '0 0 12px hsl(174 60% 50% / 0.4)',
+              }}
+            >
+              Sol&Air
+            </span>
           </p>
         </footer>
       </main>
