@@ -15,15 +15,28 @@ export const LanguageToggle = ({ language, onLanguageChange }: LanguageTogglePro
         }}
       />
       
+      {/* PRO border glow ring */}
+      <div 
+        className="pointer-events-none absolute -inset-[1px] rounded-full"
+        style={{
+          background: 'linear-gradient(135deg, hsl(174 65% 55% / 0.5) 0%, hsl(180 55% 45% / 0.2) 50%, hsl(174 65% 55% / 0.5) 100%)',
+          padding: '1px',
+          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          WebkitMaskComposite: 'xor',
+          maskComposite: 'exclude'
+        }}
+      />
+      
       {/* Main container - larger touch targets on mobile */}
       <div 
-        className="relative inline-flex items-center rounded-full border border-primary/15 bg-secondary/70 backdrop-blur-xl"
+        className="relative inline-flex items-center rounded-full border border-primary/25 bg-secondary/70 backdrop-blur-xl"
         style={{
           padding: '4px',
           boxShadow: `
-            0 0 12px hsl(174 60% 45% / 0.06),
-            inset 0 1px 1px hsl(0 0% 100% / 0.06),
-            inset 0 -1px 1px hsl(0 0% 0% / 0.08)
+            0 0 16px hsl(174 60% 45% / 0.12),
+            0 0 4px hsl(174 60% 45% / 0.15),
+            inset 0 1px 1px hsl(0 0% 100% / 0.08),
+            inset 0 -1px 1px hsl(0 0% 0% / 0.1)
           `
         }}
       >
