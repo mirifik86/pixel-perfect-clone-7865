@@ -2,47 +2,26 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, Loader2, CheckCircle2, FileText, Image, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useLanguage } from '@/i18n/useLanguage';
 
 interface UnifiedAnalysisFormProps {
   onAnalyzeText: (input: string) => void;
   onImageReady: (file: File, preview: string) => void;
   isLoading: boolean;
-  language: 'en' | 'fr';
   onContentChange?: (hasContent: boolean) => void;
 }
-
-const translations = {
-  en: {
-    primaryText: 'Paste text or drop an image',
-    hint: 'Text · PNG · JPG · Screenshots',
-    analyze: 'Analyze',
-    imageReady: 'Ready',
-    removeImage: 'Remove',
-    dropHere: 'Drop image here',
-    tapToUpload: 'Tap anywhere to upload',
-  },
-  fr: {
-    primaryText: 'Collez un texte ou déposez une image',
-    hint: 'Texte · PNG · JPG · Captures d\'écran',
-    analyze: 'Analyser',
-    imageReady: 'Prêt',
-    removeImage: 'Retirer',
-    dropHere: 'Déposez l\'image ici',
-    tapToUpload: 'Touchez pour importer',
-  },
-};
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
-export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, language, onContentChange }: UnifiedAnalysisFormProps) => {
+export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, onContentChange }: UnifiedAnalysisFormProps) => {
+  const { t } = useLanguage();
   const [input, setInput] = useState('');
   const [uploadedImage, setUploadedImage] = useState<{ file: File; preview: string } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const t = translations[language];
   
   const hasImage = Boolean(uploadedImage);
   const hasText = input.trim().length > 0;
@@ -249,7 +228,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   className="font-semibold"
                   style={{ color: 'hsl(174 70% 60%)', fontSize: 'var(--text-sm)' }}
                 >
-                  {t.dropHere}
+                  {t('form.dropHere')}
                 </span>
               </div>
             </div>
@@ -292,7 +271,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     {uploadedImage.file.name}
                   </p>
                   <p className="text-white/50" style={{ marginTop: 'var(--space-1)', fontSize: 'var(--text-xs)' }}>
-                    {(uploadedImage.file.size / 1024).toFixed(0)} KB · {t.imageReady}
+                    {(uploadedImage.file.size / 1024).toFixed(0)} KB · {t('form.imageReady')}
                   </p>
                 </div>
                 
@@ -310,7 +289,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                   }}
                 >
                   <X className="h-3.5 w-3.5" />
-                  {t.removeImage}
+                  {t('form.removeImage')}
                 </button>
               </div>
             ) : (
@@ -326,7 +305,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                     onKeyDown={handleKeyDown}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    placeholder={t.primaryText}
+                    placeholder={t('form.placeholder')}
                     className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
                       minHeight: '80px',
@@ -365,7 +344,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                       border: '1px dashed hsl(174 50% 50% / 0.35)',
                       boxShadow: '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
                     }}
-                    title={language === 'fr' ? 'Ajouter une image' : 'Add an image'}
+                    title={t('form.addImage')}
                   >
                     {/* Icon container with glow */}
                     <div 
@@ -387,7 +366,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                       className="font-medium tracking-wide uppercase"
                       style={{ color: 'hsl(174 60% 55% / 0.8)', fontSize: 'var(--text-xs)' }}
                     >
-                      Image
+                      {t('form.imageUpload')}
                     </span>
                   </button>
                 )}
@@ -409,7 +388,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
                 textShadow: '0 0 10px hsl(174 70% 50% / 0.3)',
               }}
             >
-              {language === 'fr' ? 'Puis' : 'Then'}
+              {t('form.then')}
             </span>
           )}
           
@@ -514,7 +493,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, la
             <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2))' }} />
           )}
           <span className="relative">
-            {t.analyze}
+            {t('common.analyze')}
           </span>
         </Button>
       </div>

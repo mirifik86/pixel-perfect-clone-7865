@@ -2,12 +2,12 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 import { 
-  LanguageMode, 
-  SupportedLanguage, 
+  type LanguageMode, 
+  type SupportedLanguage, 
   PRIMARY_LANGUAGES,
   SECONDARY_LANGUAGES,
   SUPPORTED_LANGUAGES 
-} from '@/i18n';
+} from '@/i18n/config';
 
 interface LanguageToggleProps {
   mode: LanguageMode;

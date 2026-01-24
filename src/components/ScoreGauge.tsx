@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
+import { useLanguage } from '@/i18n/useLanguage';
 
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
   size?: number;
   className?: string;
-  language?: 'en' | 'fr';
   hasContent?: boolean; // When true, disables pulse effects on "Ready" label
 }
 
@@ -25,9 +25,9 @@ export const ScoreGauge = ({
   score,
   size = 160,
   className,
-  language = 'fr',
   hasContent = false
 }: ScoreGaugeProps) => {
+  const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
   const [showSparkles, setShowSparkles] = useState(false);
@@ -449,7 +449,7 @@ export const ScoreGauge = ({
                 : 'none',
           }}
         >
-          {currentLabel || (language === 'fr' ? 'PRÊT À ANALYSER' : 'READY TO ANALYZE')}
+          {currentLabel || t('gauge.readyToAnalyze')}
         </span>
         
         {/* CSS animations */}

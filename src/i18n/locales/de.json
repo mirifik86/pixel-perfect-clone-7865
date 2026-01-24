@@ -31,14 +31,22 @@
     "newAnalysis": "Neue Analyse"
   },
   "form": {
-    "placeholder": "Fügen Sie einen Auszug der Nachricht ein oder beschreiben Sie die zu überprüfende Behauptung…",
+    "placeholder": "Text einfügen oder Bild ablegen",
     "placeholderHint": "dann",
     "description": "Wir analysieren die Glaubwürdigkeit der Quellen, sprachliche Muster und den Kontext, um Ihnen zu helfen, Online-Informationen zu verstehen.",
-    "urlDetected": "URL erkannt"
+    "urlDetected": "URL erkannt",
+    "imageUpload": "Bild",
+    "imageReady": "Bereit",
+    "removeImage": "Entfernen",
+    "dropHere": "Bild hier ablegen",
+    "tapToUpload": "Tippen zum Hochladen",
+    "addImage": "Bild hinzufügen",
+    "then": "Dann"
   },
   "gauge": {
     "pending": "Ausstehend",
     "ready": "Bereit",
+    "readyToAnalyze": "BEREIT ZUR ANALYSE",
     "analyzing": "Analysieren...",
     "credibilityLevels": {
       "veryLow": "Sehr niedrig",

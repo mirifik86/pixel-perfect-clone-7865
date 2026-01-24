@@ -31,14 +31,22 @@
     "newAnalysis": "New Analysis"
   },
   "form": {
-    "placeholder": "Paste an excerpt of the message or describe the claim to verify…",
+    "placeholder": "Paste text or drop an image",
     "placeholderHint": "then",
     "description": "We analyze source credibility, linguistic patterns, and context to help you understand online information.",
-    "urlDetected": "URL detected"
+    "urlDetected": "URL detected",
+    "imageUpload": "Image",
+    "imageReady": "Ready",
+    "removeImage": "Remove",
+    "dropHere": "Drop image here",
+    "tapToUpload": "Tap anywhere to upload",
+    "addImage": "Add an image",
+    "then": "Then"
   },
   "gauge": {
     "pending": "Pending",
     "ready": "Ready",
+    "readyToAnalyze": "READY TO ANALYZE",
     "analyzing": "Analyzing...",
     "credibilityLevels": {
       "veryLow": "Very Low",
