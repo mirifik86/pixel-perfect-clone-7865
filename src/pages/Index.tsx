@@ -777,79 +777,135 @@ const Index = () => {
                 </svg>
               </div>
 
-              {/* Premium arrow pointing UP (to gauge/analyze) - shown when HAS content */}
+              {/* Premium arrow pointing UP with IMPACT animation */}
               <div 
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
+                className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${
                   hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
                 }`}
                 style={{
-                  animation: hasFormContent ? 'arrow-float-up 2s ease-in-out infinite' : 'none',
                   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {/* Multi-layer premium glow effect */}
+                {/* Energy beam trail shooting UP to button */}
                 <div 
                   className="absolute"
                   style={{
-                    width: '60px',
-                    height: '40px',
-                    background: 'radial-gradient(ellipse at center, hsl(174 80% 60% / 0.5), hsl(174 70% 50% / 0.25) 40%, hsl(280 50% 55% / 0.1) 70%, transparent 100%)',
-                    filter: 'blur(12px)',
-                    animation: 'arrow-glow-intense 2s ease-in-out infinite',
+                    width: '4px',
+                    height: '60px',
+                    bottom: '50%',
+                    background: 'linear-gradient(to top, transparent 0%, hsl(174 80% 60% / 0.3) 30%, hsl(174 85% 65% / 0.8) 70%, hsl(180 90% 75% / 1) 100%)',
+                    borderRadius: '2px',
+                    animation: hasFormContent ? 'energy-beam-up 1.8s ease-out infinite' : 'none',
+                    filter: 'blur(2px)',
                   }}
                 />
                 
-                {/* Premium double chevron arrow pointing UP */}
+                {/* Secondary beam for depth */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '8px',
+                    height: '50px',
+                    bottom: '50%',
+                    background: 'linear-gradient(to top, transparent 0%, hsl(174 70% 55% / 0.15) 40%, hsl(174 75% 60% / 0.4) 100%)',
+                    borderRadius: '4px',
+                    animation: hasFormContent ? 'energy-beam-up 1.8s ease-out infinite 0.1s' : 'none',
+                    filter: 'blur(6px)',
+                  }}
+                />
+                
+                {/* Impact burst at top */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '40px',
+                    height: '20px',
+                    top: '-10px',
+                    background: 'radial-gradient(ellipse at center bottom, hsl(174 85% 70% / 0.8) 0%, hsl(180 80% 65% / 0.4) 40%, transparent 70%)',
+                    borderRadius: '50%',
+                    animation: hasFormContent ? 'impact-burst 1.8s ease-out infinite' : 'none',
+                    filter: 'blur(4px)',
+                  }}
+                />
+
+                {/* Multi-layer premium glow effect behind arrow */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '70px',
+                    height: '50px',
+                    background: 'radial-gradient(ellipse at center, hsl(174 80% 60% / 0.6), hsl(174 70% 50% / 0.3) 40%, hsl(180 60% 55% / 0.15) 70%, transparent 100%)',
+                    filter: 'blur(14px)',
+                    animation: hasFormContent ? 'arrow-pulse-glow 1.8s ease-in-out infinite' : 'none',
+                  }}
+                />
+                
+                {/* Premium double chevron arrow pointing UP with pulse */}
                 <svg 
-                  width="28"
-                  height="20"
-                  viewBox="0 0 28 20" 
+                  width="32"
+                  height="24"
+                  viewBox="0 0 32 24" 
                   fill="none"
                   className="relative"
                   style={{
-                    filter: 'drop-shadow(0 0 8px hsl(174 80% 60% / 0.9)) drop-shadow(0 0 16px hsl(174 70% 55% / 0.5))',
+                    filter: 'drop-shadow(0 0 10px hsl(174 85% 65% / 1)) drop-shadow(0 0 20px hsl(174 75% 55% / 0.7)) drop-shadow(0 0 35px hsl(180 70% 50% / 0.4))',
+                    animation: hasFormContent ? 'arrow-thrust-up 1.8s ease-out infinite' : 'none',
                   }}
                 >
-                  {/* Primary chevron - brighter, thicker */}
+                  {/* Primary chevron - brighter, thicker with glow */}
                   <path 
-                    d="M4 14L14 6L24 14" 
+                    d="M5 16L16 7L27 16" 
                     stroke="url(#arrowGradientUpPremium)" 
-                    strokeWidth="3"
+                    strokeWidth="3.5"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
                   />
-                  {/* Secondary chevron - softer, creates depth */}
+                  {/* Secondary chevron - creates depth and motion trail */}
                   <path 
-                    d="M4 18L14 10L24 18" 
+                    d="M5 21L16 12L27 21" 
                     stroke="url(#arrowGradientUpSecondary)" 
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
-                    opacity="0.5"
+                    opacity="0.6"
+                    style={{
+                      animation: hasFormContent ? 'chevron-trail 1.8s ease-out infinite' : 'none',
+                    }}
                   />
                   <defs>
-                    {/* Premium gradient with teal to cyan to slight purple hint */}
-                    <linearGradient id="arrowGradientUpPremium" x1="14" y1="14" x2="14" y2="6" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="hsl(174 60% 45%)" />
-                      <stop offset="0.4" stopColor="hsl(174 80% 60%)" />
-                      <stop offset="0.7" stopColor="hsl(180 85% 70%)" />
-                      <stop offset="1" stopColor="hsl(190 90% 78%)" />
+                    {/* Premium gradient with teal to cyan to white tip */}
+                    <linearGradient id="arrowGradientUpPremium" x1="16" y1="16" x2="16" y2="7" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 55% 40%)" />
+                      <stop offset="0.3" stopColor="hsl(174 75% 55%)" />
+                      <stop offset="0.6" stopColor="hsl(178 85% 65%)" />
+                      <stop offset="0.85" stopColor="hsl(185 90% 75%)" />
+                      <stop offset="1" stopColor="hsl(190 95% 85%)" />
                     </linearGradient>
-                    <linearGradient id="arrowGradientUpSecondary" x1="14" y1="18" x2="14" y2="10" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="hsl(174 50% 40%)" />
-                      <stop offset="1" stopColor="hsl(174 70% 55%)" />
+                    <linearGradient id="arrowGradientUpSecondary" x1="16" y1="21" x2="16" y2="12" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 45% 35%)" />
+                      <stop offset="0.5" stopColor="hsl(174 65% 50%)" />
+                      <stop offset="1" stopColor="hsl(178 75% 60%)" />
                     </linearGradient>
                   </defs>
                 </svg>
                 
-                {/* Subtle pulsing halo ring behind arrow */}
+                {/* Expanding impact rings */}
                 <div 
                   className="absolute rounded-full"
                   style={{
-                    width: '36px',
-                    height: '36px',
-                    border: '1.5px solid hsl(174 70% 55% / 0.3)',
-                    animation: 'ring-expand 2.5s ease-out infinite',
+                    width: '50px',
+                    height: '50px',
+                    border: '2px solid hsl(174 80% 60% / 0.5)',
+                    animation: hasFormContent ? 'impact-ring 1.8s ease-out infinite' : 'none',
+                  }}
+                />
+                <div 
+                  className="absolute rounded-full"
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    border: '1.5px solid hsl(180 75% 55% / 0.3)',
+                    animation: hasFormContent ? 'impact-ring 1.8s ease-out infinite 0.3s' : 'none',
                   }}
                 />
               </div>
