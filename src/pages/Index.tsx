@@ -520,15 +520,51 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Language toggle - MOBILE: compact spacing to keep action above fold */}
+          {/* Premium separator between header and language toggle */}
           <div 
-            className="flex w-full justify-center animate-fade-in mt-2 mb-1 md:mt-6 md:mb-4"
+            className="relative w-full flex items-center justify-center"
+            style={{ 
+              marginTop: 'clamp(1rem, 3vh, 1.75rem)',
+              marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)'
+            }}
+          >
+            {/* Subtle horizontal line with fade */}
+            <div 
+              className="absolute h-px"
+              style={{
+                width: 'clamp(120px, 25vw, 200px)',
+                background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.06) 30%, hsl(0 0% 100% / 0.06) 70%, transparent 100%)'
+              }}
+            />
+          </div>
+
+          {/* Language toggle - centered with premium spacing */}
+          <div 
+            className="flex w-full justify-center animate-fade-in"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle 
               mode={languageMode} 
               language={resolvedLanguage} 
               onLanguageChange={handleLanguageChange} 
+            />
+          </div>
+
+          {/* Premium separator between language toggle and gauge */}
+          <div 
+            className="relative w-full flex items-center justify-center"
+            style={{ 
+              marginTop: 'clamp(0.75rem, 2vh, 1.25rem)',
+              marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)'
+            }}
+          >
+            {/* Subtle horizontal line with fade */}
+            <div 
+              className="absolute h-px"
+              style={{
+                width: 'clamp(80px, 15vw, 140px)',
+                background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.04) 30%, hsl(0 0% 100% / 0.04) 70%, transparent 100%)'
+              }}
             />
           </div>
 
