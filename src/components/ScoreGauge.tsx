@@ -662,7 +662,7 @@ export const ScoreGauge = ({
                 key={i}
                 className="relative"
                 style={{
-                  animation: `chevron-cascade 2.8s cubic-bezier(0.22, 1, 0.36, 1) ${i * 140}ms infinite`,
+                  animation: `chevron-cascade 3s cubic-bezier(0.22, 1, 0.36, 1) ${i * 160}ms infinite`,
                 }}
                 onAnimationIteration={i === 2 ? () => onChevronCycleComplete?.() : undefined}
               >
@@ -767,27 +767,27 @@ export const ScoreGauge = ({
           0% { transform: translateX(-150%); }
           60%, 100% { transform: translateX(150%); }
         }
-        /* Premium chevron cascade animation */
+        /* Premium chevron cascade animation - synced with beam impact */
         @keyframes chevron-cascade {
           0% { 
             opacity: 0;
-            transform: translateY(-6px);
+            transform: translateY(-8px);
           }
-          20% { 
-            opacity: 0.9;
-            transform: translateY(0px);
+          15% { 
+            opacity: 0.85;
+            transform: translateY(-2px);
           }
-          60% { 
+          50% { 
             opacity: 0.7;
-            transform: translateY(6px);
+            transform: translateY(5px);
           }
-          85% { 
-            opacity: 0.2;
+          75% { 
+            opacity: 0.3;
             transform: translateY(10px);
           }
-          100% { 
+          88%, 100% { 
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(12px);
           }
         }
         @keyframes idle-text-breathe {
