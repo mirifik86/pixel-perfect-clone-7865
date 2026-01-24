@@ -7,6 +7,7 @@ interface UnifiedAnalysisFormProps {
   onAnalyze: (input: string, image: { file: File; preview: string } | null) => void;
   isLoading: boolean;
   onContentChange?: (hasContent: boolean) => void;
+  highlightInput?: boolean; // Triggered when chevrons complete a cycle
 }
 
 export interface UnifiedAnalysisFormHandle {
@@ -17,14 +18,24 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
-  ({ onAnalyze, isLoading, onContentChange }, ref) => {
+  ({ onAnalyze, isLoading, onContentChange, highlightInput }, ref) => {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [attachedImage, setAttachedImage] = useState<{ file: File; preview: string } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [showHighlight, setShowHighlight] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Trigger highlight animation when chevron cycle completes
+  useEffect(() => {
+    if (highlightInput) {
+      setShowHighlight(true);
+      const timer = setTimeout(() => setShowHighlight(false), 250);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightInput]);
   
   const hasImage = Boolean(attachedImage);
   const hasText = inputText.trim().length > 0;
@@ -206,6 +217,32 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               : '0 8px 32px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.08)',
           }}
         >
+          {/* Light sweep highlight - triggered when chevrons complete */}
+          {showHighlight && (
+            <div 
+              className="absolute top-0 left-0 right-0 h-px overflow-hidden pointer-events-none z-30"
+              style={{ borderRadius: '16px 16px 0 0' }}
+            >
+              <div 
+                style={{
+                  height: '1px',
+                  background: 'linear-gradient(90deg, transparent 0%, hsl(174 70% 60% / 0.9) 50%, transparent 100%)',
+                  animation: 'input-sweep 200ms ease-out forwards',
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Inner glow pulse - triggered with highlight */}
+          {showHighlight && (
+            <div 
+              className="absolute inset-0 rounded-2xl pointer-events-none z-20"
+              style={{
+                boxShadow: 'inset 0 0 20px hsl(174 60% 50% / 0.15), inset 0 2px 8px hsl(174 65% 55% / 0.1)',
+                animation: 'input-glow-pulse 250ms ease-out forwards',
+              }}
+            />
+          )}
           {/* Drag overlay */}
           {isDragOver && (
             <div 
@@ -395,6 +432,15 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
         @keyframes card-glow {
           0%, 100% { opacity: 0.6; transform: scale(1); }
           50% { opacity: 0.85; transform: scale(1.005); }
+        }
+        @keyframes input-sweep {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes input-glow-pulse {
+          0% { opacity: 0; }
+          50% { opacity: 1; }
+          100% { opacity: 0; }
         }
       `}</style>
     </form>

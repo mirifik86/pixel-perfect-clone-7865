@@ -135,6 +135,13 @@ const Index = () => {
   const [screenshotData, setScreenshotData] = useState<ScreenshotAnalysisData | null>(null);
   const [isRerunning, setIsRerunning] = useState(false);
   const [hasFormContent, setHasFormContent] = useState(false);
+  const [inputHighlight, setInputHighlight] = useState(false);
+  
+  // Handle chevron cycle complete - trigger input highlight
+  const handleChevronCycleComplete = useCallback(() => {
+    setInputHighlight(true);
+    setTimeout(() => setInputHighlight(false), 300);
+  }, []);
   
   // Ref to the form for triggering submit from ScoreGauge
   const formRef = useRef<UnifiedAnalysisFormHandle>(null);
@@ -641,6 +648,7 @@ const Index = () => {
                   hasContent={hasFormContent}
                   onAnalyze={handleGaugeAnalyze}
                   isLoading={isLoading}
+                  onChevronCycleComplete={handleChevronCycleComplete}
                 />
               </div>
             )}
@@ -762,6 +770,7 @@ const Index = () => {
                 onAnalyze={handleUnifiedAnalyze}
                 isLoading={isLoading} 
                 onContentChange={setHasFormContent}
+                highlightInput={inputHighlight}
               />
             </div>
           )}
