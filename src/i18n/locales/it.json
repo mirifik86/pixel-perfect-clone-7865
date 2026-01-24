@@ -1,0 +1,108 @@
+{
+  "common": {
+    "analyze": "Analizza",
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "retry": "Riprova",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "yes": "Sì",
+    "no": "No",
+    "close": "Chiudi"
+  },
+  "language": {
+    "auto": "Automatico",
+    "autoDetected": "Rilevato automaticamente",
+    "promptTitle": "Lingua rilevata",
+    "promptMessage": "Abbiamo rilevato {{language}}. Vuoi cambiare?",
+    "switchTo": "Passa a {{language}}",
+    "keepCurrent": "Mantieni attuale"
+  },
+  "hero": {
+    "tagline": "Credibilità misurata."
+  },
+  "form": {
+    "placeholder": "Incolla un estratto del messaggio o descrivi l'affermazione da verificare…",
+    "placeholderHint": "poi",
+    "description": "Analizziamo la credibilità delle fonti, i modelli linguistici e il contesto per aiutarti a comprendere le informazioni online.",
+    "urlDetected": "URL rilevato"
+  },
+  "gauge": {
+    "pending": "In attesa",
+    "ready": "Pronto",
+    "analyzing": "Analisi in corso...",
+    "credibilityLevels": {
+      "veryLow": "Molto bassa",
+      "low": "Bassa",
+      "moderate": "Moderata",
+      "high": "Alta",
+      "veryHigh": "Molto alta"
+    }
+  },
+  "analysis": {
+    "title": "Risultato dell'analisi",
+    "summary": "Riepilogo",
+    "confidence": "Affidabilità",
+    "signals": "Segnali",
+    "breakdown": "Dettaglio del punteggio",
+    "corroboration": "Corroborazione",
+    "sources": "Fonti",
+    "proAnalysis": "Analisi PRO",
+    "imageSignals": "Analisi dei segnali dell'immagine"
+  },
+  "loader": {
+    "primary": "Scansione dello spazio informativo",
+    "subtitle": "Analisi orbitale attiva",
+    "secondary": [
+      "Analisi delle fonti e della coerenza contestuale…",
+      "Valutazione dei segnali linguistici e dell'affidabilità delle fonti…",
+      "Elaborazione dell'analisi di credibilità strutturata…"
+    ]
+  },
+  "articleSummary": {
+    "title": "Riepilogo dell'articolo"
+  },
+  "error": {
+    "title": "Errore di analisi",
+    "message": "Si è verificato un errore durante l'analisi. Riprova.",
+    "networkError": "Errore di rete. Controlla la tua connessione.",
+    "timeout": "Richiesta scaduta. Riprova."
+  },
+  "footer": {
+    "madeWith": "Realizzato con",
+    "by": "da"
+  },
+  "screenshotEvidence": {
+    "title": "Prova screenshot",
+    "extractedText": "Testo estratto",
+    "visualDescription": "Descrizione visiva",
+    "ocrConfidence": "Affidabilità OCR",
+    "imagePreview": "Anteprima immagine",
+    "showPreview": "Mostra anteprima",
+    "hidePreview": "Nascondi anteprima",
+    "editText": "Modifica testo estratto",
+    "rerunAnalysis": "Riesegui analisi",
+    "lowConfidenceWarning": "Bassa affidabilità OCR - il testo potrebbe essere impreciso",
+    "mismatchWarning": "Rilevata discrepanza visiva-testo"
+  },
+  "pro": {
+    "badge": "PRO",
+    "title": "Analisi approfondita",
+    "subtitle": "Approfondimenti avanzati sulla credibilità",
+    "launchAnalysis": "Avvia analisi PRO",
+    "features": {
+      "corroboration": {
+        "title": "Corroborazione delle fonti",
+        "description": "Riferimento incrociato con più fonti affidabili"
+      },
+      "linguistic": {
+        "title": "Analisi linguistica",
+        "description": "Rilevamento avanzato di pattern e analisi del sentiment"
+      },
+      "context": {
+        "title": "Valutazione contestuale",
+        "description": "Verifica approfondita del contesto e dell'accuratezza storica"
+      }
+    }
+  }
+}

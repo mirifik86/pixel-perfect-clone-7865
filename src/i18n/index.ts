@@ -5,6 +5,7 @@ export {
   type LanguageMode,
   SUPPORTED_LANGUAGES,
   PRIMARY_LANGUAGES,
+  SECONDARY_LANGUAGES,
   DEFAULT_LANGUAGE,
   isSupportedLanguage,
   getLanguageConfig

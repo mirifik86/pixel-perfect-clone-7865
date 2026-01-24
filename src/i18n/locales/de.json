@@ -1,0 +1,108 @@
+{
+  "common": {
+    "analyze": "Analysieren",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "retry": "Wiederholen",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein",
+    "close": "Schließen"
+  },
+  "language": {
+    "auto": "Automatisch",
+    "autoDetected": "Automatisch erkannt",
+    "promptTitle": "Sprache erkannt",
+    "promptMessage": "Wir haben {{language}} erkannt. Möchten Sie wechseln?",
+    "switchTo": "Zu {{language}} wechseln",
+    "keepCurrent": "Aktuell beibehalten"
+  },
+  "hero": {
+    "tagline": "Glaubwürdigkeit gemessen."
+  },
+  "form": {
+    "placeholder": "Fügen Sie einen Auszug der Nachricht ein oder beschreiben Sie die zu überprüfende Behauptung…",
+    "placeholderHint": "dann",
+    "description": "Wir analysieren die Glaubwürdigkeit der Quellen, sprachliche Muster und den Kontext, um Ihnen zu helfen, Online-Informationen zu verstehen.",
+    "urlDetected": "URL erkannt"
+  },
+  "gauge": {
+    "pending": "Ausstehend",
+    "ready": "Bereit",
+    "analyzing": "Analysieren...",
+    "credibilityLevels": {
+      "veryLow": "Sehr niedrig",
+      "low": "Niedrig",
+      "moderate": "Mäßig",
+      "high": "Hoch",
+      "veryHigh": "Sehr hoch"
+    }
+  },
+  "analysis": {
+    "title": "Analyseergebnis",
+    "summary": "Zusammenfassung",
+    "confidence": "Vertrauen",
+    "signals": "Signale",
+    "breakdown": "Punkteaufschlüsselung",
+    "corroboration": "Bestätigung",
+    "sources": "Quellen",
+    "proAnalysis": "PRO-Analyse",
+    "imageSignals": "Bildsignalanalyse"
+  },
+  "loader": {
+    "primary": "Informationsraum wird gescannt",
+    "subtitle": "Orbitalanalyse aktiv",
+    "secondary": [
+      "Quellen und kontextuelle Konsistenz werden analysiert…",
+      "Sprachliche Signale und Quellenverläss-lichkeit werden bewertet…",
+      "Strukturierte Glaubwürdigkeits-analyse wird verarbeitet…"
+    ]
+  },
+  "articleSummary": {
+    "title": "Artikelzusammenfassung"
+  },
+  "error": {
+    "title": "Analysefehler",
+    "message": "Bei der Analyse ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
+    "timeout": "Zeitüberschreitung. Bitte versuchen Sie es erneut."
+  },
+  "footer": {
+    "madeWith": "Erstellt mit",
+    "by": "von"
+  },
+  "screenshotEvidence": {
+    "title": "Screenshot-Beweis",
+    "extractedText": "Extrahierter Text",
+    "visualDescription": "Visuelle Beschreibung",
+    "ocrConfidence": "OCR-Vertrauen",
+    "imagePreview": "Bildvorschau",
+    "showPreview": "Vorschau anzeigen",
+    "hidePreview": "Vorschau ausblenden",
+    "editText": "Extrahierten Text bearbeiten",
+    "rerunAnalysis": "Analyse erneut ausführen",
+    "lowConfidenceWarning": "Niedriges OCR-Vertrauen - Text kann ungenau sein",
+    "mismatchWarning": "Visuelle-Text-Diskrepanz erkannt"
+  },
+  "pro": {
+    "badge": "PRO",
+    "title": "Tiefenanalyse",
+    "subtitle": "Erweiterte Glaubwürdigkeits-einblicke",
+    "launchAnalysis": "PRO-Analyse starten",
+    "features": {
+      "corroboration": {
+        "title": "Quellenbestätigung",
+        "description": "Abgleich mit mehreren zuverlässigen Quellen"
+      },
+      "linguistic": {
+        "title": "Sprachanalyse",
+        "description": "Erweiterte Mustererkennung und Stimmungsanalyse"
+      },
+      "context": {
+        "title": "Kontextbewertung",
+        "description": "Tiefgehende Kontext- und historische Genauigkeitsprüfung"
+      }
+    }
+  }
+}
