@@ -29,41 +29,45 @@ export const LeenScoreLogo = () => {
         </span>
       </h1>
       
-      {/* Tagline: brighter, more authoritative */}
+      {/* Tagline: authoritative, prominent */}
       <p 
-        className="tracking-widest uppercase text-center"
+        className="uppercase text-center font-semibold"
         style={{ 
-          fontSize: 'clamp(0.7rem, 0.6rem + 0.5vw, 1rem)',
-          letterSpacing: '0.25em',
-          color: 'hsl(0 0% 94%)',
+          fontSize: 'clamp(0.8rem, 0.7rem + 0.6vw, 1.15rem)',
+          letterSpacing: '0.18em',
+          color: 'hsl(0 0% 97%)',
+          marginTop: 'var(--space-1)',
         }}
       >
         {t('hero.tagline')}
       </p>
       
-      {/* Premium divider with centered dot */}
-      <div className="flex items-center justify-center w-full max-w-[180px] md:max-w-[220px] my-1">
+      {/* Premium divider with centered dot - extra spacing */}
+      <div 
+        className="flex items-center justify-center w-full max-w-[160px] md:max-w-[200px]"
+        style={{ marginTop: 'var(--space-3)', marginBottom: 'var(--space-2)' }}
+      >
         <div 
           className="flex-1 h-px"
-          style={{ background: 'linear-gradient(to right, transparent, hsl(0 0% 50% / 0.4))' }}
+          style={{ background: 'linear-gradient(to right, transparent, hsl(0 0% 55% / 0.35))' }}
         />
         <div 
           className="w-1 h-1 rounded-full mx-3"
-          style={{ background: 'hsl(0 0% 60% / 0.6)' }}
+          style={{ background: 'hsl(0 0% 65% / 0.5)' }}
         />
         <div 
           className="flex-1 h-px"
-          style={{ background: 'linear-gradient(to left, transparent, hsl(0 0% 50% / 0.4))' }}
+          style={{ background: 'linear-gradient(to left, transparent, hsl(0 0% 55% / 0.35))' }}
         />
       </div>
       
-      {/* Value proposition */}
+      {/* Value proposition - secondary, subdued */}
       <p 
-        className="text-center max-w-xs md:max-w-md"
+        className="text-center max-w-xs md:max-w-sm"
         style={{ 
-          fontSize: 'clamp(0.8rem, 0.75rem + 0.3vw, 0.95rem)',
+          fontSize: 'clamp(0.7rem, 0.65rem + 0.25vw, 0.82rem)',
           lineHeight: 1.5,
-          color: 'hsl(0 0% 70%)',
+          color: 'hsl(0 0% 100% / 0.72)',
         }}
       >
         {t('hero.valueProp')}
