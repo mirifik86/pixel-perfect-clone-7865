@@ -750,38 +750,31 @@ const Index = () => {
             >Score</span>
           </div>
           
-          {/* Developed by */}
+          {/* Signature premium */}
           <p 
-            className="mt-2"
+            className="mt-3 flex items-center gap-1.5"
             style={{ 
-              fontSize: '0.7rem',
-              letterSpacing: '0.08em',
-              color: 'hsl(0 0% 60%)',
+              fontSize: '0.72rem',
+              letterSpacing: '0.06em',
+              color: 'hsl(0 0% 55%)',
             }}
           >
-            {i18nT('index.developedBy')}{' '}
+            <span style={{ opacity: 0.8 }}>{i18nT('index.developedBy')}</span>
             <span 
-              className="transition-all duration-300 relative inline-block group/solair"
+              className="transition-all duration-300 relative inline-block"
               style={{ 
                 color: 'hsl(174 65% 52%)',
-                fontWeight: 'inherit',
-                fontSize: 'inherit',
-                textShadow: '0 0 8px hsl(174 60% 45% / 0.25)',
-                textDecoration: 'none',
-                backgroundImage: 'linear-gradient(90deg, hsl(174 60% 50% / 0.3) 0%, hsl(174 60% 50% / 0.15) 100%)',
-                backgroundSize: '100% 1px',
-                backgroundPosition: '0 100%',
-                backgroundRepeat: 'no-repeat'
+                fontWeight: 500,
+                letterSpacing: '0.08em',
+                textShadow: '0 0 12px hsl(174 60% 45% / 0.35), 0 0 24px hsl(174 60% 45% / 0.15)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'hsl(174 65% 58%)';
-                e.currentTarget.style.textShadow = '0 0 12px hsl(174 60% 45% / 0.4)';
-                e.currentTarget.style.backgroundImage = 'linear-gradient(90deg, hsl(174 60% 50% / 0.5) 0%, hsl(174 60% 50% / 0.25) 100%)';
+                e.currentTarget.style.color = 'hsl(174 65% 60%)';
+                e.currentTarget.style.textShadow = '0 0 16px hsl(174 60% 50% / 0.5), 0 0 32px hsl(174 60% 45% / 0.25)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.color = 'hsl(174 65% 52%)';
-                e.currentTarget.style.textShadow = '0 0 8px hsl(174 60% 45% / 0.25)';
-                e.currentTarget.style.backgroundImage = 'linear-gradient(90deg, hsl(174 60% 50% / 0.3) 0%, hsl(174 60% 50% / 0.15) 100%)';
+                e.currentTarget.style.textShadow = '0 0 12px hsl(174 60% 45% / 0.35), 0 0 24px hsl(174 60% 45% / 0.15)';
               }}
             >
               Sol&Air
