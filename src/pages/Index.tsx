@@ -446,7 +446,7 @@ const Index = () => {
 
   return (
     <div 
-      className="relative flex min-h-screen flex-col" 
+      className="relative flex min-h-screen flex-col overflow-x-hidden" 
       style={{
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
