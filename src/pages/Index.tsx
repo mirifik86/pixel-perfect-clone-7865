@@ -806,17 +806,72 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - minimal and clean */}
-        <footer className="relative mt-auto flex flex-col items-center text-center py-4">
-          {/* Simple footer text */}
+        {/* Footer - premium branded signature */}
+        <footer 
+          className="relative mt-auto flex flex-col items-center text-center py-4"
+          style={{ opacity: 0.7 }}
+        >
           <p 
             style={{ 
               fontSize: 'clamp(0.7rem, 0.65rem + 0.2vw, 0.8rem)',
-              letterSpacing: '0.05em',
-              color: 'hsl(0 0% 50%)',
+              letterSpacing: '0.03em',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.4em',
+              flexWrap: 'wrap',
             }}
           >
-            {i18nT('index.footer')}
+            {/* LeenScore branded */}
+            <span style={{ display: 'inline-flex', alignItems: 'baseline' }}>
+              <span 
+                className="italic"
+                style={{
+                  color: 'hsl(174 65% 52%)',
+                  fontFamily: 'var(--font-display)',
+                }}
+              >
+                Leen
+              </span>
+              <span 
+                className="font-semibold not-italic"
+                style={{
+                  color: 'hsl(0 0% 98%)',
+                  fontFamily: 'var(--font-display)',
+                }}
+              >
+                Score
+              </span>
+            </span>
+            
+            {/* Separator */}
+            <span style={{ color: 'hsl(0 0% 50%)' }}>—</span>
+            
+            {/* Created by Sol&Air */}
+            <span style={{ color: 'hsl(0 0% 65%)' }}>
+              Created by{' '}
+              <span 
+                style={{
+                  color: 'hsl(174 65% 58%)',
+                  textShadow: '0 0 8px hsl(174 60% 50% / 0.25)',
+                }}
+              >
+                Sol&Air
+              </span>
+            </span>
+            
+            {/* Version separator */}
+            <span style={{ color: 'hsl(0 0% 40%)' }}>·</span>
+            
+            {/* Version label */}
+            <span 
+              style={{ 
+                color: 'hsl(0 0% 100% / 0.55)',
+                fontSize: '0.9em',
+              }}
+            >
+              Version 1.0
+            </span>
           </p>
         </footer>
       </main>
