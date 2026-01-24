@@ -520,29 +520,39 @@ export const ScoreGauge = ({
               style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
             >
               <div className="relative group">
-                {/* Outer glow ring */}
+                {/* Outer glow ring - premium pulsing */}
                 <div 
-                  className="absolute -inset-2 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+                  className="absolute -inset-3 rounded-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.6), hsl(200 80% 55% / 0.4), hsl(174 70% 50% / 0.6))',
-                    animation: 'button-pulse 2s ease-in-out infinite',
-                    filter: 'blur(14px)',
+                    background: 'linear-gradient(135deg, hsl(174 80% 55% / 0.7), hsl(195 85% 50% / 0.5), hsl(174 80% 55% / 0.7))',
+                    animation: 'button-glow-pulse 2.5s ease-in-out infinite',
+                    filter: 'blur(16px)',
                   }}
                 />
                 
-                {/* Inner shimmer layer */}
+                {/* Secondary inner glow */}
+                <div 
+                  className="absolute -inset-1 rounded-xl opacity-80"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 75% 55% / 0.3), hsl(174 70% 50% / 0.5))',
+                    filter: 'blur(8px)',
+                    animation: 'button-inner-glow 2s ease-in-out infinite 0.5s',
+                  }}
+                />
+                
+                {/* Border shimmer layer */}
                 <div 
                   className="absolute -inset-0.5 rounded-xl overflow-hidden"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
+                    background: 'linear-gradient(135deg, hsl(174 70% 52%), hsl(185 65% 48%), hsl(174 70% 52%))',
                   }}
                 >
-                  {/* Animated shine effect */}
+                  {/* Fast sweeping shine effect */}
                   <div 
                     className="absolute inset-0"
                     style={{
-                      background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.35) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 60%)',
-                      animation: 'button-shine 3s ease-in-out infinite',
+                      background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.15) 40%, hsl(0 0% 100% / 0.5) 50%, hsl(0 0% 100% / 0.15) 60%, transparent 70%)',
+                      animation: 'button-shine-sweep 2s ease-in-out infinite',
                     }}
                   />
                 </div>
@@ -551,20 +561,29 @@ export const ScoreGauge = ({
                   type="button"
                   onClick={onAnalyze}
                   disabled={isLoading}
-                  className="relative w-full rounded-xl py-4 md:py-5 text-sm md:text-base font-bold tracking-wider uppercase text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+                  className="relative w-full rounded-xl py-4 md:py-5 text-sm md:text-base font-bold tracking-wider uppercase text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary overflow-hidden"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)',
-                    boxShadow: '0 0 50px hsl(174 60% 50% / 0.5), 0 10px 30px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.2), inset 0 -1px 0 hsl(0 0% 0% / 0.1)',
-                    textShadow: '0 2px 4px hsl(0 0% 0% / 0.4)',
+                    background: 'linear-gradient(135deg, hsl(174 68% 46%) 0%, hsl(182 58% 40%) 50%, hsl(174 65% 44%) 100%)',
+                    boxShadow: '0 0 60px hsl(174 65% 55% / 0.6), 0 0 30px hsl(174 60% 50% / 0.4), 0 12px 35px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 0 hsl(0 0% 0% / 0.15)',
+                    textShadow: '0 2px 4px hsl(0 0% 0% / 0.5)',
                     letterSpacing: '0.15em',
                   }}
                 >
+                  {/* Inner shine layer on button */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(110deg, transparent 25%, hsl(0 0% 100% / 0.12) 40%, hsl(0 0% 100% / 0.35) 50%, hsl(0 0% 100% / 0.12) 60%, transparent 75%)',
+                      animation: 'button-inner-shine 2.5s ease-in-out infinite 0.3s',
+                    }}
+                  />
+                  
                   {isLoading ? (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   ) : (
-                    <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 2px hsl(0 0% 0% / 0.3))' }} />
+                    <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 2px 3px hsl(0 0% 0% / 0.4))' }} />
                   )}
-                  <span className="relative">
+                  <span className="relative z-10">
                     {t('common.analyze')}
                   </span>
                 </Button>
@@ -595,13 +614,21 @@ export const ScoreGauge = ({
             0%, 100% { opacity: 0.5; transform: scale(0.9); }
             50% { opacity: 1; transform: scale(1.1); }
           }
-          @keyframes button-pulse {
-            0%, 100% { opacity: 0.5; transform: scale(0.98); }
-            50% { opacity: 1; transform: scale(1.02); }
+          @keyframes button-glow-pulse {
+            0%, 100% { opacity: 0.5; transform: scale(0.96); }
+            50% { opacity: 1; transform: scale(1.04); }
           }
-          @keyframes button-shine {
-            0% { transform: translateX(-100%); }
-            50%, 100% { transform: translateX(100%); }
+          @keyframes button-inner-glow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+          }
+          @keyframes button-shine-sweep {
+            0% { transform: translateX(-120%); }
+            50%, 100% { transform: translateX(120%); }
+          }
+          @keyframes button-inner-shine {
+            0% { transform: translateX(-150%); }
+            60%, 100% { transform: translateX(150%); }
           }
         `}</style>
       </div>
