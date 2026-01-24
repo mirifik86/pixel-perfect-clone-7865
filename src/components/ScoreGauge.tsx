@@ -456,6 +456,52 @@ export const ScoreGauge = ({
             </filter>
           </defs>
 
+          {/* Scientific tick marks - 0-100% reference scale */}
+          {(() => {
+            const ticks = [];
+            const tickRadius = radius - strokeWidth / 2 - 2; // Just inside the inner edge of gauge ring
+            const startAngle = 135; // Gauge starts at 135°
+            const totalDegrees = 270; // Gauge spans 270°
+            
+            for (let i = 0; i <= 100; i += 5) {
+              const isMajor = i % 10 === 0;
+              const angle = startAngle + (i / 100) * totalDegrees;
+              const rad = angle * (Math.PI / 180);
+              
+              // Tick dimensions
+              const tickLength = isMajor ? 6 : 3;
+              const tickWidth = isMajor ? 1.2 : 0.8;
+              
+              // Calculate tick positions (pointing inward from edge)
+              const outerX = size / 2 + tickRadius * Math.cos(rad);
+              const outerY = size / 2 + tickRadius * Math.sin(rad);
+              const innerX = size / 2 + (tickRadius - tickLength) * Math.cos(rad);
+              const innerY = size / 2 + (tickRadius - tickLength) * Math.sin(rad);
+              
+              // Highlight nearest tick when score is displayed
+              const isNearestTick = score !== null && Math.abs(animatedScore - i) < 2.5;
+              const tickOpacity = isNearestTick ? 0.7 : (isMajor ? 0.3 : 0.2);
+              
+              ticks.push(
+                <line
+                  key={`tick-${i}`}
+                  x1={innerX}
+                  y1={innerY}
+                  x2={outerX}
+                  y2={outerY}
+                  stroke={isNearestTick ? 'hsl(0 0% 100%)' : 'hsl(0 0% 85%)'}
+                  strokeWidth={tickWidth}
+                  strokeLinecap="round"
+                  style={{
+                    opacity: tickOpacity,
+                    transition: isNearestTick ? 'opacity 0.3s ease-out' : 'none',
+                  }}
+                />
+              );
+            }
+            return ticks;
+          })()}
+
           {/* Background arc track for idle state */}
           {score === null && (
             <circle
