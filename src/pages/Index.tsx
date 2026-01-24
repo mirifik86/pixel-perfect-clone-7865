@@ -707,17 +707,18 @@ const Index = () => {
           {/* Premium arrow indicators - between gauge and form */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
-              className="flex justify-center"
+              className="relative flex items-center justify-center"
               style={{ 
                 marginTop: 'var(--space-2)',
                 marginBottom: 'var(--space-3)',
-                minHeight: '40px',
+                height: '40px',
+                width: '60px',
               }}
             >
               {/* Arrow pointing DOWN (to input) - shown when NO content */}
               <div 
-                className={`relative flex flex-col items-center transition-all duration-200 ${
-                  !hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none absolute'
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                  !hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
                 }`}
                 style={{
                   animation: !hasFormContent ? 'arrow-float 2s ease-in-out infinite' : 'none',
@@ -776,8 +777,8 @@ const Index = () => {
 
               {/* Arrow pointing UP (to Analyze button) - shown when HAS content */}
               <div 
-                className={`relative flex flex-col items-center transition-all duration-200 ${
-                  hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none absolute'
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                  hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
                 }`}
                 style={{
                   animation: hasFormContent ? 'arrow-float-up 2s ease-in-out infinite' : 'none',
