@@ -666,33 +666,30 @@ export const ScoreGauge = ({
                 }}
                 onAnimationIteration={i === 2 ? () => onChevronCycleComplete?.() : undefined}
               >
-                {/* Chevron glow */}
+                {/* Subtle chevron glow - very low opacity */}
                 <div 
-                  className="absolute inset-0 -m-1"
+                  className="absolute inset-0 -m-2"
                   style={{
-                    background: 'radial-gradient(circle, hsl(174 65% 55% / 0.35) 0%, transparent 70%)',
-                    filter: 'blur(4px)',
+                    background: 'radial-gradient(circle, hsl(180 40% 60% / 0.15) 0%, transparent 60%)',
+                    filter: 'blur(3px)',
                   }}
                 />
-                {/* Chevron SVG */}
+                {/* Chevron SVG - muted teal with subtle glow */}
                 <svg 
-                  width="16" 
-                  height="8" 
-                  viewBox="0 0 16 8" 
+                  width="14" 
+                  height="7" 
+                  viewBox="0 0 14 7" 
                   fill="none"
                   style={{
-                    filter: 'drop-shadow(0 0 3px hsl(174 65% 55% / 0.5))',
+                    filter: 'drop-shadow(0 0 2px hsl(180 35% 55% / 0.25))',
                   }}
                 >
                   <path 
-                    d="M1 1L8 7L15 1" 
-                    stroke="hsl(174 65% 58%)" 
-                    strokeWidth="1.5" 
+                    d="M1 1L7 6L13 1" 
+                    stroke="hsl(180 40% 65% / 0.7)" 
+                    strokeWidth="1.25" 
                     strokeLinecap="round" 
                     strokeLinejoin="round"
-                    style={{
-                      filter: 'drop-shadow(0 0 2px hsl(174 60% 50% / 0.4))',
-                    }}
                   />
                 </svg>
               </div>
