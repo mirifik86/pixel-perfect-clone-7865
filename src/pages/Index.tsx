@@ -495,14 +495,16 @@ const Index = () => {
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
     >
-      {/* Earth background */}
+      {/* Earth background - dims when ready for action */}
       <div 
-        className="pointer-events-none fixed inset-0 opacity-80" 
+        className="pointer-events-none fixed inset-0 transition-all duration-500 ease-out" 
         style={{
           backgroundImage: `url(${earthBg})`,
           backgroundPosition: 'center 40%',
           backgroundSize: 'cover',
-          backgroundAttachment: 'fixed'
+          backgroundAttachment: 'fixed',
+          opacity: hasFormContent && !isLoading && !hasAnyAnalysis ? 0.72 : 0.80,
+          filter: hasFormContent && !isLoading && !hasAnyAnalysis ? 'brightness(0.94)' : 'brightness(1)',
         }} 
       />
       
@@ -575,7 +577,19 @@ const Index = () => {
             
             {/* Score Gauge - shows when not loading */}
             {!isLoading && (
-              <div className="animate-scale-in" style={{ animationDuration: '500ms' }}>
+              <div className="relative animate-scale-in" style={{ animationDuration: '500ms' }}>
+                {/* Ready state framing halo - subtle teal ring around gauge */}
+                {hasFormContent && !hasAnyAnalysis && (
+                  <div 
+                    className="absolute pointer-events-none rounded-full animate-fade-in"
+                    style={{
+                      inset: -12,
+                      border: '1px solid hsl(174 50% 55% / 0.15)',
+                      boxShadow: '0 0 30px hsl(174 55% 50% / 0.08), inset 0 0 20px hsl(174 50% 50% / 0.05)',
+                      animationDuration: '350ms',
+                    }}
+                  />
+                )}
                 <ScoreGauge 
                   score={score} 
                   size={gaugeSize} 
