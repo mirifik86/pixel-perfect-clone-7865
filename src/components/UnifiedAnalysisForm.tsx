@@ -250,7 +250,8 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     width: '100%',
                     background: 'linear-gradient(90deg, transparent 0%, hsl(180 45% 62% / 0.6) 30%, hsl(180 50% 68% / 0.8) 60%, transparent 100%)',
                     filter: 'blur(0.5px)',
-                    animation: 'beam-sweep-left 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+                    opacity: 0,
+                    animation: 'beam-sweep-left 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 60ms forwards',
                   }}
                 />
               </div>
@@ -269,7 +270,8 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     width: '100%',
                     background: 'linear-gradient(90deg, transparent 0%, hsl(180 45% 62% / 0.6) 30%, hsl(180 50% 68% / 0.8) 60%, transparent 100%)',
                     filter: 'blur(0.5px)',
-                    animation: 'beam-sweep-right 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+                    opacity: 0,
+                    animation: 'beam-sweep-right 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 60ms forwards',
                   }}
                 />
               </div>
