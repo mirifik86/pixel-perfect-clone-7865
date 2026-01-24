@@ -704,6 +704,77 @@ const Index = () => {
             />
           )}
 
+          {/* Premium arrow indicator - between gauge and form */}
+          {!hasAnyAnalysis && !isLoading && !analysisError && !hasFormContent && (
+            <div 
+              className="flex justify-center animate-fade-in"
+              style={{ 
+                marginTop: 'var(--space-2)',
+                marginBottom: 'var(--space-3)',
+                animationDelay: '300ms', 
+                animationFillMode: 'both' 
+              }}
+            >
+              <div 
+                className="relative flex flex-col items-center"
+                style={{
+                  animation: 'arrow-float 2s ease-in-out infinite',
+                }}
+              >
+                {/* Outer glow effect */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '60px',
+                    height: '40px',
+                    background: 'radial-gradient(ellipse at center, hsl(174 70% 55% / 0.4), transparent 70%)',
+                    filter: 'blur(12px)',
+                    animation: 'arrow-glow 2s ease-in-out infinite',
+                  }}
+                />
+                
+                {/* Double chevron arrow */}
+                <svg 
+                  width="28"
+                  height="20"
+                  viewBox="0 0 28 20" 
+                  fill="none"
+                  className="relative"
+                >
+                  {/* First chevron */}
+                  <path 
+                    d="M4 3L14 11L24 3" 
+                    stroke="url(#arrowGradientMain)" 
+                    strokeWidth="2.5"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    style={{
+                      filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.8))',
+                    }}
+                  />
+                  {/* Second chevron (offset) */}
+                  <path 
+                    d="M4 10L14 18L24 10" 
+                    stroke="url(#arrowGradientMain)" 
+                    strokeWidth="2"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    opacity="0.5"
+                    style={{
+                      filter: 'drop-shadow(0 0 4px hsl(174 70% 55% / 0.5))',
+                    }}
+                  />
+                  <defs>
+                    <linearGradient id="arrowGradientMain" x1="14" y1="3" x2="14" y2="18" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 80% 70%)" />
+                      <stop offset="1" stopColor="hsl(174 60% 50%)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+          )}
+
           {/* Unified Analysis Form - hidden during loading, after analysis, or during error */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
