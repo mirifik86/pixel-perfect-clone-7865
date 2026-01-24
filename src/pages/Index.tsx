@@ -761,10 +761,27 @@ const Index = () => {
           >
             {i18nT('index.developedBy')}{' '}
             <span 
+              className="transition-all duration-300 relative inline-block group/solair"
               style={{ 
-                color: 'hsl(174 70% 60%)',
-                fontWeight: 600,
-                textShadow: '0 0 10px hsl(174 70% 50% / 0.4)'
+                color: 'hsl(174 65% 52%)',
+                fontWeight: 'inherit',
+                fontSize: 'inherit',
+                textShadow: '0 0 8px hsl(174 60% 45% / 0.25)',
+                textDecoration: 'none',
+                backgroundImage: 'linear-gradient(90deg, hsl(174 60% 50% / 0.3) 0%, hsl(174 60% 50% / 0.15) 100%)',
+                backgroundSize: '100% 1px',
+                backgroundPosition: '0 100%',
+                backgroundRepeat: 'no-repeat'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'hsl(174 65% 58%)';
+                e.currentTarget.style.textShadow = '0 0 12px hsl(174 60% 45% / 0.4)';
+                e.currentTarget.style.backgroundImage = 'linear-gradient(90deg, hsl(174 60% 50% / 0.5) 0%, hsl(174 60% 50% / 0.25) 100%)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'hsl(174 65% 52%)';
+                e.currentTarget.style.textShadow = '0 0 8px hsl(174 60% 45% / 0.25)';
+                e.currentTarget.style.backgroundImage = 'linear-gradient(90deg, hsl(174 60% 50% / 0.3) 0%, hsl(174 60% 50% / 0.15) 100%)';
               }}
             >
               Sol&Air
