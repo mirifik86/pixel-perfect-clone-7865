@@ -728,7 +728,7 @@ const Index = () => {
                 className="text-center animate-fade-in"
                 style={{ 
                   marginTop: 'var(--space-3)',
-                  fontSize: 'clamp(0.6rem, 0.55rem + 0.2vw, 0.7rem)',
+                  fontSize: 'clamp(0.7rem, 0.65rem + 0.25vw, 0.85rem)',
                   color: 'hsl(0 0% 100% / 0.65)',
                   lineHeight: 1.5,
                   animationDelay: '500ms',
