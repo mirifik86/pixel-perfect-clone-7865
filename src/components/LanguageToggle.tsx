@@ -6,75 +6,77 @@ interface LanguageToggleProps {
 export const LanguageToggle = ({ language, onLanguageChange }: LanguageToggleProps) => {
   return (
     <div className="relative inline-flex items-center">
-      {/* Outer glow effect */}
+      {/* Subtle outer glow - reduced for discretion */}
       <div 
-        className="pointer-events-none absolute -inset-1 rounded-full opacity-60"
+        className="pointer-events-none absolute -inset-1 rounded-full opacity-40"
         style={{
-          background: 'radial-gradient(ellipse at center, hsl(174 60% 45% / 0.2) 0%, transparent 70%)',
-          filter: 'blur(8px)'
+          background: 'radial-gradient(ellipse at center, hsl(174 60% 45% / 0.15) 0%, transparent 70%)',
+          filter: 'blur(6px)'
         }}
       />
       
-      {/* Main container with premium glassmorphism */}
+      {/* Main container - larger touch targets on mobile */}
       <div 
-        className="relative inline-flex items-center rounded-full border border-primary/20 bg-secondary/80 backdrop-blur-xl"
+        className="relative inline-flex items-center rounded-full border border-primary/15 bg-secondary/70 backdrop-blur-xl"
         style={{
-          padding: '3px',
+          padding: '4px',
           boxShadow: `
-            0 0 20px hsl(174 60% 45% / 0.08),
-            inset 0 1px 1px hsl(0 0% 100% / 0.08),
-            inset 0 -1px 1px hsl(0 0% 0% / 0.1)
+            0 0 12px hsl(174 60% 45% / 0.06),
+            inset 0 1px 1px hsl(0 0% 100% / 0.06),
+            inset 0 -1px 1px hsl(0 0% 0% / 0.08)
           `
         }}
       >
-        {/* Sliding indicator background */}
+        {/* Sliding indicator */}
         <div 
-          className="pointer-events-none absolute top-[3px] bottom-[3px] rounded-full transition-all duration-300 ease-out"
+          className="pointer-events-none absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-out"
           style={{
-            width: 'calc(50% - 2px)',
-            left: language === 'en' ? '3px' : 'calc(50% - 1px)',
+            width: 'calc(50% - 4px)',
+            left: language === 'en' ? '4px' : 'calc(50%)',
             background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
             boxShadow: `
-              0 0 16px hsl(174 60% 45% / 0.5),
-              0 2px 8px hsl(0 0% 0% / 0.3),
-              inset 0 1px 1px hsl(0 0% 100% / 0.2)
+              0 0 10px hsl(174 60% 45% / 0.4),
+              0 2px 6px hsl(0 0% 0% / 0.25),
+              inset 0 1px 1px hsl(0 0% 100% / 0.15)
             `
           }}
         />
         
-        {/* EN Button */}
+        {/* EN Button - larger touch area */}
         <button
           onClick={() => onLanguageChange('en')}
-          className={`relative z-10 flex items-center justify-center rounded-full font-semibold uppercase tracking-widest transition-all duration-300 ${
+          className={`relative z-10 flex items-center justify-center rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
             language === 'en'
               ? 'text-primary-foreground'
-              : 'text-muted-foreground/70 hover:text-foreground/90'
+              : 'text-muted-foreground/60 hover:text-foreground/80'
           }`}
           style={{
-            minWidth: '3.25rem',
-            padding: '0.5rem 0.875rem',
-            fontSize: '0.7rem',
-            letterSpacing: '0.1em',
-            textShadow: language === 'en' ? '0 1px 2px hsl(0 0% 0% / 0.3)' : 'none'
+            minWidth: '2.75rem',
+            minHeight: '2.25rem',
+            padding: '0.5rem 0.75rem',
+            fontSize: 'clamp(0.65rem, 2vw, 0.7rem)',
+            letterSpacing: '0.08em',
+            textShadow: language === 'en' ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
           }}
         >
           EN
         </button>
         
-        {/* FR Button */}
+        {/* FR Button - larger touch area */}
         <button
           onClick={() => onLanguageChange('fr')}
-          className={`relative z-10 flex items-center justify-center rounded-full font-semibold uppercase tracking-widest transition-all duration-300 ${
+          className={`relative z-10 flex items-center justify-center rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
             language === 'fr'
               ? 'text-primary-foreground'
-              : 'text-muted-foreground/70 hover:text-foreground/90'
+              : 'text-muted-foreground/60 hover:text-foreground/80'
           }`}
           style={{
-            minWidth: '3.25rem',
-            padding: '0.5rem 0.875rem',
-            fontSize: '0.7rem',
-            letterSpacing: '0.1em',
-            textShadow: language === 'fr' ? '0 1px 2px hsl(0 0% 0% / 0.3)' : 'none'
+            minWidth: '2.75rem',
+            minHeight: '2.25rem',
+            padding: '0.5rem 0.75rem',
+            fontSize: 'clamp(0.65rem, 2vw, 0.7rem)',
+            letterSpacing: '0.08em',
+            textShadow: language === 'fr' ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
           }}
         >
           FR
