@@ -194,10 +194,10 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
         </button>
       </div>
       
-      {/* Premium Dropdown menu */}
+      {/* Premium Horizontal Dropdown */}
       {isDropdownOpen && (
         <div 
-          className="absolute top-full right-0 mt-2 z-[200] min-w-[220px] rounded-2xl border border-primary/30 bg-background/95 backdrop-blur-xl animate-fade-in overflow-hidden"
+          className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-[200] rounded-2xl border border-primary/30 bg-background/95 backdrop-blur-xl animate-fade-in overflow-hidden"
           style={{
             boxShadow: `
               0 0 30px hsl(174 60% 45% / 0.2),
@@ -206,101 +206,55 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
             `
           }}
         >
-          {/* Auto option - Featured prominently */}
-          <div 
-            className="relative"
+          {/* Auto option - Top row */}
+          <button
+            onClick={() => {
+              onLanguageChange('auto');
+              setIsDropdownOpen(false);
+            }}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-3 text-sm transition-all duration-300 ${
+              mode === 'auto' 
+                ? 'text-foreground' 
+                : 'text-foreground/70 hover:text-foreground hover:bg-primary/10'
+            }`}
             style={{
               background: mode === 'auto' 
-                ? 'linear-gradient(135deg, hsl(174 60% 45% / 0.25) 0%, hsl(180 55% 40% / 0.15) 100%)'
-                : 'linear-gradient(135deg, hsl(174 60% 45% / 0.08) 0%, hsl(180 55% 40% / 0.04) 100%)'
+                ? 'linear-gradient(135deg, hsl(174 60% 45% / 0.2) 0%, hsl(180 55% 40% / 0.1) 100%)'
+                : 'transparent'
             }}
           >
-            {/* Glow effect for Auto */}
             <div 
-              className="pointer-events-none absolute inset-0"
+              className="flex items-center justify-center w-6 h-6 rounded-full"
               style={{
-                background: 'radial-gradient(ellipse at center, hsl(174 60% 50% / 0.1) 0%, transparent 70%)',
-                animation: mode === 'auto' ? 'lang-glow-pulse 3s ease-in-out infinite' : 'none'
+                background: mode === 'auto'
+                  ? 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)'
+                  : 'hsl(174 60% 45% / 0.2)',
+                boxShadow: mode === 'auto' ? '0 0 10px hsl(174 60% 45% / 0.4)' : 'none'
               }}
-            />
-            
-            <button
-              onClick={() => {
-                onLanguageChange('auto');
-                setIsDropdownOpen(false);
-              }}
-              className={`relative w-full flex items-center justify-between px-4 py-4 text-sm transition-all duration-300 ${
-                mode === 'auto' 
-                  ? 'text-foreground' 
-                  : 'text-foreground/80 hover:text-foreground'
-              }`}
             >
-              <span className="flex items-center gap-3">
-                {/* Animated globe */}
-                <div 
-                  className="relative flex items-center justify-center w-8 h-8 rounded-full"
-                  style={{
-                    background: mode === 'auto'
-                      ? 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)'
-                      : 'linear-gradient(135deg, hsl(174 65% 48% / 0.3) 0%, hsl(180 55% 40% / 0.2) 100%)',
-                    boxShadow: mode === 'auto' 
-                      ? '0 0 12px hsl(174 60% 45% / 0.5), inset 0 1px 1px hsl(0 0% 100% / 0.2)'
-                      : '0 0 8px hsl(174 60% 45% / 0.2)'
-                  }}
-                >
-                  <Globe className={`h-4 w-4 ${mode === 'auto' ? 'text-white' : 'text-primary'}`} />
-                </div>
-                
-                <div className="flex flex-col items-start">
-                  <span 
-                    className="font-semibold"
-                    style={{
-                      background: mode === 'auto' 
-                        ? 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)'
-                        : 'none',
-                      WebkitBackgroundClip: mode === 'auto' ? 'text' : 'unset',
-                      WebkitTextFillColor: mode === 'auto' ? 'transparent' : 'inherit'
-                    }}
-                  >
-                    Auto
-                  </span>
-                  <span 
-                    className="text-xs"
-                    style={{ color: 'hsl(174 50% 55%)' }}
-                  >
-                    ✨ Recommended
-                  </span>
-                </div>
-              </span>
-              
-              {mode === 'auto' && (
-                <div 
-                  className="flex items-center justify-center w-5 h-5 rounded-full"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
-                    boxShadow: '0 0 8px hsl(174 60% 45% / 0.4)'
-                  }}
-                >
-                  <Check className="h-3 w-3 text-white" />
-                </div>
-              )}
-            </button>
-          </div>
+              <Globe className={`h-3.5 w-3.5 ${mode === 'auto' ? 'text-white' : 'text-primary'}`} />
+            </div>
+            <span className="font-medium">Auto</span>
+            <span className="text-xs" style={{ color: 'hsl(174 50% 55%)' }}>✨</span>
+            {mode === 'auto' && <Check className="h-4 w-4 text-primary ml-1" />}
+          </button>
           
-          {/* Separator with gradient */}
+          {/* Separator */}
           <div 
-            className="h-px mx-3"
+            className="h-px mx-4"
             style={{
               background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.3) 50%, transparent 100%)'
             }}
           />
           
-          {/* Secondary languages - compact list */}
-          <div className="py-1">
-            {SECONDARY_LANGUAGES.map((lang, index) => {
+          {/* Horizontal language grid */}
+          <div 
+            className="flex flex-wrap justify-center gap-1 p-3"
+            style={{ maxWidth: '320px' }}
+          >
+            {SECONDARY_LANGUAGES.map((lang) => {
               const config = SUPPORTED_LANGUAGES[lang];
               const isActive = mode === lang;
-              const isLast = index === SECONDARY_LANGUAGES.length - 1;
               
               return (
                 <button
@@ -309,31 +263,56 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
                     onLanguageChange(lang);
                     setIsDropdownOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-all duration-200 ${
-                    isLast ? 'rounded-b-2xl' : ''
-                  } ${
+                  className={`relative flex flex-col items-center justify-center rounded-xl transition-all duration-200 ${
                     isActive 
-                      ? 'bg-primary/15 text-foreground' 
-                      : 'text-foreground/70 hover:bg-primary/8 hover:text-foreground'
+                      ? 'bg-primary/20 scale-105' 
+                      : 'hover:bg-primary/10 hover:scale-102'
                   }`}
+                  style={{
+                    width: '90px',
+                    height: '70px',
+                    boxShadow: isActive 
+                      ? '0 0 12px hsl(174 60% 45% / 0.3), inset 0 1px 1px hsl(0 0% 100% / 0.1)' 
+                      : 'none',
+                    border: isActive ? '1px solid hsl(174 60% 50% / 0.3)' : '1px solid transparent'
+                  }}
+                  title={config.nativeName}
                 >
-                  <span className="flex items-center gap-3">
-                    <span 
-                      className="text-lg"
-                      style={{ 
-                        filter: isActive ? 'drop-shadow(0 0 4px hsl(174 60% 50% / 0.5))' : 'none'
-                      }}
-                    >
-                      {config.flag}
-                    </span>
-                    <span className={isActive ? 'font-medium' : ''}>{config.nativeName}</span>
-                    <span className="text-xs text-muted-foreground">({lang.toUpperCase()})</span>
+                  {/* Flag */}
+                  <span 
+                    className="text-2xl mb-1"
+                    style={{ 
+                      filter: isActive ? 'drop-shadow(0 0 6px hsl(174 60% 50% / 0.5))' : 'none',
+                      transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {config.flag}
                   </span>
+                  
+                  {/* Language code */}
+                  <span 
+                    className={`text-xs font-medium uppercase tracking-wide ${
+                      isActive ? 'text-foreground' : 'text-muted-foreground'
+                    }`}
+                    style={{
+                      background: isActive 
+                        ? 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)'
+                        : 'none',
+                      WebkitBackgroundClip: isActive ? 'text' : 'unset',
+                      WebkitTextFillColor: isActive ? 'transparent' : 'inherit'
+                    }}
+                  >
+                    {lang.toUpperCase()}
+                  </span>
+                  
+                  {/* Active indicator */}
                   {isActive && (
                     <div 
-                      className="flex items-center justify-center w-4 h-4 rounded-full"
+                      className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full"
                       style={{
-                        background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)'
+                        background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
+                        boxShadow: '0 0 6px hsl(174 60% 45% / 0.5)'
                       }}
                     >
                       <Check className="h-2.5 w-2.5 text-white" />
