@@ -218,71 +218,107 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               : '0 8px 32px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.08)',
           }}
         >
-          {/* Premium beam impact effect - triggered when chevrons complete */}
+          {/* Premium impact effect - triggered when chevrons complete */}
           {showHighlight && (
             <>
-              {/* Impact point - soft glow at top center */}
+              {/* Main impact point - dramatic glow burst at top center */}
               <div 
-                className="absolute pointer-events-none z-40"
+                className="absolute pointer-events-none z-50"
                 style={{ 
-                  top: '-4px',
+                  top: '-6px',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  width: '24px',
-                  height: '12px',
-                  background: 'radial-gradient(ellipse at center bottom, hsl(180 50% 65% / 0.5) 0%, hsl(180 45% 60% / 0.2) 40%, transparent 70%)',
+                  width: '40px',
+                  height: '20px',
+                  background: 'radial-gradient(ellipse 100% 80% at center bottom, hsl(180 60% 70% / 0.7) 0%, hsl(180 55% 60% / 0.3) 35%, transparent 65%)',
                   filter: 'blur(2px)',
-                  animation: 'impact-glow 120ms ease-out forwards',
+                  animation: 'impact-burst 180ms ease-out forwards',
                 }}
               />
               
-              {/* Left propagation beam */}
+              {/* Impact ripple ring */}
               <div 
-                className="absolute top-0 left-1/2 h-px pointer-events-none z-35 overflow-hidden"
+                className="absolute pointer-events-none z-45"
+                style={{ 
+                  top: '-2px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  border: '1px solid hsl(180 55% 65% / 0.6)',
+                  animation: 'impact-ripple 300ms ease-out forwards',
+                }}
+              />
+              
+              {/* Left propagation beam - thicker and more visible */}
+              <div 
+                className="absolute top-0 left-1/2 pointer-events-none z-40 overflow-hidden"
                 style={{ 
                   width: '50%',
-                  transform: 'translateX(-100%) scaleX(-1)',
+                  height: '3px',
+                  transform: 'translateX(-100%)',
                   borderRadius: '16px 0 0 0',
                 }}
               >
                 <div 
                   style={{
-                    height: '1.5px',
-                    width: '100%',
-                    background: 'linear-gradient(90deg, transparent 0%, hsl(180 45% 62% / 0.6) 30%, hsl(180 50% 68% / 0.8) 60%, transparent 100%)',
-                    filter: 'blur(0.5px)',
+                    height: '100%',
+                    width: '60%',
+                    background: 'linear-gradient(90deg, transparent 0%, hsl(180 50% 65% / 0.5) 40%, hsl(180 55% 72% / 0.9) 70%, hsl(180 60% 75% / 0.6) 100%)',
+                    filter: 'blur(1px)',
                     opacity: 0,
-                    animation: 'beam-sweep-left 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 60ms forwards',
+                    animation: 'beam-left 320ms cubic-bezier(0.22, 1, 0.36, 1) 80ms forwards',
                   }}
                 />
               </div>
               
-              {/* Right propagation beam */}
+              {/* Right propagation beam - thicker and more visible */}
               <div 
-                className="absolute top-0 left-1/2 h-px pointer-events-none z-35 overflow-hidden"
+                className="absolute top-0 left-1/2 pointer-events-none z-40 overflow-hidden"
                 style={{ 
                   width: '50%',
+                  height: '3px',
                   borderRadius: '0 16px 0 0',
                 }}
               >
                 <div 
                   style={{
-                    height: '1.5px',
-                    width: '100%',
-                    background: 'linear-gradient(90deg, transparent 0%, hsl(180 45% 62% / 0.6) 30%, hsl(180 50% 68% / 0.8) 60%, transparent 100%)',
-                    filter: 'blur(0.5px)',
+                    height: '100%',
+                    width: '60%',
+                    background: 'linear-gradient(270deg, transparent 0%, hsl(180 50% 65% / 0.5) 40%, hsl(180 55% 72% / 0.9) 70%, hsl(180 60% 75% / 0.6) 100%)',
+                    filter: 'blur(1px)',
                     opacity: 0,
-                    animation: 'beam-sweep-right 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 60ms forwards',
+                    animation: 'beam-right 320ms cubic-bezier(0.22, 1, 0.36, 1) 80ms forwards',
                   }}
                 />
               </div>
               
-              {/* Soft internal glow pulse */}
+              {/* Top border highlight flash */}
               <div 
-                className="absolute inset-0 rounded-2xl pointer-events-none z-20"
+                className="absolute top-0 left-0 right-0 pointer-events-none z-35"
                 style={{
-                  boxShadow: 'inset 0 0 25px hsl(180 50% 55% / 0.08), inset 0 4px 12px hsl(180 45% 60% / 0.06)',
-                  animation: 'inner-glow-pulse 200ms ease-out forwards',
+                  height: '1px',
+                  background: 'linear-gradient(90deg, transparent 0%, transparent 20%, hsl(180 55% 70% / 0.4) 50%, transparent 80%, transparent 100%)',
+                  animation: 'border-flash 250ms ease-out forwards',
+                  borderRadius: '16px 16px 0 0',
+                }}
+              />
+              
+              {/* Soft internal glow pulse - more visible */}
+              <div 
+                className="absolute inset-0 rounded-2xl pointer-events-none z-30"
+                style={{
+                  boxShadow: 'inset 0 0 35px hsl(180 55% 60% / 0.12), inset 0 -5px 20px hsl(180 50% 55% / 0.08), inset 0 8px 15px hsl(180 50% 65% / 0.1)',
+                  animation: 'inner-glow 280ms ease-out forwards',
+                }}
+              />
+              
+              {/* Subtle scale pulse on container */}
+              <div 
+                className="absolute inset-0 rounded-2xl pointer-events-none z-25"
+                style={{
+                  animation: 'container-pulse 300ms ease-out forwards',
                 }}
               />
             </>
@@ -477,27 +513,41 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           0%, 100% { opacity: 0.6; transform: scale(1); }
           50% { opacity: 0.85; transform: scale(1.005); }
         }
-        @keyframes impact-glow {
-          0% { opacity: 0; transform: translateX(-50%) scale(0.6); }
-          50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
-          100% { opacity: 0; transform: translateX(-50%) scale(1); }
+        @keyframes impact-burst {
+          0% { opacity: 0; transform: translateX(-50%) scale(0.3); }
+          40% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+          100% { opacity: 0; transform: translateX(-50%) scale(1.4); }
         }
-        @keyframes beam-sweep-left {
-          0% { transform: translateX(0%) scaleX(0.3); opacity: 0; }
-          20% { opacity: 1; }
-          80% { opacity: 0.6; }
-          100% { transform: translateX(-100%) scaleX(1); opacity: 0; }
+        @keyframes impact-ripple {
+          0% { opacity: 0.8; transform: translateX(-50%) scale(1); }
+          100% { opacity: 0; transform: translateX(-50%) scale(4); }
         }
-        @keyframes beam-sweep-right {
-          0% { transform: translateX(0%) scaleX(0.3); opacity: 0; }
-          20% { opacity: 1; }
-          80% { opacity: 0.6; }
-          100% { transform: translateX(100%) scaleX(1); opacity: 0; }
+        @keyframes beam-left {
+          0% { transform: translateX(100%); opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 0.7; }
+          100% { transform: translateX(-20%); opacity: 0; }
         }
-        @keyframes inner-glow-pulse {
+        @keyframes beam-right {
+          0% { transform: translateX(-100%); opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 0.7; }
+          100% { transform: translateX(120%); opacity: 0; }
+        }
+        @keyframes border-flash {
           0% { opacity: 0; }
-          35% { opacity: 1; }
+          30% { opacity: 1; }
           100% { opacity: 0; }
+        }
+        @keyframes inner-glow {
+          0% { opacity: 0; }
+          40% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes container-pulse {
+          0% { transform: scale(1); }
+          30% { transform: scale(1.003); }
+          100% { transform: scale(1); }
         }
       `}</style>
     </form>
