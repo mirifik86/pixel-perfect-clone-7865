@@ -19,7 +19,16 @@
     "keepCurrent": "Manter atual"
   },
   "hero": {
-    "tagline": "Credibilidade medida."
+    "tagline": "Credibilidade medida.",
+    "byLine": "POR SOL&AIR"
+  },
+  "index": {
+    "scoreLabel": "Índice LeenScore",
+    "footer": "LeenScore ilumina a informação, sem orientar a sua opinião.",
+    "developedBy": "FERRAMENTA DESENVOLVIDA POR SOL&AIR.",
+    "version": "VERSÃO 1",
+    "errorAnalysis": "A análise falhou. Por favor, tente novamente.",
+    "newAnalysis": "Nova análise"
   },
   "form": {
     "placeholder": "Cole um trecho da mensagem ou descreva a alegação a verificar…",
@@ -90,6 +99,7 @@
     "title": "Análise profunda",
     "subtitle": "Insights avançados de credibilidade",
     "launchAnalysis": "Iniciar análise PRO",
+    "analysisComplete": "Análise PRO concluída",
     "features": {
       "corroboration": {
         "title": "Corroboração de fontes",
