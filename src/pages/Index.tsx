@@ -136,11 +136,18 @@ const Index = () => {
   const [isRerunning, setIsRerunning] = useState(false);
   const [hasFormContent, setHasFormContent] = useState(false);
   const [inputHighlight, setInputHighlight] = useState(false);
+  const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
   
-  // Handle chevron cycle complete - trigger input highlight
+  // Handle chevron cycle complete - trigger input highlight (idle state beam impact)
   const handleChevronCycleComplete = useCallback(() => {
     setInputHighlight(true);
     setTimeout(() => setInputHighlight(false), 300);
+  }, []);
+  
+  // Handle transfer start - trigger input capture glow (idle→ready transition)
+  const handleTransferStart = useCallback(() => {
+    setInputCaptureGlow(true);
+    setTimeout(() => setInputCaptureGlow(false), 200);
   }, []);
   
   // Ref to the form for triggering submit from ScoreGauge
@@ -649,6 +656,7 @@ const Index = () => {
                   onAnalyze={handleGaugeAnalyze}
                   isLoading={isLoading}
                   onChevronCycleComplete={handleChevronCycleComplete}
+                  onTransferStart={handleTransferStart}
                 />
               </div>
             )}
@@ -771,6 +779,7 @@ const Index = () => {
                 isLoading={isLoading} 
                 onContentChange={setHasFormContent}
                 highlightInput={inputHighlight}
+                captureGlow={inputCaptureGlow}
               />
             </div>
           )}

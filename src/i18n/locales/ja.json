@@ -1,6 +1,7 @@
 {
   "common": {
     "analyze": "分析する",
+    "launchAnalysis": "分析を開始",
     "loading": "読み込み中...",
     "error": "エラー",
     "retry": "再試行",

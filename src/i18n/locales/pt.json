@@ -1,6 +1,7 @@
 {
   "common": {
     "analyze": "Analisar",
+    "launchAnalysis": "Iniciar análise",
     "loading": "Carregando...",
     "error": "Erro",
     "retry": "Tentar novamente",
