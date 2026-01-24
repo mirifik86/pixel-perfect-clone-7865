@@ -177,7 +177,9 @@
   },
   "footer": {
     "madeWith": "作成",
-    "by": "by"
+    "by": "by",
+    "developedBy": "開発：",
+    "version": "バージョン"
   },
   "screenshotEvidence": {
     "title": "スクリーンショット証拠",

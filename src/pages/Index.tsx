@@ -806,72 +806,65 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - premium branded signature */}
+        {/* Footer - premium 3-line signature */}
         <footer 
-          className="relative mt-auto flex flex-col items-center text-center py-4"
-          style={{ opacity: 0.7 }}
+          className="relative mt-auto flex flex-col items-center text-center py-4 animate-fade-in"
+          style={{ 
+            opacity: 0.75,
+            animationDelay: '600ms',
+            animationFillMode: 'both',
+          }}
         >
+          {/* Line 1: LeenScore branded */}
           <p 
+            className="font-semibold"
             style={{ 
-              fontSize: 'clamp(0.7rem, 0.65rem + 0.2vw, 0.8rem)',
-              letterSpacing: '0.03em',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.4em',
-              flexWrap: 'wrap',
+              fontSize: 'clamp(0.9rem, 0.85rem + 0.25vw, 1.05rem)',
+              letterSpacing: '-0.01em',
+              fontFamily: 'var(--font-display)',
+              marginBottom: '4px',
             }}
           >
-            {/* LeenScore branded */}
-            <span style={{ display: 'inline-flex', alignItems: 'baseline' }}>
-              <span 
-                className="italic"
-                style={{
-                  color: 'hsl(174 65% 52%)',
-                  fontFamily: 'var(--font-display)',
-                }}
-              >
-                Leen
-              </span>
-              <span 
-                className="font-semibold not-italic"
-                style={{
-                  color: 'hsl(0 0% 98%)',
-                  fontFamily: 'var(--font-display)',
-                }}
-              >
-                Score
-              </span>
-            </span>
-            
-            {/* Separator */}
-            <span style={{ color: 'hsl(0 0% 50%)' }}>—</span>
-            
-            {/* Created by Sol&Air */}
-            <span style={{ color: 'hsl(0 0% 65%)' }}>
-              Created by{' '}
-              <span 
-                style={{
-                  color: 'hsl(174 65% 58%)',
-                  textShadow: '0 0 8px hsl(174 60% 50% / 0.25)',
-                }}
-              >
-                Sol&Air
-              </span>
-            </span>
-            
-            {/* Version separator */}
-            <span style={{ color: 'hsl(0 0% 40%)' }}>·</span>
-            
-            {/* Version label */}
             <span 
-              style={{ 
-                color: 'hsl(0 0% 100% / 0.55)',
-                fontSize: '0.9em',
+              className="italic"
+              style={{ color: 'hsl(174 65% 52%)' }}
+            >
+              Leen
+            </span>
+            <span 
+              className="not-italic"
+              style={{ color: 'hsl(0 0% 98%)' }}
+            >
+              Score
+            </span>
+          </p>
+          
+          {/* Line 2: Developed by Sol&Air */}
+          <p 
+            style={{ 
+              fontSize: 'clamp(0.7rem, 0.65rem + 0.15vw, 0.8rem)',
+              color: 'hsl(0 0% 100% / 0.65)',
+              marginBottom: '2px',
+            }}
+          >
+            {i18nT('footer.developedBy')}{' '}
+            <span 
+              style={{
+                color: 'hsl(174 65% 58%)',
               }}
             >
-              Version 1.0
+              Sol&Air
             </span>
+          </p>
+          
+          {/* Line 3: Version */}
+          <p 
+            style={{ 
+              fontSize: 'clamp(0.6rem, 0.55rem + 0.1vw, 0.7rem)',
+              color: 'hsl(0 0% 100% / 0.55)',
+            }}
+          >
+            {i18nT('footer.version')} 1.0
           </p>
         </footer>
       </main>

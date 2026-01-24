@@ -177,7 +177,9 @@
   },
   "footer": {
     "madeWith": "제작:",
-    "by": "by"
+    "by": "by",
+    "developedBy": "개발:",
+    "version": "버전"
   },
   "screenshotEvidence": {
     "title": "스크린샷 증거",

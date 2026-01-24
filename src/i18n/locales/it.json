@@ -177,7 +177,9 @@
   },
   "footer": {
     "madeWith": "Realizzato con",
-    "by": "da"
+    "by": "da",
+    "developedBy": "Sviluppato da",
+    "version": "Versione"
   },
   "screenshotEvidence": {
     "title": "Prova screenshot",
