@@ -231,27 +231,20 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
           `
         }}
       >
-        {/* Globe or flag */}
-        {isAutoMode ? (
-          <Globe 
-            className="text-teal-400 transition-all duration-200"
-            style={{ width: '16px', height: '16px' }}
-          />
-        ) : (
-          <span 
-            className="text-base transition-transform duration-200"
-            style={{ lineHeight: 1 }}
-          >
-            {activeConfig?.flag}
-          </span>
-        )}
+        {/* Always show the resolved language flag */}
+        <span 
+          className="text-base transition-transform duration-200"
+          style={{ lineHeight: 1 }}
+        >
+          {activeConfig?.flag}
+        </span>
         
-        {/* Language name */}
+        {/* Always show the resolved language name */}
         <span 
           className="text-sm font-medium text-white/90 transition-colors duration-200"
           style={{ letterSpacing: '-0.01em' }}
         >
-          {isAutoMode ? 'Auto' : activeConfig?.nativeName}
+          {activeConfig?.nativeName}
         </span>
         
         {/* Chevron */}
