@@ -520,12 +520,88 @@ export const ScoreGauge = ({
               style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
             >
               <div className="relative group">
-                {/* Outer glow ring - premium pulsing */}
+                {/* BOTTOM IMPACT ZONE - Arrow impact effect */}
+                <div 
+                  className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+                  style={{
+                    bottom: '-20px',
+                    width: '80px',
+                    height: '40px',
+                  }}
+                >
+                  {/* Impact glow burst */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      background: 'radial-gradient(ellipse 100% 80% at 50% 0%, hsl(174 90% 70% / 0.9) 0%, hsl(180 85% 60% / 0.5) 30%, hsl(185 80% 55% / 0.2) 60%, transparent 100%)',
+                      filter: 'blur(6px)',
+                      animation: 'bottom-impact-glow 1.8s ease-out infinite',
+                    }}
+                  />
+                  
+                  {/* Impact pulse rings from bottom */}
+                  <div 
+                    className="absolute left-1/2 -translate-x-1/2 top-0"
+                    style={{
+                      width: '30px',
+                      height: '15px',
+                      borderRadius: '50%',
+                      border: '2px solid hsl(174 85% 65% / 0.7)',
+                      animation: 'bottom-impact-ring 1.8s ease-out infinite',
+                    }}
+                  />
+                  <div 
+                    className="absolute left-1/2 -translate-x-1/2 top-0"
+                    style={{
+                      width: '30px',
+                      height: '15px',
+                      borderRadius: '50%',
+                      border: '1.5px solid hsl(180 80% 60% / 0.5)',
+                      animation: 'bottom-impact-ring 1.8s ease-out infinite 0.2s',
+                    }}
+                  />
+                  
+                  {/* Energy particles shooting outward */}
+                  <div 
+                    className="absolute left-1/2 top-0"
+                    style={{
+                      width: '3px',
+                      height: '12px',
+                      background: 'linear-gradient(to bottom, hsl(174 90% 75%) 0%, transparent 100%)',
+                      borderRadius: '2px',
+                      transformOrigin: 'top center',
+                      animation: 'particle-left 1.8s ease-out infinite',
+                    }}
+                  />
+                  <div 
+                    className="absolute left-1/2 top-0"
+                    style={{
+                      width: '3px',
+                      height: '12px',
+                      background: 'linear-gradient(to bottom, hsl(180 85% 70%) 0%, transparent 100%)',
+                      borderRadius: '2px',
+                      transformOrigin: 'top center',
+                      animation: 'particle-right 1.8s ease-out infinite',
+                    }}
+                  />
+                  <div 
+                    className="absolute left-1/2 -translate-x-1/2 top-0"
+                    style={{
+                      width: '2px',
+                      height: '16px',
+                      background: 'linear-gradient(to bottom, hsl(174 95% 80%) 0%, transparent 100%)',
+                      borderRadius: '2px',
+                      animation: 'particle-center 1.8s ease-out infinite',
+                    }}
+                  />
+                </div>
+                
+                {/* Outer glow ring - premium pulsing synced with impact */}
                 <div 
                   className="absolute -inset-3 rounded-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
                   style={{
                     background: 'linear-gradient(135deg, hsl(174 80% 55% / 0.7), hsl(195 85% 50% / 0.5), hsl(174 80% 55% / 0.7))',
-                    animation: 'button-glow-pulse 2.5s ease-in-out infinite',
+                    animation: 'button-glow-impact 1.8s ease-out infinite',
                     filter: 'blur(16px)',
                   }}
                 />
@@ -567,8 +643,22 @@ export const ScoreGauge = ({
                     boxShadow: '0 0 60px hsl(174 65% 55% / 0.6), 0 0 30px hsl(174 60% 50% / 0.4), 0 12px 35px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 0 hsl(0 0% 0% / 0.15)',
                     textShadow: '0 2px 4px hsl(0 0% 0% / 0.5)',
                     letterSpacing: '0.15em',
+                    animation: 'button-pulse-impact 1.8s ease-out infinite',
                   }}
                 >
+                  {/* Bottom edge glow on impact */}
+                  <div 
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                    style={{
+                      width: '60%',
+                      height: '4px',
+                      background: 'linear-gradient(90deg, transparent 0%, hsl(174 90% 75% / 0.9) 30%, hsl(180 95% 80%) 50%, hsl(174 90% 75% / 0.9) 70%, transparent 100%)',
+                      borderRadius: '2px',
+                      filter: 'blur(2px)',
+                      animation: 'bottom-edge-glow 1.8s ease-out infinite',
+                    }}
+                  />
+                  
                   {/* Inner shine layer on button */}
                   <div 
                     className="absolute inset-0 pointer-events-none"
@@ -618,6 +708,16 @@ export const ScoreGauge = ({
             0%, 100% { opacity: 0.5; transform: scale(0.96); }
             50% { opacity: 1; transform: scale(1.04); }
           }
+          @keyframes button-glow-impact {
+            0%, 50%, 100% { opacity: 0.5; transform: scale(0.96); }
+            15% { opacity: 1; transform: scale(1.08); }
+            30% { opacity: 0.8; transform: scale(1.02); }
+          }
+          @keyframes button-pulse-impact {
+            0%, 50%, 100% { transform: scale(1); }
+            15% { transform: scale(1.015); }
+            30% { transform: scale(1.005); }
+          }
           @keyframes button-inner-glow {
             0%, 100% { opacity: 0.6; }
             50% { opacity: 1; }
@@ -629,6 +729,36 @@ export const ScoreGauge = ({
           @keyframes button-inner-shine {
             0% { transform: translateX(-150%); }
             60%, 100% { transform: translateX(150%); }
+          }
+          @keyframes bottom-impact-glow {
+            0%, 60%, 100% { opacity: 0; transform: scale(0.5) translateY(5px); }
+            15% { opacity: 1; transform: scale(1.2) translateY(0); }
+            35% { opacity: 0.6; transform: scale(1) translateY(2px); }
+          }
+          @keyframes bottom-impact-ring {
+            0% { opacity: 0.9; transform: translateX(-50%) scale(0.3); }
+            25% { opacity: 0.6; transform: translateX(-50%) scale(1.2); }
+            50%, 100% { opacity: 0; transform: translateX(-50%) scale(2); }
+          }
+          @keyframes bottom-edge-glow {
+            0%, 60%, 100% { opacity: 0; }
+            15% { opacity: 1; }
+            35% { opacity: 0.5; }
+          }
+          @keyframes particle-left {
+            0% { opacity: 0; transform: translateX(-50%) rotate(-30deg) translateY(0); }
+            15% { opacity: 1; transform: translateX(-50%) rotate(-30deg) translateY(8px); }
+            40%, 100% { opacity: 0; transform: translateX(-50%) rotate(-30deg) translateY(20px); }
+          }
+          @keyframes particle-right {
+            0% { opacity: 0; transform: translateX(-50%) rotate(30deg) translateY(0); }
+            15% { opacity: 1; transform: translateX(-50%) rotate(30deg) translateY(8px); }
+            40%, 100% { opacity: 0; transform: translateX(-50%) rotate(30deg) translateY(20px); }
+          }
+          @keyframes particle-center {
+            0% { opacity: 0; transform: translateY(0); }
+            15% { opacity: 1; transform: translateY(10px); }
+            40%, 100% { opacity: 0; transform: translateY(25px); }
           }
         `}</style>
       </div>
