@@ -87,81 +87,83 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
   // Check if current mode is a secondary language or auto
   const isSecondaryActive = mode === 'auto' || SECONDARY_LANGUAGES.includes(mode as SupportedLanguage);
 
-  // Get display info for the globe button
-  const getGlobeLabel = () => {
-    if (mode === 'auto') return 'Auto';
-    if (SECONDARY_LANGUAGES.includes(mode as SupportedLanguage)) {
-      return mode.toUpperCase();
+  // Calculate active index for sliding pill
+  const getActiveIndex = () => {
+    if (PRIMARY_LANGUAGES.includes(mode as SupportedLanguage)) {
+      return PRIMARY_LANGUAGES.indexOf(mode as SupportedLanguage);
     }
-    return null;
+    return 2; // Globe/Auto position
   };
 
-  const globeLabel = getGlobeLabel();
+  const activeIndex = getActiveIndex();
 
   // Portal dropdown content
   const dropdownContent = isDropdownOpen ? createPortal(
     <div 
       ref={dropdownRef}
-      className="fixed rounded-2xl border border-primary/30 bg-background/95 backdrop-blur-xl animate-fade-in overflow-visible"
+      className="fixed rounded-2xl overflow-hidden animate-fade-in"
       style={{
         top: dropdownPosition.top,
         left: dropdownPosition.left,
         transform: 'translateX(-50%)',
         zIndex: 99999,
         pointerEvents: 'auto',
+        background: 'linear-gradient(180deg, hsl(220 15% 13% / 0.95) 0%, hsl(220 15% 10% / 0.98) 100%)',
+        border: '1px solid hsl(0 0% 100% / 0.08)',
+        backdropFilter: 'blur(20px)',
         boxShadow: `
-          0 0 30px hsl(174 60% 45% / 0.2),
-          0 15px 50px hsl(0 0% 0% / 0.4),
-          inset 0 1px 1px hsl(0 0% 100% / 0.1)
+          0 0 0 1px hsl(0 0% 0% / 0.3),
+          0 20px 50px hsl(0 0% 0% / 0.5),
+          0 0 40px hsl(174 60% 40% / 0.08),
+          inset 0 1px 0 hsl(0 0% 100% / 0.05)
         `
       }}
     >
-      {/* Auto option - Top row */}
+      {/* Auto option */}
       <button
         onClick={() => {
           onLanguageChange('auto');
           setIsDropdownOpen(false);
         }}
-        className={`w-full flex items-center justify-center gap-2 px-6 py-3 text-sm transition-all duration-300 rounded-t-2xl ${
-          mode === 'auto' 
-            ? 'text-foreground' 
-            : 'text-foreground/70 hover:text-foreground hover:bg-primary/10'
-        }`}
+        className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 transition-all duration-200 group"
         style={{
           background: mode === 'auto' 
-            ? 'linear-gradient(135deg, hsl(174 60% 45% / 0.2) 0%, hsl(180 55% 40% / 0.1) 100%)'
+            ? 'linear-gradient(180deg, hsl(0 0% 100% / 0.08) 0%, hsl(0 0% 100% / 0.03) 100%)'
             : 'transparent'
         }}
       >
         <div 
-          className="flex items-center justify-center w-6 h-6 rounded-full"
+          className="flex items-center justify-center w-5 h-5 rounded-full transition-all duration-200"
           style={{
             background: mode === 'auto'
-              ? 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)'
-              : 'hsl(174 60% 45% / 0.2)',
-            boxShadow: mode === 'auto' ? '0 0 10px hsl(174 60% 45% / 0.4)' : 'none'
+              ? 'linear-gradient(135deg, hsl(174 50% 45% / 0.8) 0%, hsl(180 45% 38% / 0.8) 100%)'
+              : 'hsl(0 0% 100% / 0.1)',
+            boxShadow: mode === 'auto' ? '0 0 8px hsl(174 50% 45% / 0.3)' : 'none'
           }}
         >
-          <Globe className={`h-3.5 w-3.5 ${mode === 'auto' ? 'text-white' : 'text-primary'}`} />
+          <Globe className={`h-3 w-3 transition-colors duration-200 ${
+            mode === 'auto' ? 'text-white' : 'text-white/50 group-hover:text-white/70'
+          }`} />
         </div>
-        <span className="font-medium">Auto</span>
-        <span className="text-xs" style={{ color: 'hsl(174 50% 55%)' }}>✨</span>
-        {mode === 'auto' && <Check className="h-4 w-4 text-primary ml-1" />}
+        <span className={`text-sm font-medium tracking-tight transition-colors duration-200 ${
+          mode === 'auto' ? 'text-white' : 'text-white/60 group-hover:text-white/80'
+        }`}>
+          Auto
+        </span>
+        <span className="text-xs opacity-50">✦</span>
+        {mode === 'auto' && (
+          <Check className="h-3.5 w-3.5 text-white/70 ml-1" />
+        )}
       </button>
       
       {/* Separator */}
       <div 
         className="h-px mx-4"
-        style={{
-          background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.3) 50%, transparent 100%)'
-        }}
+        style={{ background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.1) 50%, transparent 100%)' }}
       />
       
-      {/* Horizontal language grid */}
-      <div 
-        className="flex flex-wrap justify-center gap-1 p-3"
-        style={{ maxWidth: '320px' }}
-      >
+      {/* Language grid */}
+      <div className="flex flex-wrap justify-center gap-1.5 p-3" style={{ maxWidth: '300px' }}>
         {SECONDARY_LANGUAGES.map((lang) => {
           const config = SUPPORTED_LANGUAGES[lang];
           const isActive = mode === lang;
@@ -173,59 +175,45 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
                 onLanguageChange(lang);
                 setIsDropdownOpen(false);
               }}
-              className={`relative flex flex-col items-center justify-center rounded-xl transition-all duration-200 ${
-                isActive 
-                  ? 'bg-primary/20 scale-105' 
-                  : 'hover:bg-primary/10 hover:scale-102'
-              }`}
+              className="relative flex flex-col items-center justify-center rounded-xl transition-all duration-200 group"
               style={{
-                width: '90px',
-                height: '70px',
+                width: '85px',
+                height: '64px',
+                background: isActive 
+                  ? 'linear-gradient(180deg, hsl(0 0% 100% / 0.1) 0%, hsl(0 0% 100% / 0.04) 100%)'
+                  : 'transparent',
+                border: isActive 
+                  ? '1px solid hsl(0 0% 100% / 0.12)' 
+                  : '1px solid transparent',
                 boxShadow: isActive 
-                  ? '0 0 12px hsl(174 60% 45% / 0.3), inset 0 1px 1px hsl(0 0% 100% / 0.1)' 
-                  : 'none',
-                border: isActive ? '1px solid hsl(174 60% 50% / 0.3)' : '1px solid transparent'
+                  ? 'inset 0 1px 0 hsl(0 0% 100% / 0.08), 0 0 12px hsl(174 50% 45% / 0.1)' 
+                  : 'none'
               }}
               title={config.nativeName}
             >
-              {/* Flag */}
               <span 
-                className="text-2xl mb-1"
+                className="text-xl mb-0.5 transition-transform duration-200"
                 style={{ 
-                  filter: isActive ? 'drop-shadow(0 0 6px hsl(174 60% 50% / 0.5))' : 'none',
-                  transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                  transition: 'all 0.2s ease'
+                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                  filter: isActive ? 'drop-shadow(0 0 4px hsl(0 0% 100% / 0.2))' : 'none'
                 }}
               >
                 {config.flag}
               </span>
-              
-              {/* Language code */}
-              <span 
-                className={`text-xs font-medium uppercase tracking-wide ${
-                  isActive ? 'text-foreground' : 'text-muted-foreground'
-                }`}
-                style={{
-                  background: isActive 
-                    ? 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)'
-                    : 'none',
-                  WebkitBackgroundClip: isActive ? 'text' : 'unset',
-                  WebkitTextFillColor: isActive ? 'transparent' : 'inherit'
-                }}
-              >
+              <span className={`text-[10px] font-semibold uppercase tracking-wide transition-colors duration-200 ${
+                isActive ? 'text-white' : 'text-white/50 group-hover:text-white/70'
+              }`}>
                 {lang.toUpperCase()}
               </span>
-              
-              {/* Active indicator */}
               {isActive && (
                 <div 
-                  className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full"
+                  className="absolute -top-1 -right-1 flex items-center justify-center w-3.5 h-3.5 rounded-full"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
-                    boxShadow: '0 0 6px hsl(174 60% 45% / 0.5)'
+                    background: 'linear-gradient(135deg, hsl(174 50% 50%) 0%, hsl(180 45% 42%) 100%)',
+                    boxShadow: '0 0 6px hsl(174 50% 45% / 0.4)'
                   }}
                 >
-                  <Check className="h-2.5 w-2.5 text-white" />
+                  <Check className="h-2 w-2 text-white" />
                 </div>
               )}
             </button>
@@ -238,85 +226,48 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
 
   return (
     <>
-      <div className="relative inline-flex items-center" style={{ zIndex: 9999 }}>
-        {/* Subtle outer glow */}
+      <style>{`
+        @keyframes pill-glow {
+          0%, 100% { box-shadow: 0 0 8px hsl(174 40% 45% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.1); }
+          50% { box-shadow: 0 0 12px hsl(174 40% 45% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.12); }
+        }
+      `}</style>
+      
+      <div className="relative inline-flex items-center gap-3" style={{ zIndex: 9999 }}>
+        {/* Main segmented control */}
         <div 
-          className="pointer-events-none absolute -inset-1 rounded-full opacity-40"
+          className="relative inline-flex items-center rounded-full"
           style={{
-            background: 'radial-gradient(ellipse at center, hsl(174 60% 45% / 0.15) 0%, transparent 70%)',
-            filter: 'blur(6px)'
-          }}
-        />
-        
-        {/* PRO border glow ring with pulse animation */}
-        <div 
-          className="pointer-events-none absolute -inset-[1px] rounded-full"
-          style={{
-            background: 'linear-gradient(135deg, hsl(174 65% 55% / 0.5) 0%, hsl(180 55% 45% / 0.2) 50%, hsl(174 65% 55% / 0.5) 100%)',
-            padding: '1px',
-            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            WebkitMaskComposite: 'xor',
-            maskComposite: 'exclude',
-            animation: 'lang-border-pulse 3s ease-in-out infinite'
-          }}
-        />
-        
-        {/* Animated glow aura */}
-        <div 
-          className="pointer-events-none absolute -inset-1 rounded-full"
-          style={{
-            background: 'radial-gradient(ellipse at center, hsl(174 60% 50% / 0.2) 0%, transparent 70%)',
-            animation: 'lang-glow-pulse 3s ease-in-out infinite',
-            filter: 'blur(4px)'
-          }}
-        />
-        
-        <style>{`
-          @keyframes lang-border-pulse {
-            0%, 100% { opacity: 0.6; filter: brightness(1); }
-            50% { opacity: 1; filter: brightness(1.3); }
-          }
-          @keyframes lang-glow-pulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.05); }
-          }
-          @keyframes lang-dot-pulse {
-            0%, 100% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
-          }
-        `}</style>
-        
-        {/* Main container */}
-        <div 
-          className="relative inline-flex items-center rounded-full border border-primary/25 bg-secondary/70 backdrop-blur-xl"
-          style={{
-            padding: '4px',
+            padding: '3px',
+            background: 'linear-gradient(180deg, hsl(220 15% 15% / 0.9) 0%, hsl(220 15% 12% / 0.95) 100%)',
+            border: '1px solid hsl(0 0% 100% / 0.08)',
+            backdropFilter: 'blur(16px)',
             boxShadow: `
-              0 0 16px hsl(174 60% 45% / 0.12),
-              0 0 4px hsl(174 60% 45% / 0.15),
-              inset 0 1px 1px hsl(0 0% 100% / 0.08),
-              inset 0 -1px 1px hsl(0 0% 0% / 0.1)
+              0 0 0 1px hsl(0 0% 0% / 0.2),
+              0 4px 16px hsl(0 0% 0% / 0.3),
+              0 0 20px hsl(174 40% 40% / 0.05),
+              inset 0 1px 0 hsl(0 0% 100% / 0.04)
             `
           }}
         >
-          {/* Sliding indicator */}
+          {/* Sliding glass pill indicator */}
           <div 
-            className="pointer-events-none absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-out"
+            className="pointer-events-none absolute top-[3px] bottom-[3px] rounded-full transition-all duration-250 ease-out"
             style={{
-              width: `calc(${100 / 3}% - 4px)`,
-              left: PRIMARY_LANGUAGES.includes(mode as SupportedLanguage) 
-                ? `calc(${(PRIMARY_LANGUAGES.indexOf(mode as SupportedLanguage) / 3) * 100}% + 2px)`
-                : `calc(${(2 / 3) * 100}% + 2px)`,
-              background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
+              width: 'calc(33.333% - 2px)',
+              left: `calc(${activeIndex * 33.333}% + 1px)`,
+              background: 'linear-gradient(180deg, hsl(0 0% 100% / 0.12) 0%, hsl(0 0% 100% / 0.05) 100%)',
+              border: '1px solid hsl(0 0% 100% / 0.1)',
               boxShadow: `
-                0 0 10px hsl(174 60% 45% / 0.4),
-                0 2px 6px hsl(0 0% 0% / 0.25),
-                inset 0 1px 1px hsl(0 0% 100% / 0.15)
-              `
+                inset 0 1px 0 hsl(0 0% 100% / 0.08),
+                inset 0 -1px 0 hsl(0 0% 0% / 0.1),
+                0 0 8px hsl(174 40% 45% / 0.12)
+              `,
+              animation: 'pill-glow 3s ease-in-out infinite'
             }}
           />
           
-          {/* EN and FR buttons with flags */}
+          {/* EN and FR buttons */}
           {PRIMARY_LANGUAGES.map((lang) => {
             const isActive = mode === lang;
             const config = SUPPORTED_LANGUAGES[lang];
@@ -328,110 +279,117 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
                   onLanguageChange(lang);
                   setIsDropdownOpen(false);
                 }}
-                className={`relative z-10 flex items-center justify-center gap-1 rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
-                  isActive
-                    ? 'text-primary-foreground'
-                    : 'text-muted-foreground/60 hover:text-foreground/80'
-                }`}
+                className="relative z-10 flex items-center justify-center gap-1 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
                 style={{
-                  minWidth: '3.25rem',
-                  minHeight: '2.25rem',
-                  padding: '0.5rem 0.6rem',
-                  fontSize: 'clamp(0.65rem, 2vw, 0.7rem)',
-                  letterSpacing: '0.08em',
-                  textShadow: isActive ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
+                  minWidth: '56px',
+                  height: '32px',
+                  padding: '0 10px'
                 }}
                 title={config?.nativeName}
               >
-                <span style={{ fontSize: '0.85rem', lineHeight: 1 }}>{config?.flag}</span>
-                <span>{lang.toUpperCase()}</span>
+                <span 
+                  className="transition-all duration-200"
+                  style={{ 
+                    fontSize: '0.75rem', 
+                    lineHeight: 1,
+                    opacity: isActive ? 1 : 0.6,
+                    filter: isActive ? 'saturate(1.1)' : 'saturate(0.8)'
+                  }}
+                >
+                  {config?.flag}
+                </span>
+                <span 
+                  className="transition-all duration-200"
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: isActive ? 600 : 500,
+                    letterSpacing: '0.02em',
+                    color: isActive ? 'hsl(0 0% 100%)' : 'hsl(0 0% 100% / 0.5)',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  {lang.toUpperCase()}
+                </span>
               </button>
             );
           })}
           
-          {/* Globe dropdown button */}
+          {/* Globe dropdown trigger */}
           <button
             ref={triggerRef}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className={`relative z-10 flex items-center justify-center gap-1 rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
-              isSecondaryActive
-                ? 'text-primary-foreground'
-                : 'text-muted-foreground/60 hover:text-foreground/80'
-            }`}
+            className="relative z-10 flex items-center justify-center gap-1 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
             style={{
-              minWidth: globeLabel ? '3rem' : '2.25rem',
-              minHeight: '2.25rem',
-              padding: '0.5rem',
-              textShadow: isSecondaryActive ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
+              minWidth: '56px',
+              height: '32px',
+              padding: '0 8px'
             }}
             title="More languages"
           >
-            <Globe className="h-3.5 w-3.5" />
-            {globeLabel && (
-              <span style={{ fontSize: '0.6rem', letterSpacing: '0.05em' }}>
-                {globeLabel}
+            <Globe 
+              className="transition-all duration-200"
+              style={{
+                width: '13px',
+                height: '13px',
+                color: isSecondaryActive ? 'hsl(0 0% 100%)' : 'hsl(0 0% 100% / 0.5)'
+              }}
+            />
+            {isSecondaryActive && mode !== 'auto' && (
+              <span 
+                style={{
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                  color: 'hsl(0 0% 100%)',
+                  textTransform: 'uppercase'
+                }}
+              >
+                {mode.toUpperCase()}
               </span>
             )}
             <ChevronDown 
-              className={`h-3 w-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+              className="transition-all duration-200"
+              style={{
+                width: '11px',
+                height: '11px',
+                color: isSecondaryActive ? 'hsl(0 0% 100% / 0.7)' : 'hsl(0 0% 100% / 0.4)',
+                transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+              }}
             />
           </button>
         </div>
         
-        {/* Premium language indicator - right side */}
+        {/* Active language badge */}
         <div 
-          className="ml-3 flex items-center gap-2 animate-fade-in"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300"
           style={{
-            background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.15) 0%, hsl(180 55% 40% / 0.08) 100%)',
-            borderRadius: '8px',
-            padding: '6px 12px',
-            border: '1px solid hsl(174 60% 50% / 0.25)',
-            boxShadow: `
-              0 0 12px hsl(174 60% 45% / 0.1),
-              inset 0 1px 1px hsl(0 0% 100% / 0.05)
-            `
+            background: 'linear-gradient(180deg, hsl(0 0% 100% / 0.06) 0%, hsl(0 0% 100% / 0.02) 100%)',
+            border: '1px solid hsl(0 0% 100% / 0.08)',
+            backdropFilter: 'blur(12px)'
           }}
         >
-          {/* Flag with glow effect */}
-          <div 
-            className="relative flex items-center justify-center"
-            style={{
-              filter: 'drop-shadow(0 0 4px hsl(174 60% 50% / 0.4))'
-            }}
+          <span 
+            className="transition-transform duration-200"
+            style={{ fontSize: '0.9rem', lineHeight: 1 }}
           >
-            <span 
-              style={{ 
-                fontSize: '1.1rem', 
-                lineHeight: 1,
-                animation: 'lang-dot-pulse 2s ease-in-out infinite'
-              }}
-            >
-              {SUPPORTED_LANGUAGES[language]?.flag}
-            </span>
-          </div>
-          
-          {/* Language name with gradient */}
+            {SUPPORTED_LANGUAGES[language]?.flag}
+          </span>
           <span
             style={{
-              fontSize: '0.7rem',
+              fontSize: '0.65rem',
               fontWeight: 600,
-              letterSpacing: '0.05em',
-              background: 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              letterSpacing: '0.03em',
+              color: 'hsl(174 40% 65%)',
               textTransform: 'uppercase'
             }}
           >
             {SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()}
           </span>
-          
-          {/* Subtle glow dot */}
           <div 
-            className="w-1.5 h-1.5 rounded-full"
+            className="w-1 h-1 rounded-full"
             style={{
-              background: 'hsl(174 65% 55%)',
-              boxShadow: '0 0 6px hsl(174 65% 55% / 0.6)',
-              animation: 'lang-dot-pulse 2s ease-in-out infinite'
+              background: 'hsl(174 50% 55%)',
+              boxShadow: '0 0 4px hsl(174 50% 55% / 0.5)'
             }}
           />
         </div>
