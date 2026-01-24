@@ -44,7 +44,7 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
   const globeLabel = getGlobeLabel();
 
   return (
-    <div className="relative inline-flex items-center" ref={dropdownRef}>
+    <div className="relative inline-flex items-center z-[100]" ref={dropdownRef}>
       {/* Subtle outer glow */}
       <div 
         className="pointer-events-none absolute -inset-1 rounded-full opacity-40"
@@ -186,7 +186,7 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
       {/* Premium Dropdown menu */}
       {isDropdownOpen && (
         <div 
-          className="absolute top-full right-0 mt-2 z-50 min-w-[220px] rounded-2xl border border-primary/30 bg-background/95 backdrop-blur-xl animate-fade-in overflow-hidden"
+          className="absolute top-full right-0 mt-2 z-[200] min-w-[220px] rounded-2xl border border-primary/30 bg-background/95 backdrop-blur-xl animate-fade-in overflow-hidden"
           style={{
             boxShadow: `
               0 0 30px hsl(174 60% 45% / 0.2),
