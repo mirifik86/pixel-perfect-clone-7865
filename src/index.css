@@ -106,6 +106,12 @@
   html {
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+
+  html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
 
   body {
