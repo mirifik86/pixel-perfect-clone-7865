@@ -709,9 +709,9 @@ const Index = () => {
             <div 
               className="relative flex items-center justify-center"
               style={{ 
-                marginTop: 'var(--space-1)',
-                marginBottom: 'var(--space-1)',
-                height: '32px',
+                marginTop: '0',
+                marginBottom: '0',
+                height: '24px',
                 width: '60px',
               }}
             >
