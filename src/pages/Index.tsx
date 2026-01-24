@@ -777,135 +777,79 @@ const Index = () => {
                 </svg>
               </div>
 
-              {/* Premium arrow pointing UP with IMPACT animation */}
+              {/* Premium arrow pointing UP with contained animation */}
               <div 
-                className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${
+                className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${
                   hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
                 }`}
                 style={{
                   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {/* Energy beam trail shooting UP to button */}
+                {/* Contained glow effect - stays within bounds */}
                 <div 
                   className="absolute"
                   style={{
-                    width: '4px',
-                    height: '60px',
-                    bottom: '50%',
-                    background: 'linear-gradient(to top, transparent 0%, hsl(174 80% 60% / 0.3) 30%, hsl(174 85% 65% / 0.8) 70%, hsl(180 90% 75% / 1) 100%)',
-                    borderRadius: '2px',
-                    animation: hasFormContent ? 'energy-beam-up 1.8s ease-out infinite' : 'none',
-                    filter: 'blur(2px)',
-                  }}
-                />
-                
-                {/* Secondary beam for depth */}
-                <div 
-                  className="absolute"
-                  style={{
-                    width: '8px',
-                    height: '50px',
-                    bottom: '50%',
-                    background: 'linear-gradient(to top, transparent 0%, hsl(174 70% 55% / 0.15) 40%, hsl(174 75% 60% / 0.4) 100%)',
-                    borderRadius: '4px',
-                    animation: hasFormContent ? 'energy-beam-up 1.8s ease-out infinite 0.1s' : 'none',
-                    filter: 'blur(6px)',
-                  }}
-                />
-                
-                {/* Impact burst at top */}
-                <div 
-                  className="absolute"
-                  style={{
-                    width: '40px',
-                    height: '20px',
-                    top: '-10px',
-                    background: 'radial-gradient(ellipse at center bottom, hsl(174 85% 70% / 0.8) 0%, hsl(180 80% 65% / 0.4) 40%, transparent 70%)',
-                    borderRadius: '50%',
-                    animation: hasFormContent ? 'impact-burst 1.8s ease-out infinite' : 'none',
-                    filter: 'blur(4px)',
-                  }}
-                />
-
-                {/* Multi-layer premium glow effect behind arrow */}
-                <div 
-                  className="absolute"
-                  style={{
-                    width: '70px',
-                    height: '50px',
-                    background: 'radial-gradient(ellipse at center, hsl(174 80% 60% / 0.6), hsl(174 70% 50% / 0.3) 40%, hsl(180 60% 55% / 0.15) 70%, transparent 100%)',
-                    filter: 'blur(14px)',
+                    width: '80px',
+                    height: '100%',
+                    background: 'radial-gradient(ellipse 100% 80% at 50% 50%, hsl(174 80% 60% / 0.4) 0%, hsl(174 70% 50% / 0.2) 40%, transparent 70%)',
+                    filter: 'blur(10px)',
                     animation: hasFormContent ? 'arrow-pulse-glow 1.8s ease-in-out infinite' : 'none',
                   }}
                 />
-                
-                {/* Premium double chevron arrow pointing UP with pulse */}
+
+                {/* Premium double chevron arrow pointing UP with gentle pulse */}
                 <svg 
-                  width="32"
-                  height="24"
-                  viewBox="0 0 32 24" 
+                  width="28"
+                  height="20"
+                  viewBox="0 0 28 20" 
                   fill="none"
                   className="relative"
                   style={{
-                    filter: 'drop-shadow(0 0 10px hsl(174 85% 65% / 1)) drop-shadow(0 0 20px hsl(174 75% 55% / 0.7)) drop-shadow(0 0 35px hsl(180 70% 50% / 0.4))',
-                    animation: hasFormContent ? 'arrow-thrust-up 1.8s ease-out infinite' : 'none',
+                    filter: 'drop-shadow(0 0 8px hsl(174 85% 65% / 0.9)) drop-shadow(0 0 16px hsl(174 75% 55% / 0.6))',
+                    animation: hasFormContent ? 'arrow-gentle-pulse 2s ease-in-out infinite' : 'none',
                   }}
                 >
                   {/* Primary chevron - brighter, thicker with glow */}
                   <path 
-                    d="M5 16L16 7L27 16" 
+                    d="M4 14L14 6L24 14" 
                     stroke="url(#arrowGradientUpPremium)" 
-                    strokeWidth="3.5"
+                    strokeWidth="3"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
                   />
-                  {/* Secondary chevron - creates depth and motion trail */}
+                  {/* Secondary chevron - creates depth */}
                   <path 
-                    d="M5 21L16 12L27 21" 
+                    d="M4 18L14 10L24 18" 
                     stroke="url(#arrowGradientUpSecondary)" 
-                    strokeWidth="2.5"
+                    strokeWidth="2"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
-                    opacity="0.6"
-                    style={{
-                      animation: hasFormContent ? 'chevron-trail 1.8s ease-out infinite' : 'none',
-                    }}
+                    opacity="0.5"
                   />
                   <defs>
-                    {/* Premium gradient with teal to cyan to white tip */}
-                    <linearGradient id="arrowGradientUpPremium" x1="16" y1="16" x2="16" y2="7" gradientUnits="userSpaceOnUse">
+                    {/* Premium gradient with teal to cyan */}
+                    <linearGradient id="arrowGradientUpPremium" x1="14" y1="14" x2="14" y2="6" gradientUnits="userSpaceOnUse">
                       <stop stopColor="hsl(174 55% 40%)" />
-                      <stop offset="0.3" stopColor="hsl(174 75% 55%)" />
-                      <stop offset="0.6" stopColor="hsl(178 85% 65%)" />
-                      <stop offset="0.85" stopColor="hsl(185 90% 75%)" />
-                      <stop offset="1" stopColor="hsl(190 95% 85%)" />
+                      <stop offset="0.4" stopColor="hsl(174 75% 55%)" />
+                      <stop offset="0.7" stopColor="hsl(178 85% 65%)" />
+                      <stop offset="1" stopColor="hsl(185 90% 75%)" />
                     </linearGradient>
-                    <linearGradient id="arrowGradientUpSecondary" x1="16" y1="21" x2="16" y2="12" gradientUnits="userSpaceOnUse">
+                    <linearGradient id="arrowGradientUpSecondary" x1="14" y1="18" x2="14" y2="10" gradientUnits="userSpaceOnUse">
                       <stop stopColor="hsl(174 45% 35%)" />
-                      <stop offset="0.5" stopColor="hsl(174 65% 50%)" />
-                      <stop offset="1" stopColor="hsl(178 75% 60%)" />
+                      <stop offset="1" stopColor="hsl(174 65% 50%)" />
                     </linearGradient>
                   </defs>
                 </svg>
                 
-                {/* Expanding impact rings */}
+                {/* Subtle expanding ring - contained */}
                 <div 
                   className="absolute rounded-full"
                   style={{
-                    width: '50px',
-                    height: '50px',
-                    border: '2px solid hsl(174 80% 60% / 0.5)',
-                    animation: hasFormContent ? 'impact-ring 1.8s ease-out infinite' : 'none',
-                  }}
-                />
-                <div 
-                  className="absolute rounded-full"
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    border: '1.5px solid hsl(180 75% 55% / 0.3)',
-                    animation: hasFormContent ? 'impact-ring 1.8s ease-out infinite 0.3s' : 'none',
+                    width: '40px',
+                    height: '40px',
+                    border: '1.5px solid hsl(174 70% 55% / 0.4)',
+                    animation: hasFormContent ? 'ring-expand-contained 2.5s ease-out infinite' : 'none',
                   }}
                 />
               </div>
