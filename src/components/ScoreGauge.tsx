@@ -771,23 +771,23 @@ export const ScoreGauge = ({
         @keyframes chevron-cascade {
           0% { 
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-8px);
           }
           15% { 
             opacity: 0.85;
-            transform: translateY(0px);
+            transform: translateY(-2px);
           }
           50% { 
             opacity: 0.7;
-            transform: translateY(12px);
+            transform: translateY(5px);
           }
           75% { 
             opacity: 0.3;
-            transform: translateY(20px);
+            transform: translateY(10px);
           }
           88%, 100% { 
             opacity: 0;
-            transform: translateY(24px);
+            transform: translateY(12px);
           }
         }
         @keyframes idle-text-breathe {
