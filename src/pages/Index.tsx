@@ -271,7 +271,13 @@ const Index = () => {
   }, [language, runBilingualTextAnalysis]);
 
   // Screenshot Analysis Handler - now called directly when image is ready
-  const handleImageAnalysis = useCallback(async (file: File, preview: string, analysisType: 'standard' | 'pro' = 'standard') => {
+  // contextText: optional text provided alongside the image for multimodal analysis
+  const handleImageAnalysis = useCallback(async (
+    file: File, 
+    preview: string, 
+    analysisType: 'standard' | 'pro' = 'standard',
+    contextText?: string
+  ) => {
     const errorAnalysis = i18nT('index.errorAnalysis');
     
     // Store input for retry
@@ -284,6 +290,11 @@ const Index = () => {
     setSummariesByLanguage({ en: null, fr: null });
     setScreenshotLoaderStep(0);
     setAnalysisError(null);
+    
+    // Store context text if provided
+    if (contextText) {
+      setLastAnalyzedContent(contextText);
+    }
 
     try {
       // Step 1: OCR
@@ -294,12 +305,13 @@ const Index = () => {
       setScreenshotLoaderStep(1);
       await new Promise(r => setTimeout(r, 300));
       
-      // Call the analyze-image endpoint
+      // Call the analyze-image endpoint with optional context text
       const result = await supabase.functions.invoke('analyze-image', {
         body: { 
           imageData: preview, 
           language: language,
-          analysisType: analysisType
+          analysisType: analysisType,
+          contextText: contextText || undefined
         },
       });
 
@@ -402,6 +414,20 @@ const Index = () => {
       }, 500); // Match exit animation duration
     }
   }, [language, runBilingualTextAnalysis]);
+
+  // Unified analyze handler - supports text only, image only, or both (multimodal)
+  const handleUnifiedAnalyze = useCallback(async (
+    text: string, 
+    image: { file: File; preview: string } | null
+  ) => {
+    // If we have an image, use image analysis (which includes text context if available)
+    if (image) {
+      await handleImageAnalysis(image.file, image.preview, 'standard', text);
+    } else if (text) {
+      // Text-only analysis
+      await handleAnalyze(text);
+    }
+  }, [handleImageAnalysis, handleAnalyze]);
 
   // Re-run analysis with edited text
   const handleRerunAnalysis = async (editedText: string) => {
@@ -920,8 +946,7 @@ const Index = () => {
             >
               <UnifiedAnalysisForm 
                 ref={formRef}
-                onAnalyzeText={handleAnalyze} 
-                onImageReady={(file, preview) => handleImageAnalysis(file, preview, 'standard')}
+                onAnalyze={handleUnifiedAnalyze}
                 isLoading={isLoading} 
                 onContentChange={setHasFormContent}
               />
