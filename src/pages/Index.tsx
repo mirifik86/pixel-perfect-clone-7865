@@ -704,7 +704,7 @@ const Index = () => {
             />
           )}
 
-          {/* Premium arrow indicators - between gauge and form */}
+          {/* Premium visual indicator - between gauge and form */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
               className="relative flex items-center justify-center"
@@ -712,7 +712,8 @@ const Index = () => {
                 marginTop: '4px',
                 marginBottom: '8px',
                 height: '20px',
-                width: '60px',
+                width: '100%',
+                maxWidth: '200px',
               }}
             >
               {/* Arrow pointing DOWN (to input) - shown when NO content */}
@@ -745,7 +746,6 @@ const Index = () => {
                   fill="none"
                   className="relative"
                 >
-                  {/* First chevron (main) */}
                   <path 
                     d="M3 3L12 10L21 3" 
                     stroke="url(#arrowGradientDown)" 
@@ -756,7 +756,6 @@ const Index = () => {
                       filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.8))',
                     }}
                   />
-                  {/* Second chevron (trailing, subtle) */}
                   <path 
                     d="M3 8L12 15L21 8" 
                     stroke="url(#arrowGradientDown)" 
@@ -778,68 +777,39 @@ const Index = () => {
                 </svg>
               </div>
 
-              {/* Arrow pointing UP (to Analyze button) - shown when HAS content */}
+              {/* Premium connecting glow line - shown when HAS content (replaces arrow) */}
               <div 
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                  hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
+                  hasFormContent ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
                 style={{
-                  animation: hasFormContent ? 'arrow-float-up 1.8s ease-in-out infinite' : 'none',
                   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {/* Multi-layer glow effect - intensified for active state */}
+                {/* Central luminous dot with pulse */}
                 <div 
-                  className="absolute"
+                  className="relative"
                   style={{
-                    width: '60px',
-                    height: '40px',
-                    background: 'radial-gradient(ellipse at center, hsl(174 80% 60% / 0.5), hsl(174 70% 50% / 0.25) 50%, transparent 80%)',
-                    filter: 'blur(12px)',
-                    animation: 'arrow-glow-intense 1.5s ease-in-out infinite',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, hsl(174 85% 70%) 0%, hsl(174 70% 55%) 60%, transparent 100%)',
+                    boxShadow: '0 0 12px hsl(174 80% 60% / 0.8), 0 0 24px hsl(174 70% 55% / 0.5), 0 0 40px hsl(174 60% 50% / 0.3)',
+                    animation: 'pulse-glow 2s ease-in-out infinite',
                   }}
                 />
                 
-                {/* Double chevron arrow pointing UP */}
-                <svg 
-                  width="24"
-                  height="16"
-                  viewBox="0 0 24 16" 
-                  fill="none"
-                  className="relative"
-                  style={{ transform: 'rotate(180deg)' }}
-                >
-                  {/* First chevron (main) */}
-                  <path 
-                    d="M3 3L12 10L21 3" 
-                    stroke="url(#arrowGradientUp)" 
-                    strokeWidth="2.5"
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                    style={{
-                      filter: 'drop-shadow(0 0 8px hsl(174 80% 60% / 0.9))',
-                    }}
-                  />
-                  {/* Second chevron (trailing, subtle) */}
-                  <path 
-                    d="M3 8L12 15L21 8" 
-                    stroke="url(#arrowGradientUp)" 
-                    strokeWidth="1.5"
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                    opacity="0.5"
-                    style={{
-                      filter: 'drop-shadow(0 0 6px hsl(174 80% 60% / 0.7))',
-                    }}
-                  />
-                  <defs>
-                    <linearGradient id="arrowGradientUp" x1="12" y1="3" x2="12" y2="15" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="hsl(174 90% 78%)" />
-                      <stop offset="0.5" stopColor="hsl(174 80% 62%)" />
-                      <stop offset="1" stopColor="hsl(174 65% 50%)" />
-                    </linearGradient>
-                  </defs>
-                </svg>
+                {/* Expanding ring effect */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: '1px solid hsl(174 70% 55% / 0.4)',
+                    animation: 'ring-expand 2s ease-out infinite',
+                  }}
+                />
               </div>
             </div>
           )}
