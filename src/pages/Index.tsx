@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLanguage, type SupportedLanguage, type LanguageMode } from '@/i18n';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { LanguageSuggestionPrompt } from '@/components/LanguageSuggestionPrompt';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
 import { UnifiedAnalysisForm } from '@/components/UnifiedAnalysisForm';
@@ -117,7 +119,24 @@ const translations = {
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const [language, setLanguage] = useState<'en' | 'fr'>('fr');
+  
+  // Use the global i18n system
+  const { 
+    language: resolvedLanguage, 
+    mode: languageMode, 
+    setLanguage: setLanguageMode,
+    shouldShowPrompt,
+    detectedLanguage,
+    handlePromptResponse,
+    dismissPrompt
+  } = useLanguage();
+  
+  // Map resolved language to 'en' | 'fr' for backward compatibility with analysis
+  // (analysis API only supports en/fr currently)
+  const language: 'en' | 'fr' = (resolvedLanguage === 'en' || resolvedLanguage === 'fr') 
+    ? resolvedLanguage 
+    : 'en'; // fallback to 'en' for other languages like 'ja'
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isProLoading, setIsProLoading] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
@@ -436,9 +455,9 @@ const Index = () => {
     }
   };
 
-  // INSTANT language switch - pure local state change, zero API calls
-  const handleLanguageChange = (next: 'en' | 'fr') => {
-    setLanguage(next);
+  // INSTANT language switch - uses global i18n system
+  const handleLanguageChange = (mode: LanguageMode) => {
+    setLanguageMode(mode);
   };
 
   // Premium gauge size - larger and more imposing
@@ -529,7 +548,11 @@ const Index = () => {
             className="flex w-full justify-center animate-fade-in mt-2 mb-1 md:mt-6 md:mb-4"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
-            <LanguageToggle language={language} onLanguageChange={handleLanguageChange} />
+            <LanguageToggle 
+              mode={languageMode} 
+              language={resolvedLanguage} 
+              onLanguageChange={handleLanguageChange} 
+            />
           </div>
 
           {/* Score gauge - MOBILE: reduced height to keep button above fold */}
@@ -786,6 +809,16 @@ const Index = () => {
           </div>
         </footer>
       </main>
+      
+      {/* Language suggestion prompt - shows once for non-EN/FR detected languages */}
+      {shouldShowPrompt && detectedLanguage && (
+        <LanguageSuggestionPrompt
+          detectedLanguage={detectedLanguage}
+          currentLanguage={language}
+          onAccept={() => handlePromptResponse(true)}
+          onDismiss={() => handlePromptResponse(false)}
+        />
+      )}
     </div>
   );
 };

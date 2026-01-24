@@ -1,0 +1,108 @@
+{
+  "common": {
+    "analyze": "分析する",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "yes": "はい",
+    "no": "いいえ",
+    "close": "閉じる"
+  },
+  "language": {
+    "auto": "自動",
+    "autoDetected": "自動検出",
+    "promptTitle": "言語を検出しました",
+    "promptMessage": "{{language}}を検出しました。切り替えますか？",
+    "switchTo": "{{language}}に切り替える",
+    "keepCurrent": "現在のまま"
+  },
+  "hero": {
+    "tagline": "信頼性を測定。"
+  },
+  "form": {
+    "placeholder": "メッセージの抜粋を貼り付けるか、確認したい主張を説明してください…",
+    "placeholderHint": "そして",
+    "description": "ソースの信頼性、言語パターン、コンテキストを分析し、オンライン情報の理解を支援します。",
+    "urlDetected": "URL検出"
+  },
+  "gauge": {
+    "pending": "保留中",
+    "ready": "準備完了",
+    "analyzing": "分析中...",
+    "credibilityLevels": {
+      "veryLow": "非常に低い",
+      "low": "低い",
+      "moderate": "中程度",
+      "high": "高い",
+      "veryHigh": "非常に高い"
+    }
+  },
+  "analysis": {
+    "title": "分析結果",
+    "summary": "要約",
+    "confidence": "信頼度",
+    "signals": "シグナル",
+    "breakdown": "スコア内訳",
+    "corroboration": "裏付け",
+    "sources": "ソース",
+    "proAnalysis": "PRO分析",
+    "imageSignals": "画像シグナル分析"
+  },
+  "loader": {
+    "primary": "情報空間をスキャン中",
+    "subtitle": "軌道分析アクティブ",
+    "secondary": [
+      "ソースとコンテキストの一貫性を分析中…",
+      "言語シグナルとソースの信頼性を評価中…",
+      "構造化された信頼性分析を処理中…"
+    ]
+  },
+  "articleSummary": {
+    "title": "記事の要約"
+  },
+  "error": {
+    "title": "分析エラー",
+    "message": "分析中にエラーが発生しました。もう一度お試しください。",
+    "networkError": "ネットワークエラー。接続を確認してください。",
+    "timeout": "リクエストがタイムアウトしました。もう一度お試しください。"
+  },
+  "footer": {
+    "madeWith": "作成",
+    "by": "by"
+  },
+  "screenshotEvidence": {
+    "title": "スクリーンショット証拠",
+    "extractedText": "抽出されたテキスト",
+    "visualDescription": "視覚的説明",
+    "ocrConfidence": "OCR信頼度",
+    "imagePreview": "画像プレビュー",
+    "showPreview": "プレビューを表示",
+    "hidePreview": "プレビューを非表示",
+    "editText": "抽出テキストを編集",
+    "rerunAnalysis": "分析を再実行",
+    "lowConfidenceWarning": "OCR信頼度が低い - テキストが不正確な可能性があります",
+    "mismatchWarning": "視覚-テキストの不一致を検出"
+  },
+  "pro": {
+    "badge": "PRO",
+    "title": "詳細分析",
+    "subtitle": "高度な信頼性インサイト",
+    "launchAnalysis": "PRO分析を開始",
+    "features": {
+      "corroboration": {
+        "title": "ソースの裏付け",
+        "description": "複数の信頼できるソースとのクロスリファレンス"
+      },
+      "linguistic": {
+        "title": "言語分析",
+        "description": "高度なパターン検出と感情分析"
+      },
+      "context": {
+        "title": "コンテキスト評価",
+        "description": "深いコンテキストと歴史的正確性のチェック"
+      }
+    }
+  }
+}

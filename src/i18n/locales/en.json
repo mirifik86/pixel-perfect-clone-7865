@@ -1,0 +1,108 @@
+{
+  "common": {
+    "analyze": "Analyze",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close"
+  },
+  "language": {
+    "auto": "Auto",
+    "autoDetected": "Auto-detected",
+    "promptTitle": "Language Detected",
+    "promptMessage": "We detected {{language}}. Would you like to switch?",
+    "switchTo": "Switch to {{language}}",
+    "keepCurrent": "Keep current"
+  },
+  "hero": {
+    "tagline": "Credibility measured."
+  },
+  "form": {
+    "placeholder": "Paste an excerpt of the message or describe the claim to verify…",
+    "placeholderHint": "then",
+    "description": "We analyze source credibility, linguistic patterns, and context to help you understand online information.",
+    "urlDetected": "URL detected"
+  },
+  "gauge": {
+    "pending": "Pending",
+    "ready": "Ready",
+    "analyzing": "Analyzing...",
+    "credibilityLevels": {
+      "veryLow": "Very Low",
+      "low": "Low",
+      "moderate": "Moderate",
+      "high": "High",
+      "veryHigh": "Very High"
+    }
+  },
+  "analysis": {
+    "title": "Analysis Result",
+    "summary": "Summary",
+    "confidence": "Confidence",
+    "signals": "Signals",
+    "breakdown": "Score Breakdown",
+    "corroboration": "Corroboration",
+    "sources": "Sources",
+    "proAnalysis": "PRO Analysis",
+    "imageSignals": "Image Signals Analysis"
+  },
+  "loader": {
+    "primary": "Scanning information space",
+    "subtitle": "Orbital analysis active",
+    "secondary": [
+      "Analyzing sources and contextual consistency…",
+      "Evaluating linguistic signals and source reliability…",
+      "Processing structured credibility analysis…"
+    ]
+  },
+  "articleSummary": {
+    "title": "Article Summary"
+  },
+  "error": {
+    "title": "Analysis Error",
+    "message": "An error occurred during analysis. Please try again.",
+    "networkError": "Network error. Please check your connection.",
+    "timeout": "Request timed out. Please try again."
+  },
+  "footer": {
+    "madeWith": "Made with",
+    "by": "by"
+  },
+  "screenshotEvidence": {
+    "title": "Screenshot Evidence",
+    "extractedText": "Extracted Text",
+    "visualDescription": "Visual Description",
+    "ocrConfidence": "OCR Confidence",
+    "imagePreview": "Image Preview",
+    "showPreview": "Show Preview",
+    "hidePreview": "Hide Preview",
+    "editText": "Edit extracted text",
+    "rerunAnalysis": "Re-run analysis",
+    "lowConfidenceWarning": "Low OCR confidence - text may be inaccurate",
+    "mismatchWarning": "Visual-text mismatch detected"
+  },
+  "pro": {
+    "badge": "PRO",
+    "title": "Deep Analysis",
+    "subtitle": "Advanced credibility insights",
+    "launchAnalysis": "Launch PRO Analysis",
+    "features": {
+      "corroboration": {
+        "title": "Source Corroboration",
+        "description": "Cross-reference with multiple reliable sources"
+      },
+      "linguistic": {
+        "title": "Linguistic Analysis",
+        "description": "Advanced pattern detection and sentiment analysis"
+      },
+      "context": {
+        "title": "Contextual Evaluation",
+        "description": "Deep context and historical accuracy check"
+      }
+    }
+  }
+}
