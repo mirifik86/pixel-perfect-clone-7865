@@ -660,11 +660,15 @@ export const ScoreGauge = ({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="relative"
+                className="relative chevron-item"
                 style={{
-                  animation: `chevron-cascade 3s cubic-bezier(0.22, 1, 0.36, 1) ${i * 160}ms infinite`,
+                  animation: `chevron-cascade 2.8s cubic-bezier(0.22, 1, 0.36, 1) ${i * 180}ms infinite`,
                 }}
-                onAnimationIteration={i === 2 ? () => onChevronCycleComplete?.() : undefined}
+                // Trigger impact when last chevron reaches ~75% of animation (near input)
+                onAnimationIteration={i === 2 ? () => {
+                  // Small delay to sync with chevron reaching the input visually
+                  setTimeout(() => onChevronCycleComplete?.(), 50);
+                } : undefined}
               >
                 {/* Light trail - fading upward from chevron */}
                 <div 
@@ -672,17 +676,17 @@ export const ScoreGauge = ({
                   style={{
                     bottom: '100%',
                     width: '2px',
-                    height: '18px',
-                    background: 'linear-gradient(to top, hsl(180 45% 65% / 0.35) 0%, hsl(180 40% 60% / 0.15) 40%, transparent 100%)',
+                    height: '16px',
+                    background: 'linear-gradient(to top, hsl(180 45% 65% / 0.3) 0%, hsl(180 40% 60% / 0.1) 50%, transparent 100%)',
                     filter: 'blur(1px)',
-                    animation: `trail-fade 3s cubic-bezier(0.22, 1, 0.36, 1) ${i * 160}ms infinite`,
+                    animation: `trail-fade 2.8s cubic-bezier(0.22, 1, 0.36, 1) ${i * 180}ms infinite`,
                   }}
                 />
                 {/* Subtle chevron glow - very low opacity */}
                 <div 
                   className="absolute inset-0 -m-2"
                   style={{
-                    background: 'radial-gradient(circle, hsl(180 40% 60% / 0.15) 0%, transparent 60%)',
+                    background: 'radial-gradient(circle, hsl(180 40% 60% / 0.12) 0%, transparent 60%)',
                     filter: 'blur(3px)',
                   }}
                 />
@@ -693,12 +697,12 @@ export const ScoreGauge = ({
                   viewBox="0 0 14 7" 
                   fill="none"
                   style={{
-                    filter: 'drop-shadow(0 0 2px hsl(180 35% 55% / 0.25))',
+                    filter: 'drop-shadow(0 0 2px hsl(180 35% 55% / 0.2))',
                   }}
                 >
                   <path 
                     d="M1 1L7 6L13 1" 
-                    stroke="hsl(180 40% 65% / 0.7)" 
+                    stroke="hsl(180 40% 65% / 0.65)" 
                     strokeWidth="1.25" 
                     strokeLinecap="round" 
                     strokeLinejoin="round"
@@ -809,16 +813,16 @@ export const ScoreGauge = ({
             height: 0px;
           }
           15% { 
-            opacity: 0.8;
-            height: 18px;
+            opacity: 0.6;
+            height: 16px;
           }
           50% { 
-            opacity: 0.5;
-            height: 14px;
+            opacity: 0.4;
+            height: 12px;
           }
           75% { 
-            opacity: 0.2;
-            height: 8px;
+            opacity: 0.15;
+            height: 6px;
           }
           88%, 100% { 
             opacity: 0;
