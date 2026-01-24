@@ -709,9 +709,9 @@ const Index = () => {
             <div 
               className="relative flex items-center justify-center"
               style={{ 
-                marginTop: 'var(--space-2)',
-                marginBottom: 'var(--space-3)',
-                height: '40px',
+                marginTop: 'var(--space-1)',
+                marginBottom: 'var(--space-1)',
+                height: '32px',
                 width: '60px',
               }}
             >
@@ -842,7 +842,7 @@ const Index = () => {
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
               className="container-content w-full animate-fade-in"
-              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
+              style={{ animationDelay: '350ms', animationFillMode: 'both', marginTop: '0' }}
             >
               <UnifiedAnalysisForm 
                 ref={formRef}
