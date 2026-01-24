@@ -666,6 +666,18 @@ export const ScoreGauge = ({
                 }}
                 onAnimationIteration={i === 2 ? () => onChevronCycleComplete?.() : undefined}
               >
+                {/* Light trail - fading upward from chevron */}
+                <div 
+                  className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+                  style={{
+                    bottom: '100%',
+                    width: '2px',
+                    height: '18px',
+                    background: 'linear-gradient(to top, hsl(180 45% 65% / 0.35) 0%, hsl(180 40% 60% / 0.15) 40%, transparent 100%)',
+                    filter: 'blur(1px)',
+                    animation: `trail-fade 3s cubic-bezier(0.22, 1, 0.36, 1) ${i * 160}ms infinite`,
+                  }}
+                />
                 {/* Subtle chevron glow - very low opacity */}
                 <div 
                   className="absolute inset-0 -m-2"
@@ -788,6 +800,29 @@ export const ScoreGauge = ({
           88%, 100% { 
             opacity: 0;
             transform: translateY(24px);
+          }
+        }
+        /* Light trail animation - synced with chevron cascade */
+        @keyframes trail-fade {
+          0% { 
+            opacity: 0;
+            height: 0px;
+          }
+          15% { 
+            opacity: 0.8;
+            height: 18px;
+          }
+          50% { 
+            opacity: 0.5;
+            height: 14px;
+          }
+          75% { 
+            opacity: 0.2;
+            height: 8px;
+          }
+          88%, 100% { 
+            opacity: 0;
+            height: 0px;
           }
         }
         @keyframes idle-text-breathe {
