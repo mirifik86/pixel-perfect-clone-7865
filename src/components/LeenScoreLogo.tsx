@@ -65,10 +65,10 @@ export const LeenScoreLogo = () => {
       </div>
       
       {/* Title with solar halo reflection effect */}
-      <div className="relative">
-        {/* Solar halo glow behind title */}
+      <div className="relative overflow-hidden">
+        {/* Solar halo glow behind title - constrained to prevent overflow */}
         <div 
-          className="absolute -inset-x-20 -inset-y-10 rounded-full" 
+          className="pointer-events-none absolute inset-0" 
           style={{
             background: 'radial-gradient(ellipse 80% 60% at center, hsl(40 100% 60% / 0.15) 0%, hsl(30 100% 50% / 0.08) 30%, transparent 70%)'
           }} 
@@ -76,7 +76,7 @@ export const LeenScoreLogo = () => {
         
         {/* Subtle dark vignette for contrast */}
         <div 
-          className="absolute -inset-x-14 -inset-y-5 rounded-3xl" 
+          className="pointer-events-none absolute inset-0" 
           style={{
             background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.6) 0%, transparent 70%)'
           }} 
