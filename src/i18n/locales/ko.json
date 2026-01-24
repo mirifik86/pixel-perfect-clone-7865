@@ -46,7 +46,8 @@
     "dropHere": "이미지를 여기에 드롭",
     "tapToUpload": "탭하여 업로드",
     "addImage": "이미지 추가",
-    "then": "다음"
+    "then": "다음",
+    "disclaimer": "LeenScore는 사실을 선언하지 않습니다. 정보의 신뢰성을 평가하는 데 도움을 줍니다."
   },
   "gauge": {
     "pending": "대기 중",

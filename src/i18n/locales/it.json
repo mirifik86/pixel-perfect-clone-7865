@@ -46,7 +46,8 @@
     "dropHere": "Rilascia l'immagine qui",
     "tapToUpload": "Tocca per caricare",
     "addImage": "Aggiungi immagine",
-    "then": "Poi"
+    "then": "Poi",
+    "disclaimer": "LeenScore non dichiara fatti. Ti aiuta a valutare la credibilità delle informazioni."
   },
   "gauge": {
     "pending": "In attesa",

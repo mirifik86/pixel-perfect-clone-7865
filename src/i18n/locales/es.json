@@ -46,7 +46,8 @@
     "dropHere": "Suelta la imagen aquí",
     "tapToUpload": "Toca para subir",
     "addImage": "Agregar imagen",
-    "then": "Luego"
+    "then": "Luego",
+    "disclaimer": "LeenScore no declara hechos. Le ayuda a evaluar la credibilidad de la información."
   },
   "gauge": {
     "pending": "Pendiente",
