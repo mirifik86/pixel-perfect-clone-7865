@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useLanguage, type SupportedLanguage, type LanguageMode } from '@/i18n';
+import { useLanguage } from '@/i18n/useLanguage';
+import { type SupportedLanguage, type LanguageMode } from '@/i18n/config';
 import { LeenScoreLogo } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { LanguageSuggestionPrompt } from '@/components/LanguageSuggestionPrompt';
