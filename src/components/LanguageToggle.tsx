@@ -29,6 +29,17 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close dropdown on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isDropdownOpen) {
+        setIsDropdownOpen(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isDropdownOpen]);
+
   // Check if current mode is a secondary language or auto
   const isSecondaryActive = mode === 'auto' || SECONDARY_LANGUAGES.includes(mode as SupportedLanguage);
 
