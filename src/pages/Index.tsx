@@ -723,9 +723,9 @@ const Index = () => {
                 captureGlow={inputCaptureGlow}
               />
               
-              {/* Disclaimer note - subtle, informational */}
+              {/* Disclaimer note - subtle, informational, centered */}
               <p 
-                className="text-left animate-fade-in"
+                className="text-center animate-fade-in"
                 style={{ 
                   marginTop: 'var(--space-3)',
                   fontSize: 'clamp(0.65rem, 0.6rem + 0.2vw, 0.75rem)',
