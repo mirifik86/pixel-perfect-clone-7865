@@ -52,6 +52,7 @@
     "ready": "Pronto",
     "readyToAnalyze": "PRONTO PER ANALIZZARE",
     "analyzing": "Analisi in corso...",
+    "methodology": "Questo punteggio di credibilità viene generato utilizzando un'analisi strutturata multi-segnale che combina coerenza del contenuto, segnali di verifica contestuale e indicatori di rischio. I punteggi seguono una scala di credibilità chiara, da bassa ad alta fiducia, e sono accompagnati da una spiegazione dettagliata che evidenzia i fattori chiave che influenzano il risultato.",
     "credibilityLevels": {
       "veryLow": "Molto bassa",
       "low": "Bassa",

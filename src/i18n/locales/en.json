@@ -52,6 +52,7 @@
     "ready": "Ready",
     "readyToAnalyze": "READY TO ANALYZE",
     "analyzing": "Analyzing...",
+    "methodology": "This credibility score is generated using a structured multi-signal analysis combining content consistency, contextual verification signals, and risk indicators. Scores follow a clear credibility scale from low to high trust confidence and are accompanied by an explainable breakdown highlighting the key factors influencing the result.",
     "credibilityLevels": {
       "veryLow": "Very Low",
       "low": "Low",
