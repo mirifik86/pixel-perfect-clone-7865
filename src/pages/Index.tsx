@@ -722,6 +722,21 @@ const Index = () => {
                 highlightInput={inputHighlight}
                 captureGlow={inputCaptureGlow}
               />
+              
+              {/* Disclaimer note - subtle, informational */}
+              <p 
+                className="text-left animate-fade-in"
+                style={{ 
+                  marginTop: 'var(--space-3)',
+                  fontSize: 'clamp(0.65rem, 0.6rem + 0.2vw, 0.75rem)',
+                  color: 'hsl(0 0% 100% / 0.58)',
+                  lineHeight: 1.5,
+                  animationDelay: '500ms',
+                  animationFillMode: 'both',
+                }}
+              >
+                {i18nT('form.disclaimer')}
+              </p>
             </div>
           )}
 
