@@ -704,21 +704,24 @@ const Index = () => {
             />
           )}
 
-          {/* Premium arrow indicator - between gauge and form */}
-          {!hasAnyAnalysis && !isLoading && !analysisError && !hasFormContent && (
+          {/* Premium arrow indicators - between gauge and form */}
+          {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
-              className="flex justify-center animate-fade-in"
+              className="flex justify-center"
               style={{ 
                 marginTop: 'var(--space-2)',
                 marginBottom: 'var(--space-3)',
-                animationDelay: '300ms', 
-                animationFillMode: 'both' 
+                minHeight: '40px',
               }}
             >
+              {/* Arrow pointing DOWN (to input) - shown when NO content */}
               <div 
-                className="relative flex flex-col items-center"
+                className={`relative flex flex-col items-center transition-all duration-200 ${
+                  !hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none absolute'
+                }`}
                 style={{
-                  animation: 'arrow-float 2s ease-in-out infinite',
+                  animation: !hasFormContent ? 'arrow-float 2s ease-in-out infinite' : 'none',
+                  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
                 {/* Outer glow effect */}
@@ -733,7 +736,7 @@ const Index = () => {
                   }}
                 />
                 
-                {/* Double chevron arrow */}
+                {/* Double chevron arrow pointing DOWN */}
                 <svg 
                   width="28"
                   height="20"
@@ -741,10 +744,9 @@ const Index = () => {
                   fill="none"
                   className="relative"
                 >
-                  {/* First chevron */}
                   <path 
                     d="M4 3L14 11L24 3" 
-                    stroke="url(#arrowGradientMain)" 
+                    stroke="url(#arrowGradientDown)" 
                     strokeWidth="2.5"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
@@ -752,10 +754,9 @@ const Index = () => {
                       filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.8))',
                     }}
                   />
-                  {/* Second chevron (offset) */}
                   <path 
                     d="M4 10L14 18L24 10" 
-                    stroke="url(#arrowGradientMain)" 
+                    stroke="url(#arrowGradientDown)" 
                     strokeWidth="2"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
@@ -765,9 +766,70 @@ const Index = () => {
                     }}
                   />
                   <defs>
-                    <linearGradient id="arrowGradientMain" x1="14" y1="3" x2="14" y2="18" gradientUnits="userSpaceOnUse">
+                    <linearGradient id="arrowGradientDown" x1="14" y1="3" x2="14" y2="18" gradientUnits="userSpaceOnUse">
                       <stop stopColor="hsl(174 80% 70%)" />
                       <stop offset="1" stopColor="hsl(174 60% 50%)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+
+              {/* Arrow pointing UP (to Analyze button) - shown when HAS content */}
+              <div 
+                className={`relative flex flex-col items-center transition-all duration-200 ${
+                  hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none absolute'
+                }`}
+                style={{
+                  animation: hasFormContent ? 'arrow-float-up 2s ease-in-out infinite' : 'none',
+                  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              >
+                {/* Outer glow effect - intensified for active state */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '70px',
+                    height: '50px',
+                    background: 'radial-gradient(ellipse at center, hsl(174 75% 55% / 0.5), transparent 70%)',
+                    filter: 'blur(14px)',
+                    animation: 'arrow-glow-intense 1.5s ease-in-out infinite',
+                  }}
+                />
+                
+                {/* Double chevron arrow pointing UP */}
+                <svg 
+                  width="28"
+                  height="20"
+                  viewBox="0 0 28 20" 
+                  fill="none"
+                  className="relative"
+                  style={{ transform: 'rotate(180deg)' }}
+                >
+                  <path 
+                    d="M4 3L14 11L24 3" 
+                    stroke="url(#arrowGradientUp)" 
+                    strokeWidth="2.5"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    style={{
+                      filter: 'drop-shadow(0 0 8px hsl(174 75% 60% / 0.9))',
+                    }}
+                  />
+                  <path 
+                    d="M4 10L14 18L24 10" 
+                    stroke="url(#arrowGradientUp)" 
+                    strokeWidth="2"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    opacity="0.6"
+                    style={{
+                      filter: 'drop-shadow(0 0 6px hsl(174 75% 60% / 0.7))',
+                    }}
+                  />
+                  <defs>
+                    <linearGradient id="arrowGradientUp" x1="14" y1="3" x2="14" y2="18" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 85% 75%)" />
+                      <stop offset="1" stopColor="hsl(174 70% 55%)" />
                     </linearGradient>
                   </defs>
                 </svg>
