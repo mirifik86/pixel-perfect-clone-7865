@@ -382,13 +382,16 @@ export const ScoreGauge = ({
             />
           )}
 
-          {/* 5 equal color segments with gradient fills */}
+          {/* 5 equal color segments with gradient fills - ALWAYS use original colors */}
           {colorPairs.map((pair, i) => {
             const segmentLength = segmentArc - gap;
             const rotation = 135 + i * 270 / 5;
             const opacity = getSegmentOpacity(i);
             const isActive = opacity > 0.5;
             const isIdle = score === null;
+            
+            // Idle state: show original colors with premium subdued opacity
+            const idleOpacity = 0.35 + (i * 0.04); // Slightly brighter, progressive
             
             return (
               <circle
@@ -397,7 +400,7 @@ export const ScoreGauge = ({
                 cy={size / 2}
                 r={radius}
                 fill="none"
-                stroke={isIdle ? 'url(#idle-segment-gradient)' : `url(#segment-gradient-${i})`}
+                stroke={`url(#segment-gradient-${i})`}
                 strokeWidth={strokeWidth}
                 strokeLinecap="butt"
                 strokeDasharray={`${segmentLength} ${circumference}`}
@@ -405,8 +408,8 @@ export const ScoreGauge = ({
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center',
-                  opacity: isIdle ? 0.25 + (i * 0.03) : opacity,
-                  transition: 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                  opacity: isIdle ? idleOpacity : opacity,
+                  transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               />
             );
