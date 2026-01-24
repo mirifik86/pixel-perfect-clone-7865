@@ -19,7 +19,16 @@
     "keepCurrent": "Aktuell beibehalten"
   },
   "hero": {
-    "tagline": "Glaubwürdigkeit gemessen."
+    "tagline": "Glaubwürdigkeit gemessen.",
+    "byLine": "VON SOL&AIR"
+  },
+  "index": {
+    "scoreLabel": "LeenScore Index",
+    "footer": "LeenScore beleuchtet Informationen, ohne Ihre Meinung zu beeinflussen.",
+    "developedBy": "WERKZEUG ENTWICKELT VON SOL&AIR.",
+    "version": "VERSION 1",
+    "errorAnalysis": "Analyse fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "newAnalysis": "Neue Analyse"
   },
   "form": {
     "placeholder": "Fügen Sie einen Auszug der Nachricht ein oder beschreiben Sie die zu überprüfende Behauptung…",
@@ -90,6 +99,7 @@
     "title": "Tiefenanalyse",
     "subtitle": "Erweiterte Glaubwürdigkeits-einblicke",
     "launchAnalysis": "PRO-Analyse starten",
+    "analysisComplete": "PRO-Analyse abgeschlossen",
     "features": {
       "corroboration": {
         "title": "Quellenbestätigung",

@@ -19,7 +19,16 @@
     "keepCurrent": "현재 유지"
   },
   "hero": {
-    "tagline": "신뢰성 측정."
+    "tagline": "신뢰성 측정.",
+    "byLine": "BY SOL&AIR"
+  },
+  "index": {
+    "scoreLabel": "LeenScore 지수",
+    "footer": "LeenScore는 정보를 밝히며, 의견을 유도하지 않습니다.",
+    "developedBy": "SOL&AIR에서 개발.",
+    "version": "버전 1",
+    "errorAnalysis": "분석에 실패했습니다. 다시 시도해 주세요.",
+    "newAnalysis": "새 분석"
   },
   "form": {
     "placeholder": "메시지 발췌문을 붙여넣거나 확인할 주장을 설명하세요…",
@@ -90,6 +99,7 @@
     "title": "심층 분석",
     "subtitle": "고급 신뢰성 인사이트",
     "launchAnalysis": "PRO 분석 시작",
+    "analysisComplete": "PRO 분석 완료",
     "features": {
       "corroboration": {
         "title": "출처 확증",

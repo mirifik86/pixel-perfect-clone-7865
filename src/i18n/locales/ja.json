@@ -19,7 +19,16 @@
     "keepCurrent": "現在のまま"
   },
   "hero": {
-    "tagline": "信頼性を測定。"
+    "tagline": "信頼性を測定。",
+    "byLine": "BY SOL&AIR"
+  },
+  "index": {
+    "scoreLabel": "LeenScoreインデックス",
+    "footer": "LeenScoreは情報を照らし、あなたの意見を誘導しません。",
+    "developedBy": "SOL&AIRが開発。",
+    "version": "バージョン1",
+    "errorAnalysis": "分析に失敗しました。もう一度お試しください。",
+    "newAnalysis": "新しい分析"
   },
   "form": {
     "placeholder": "メッセージの抜粋を貼り付けるか、確認したい主張を説明してください…",
@@ -90,6 +99,7 @@
     "title": "詳細分析",
     "subtitle": "高度な信頼性インサイト",
     "launchAnalysis": "PRO分析を開始",
+    "analysisComplete": "PRO分析完了",
     "features": {
       "corroboration": {
         "title": "ソースの裏付け",

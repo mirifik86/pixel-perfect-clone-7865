@@ -90,32 +90,7 @@ interface BilingualSummaries {
   fr: { summary: string; articleSummary: string } | null;
 }
 
-const translations = {
-  en: {
-    tagline: 'See clearly through information.',
-    byLine: 'BY SOL&AIR',
-    scoreLabel: 'LeenScore Index',
-    pending: 'Pending',
-    footer: 'LeenScore illuminates information, without orienting your opinion.',
-    developedBy: 'TOOL DEVELOPED BY SOL&AIR.',
-    version: 'VERSION 1',
-    analyzing: 'Analyzing...',
-    errorAnalysis: 'Analysis failed. Please try again.',
-    newAnalysis: 'New Analysis',
-  },
-  fr: {
-    tagline: "Voir clair dans l'information.",
-    byLine: 'PAR SOL&AIR',
-    scoreLabel: 'Indice LeenScore',
-    pending: 'En attente',
-    footer: "LeenScore éclaire l'information, sans orienter votre opinion.",
-    developedBy: 'OUTIL DÉVELOPPÉ PAR SOL&AIR.',
-    version: 'VERSION 1',
-    analyzing: 'Analyse en cours...',
-    errorAnalysis: "L'analyse a échoué. Veuillez réessayer.",
-    newAnalysis: 'Faire autre analyse',
-  }
-};
+// REMOVED: Local translations object - now using i18n system
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -125,6 +100,7 @@ const Index = () => {
     language: resolvedLanguage, 
     mode: languageMode, 
     setLanguage: setLanguageMode,
+    t: i18nT,
     shouldShowPrompt,
     detectedLanguage,
     handlePromptResponse,
@@ -170,8 +146,8 @@ const Index = () => {
     en: null,
     fr: null,
   });
-
-  const t = translations[language];
+  // Use i18n for UI text
+  const getT = (key: string) => i18nT(key);
   const analysisData = analysisByLanguage[language];
   const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr || screenshotData?.analysis);
 
@@ -247,7 +223,7 @@ const Index = () => {
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
   const handleAnalyze = useCallback(async (input: string) => {
-    const tLocal = translations[language];
+    const errorAnalysis = i18nT('index.errorAnalysis');
 
     // Store input for retry
     lastInputRef.current = { type: 'text', content: input };
@@ -271,10 +247,10 @@ const Index = () => {
     } catch (err) {
       console.error('Unexpected error:', err);
       // Stay on page, show error panel instead of toast only
-      const errorMessage = err instanceof Error ? err.message : tLocal.errorAnalysis;
+      const errorMessage = err instanceof Error ? err.message : errorAnalysis;
       const errorCode = `ERR_${Date.now().toString(36).toUpperCase()}`;
       setAnalysisError({ message: errorMessage, code: errorCode });
-      toast.error(tLocal.errorAnalysis);
+      toast.error(errorAnalysis);
     } finally {
       // Trigger exit animation before hiding loader
       setIsLoaderExiting(true);
@@ -287,7 +263,7 @@ const Index = () => {
 
   // Screenshot Analysis Handler - now called directly when image is ready
   const handleImageAnalysis = useCallback(async (file: File, preview: string, analysisType: 'standard' | 'pro' = 'standard') => {
-    const tLocal = translations[language];
+    const errorAnalysis = i18nT('index.errorAnalysis');
     
     // Store input for retry
     lastInputRef.current = { type: 'image', content: preview, file, preview };
@@ -324,7 +300,7 @@ const Index = () => {
       if (result.error) {
         console.error('Screenshot analysis error:', result.error);
         const errorCode = `IMG_${Date.now().toString(36).toUpperCase()}`;
-        setAnalysisError({ message: tLocal.errorAnalysis, code: errorCode });
+        setAnalysisError({ message: errorAnalysis, code: errorCode });
         return;
       }
 
@@ -404,10 +380,10 @@ const Index = () => {
     } catch (err) {
       console.error('Unexpected error:', err);
       // Stay on page with error panel
-      const errorMessage = err instanceof Error ? err.message : tLocal.errorAnalysis;
+      const errorMessage = err instanceof Error ? err.message : errorAnalysis;
       const errorCode = `ERR_${Date.now().toString(36).toUpperCase()}`;
       setAnalysisError({ message: errorMessage, code: errorCode });
-      toast.error(tLocal.errorAnalysis);
+      toast.error(errorAnalysis);
     } finally {
       // Trigger exit animation before hiding loader
       setIsLoaderExiting(true);
@@ -433,7 +409,7 @@ const Index = () => {
   const handleProAnalysis = async () => {
     if (!lastAnalyzedContent) return;
     
-    const tLocal = translations[language];
+    const errorAnalysis = i18nT('index.errorAnalysis');
     setIsProLoading(true);
 
     try {
@@ -446,10 +422,10 @@ const Index = () => {
 
       setAnalysisByLanguage({ en, fr });
       setIsProModalOpen(false);
-      toast.success(language === 'fr' ? 'Analyse Pro terminée' : 'Pro Analysis complete');
+      toast.success(i18nT('pro.analysisComplete'));
     } catch (err) {
       console.error('Unexpected error:', err);
-      toast.error(tLocal.errorAnalysis);
+      toast.error(errorAnalysis);
     } finally {
       setIsProLoading(false);
     }
@@ -539,7 +515,7 @@ const Index = () => {
                 textShadow: '0 0 15px hsl(174 90% 60% / 0.7), 0 0 30px hsl(174 80% 55% / 0.5)'
               }}
             >
-              {t.byLine}
+              {i18nT('hero.byLine')}
             </p>
           </div>
 
@@ -612,7 +588,7 @@ const Index = () => {
                       : '0 0 20px hsl(174 60% 45% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2)'
                   }}
                 >
-                  {language === 'fr' ? 'Nouvelle analyse' : 'New analysis'}
+                  {i18nT('index.newAnalysis')}
                 </button>
                 
                 {/* Secondary CTA - Pro Analysis (Hidden after PRO analysis is complete) */}
@@ -649,7 +625,7 @@ const Index = () => {
                     </span>
                     
                     <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
-                      {language === 'fr' ? 'Analyse avancée' : 'Advanced analysis'}
+                      {i18nT('pro.launchAnalysis')}
                     </span>
                     
                     {/* Subtle pulse ring */}
@@ -784,7 +760,7 @@ const Index = () => {
               color: 'hsl(0 0% 60%)',
             }}
           >
-            {language === 'fr' ? 'Développé et conçu par' : 'Developed and designed by'}{' '}
+            {i18nT('index.developedBy')}{' '}
             <span 
               style={{ 
                 color: 'hsl(174 70% 60%)',

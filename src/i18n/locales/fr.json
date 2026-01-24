@@ -19,7 +19,16 @@
     "keepCurrent": "Garder actuel"
   },
   "hero": {
-    "tagline": "La crédibilité mesurée."
+    "tagline": "La crédibilité mesurée.",
+    "byLine": "PAR SOL&AIR"
+  },
+  "index": {
+    "scoreLabel": "Indice LeenScore",
+    "footer": "LeenScore éclaire l'information, sans orienter votre opinion.",
+    "developedBy": "OUTIL DÉVELOPPÉ PAR SOL&AIR.",
+    "version": "VERSION 1",
+    "errorAnalysis": "L'analyse a échoué. Veuillez réessayer.",
+    "newAnalysis": "Faire autre analyse"
   },
   "form": {
     "placeholder": "Collez un extrait du message ou décrivez l'affirmation à vérifier…",
@@ -90,6 +99,7 @@
     "title": "Analyse approfondie",
     "subtitle": "Insights de crédibilité avancés",
     "launchAnalysis": "Lancer l'analyse PRO",
+    "analysisComplete": "Analyse PRO terminée",
     "features": {
       "corroboration": {
         "title": "Corroboration des sources",
