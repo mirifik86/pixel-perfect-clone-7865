@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Globe, ChevronDown, Check } from 'lucide-react';
+import { Globe, ChevronDown, Check, Sparkles } from 'lucide-react';
 import { 
   type LanguageMode, 
   type SupportedLanguage, 
-  PRIMARY_LANGUAGES,
-  SECONDARY_LANGUAGES,
-  SUPPORTED_LANGUAGES 
+  SUPPORTED_LANGUAGES,
+  isSupportedLanguage
 } from '@/i18n/config';
 
 interface LanguageToggleProps {
@@ -20,6 +19,9 @@ interface DropdownPosition {
   left: number;
 }
 
+// All languages in display order
+const ALL_LANGUAGES: SupportedLanguage[] = ['en', 'fr', 'es', 'de', 'pt', 'it', 'ja', 'ko'];
+
 export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageToggleProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition>({ top: 0, left: 0 });
@@ -30,9 +32,17 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
   const updateDropdownPosition = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const dropdownWidth = 220;
+      
+      // Check if dropdown would go off-screen on the right
+      let leftPosition = rect.left;
+      if (leftPosition + dropdownWidth > window.innerWidth - 16) {
+        leftPosition = window.innerWidth - dropdownWidth - 16;
+      }
+      
       setDropdownPosition({
-        top: rect.bottom + 12,
-        left: rect.left + rect.width / 2
+        top: rect.bottom + 8,
+        left: leftPosition
       });
     }
   }, []);
@@ -84,38 +94,28 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isDropdownOpen]);
 
-  // Check if current mode is a secondary language or auto
-  const isSecondaryActive = mode === 'auto' || SECONDARY_LANGUAGES.includes(mode as SupportedLanguage);
-
-  // Calculate active index for sliding pill
-  const getActiveIndex = () => {
-    if (PRIMARY_LANGUAGES.includes(mode as SupportedLanguage)) {
-      return PRIMARY_LANGUAGES.indexOf(mode as SupportedLanguage);
-    }
-    return 2; // Globe/Auto position
-  };
-
-  const activeIndex = getActiveIndex();
+  const isAutoMode = mode === 'auto';
+  const activeConfig = SUPPORTED_LANGUAGES[language];
 
   // Portal dropdown content
   const dropdownContent = isDropdownOpen ? createPortal(
     <div 
       ref={dropdownRef}
-      className="fixed rounded-2xl overflow-hidden animate-fade-in"
+      className="fixed rounded-xl overflow-hidden animate-fade-in"
       style={{
         top: dropdownPosition.top,
         left: dropdownPosition.left,
-        transform: 'translateX(-50%)',
+        width: '220px',
         zIndex: 99999,
         pointerEvents: 'auto',
-        background: 'linear-gradient(180deg, hsl(220 15% 13% / 0.95) 0%, hsl(220 15% 10% / 0.98) 100%)',
-        border: '1px solid hsl(0 0% 100% / 0.08)',
-        backdropFilter: 'blur(20px)',
+        background: 'linear-gradient(180deg, hsl(220 15% 13% / 0.97) 0%, hsl(220 15% 10% / 0.99) 100%)',
+        border: '1px solid hsl(0 0% 100% / 0.1)',
+        backdropFilter: 'blur(24px)',
         boxShadow: `
           0 0 0 1px hsl(0 0% 0% / 0.3),
-          0 20px 50px hsl(0 0% 0% / 0.5),
-          0 0 40px hsl(174 60% 40% / 0.08),
-          inset 0 1px 0 hsl(0 0% 100% / 0.05)
+          0 16px 48px hsl(0 0% 0% / 0.5),
+          0 0 32px hsl(174 60% 40% / 0.06),
+          inset 0 1px 0 hsl(0 0% 100% / 0.06)
         `
       }}
     >
@@ -125,46 +125,50 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
           onLanguageChange('auto');
           setIsDropdownOpen(false);
         }}
-        className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 transition-all duration-200 group"
+        className="w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 group hover:bg-white/[0.04]"
         style={{
-          background: mode === 'auto' 
-            ? 'linear-gradient(180deg, hsl(0 0% 100% / 0.08) 0%, hsl(0 0% 100% / 0.03) 100%)'
+          background: isAutoMode 
+            ? 'linear-gradient(90deg, hsl(174 50% 45% / 0.12) 0%, transparent 100%)'
             : 'transparent'
         }}
       >
         <div 
-          className="flex items-center justify-center w-5 h-5 rounded-full transition-all duration-200"
+          className="flex items-center justify-center w-6 h-6 rounded-md transition-all duration-150"
           style={{
-            background: mode === 'auto'
-              ? 'linear-gradient(135deg, hsl(174 50% 45% / 0.8) 0%, hsl(180 45% 38% / 0.8) 100%)'
-              : 'hsl(0 0% 100% / 0.1)',
-            boxShadow: mode === 'auto' ? '0 0 8px hsl(174 50% 45% / 0.3)' : 'none'
+            background: isAutoMode
+              ? 'linear-gradient(135deg, hsl(174 50% 45% / 0.25) 0%, hsl(180 45% 38% / 0.15) 100%)'
+              : 'hsl(0 0% 100% / 0.06)',
+            border: isAutoMode ? '1px solid hsl(174 50% 50% / 0.3)' : '1px solid transparent'
           }}
         >
-          <Globe className={`h-3 w-3 transition-colors duration-200 ${
-            mode === 'auto' ? 'text-white' : 'text-white/50 group-hover:text-white/70'
+          <Sparkles className={`h-3.5 w-3.5 transition-colors duration-150 ${
+            isAutoMode ? 'text-teal-400' : 'text-white/40 group-hover:text-white/60'
           }`} />
         </div>
-        <span className={`text-sm font-medium tracking-tight transition-colors duration-200 ${
-          mode === 'auto' ? 'text-white' : 'text-white/60 group-hover:text-white/80'
-        }`}>
-          Auto
-        </span>
-        <span className="text-xs opacity-50">✦</span>
-        {mode === 'auto' && (
-          <Check className="h-3.5 w-3.5 text-white/70 ml-1" />
+        <div className="flex flex-col items-start">
+          <span className={`text-sm font-medium transition-colors duration-150 ${
+            isAutoMode ? 'text-white' : 'text-white/70 group-hover:text-white/90'
+          }`}>
+            Auto
+          </span>
+          <span className="text-[10px] text-white/40">
+            Recommended
+          </span>
+        </div>
+        {isAutoMode && (
+          <Check className="h-4 w-4 text-teal-400 ml-auto" />
         )}
       </button>
       
       {/* Separator */}
       <div 
-        className="h-px mx-4"
-        style={{ background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.1) 50%, transparent 100%)' }}
+        className="h-px mx-3"
+        style={{ background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.08) 50%, transparent 100%)' }}
       />
       
-      {/* Language grid */}
-      <div className="flex flex-wrap justify-center gap-1.5 p-3" style={{ maxWidth: '300px' }}>
-        {SECONDARY_LANGUAGES.map((lang) => {
+      {/* Language list */}
+      <div className="py-1.5">
+        {ALL_LANGUAGES.map((lang) => {
           const config = SUPPORTED_LANGUAGES[lang];
           const isActive = mode === lang;
           
@@ -175,46 +179,29 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
                 onLanguageChange(lang);
                 setIsDropdownOpen(false);
               }}
-              className="relative flex flex-col items-center justify-center rounded-xl transition-all duration-200 group"
+              className="w-full flex items-center gap-3 px-4 py-2.5 transition-all duration-150 group hover:bg-white/[0.04]"
               style={{
-                width: '85px',
-                height: '64px',
                 background: isActive 
-                  ? 'linear-gradient(180deg, hsl(0 0% 100% / 0.1) 0%, hsl(0 0% 100% / 0.04) 100%)'
-                  : 'transparent',
-                border: isActive 
-                  ? '1px solid hsl(0 0% 100% / 0.12)' 
-                  : '1px solid transparent',
-                boxShadow: isActive 
-                  ? 'inset 0 1px 0 hsl(0 0% 100% / 0.08), 0 0 12px hsl(174 50% 45% / 0.1)' 
-                  : 'none'
+                  ? 'linear-gradient(90deg, hsl(174 50% 45% / 0.12) 0%, transparent 100%)'
+                  : 'transparent'
               }}
-              title={config.nativeName}
             >
               <span 
-                className="text-xl mb-0.5 transition-transform duration-200"
+                className="text-base transition-transform duration-150 w-6 text-center"
                 style={{ 
-                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
-                  filter: isActive ? 'drop-shadow(0 0 4px hsl(0 0% 100% / 0.2))' : 'none'
+                  filter: isActive ? 'saturate(1.1)' : 'saturate(0.9)',
+                  opacity: isActive ? 1 : 0.8
                 }}
               >
                 {config.flag}
               </span>
-              <span className={`text-[10px] font-semibold uppercase tracking-wide transition-colors duration-200 ${
-                isActive ? 'text-white' : 'text-white/50 group-hover:text-white/70'
+              <span className={`text-sm font-medium transition-colors duration-150 flex-1 text-left ${
+                isActive ? 'text-white' : 'text-white/70 group-hover:text-white/90'
               }`}>
-                {lang.toUpperCase()}
+                {config.nativeName}
               </span>
               {isActive && (
-                <div 
-                  className="absolute -top-1 -right-1 flex items-center justify-center w-3.5 h-3.5 rounded-full"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(174 50% 50%) 0%, hsl(180 45% 42%) 100%)',
-                    boxShadow: '0 0 6px hsl(174 50% 45% / 0.4)'
-                  }}
-                >
-                  <Check className="h-2 w-2 text-white" />
-                </div>
+                <Check className="h-4 w-4 text-teal-400" />
               )}
             </button>
           );
@@ -226,174 +213,58 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
 
   return (
     <>
-      <style>{`
-        @keyframes pill-glow {
-          0%, 100% { box-shadow: 0 0 8px hsl(174 40% 45% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.1); }
-          50% { box-shadow: 0 0 12px hsl(174 40% 45% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.12); }
-        }
-      `}</style>
-      
-      <div className="relative inline-flex items-center gap-3" style={{ zIndex: 9999 }}>
-        {/* Main segmented control */}
-        <div 
-          className="relative inline-flex items-center rounded-full"
-          style={{
-            padding: '3px',
-            background: 'linear-gradient(180deg, hsl(220 15% 15% / 0.9) 0%, hsl(220 15% 12% / 0.95) 100%)',
-            border: '1px solid hsl(0 0% 100% / 0.08)',
-            backdropFilter: 'blur(16px)',
-            boxShadow: `
-              0 0 0 1px hsl(0 0% 0% / 0.2),
-              0 4px 16px hsl(0 0% 0% / 0.3),
-              0 0 20px hsl(174 40% 40% / 0.05),
-              inset 0 1px 0 hsl(0 0% 100% / 0.04)
-            `
-          }}
-        >
-          {/* Sliding glass pill indicator */}
-          <div 
-            className="pointer-events-none absolute top-[3px] bottom-[3px] rounded-full transition-all duration-250 ease-out"
-            style={{
-              width: 'calc(33.333% - 2px)',
-              left: `calc(${activeIndex * 33.333}% + 1px)`,
-              background: 'linear-gradient(180deg, hsl(0 0% 100% / 0.12) 0%, hsl(0 0% 100% / 0.05) 100%)',
-              border: '1px solid hsl(0 0% 100% / 0.1)',
-              boxShadow: `
-                inset 0 1px 0 hsl(0 0% 100% / 0.08),
-                inset 0 -1px 0 hsl(0 0% 0% / 0.1),
-                0 0 8px hsl(174 40% 45% / 0.12)
-              `,
-              animation: 'pill-glow 3s ease-in-out infinite'
-            }}
+      {/* Single trigger button */}
+      <button
+        ref={triggerRef}
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        className="relative inline-flex items-center gap-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50"
+        style={{
+          padding: '8px 14px 8px 12px',
+          background: 'linear-gradient(180deg, hsl(220 15% 15% / 0.9) 0%, hsl(220 15% 12% / 0.95) 100%)',
+          border: '1px solid hsl(0 0% 100% / 0.1)',
+          backdropFilter: 'blur(16px)',
+          boxShadow: `
+            0 0 0 1px hsl(0 0% 0% / 0.2),
+            0 4px 16px hsl(0 0% 0% / 0.25),
+            0 0 20px hsl(174 40% 40% / 0.04),
+            inset 0 1px 0 hsl(0 0% 100% / 0.05)
+          `
+        }}
+      >
+        {/* Globe or flag */}
+        {isAutoMode ? (
+          <Globe 
+            className="text-teal-400 transition-all duration-200"
+            style={{ width: '16px', height: '16px' }}
           />
-          
-          {/* EN and FR buttons */}
-          {PRIMARY_LANGUAGES.map((lang) => {
-            const isActive = mode === lang;
-            const config = SUPPORTED_LANGUAGES[lang];
-            
-            return (
-              <button
-                key={lang}
-                onClick={() => {
-                  onLanguageChange(lang);
-                  setIsDropdownOpen(false);
-                }}
-                className="relative z-10 flex items-center justify-center gap-1 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-                style={{
-                  minWidth: '56px',
-                  height: '32px',
-                  padding: '0 10px'
-                }}
-                title={config?.nativeName}
-              >
-                <span 
-                  className="transition-all duration-200"
-                  style={{ 
-                    fontSize: '0.75rem', 
-                    lineHeight: 1,
-                    opacity: isActive ? 1 : 0.6,
-                    filter: isActive ? 'saturate(1.1)' : 'saturate(0.8)'
-                  }}
-                >
-                  {config?.flag}
-                </span>
-                <span 
-                  className="transition-all duration-200"
-                  style={{
-                    fontSize: '0.68rem',
-                    fontWeight: isActive ? 600 : 500,
-                    letterSpacing: '0.02em',
-                    color: isActive ? 'hsl(0 0% 100%)' : 'hsl(0 0% 100% / 0.5)',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  {lang.toUpperCase()}
-                </span>
-              </button>
-            );
-          })}
-          
-          {/* Globe dropdown trigger */}
-          <button
-            ref={triggerRef}
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="relative z-10 flex items-center justify-center gap-1 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-            style={{
-              minWidth: '56px',
-              height: '32px',
-              padding: '0 8px'
-            }}
-            title="More languages"
-          >
-            <Globe 
-              className="transition-all duration-200"
-              style={{
-                width: '13px',
-                height: '13px',
-                color: isSecondaryActive ? 'hsl(0 0% 100%)' : 'hsl(0 0% 100% / 0.5)'
-              }}
-            />
-            {isSecondaryActive && mode !== 'auto' && (
-              <span 
-                style={{
-                  fontSize: '0.6rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                  color: 'hsl(0 0% 100%)',
-                  textTransform: 'uppercase'
-                }}
-              >
-                {mode.toUpperCase()}
-              </span>
-            )}
-            <ChevronDown 
-              className="transition-all duration-200"
-              style={{
-                width: '11px',
-                height: '11px',
-                color: isSecondaryActive ? 'hsl(0 0% 100% / 0.7)' : 'hsl(0 0% 100% / 0.4)',
-                transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
-              }}
-            />
-          </button>
-        </div>
-        
-        {/* Active language badge */}
-        <div 
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300"
-          style={{
-            background: 'linear-gradient(180deg, hsl(0 0% 100% / 0.06) 0%, hsl(0 0% 100% / 0.02) 100%)',
-            border: '1px solid hsl(0 0% 100% / 0.08)',
-            backdropFilter: 'blur(12px)'
-          }}
-        >
+        ) : (
           <span 
-            className="transition-transform duration-200"
-            style={{ fontSize: '0.9rem', lineHeight: 1 }}
+            className="text-base transition-transform duration-200"
+            style={{ lineHeight: 1 }}
           >
-            {SUPPORTED_LANGUAGES[language]?.flag}
+            {activeConfig?.flag}
           </span>
-          <span
-            style={{
-              fontSize: '0.65rem',
-              fontWeight: 600,
-              letterSpacing: '0.03em',
-              color: 'hsl(174 40% 65%)',
-              textTransform: 'uppercase'
-            }}
-          >
-            {SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()}
-          </span>
-          <div 
-            className="w-1 h-1 rounded-full"
-            style={{
-              background: 'hsl(174 50% 55%)',
-              boxShadow: '0 0 4px hsl(174 50% 55% / 0.5)'
-            }}
-          />
-        </div>
-      </div>
+        )}
+        
+        {/* Language name */}
+        <span 
+          className="text-sm font-medium text-white/90 transition-colors duration-200"
+          style={{ letterSpacing: '-0.01em' }}
+        >
+          {isAutoMode ? 'Auto' : activeConfig?.nativeName}
+        </span>
+        
+        {/* Chevron */}
+        <ChevronDown 
+          className="transition-all duration-200 text-white/50"
+          style={{
+            width: '14px',
+            height: '14px',
+            transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            marginLeft: '-2px'
+          }}
+        />
+      </button>
       
       {/* Portal dropdown */}
       {dropdownContent}
