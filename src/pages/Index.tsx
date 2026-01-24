@@ -463,16 +463,16 @@ const Index = () => {
       />
       
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
-      <main className="container-unified relative z-10 flex flex-1 flex-col items-center py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <div className="flex w-full flex-col items-center">
+      <main className="container-unified relative z-10 flex flex-1 flex-col items-center overflow-x-hidden py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex w-full max-w-full flex-col items-center overflow-hidden">
           {/* Logo & branding with unified halo - MOBILE OPTIMIZED */}
           <div 
-            className="relative flex animate-fade-in flex-col items-center" 
+            className="relative flex animate-fade-in flex-col items-center overflow-visible" 
             style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: '0' }}
           >
-            {/* Unified halo effect behind logo + subtitles */}
+            {/* Unified halo effect behind logo + subtitles - constrained */}
             <div 
-              className="pointer-events-none absolute -inset-6"
+              className="pointer-events-none absolute inset-0"
               style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 40%, hsl(174 60% 45% / 0.15) 0%, transparent 70%)',
                 filter: 'blur(20px)'
