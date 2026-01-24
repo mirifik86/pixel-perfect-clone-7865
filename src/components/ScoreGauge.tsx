@@ -662,7 +662,7 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* READY STATE: ANALYZE button emerging from center - Premium signature control */}
+          {/* READY STATE: ANALYZE button - Premium signature control with entrance animation */}
           {uiState === 'ready' && !buttonAbsorbed && (
             <div 
               className="relative group"
@@ -670,20 +670,21 @@ export const ScoreGauge = ({
                 width: size * 0.65, 
                 maxWidth: '150px',
                 animation: isTransitioning 
-                  ? 'button-emerge 450ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
+                  ? 'button-ready-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
                   : 'none',
                 opacity: isTransitioning ? 0 : 1,
+                transform: isTransitioning ? 'scale(0.96)' : 'scale(1)',
               }}
             >
-              {/* Floating particles around button */}
+              {/* Floating particles around button - reduced count for cleaner look */}
               {!isTransitioning && (
                 <>
-                  {[...Array(8)].map((_, i) => {
-                    const angle = (i / 8) * 360;
-                    const distance = 28 + (i % 3) * 8;
-                    const particleSize = 2 + (i % 2);
-                    const delay = i * 0.4;
-                    const duration = 3 + (i % 3) * 0.5;
+                  {[...Array(6)].map((_, i) => {
+                    const angle = (i / 6) * 360;
+                    const distance = 30 + (i % 2) * 6;
+                    const particleSize = 1.5 + (i % 2);
+                    const delay = i * 0.5;
+                    const duration = 3.5 + (i % 2) * 0.5;
                     
                     return (
                       <div
@@ -696,9 +697,10 @@ export const ScoreGauge = ({
                           height: `${particleSize}px`,
                           borderRadius: '50%',
                           background: 'radial-gradient(circle, hsl(180 75% 70%) 0%, hsl(174 70% 60%) 50%, transparent 100%)',
-                          boxShadow: `0 0 ${particleSize * 2}px hsl(174 70% 60% / 0.6), 0 0 ${particleSize * 4}px hsl(174 65% 55% / 0.3)`,
+                          boxShadow: `0 0 ${particleSize * 2}px hsl(174 70% 60% / 0.5)`,
                           transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${distance}px)`,
-                          animation: `particle-float ${duration}s ease-in-out ${delay}s infinite, particle-twinkle ${duration * 0.6}s ease-in-out ${delay}s infinite`,
+                          animation: `particle-float ${duration}s ease-in-out ${delay}s infinite`,
+                          opacity: 0.6,
                         }}
                       />
                     );
@@ -706,36 +708,36 @@ export const ScoreGauge = ({
                 </>
               )}
               
-              {/* Outer halo with gentle pulse */}
+              {/* Outer halo - static in ready state (no pulse) */}
               <div 
                 className="absolute -inset-4 rounded-full pointer-events-none"
                 style={{
-                  background: 'radial-gradient(circle, hsl(174 70% 55% / 0.4) 0%, hsl(174 60% 50% / 0.15) 50%, transparent 80%)',
-                  filter: 'blur(14px)',
+                  background: 'radial-gradient(circle, hsl(174 70% 55% / 0.35) 0%, hsl(174 60% 50% / 0.12) 50%, transparent 80%)',
+                  filter: 'blur(12px)',
                   animation: buttonCharged 
                     ? 'button-charge-glow 260ms ease-out forwards' 
-                    : 'button-halo-pulse 4s ease-in-out infinite',
+                    : 'none',
                 }}
               />
               
-              {/* Crisp glass border ring */}
+              {/* Crisp glass border ring - brightest element */}
               <div 
                 className="absolute -inset-[2px] rounded-full overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 80% 58%), hsl(185 75% 52%), hsl(174 80% 58%))',
+                  background: 'linear-gradient(135deg, hsl(174 85% 60%), hsl(180 80% 55%), hsl(174 85% 60%))',
                   boxShadow: buttonCharged 
-                    ? '0 0 16px hsl(174 75% 60% / 0.7), 0 0 30px hsl(174 70% 55% / 0.4)' 
-                    : '0 0 10px hsl(174 70% 55% / 0.5)',
+                    ? '0 0 20px hsl(174 80% 62% / 0.8), 0 0 40px hsl(174 75% 58% / 0.5)' 
+                    : '0 0 14px hsl(174 75% 58% / 0.6), 0 0 28px hsl(174 70% 55% / 0.3)',
                 }}
               >
-                {/* Sheen sweep every 6-8 seconds + charge sheen */}
+                {/* Single entrance sheen sweep (not looping) + charge sheen */}
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.3) 45%, hsl(0 0% 100% / 0.8) 50%, hsl(0 0% 100% / 0.3) 55%, transparent 70%)',
+                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.25) 45%, hsl(0 0% 100% / 0.7) 50%, hsl(0 0% 100% / 0.25) 55%, transparent 70%)',
                     animation: buttonCharged 
                       ? 'charge-sheen-sweep 200ms ease-out forwards' 
-                      : 'signature-sheen 7s ease-in-out infinite 1.5s',
+                      : (isTransitioning ? 'none' : 'entrance-sheen-sweep 600ms ease-out 100ms forwards'),
                   }}
                 />
               </div>

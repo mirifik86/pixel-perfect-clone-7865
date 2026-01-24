@@ -244,7 +244,34 @@
   }
   50% {
     filter: brightness(1.03);
+}
+
+/* Button ready-state entrance animation (scale + fade) */
+@keyframes button-ready-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
   }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Single entrance sheen sweep (not looping) */
+@keyframes entrance-sheen-sweep {
+  0% {
+    transform: translateX(-150%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150%);
+    opacity: 0;
+  }
+}
 }
 
 /* PRO button shine animation */
