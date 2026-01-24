@@ -122,9 +122,10 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
           }}
         />
         
-        {/* EN and FR buttons */}
+        {/* EN and FR buttons with flags */}
         {PRIMARY_LANGUAGES.map((lang) => {
           const isActive = mode === lang;
+          const config = SUPPORTED_LANGUAGES[lang];
           
           return (
             <button
@@ -133,22 +134,23 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
                 onLanguageChange(lang);
                 setIsDropdownOpen(false);
               }}
-              className={`relative z-10 flex items-center justify-center rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
+              className={`relative z-10 flex items-center justify-center gap-1 rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
                 isActive
                   ? 'text-primary-foreground'
                   : 'text-muted-foreground/60 hover:text-foreground/80'
               }`}
               style={{
-                minWidth: '2.75rem',
+                minWidth: '3.25rem',
                 minHeight: '2.25rem',
-                padding: '0.5rem 0.75rem',
+                padding: '0.5rem 0.6rem',
                 fontSize: 'clamp(0.65rem, 2vw, 0.7rem)',
                 letterSpacing: '0.08em',
                 textShadow: isActive ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
               }}
-              title={SUPPORTED_LANGUAGES[lang]?.nativeName}
+              title={config?.nativeName}
             >
-              {lang.toUpperCase()}
+              <span style={{ fontSize: '0.85rem', lineHeight: 1 }}>{config?.flag}</span>
+              <span>{lang.toUpperCase()}</span>
             </button>
           );
         })}
@@ -249,11 +251,11 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
       
       {/* Premium language indicator - right side */}
       <div 
-        className="ml-3 flex items-center gap-1.5 animate-fade-in"
+        className="ml-3 flex items-center gap-2 animate-fade-in"
         style={{
           background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.15) 0%, hsl(180 55% 40% / 0.08) 100%)',
-          borderRadius: '6px',
-          padding: '6px 10px',
+          borderRadius: '8px',
+          padding: '6px 12px',
           border: '1px solid hsl(174 60% 50% / 0.25)',
           boxShadow: `
             0 0 12px hsl(174 60% 45% / 0.1),
@@ -261,6 +263,39 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
           `
         }}
       >
+        {/* Flag with glow effect */}
+        <div 
+          className="relative flex items-center justify-center"
+          style={{
+            filter: 'drop-shadow(0 0 4px hsl(174 60% 50% / 0.4))'
+          }}
+        >
+          <span 
+            style={{ 
+              fontSize: '1.1rem', 
+              lineHeight: 1,
+              animation: 'lang-dot-pulse 2s ease-in-out infinite'
+            }}
+          >
+            {SUPPORTED_LANGUAGES[language]?.flag}
+          </span>
+        </div>
+        
+        {/* Language name with gradient */}
+        <span
+          style={{
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            letterSpacing: '0.05em',
+            background: 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textTransform: 'uppercase'
+          }}
+        >
+          {SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()}
+        </span>
+        
         {/* Subtle glow dot */}
         <div 
           className="w-1.5 h-1.5 rounded-full"
@@ -270,21 +305,6 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
             animation: 'lang-dot-pulse 2s ease-in-out infinite'
           }}
         />
-        
-        {/* Language name */}
-        <span
-          style={{
-            fontSize: '0.7rem',
-            fontWeight: 500,
-            letterSpacing: '0.04em',
-            background: 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textTransform: 'uppercase'
-          }}
-        >
-          {SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()}
-        </span>
       </div>
     </div>
   );
