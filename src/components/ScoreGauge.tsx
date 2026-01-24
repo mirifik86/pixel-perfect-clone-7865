@@ -446,73 +446,137 @@ export const ScoreGauge = ({
         {score === null && (
           <div 
             className="relative flex flex-col items-center justify-center w-full"
-            style={{ minHeight: '70px' }}
+            style={{ minHeight: '90px' }}
           >
-            {/* IDLE STATE: "READY TO ANALYZE" + Arrow */}
+            {/* IDLE STATE: "READY TO ANALYZE" + Arrow - Premium Design */}
             <div 
               className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-200 ${
                 hasContent ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
               }`}
               style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
             >
-              {/* Pulse effect for ready state */}
+              {/* Premium multi-layer halo effect */}
               <div 
-                className="absolute -inset-x-6 -inset-y-3 rounded-full"
+                className="absolute rounded-full"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 70% 55% / 0.3), hsl(174 70% 50% / 0.5))',
-                  animation: 'ready-pulse 2s ease-in-out infinite',
-                  filter: 'blur(10px)',
+                  width: '200%',
+                  height: '150%',
+                  background: 'radial-gradient(ellipse at center, hsl(174 65% 50% / 0.15) 0%, hsl(174 60% 45% / 0.08) 40%, transparent 70%)',
+                  filter: 'blur(20px)',
+                  animation: 'halo-breathe 3s ease-in-out infinite',
                 }}
               />
               
-              {/* Status text */}
-              <span
-                className="relative text-center uppercase font-bold"
-                style={{
-                  fontSize: size * 0.095,
-                  color: 'hsl(0 0% 100%)',
-                  letterSpacing: '0.2em',
-                  fontFamily: 'var(--font-sans)',
-                  textShadow: '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)',
-                }}
-              >
-                {t('gauge.readyToAnalyze')}
-              </span>
-              
-              {/* Teal arrow pointing down toward input */}
+              {/* Inner pulse glow */}
               <div 
-                className="relative mt-3"
+                className="absolute"
                 style={{
-                  animation: 'arrow-bounce 2s ease-in-out infinite',
+                  width: '120%',
+                  height: '80%',
+                  background: 'radial-gradient(ellipse at center, hsl(174 70% 55% / 0.25) 0%, transparent 60%)',
+                  filter: 'blur(15px)',
+                  animation: 'ready-pulse 2.5s ease-in-out infinite',
                 }}
-              >
-                {/* Glow behind arrow */}
+              />
+              
+              {/* Premium status text with gradient */}
+              <div className="relative flex flex-col items-center">
+                {/* Subtle decorative line above */}
                 <div 
-                  className="absolute inset-0 rounded-full"
+                  className="mb-3"
                   style={{
-                    background: 'radial-gradient(circle, hsl(174 70% 55% / 0.5), transparent 70%)',
-                    animation: 'arrow-glow 2s ease-in-out infinite',
-                    filter: 'blur(8px)',
-                    transform: 'scale(3)',
+                    width: '40px',
+                    height: '2px',
+                    background: 'linear-gradient(90deg, transparent, hsl(174 60% 55% / 0.6), transparent)',
+                    borderRadius: '1px',
                   }}
                 />
+                
+                {/* Main text with premium styling */}
+                <span
+                  className="relative text-center uppercase font-black tracking-[0.25em]"
+                  style={{
+                    fontSize: 'clamp(1rem, 4vw, 1.35rem)',
+                    background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(174 30% 85%) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    fontFamily: 'var(--font-sans)',
+                    textShadow: 'none',
+                    filter: 'drop-shadow(0 0 20px hsl(174 60% 55% / 0.4)) drop-shadow(0 0 40px hsl(174 60% 50% / 0.2))',
+                  }}
+                >
+                  {t('gauge.readyToAnalyze')}
+                </span>
+                
+                {/* Subtle decorative line below */}
+                <div 
+                  className="mt-3"
+                  style={{
+                    width: '60px',
+                    height: '1px',
+                    background: 'linear-gradient(90deg, transparent, hsl(174 60% 55% / 0.4), transparent)',
+                    borderRadius: '1px',
+                  }}
+                />
+              </div>
+              
+              {/* Premium animated arrow with double chevron */}
+              <div 
+                className="relative mt-4 flex flex-col items-center"
+                style={{
+                  animation: 'arrow-float 2s ease-in-out infinite',
+                }}
+              >
+                {/* Outer glow effect */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '60px',
+                    height: '40px',
+                    background: 'radial-gradient(ellipse at center, hsl(174 70% 55% / 0.4), transparent 70%)',
+                    filter: 'blur(12px)',
+                    animation: 'arrow-glow 2s ease-in-out infinite',
+                  }}
+                />
+                
+                {/* Double chevron arrow */}
                 <svg 
-                  width="20"
-                  height="12"
-                  viewBox="0 0 20 12" 
+                  width="28"
+                  height="20"
+                  viewBox="0 0 28 20" 
                   fill="none"
                   className="relative"
                 >
+                  {/* First chevron */}
                   <path 
-                    d="M2 2L10 10L18 2" 
-                    stroke="hsl(174 70% 60%)" 
+                    d="M4 3L14 11L24 3" 
+                    stroke="url(#arrowGradient)" 
                     strokeWidth="2.5"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
                     style={{
-                      filter: 'drop-shadow(0 0 8px hsl(174 70% 55% / 0.7))',
+                      filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.8))',
                     }}
                   />
+                  {/* Second chevron (offset) */}
+                  <path 
+                    d="M4 10L14 18L24 10" 
+                    stroke="url(#arrowGradient)" 
+                    strokeWidth="2"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    opacity="0.5"
+                    style={{
+                      filter: 'drop-shadow(0 0 4px hsl(174 70% 55% / 0.5))',
+                    }}
+                  />
+                  <defs>
+                    <linearGradient id="arrowGradient" x1="14" y1="3" x2="14" y2="18" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 80% 70%)" />
+                      <stop offset="1" stopColor="hsl(174 60% 50%)" />
+                    </linearGradient>
+                  </defs>
                 </svg>
               </div>
             </div>
@@ -581,20 +645,24 @@ export const ScoreGauge = ({
         {/* CSS animations */}
         <style>{`
           @keyframes ready-pulse {
-            0%, 100% { opacity: 0.4; transform: scale(0.96); }
-            50% { opacity: 1; transform: scale(1.04); }
+            0%, 100% { opacity: 0.5; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+          }
+          @keyframes halo-breathe {
+            0%, 100% { opacity: 0.6; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
           }
           @keyframes label-glow {
             0% { opacity: 0.5; transform: scale(0.95); }
             100% { opacity: 0.8; transform: scale(1.05); }
           }
-          @keyframes arrow-bounce {
+          @keyframes arrow-float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(5px); }
+            50% { transform: translateY(6px); }
           }
           @keyframes arrow-glow {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
+            0%, 100% { opacity: 0.5; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
           }
           @keyframes button-pulse {
             0%, 100% { opacity: 0.5; transform: scale(0.98); }
