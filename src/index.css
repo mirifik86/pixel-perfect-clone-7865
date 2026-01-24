@@ -408,6 +408,24 @@
   }
 }
 
+/* Energy pulse traveling up the light trail */
+@keyframes energy-pulse-up {
+  0% {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
+
 /* Impact ring expansion */
 @keyframes impact-ring {
   0% {

@@ -786,15 +786,55 @@ const Index = () => {
                   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {/* Contained glow effect - stays within bounds */}
+                {/* Vertical light trail connecting arrow to button */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '2px',
+                    height: '100%',
+                    top: '-100%',
+                    background: 'linear-gradient(to top, hsl(174 70% 50% / 0.1) 0%, hsl(174 80% 60% / 0.6) 40%, hsl(180 85% 70% / 0.9) 70%, hsl(185 90% 80% / 0.4) 100%)',
+                    borderRadius: '1px',
+                    filter: 'blur(1px)',
+                  }}
+                />
+                
+                {/* Animated energy pulse traveling up the trail */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '4px',
+                    height: '20px',
+                    top: '-100%',
+                    background: 'linear-gradient(to top, transparent 0%, hsl(174 90% 70% / 0.8) 30%, hsl(180 95% 80%) 60%, hsl(185 100% 85% / 0.6) 100%)',
+                    borderRadius: '2px',
+                    filter: 'blur(2px)',
+                    animation: hasFormContent ? 'energy-pulse-up 1.5s ease-in-out infinite' : 'none',
+                  }}
+                />
+                
+                {/* Secondary wider glow trail */}
+                <div 
+                  className="absolute"
+                  style={{
+                    width: '12px',
+                    height: '100%',
+                    top: '-100%',
+                    background: 'linear-gradient(to top, transparent 0%, hsl(174 75% 55% / 0.15) 30%, hsl(174 80% 60% / 0.3) 60%, hsl(180 85% 65% / 0.15) 100%)',
+                    borderRadius: '6px',
+                    filter: 'blur(6px)',
+                  }}
+                />
+
+                {/* Contained glow effect around arrow */}
                 <div 
                   className="absolute"
                   style={{
                     width: '80px',
-                    height: '100%',
-                    background: 'radial-gradient(ellipse 100% 80% at 50% 50%, hsl(174 80% 60% / 0.4) 0%, hsl(174 70% 50% / 0.2) 40%, transparent 70%)',
+                    height: '50px',
+                    background: 'radial-gradient(ellipse 100% 80% at 50% 50%, hsl(174 80% 60% / 0.5) 0%, hsl(174 70% 50% / 0.25) 40%, transparent 70%)',
                     filter: 'blur(10px)',
-                    animation: hasFormContent ? 'arrow-pulse-glow 1.8s ease-in-out infinite' : 'none',
+                    animation: hasFormContent ? 'arrow-pulse-glow 2s ease-in-out infinite' : 'none',
                   }}
                 />
 
