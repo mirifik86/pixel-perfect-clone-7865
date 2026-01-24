@@ -1,6 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Search, Loader2, CheckCircle2, FileText, Image, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { CheckCircle2, Image, X } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/i18n/useLanguage';
 
@@ -11,10 +10,15 @@ interface UnifiedAnalysisFormProps {
   onContentChange?: (hasContent: boolean) => void;
 }
 
+export interface UnifiedAnalysisFormHandle {
+  submit: () => void;
+}
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
-export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, onContentChange }: UnifiedAnalysisFormProps) => {
+export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
+  ({ onAnalyzeText, onImageReady, isLoading, onContentChange }, ref) => {
   const { t } = useLanguage();
   const [input, setInput] = useState('');
   const [uploadedImage, setUploadedImage] = useState<{ file: File; preview: string } | null>(null);
@@ -27,6 +31,19 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, on
   const hasText = input.trim().length > 0;
   const hasContent = hasText || hasImage;
   const isActive = isDragOver; // Only drag-over triggers card glow, not focus
+
+  // Expose submit method to parent via ref
+  const triggerSubmit = useCallback(() => {
+    if (uploadedImage) {
+      onImageReady(uploadedImage.file, uploadedImage.preview);
+    } else if (input.trim()) {
+      onAnalyzeText(input.trim());
+    }
+  }, [uploadedImage, input, onImageReady, onAnalyzeText]);
+
+  useImperativeHandle(ref, () => ({
+    submit: triggerSubmit
+  }), [triggerSubmit]);
 
   // Notify parent when content state changes
   useEffect(() => {
@@ -164,91 +181,6 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, on
         className="hidden"
       />
       
-      {/* Contextual Primary CTA - ABOVE input, transforms based on content */}
-      <div className="relative mb-3 md:mb-4">
-        {/* CTA Container with fixed height to prevent layout jumps */}
-        <div 
-          className="relative flex items-center justify-center"
-          style={{ minHeight: '52px' }}
-        >
-          {/* Initial State: "READY TO ANALYZE" informational text */}
-          <div 
-            className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
-              hasContent ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
-            }`}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
-          >
-            <span 
-              className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase"
-              style={{
-                color: 'hsl(174 55% 50% / 0.7)',
-                textShadow: '0 0 20px hsl(174 60% 50% / 0.25)',
-                animation: 'cta-status-pulse 2.5s ease-in-out infinite',
-              }}
-            >
-              {t('gauge.readyToAnalyze')}
-            </span>
-          </div>
-          
-          {/* Active State: "ANALYZE" button */}
-          <div 
-            className={`w-full transition-all duration-200 ${
-              hasContent ? 'opacity-100 scale-100' : 'opacity-0 pointer-events-none scale-105'
-            }`}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
-          >
-            <div className="relative group">
-              {/* Outer glow ring */}
-              <div 
-                className="absolute -inset-1.5 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 80% 55% / 0.3), hsl(174 70% 50% / 0.5))',
-                  animation: 'button-pulse 2s ease-in-out infinite',
-                  filter: 'blur(12px)',
-                }}
-              />
-              
-              {/* Inner shimmer layer */}
-              <div 
-                className="absolute -inset-0.5 rounded-xl overflow-hidden"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
-                }}
-              >
-                {/* Animated shine effect */}
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 60%)',
-                    animation: 'button-shine 3s ease-in-out infinite',
-                  }}
-                />
-              </div>
-              
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="relative w-full rounded-xl py-4 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)',
-                  boxShadow: '0 0 40px hsl(174 60% 50% / 0.4), 0 8px 24px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.1)',
-                  textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
-                }}
-              >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                  <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2))' }} />
-                )}
-                <span className="relative">
-                  {t('common.analyze')}
-                </span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Premium Drop Card */}
       <div 
         className="relative cursor-pointer"
@@ -472,19 +404,9 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, on
           0%, 100% { opacity: 0.5; transform: scale(0.95); }
           50% { opacity: 0.8; transform: scale(1.05); }
         }
-        @keyframes button-pulse {
-          0%, 100% { opacity: 0.5; transform: scale(0.98); }
-          50% { opacity: 1; transform: scale(1.02); }
-        }
-        @keyframes button-shine {
-          0% { transform: translateX(-100%); }
-          50%, 100% { transform: translateX(100%); }
-        }
-        @keyframes cta-status-pulse {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 1; }
-        }
       `}</style>
     </form>
   );
-};
+});
+
+UnifiedAnalysisForm.displayName = 'UnifiedAnalysisForm';

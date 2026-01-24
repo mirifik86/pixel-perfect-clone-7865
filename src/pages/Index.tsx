@@ -7,7 +7,7 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { LanguageSuggestionPrompt } from '@/components/LanguageSuggestionPrompt';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
-import { UnifiedAnalysisForm } from '@/components/UnifiedAnalysisForm';
+import { UnifiedAnalysisForm, UnifiedAnalysisFormHandle } from '@/components/UnifiedAnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { AnalysisError } from '@/components/AnalysisError';
 import { ProAnalysisLoader } from '@/components/ProAnalysisLoader';
@@ -135,6 +135,14 @@ const Index = () => {
   const [screenshotData, setScreenshotData] = useState<ScreenshotAnalysisData | null>(null);
   const [isRerunning, setIsRerunning] = useState(false);
   const [hasFormContent, setHasFormContent] = useState(false);
+  
+  // Ref to the form for triggering submit from ScoreGauge
+  const formRef = useRef<UnifiedAnalysisFormHandle>(null);
+  
+  // Handler for ScoreGauge to trigger form submission
+  const handleGaugeAnalyze = useCallback(() => {
+    formRef.current?.submit();
+  }, []);
   
   // Both language results are fetched in parallel on submit - no API calls on toggle
   const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
@@ -601,7 +609,13 @@ const Index = () => {
             {/* Score Gauge - shows when not loading */}
             {!isLoading && (
               <div className="animate-scale-in" style={{ animationDuration: '500ms' }}>
-                <ScoreGauge score={score} size={gaugeSize} hasContent={hasFormContent} />
+                <ScoreGauge 
+                  score={score} 
+                  size={gaugeSize} 
+                  hasContent={hasFormContent}
+                  onAnalyze={handleGaugeAnalyze}
+                  isLoading={isLoading}
+                />
               </div>
             )}
           </div>
@@ -697,6 +711,7 @@ const Index = () => {
               style={{ animationDelay: '350ms', animationFillMode: 'both' }}
             >
               <UnifiedAnalysisForm 
+                ref={formRef}
                 onAnalyzeText={handleAnalyze} 
                 onImageReady={(file, preview) => handleImageAnalysis(file, preview, 'standard')}
                 isLoading={isLoading} 

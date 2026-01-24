@@ -1,11 +1,15 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useLanguage } from '@/i18n/useLanguage';
+import { Search, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
   size?: number;
   className?: string;
-  hasContent?: boolean; // When true, disables pulse effects on "Ready" label
+  hasContent?: boolean; // When true, shows ANALYZE button instead of READY status
+  onAnalyze?: () => void; // Callback when ANALYZE button is clicked
+  isLoading?: boolean; // Loading state for the button
 }
 
 // Generate sparkle particles configuration
@@ -25,7 +29,9 @@ export const ScoreGauge = ({
   score,
   size = 160,
   className,
-  hasContent = false
+  hasContent = false,
+  onAnalyze,
+  isLoading = false
 }: ScoreGaugeProps) => {
   const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -402,55 +408,175 @@ export const ScoreGauge = ({
         </div>
       </div>
 
-      {/* Status label - premium visible styling */}
-      <div className="relative w-full flex flex-col items-center justify-center mt-4">
-        {/* Pulse effect for ready state - only when no content */}
-        {score === null && !hasContent && (
-          <div 
-            className="absolute -inset-x-6 -inset-y-3 rounded-full"
-            style={{
-              background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 70% 55% / 0.3), hsl(174 70% 50% / 0.5))',
-              animation: 'ready-pulse 2s ease-in-out infinite',
-              animationDelay: '0s',
-              filter: 'blur(10px)',
-            }}
-          />
-        )}
-        
-        {/* Premium glow behind label when score is shown */}
+      {/* Status label / CTA - transforms based on content state */}
+      <div 
+        className="relative w-full flex flex-col items-center justify-center"
+        style={{ marginTop: 'var(--space-4)', minHeight: '80px' }}
+      >
+        {/* When score is shown - display credibility label */}
         {score !== null && (
-          <div 
-            className="absolute rounded-full"
-            style={{
-              width: '100%',
-              height: '100%',
-              background: `radial-gradient(ellipse at center, ${currentLabelColor.replace(')', ' / 0.2)')} 0%, transparent 70%)`,
-              filter: 'blur(15px)',
-              animation: 'label-glow 2s ease-in-out infinite alternate'
-            }}
-          />
+          <>
+            {/* Premium glow behind label */}
+            <div 
+              className="absolute rounded-full"
+              style={{
+                width: '100%',
+                height: '100%',
+                background: `radial-gradient(ellipse at center, ${currentLabelColor.replace(')', ' / 0.2)')} 0%, transparent 70%)`,
+                filter: 'blur(15px)',
+                animation: 'label-glow 2s ease-in-out infinite alternate'
+              }}
+            />
+            <span
+              className="relative text-center transition-all duration-500 uppercase font-bold"
+              style={{
+                fontSize: size * 0.13,
+                color: currentLabelColor,
+                letterSpacing: '0.2em',
+                fontFamily: 'var(--font-sans)',
+                textShadow: `0 0 20px ${currentLabelColor.replace(')', ' / 0.8)')}, 0 0 40px ${currentLabelColor.replace(')', ' / 0.5)')}, 0 0 60px ${currentLabelColor.replace(')', ' / 0.3)')}`,
+              }}
+            >
+              {currentLabel}
+            </span>
+          </>
         )}
         
-        <span
-          className="relative text-center transition-all duration-500 uppercase font-bold"
-          style={{
-            fontSize: score !== null ? size * 0.13 : size * 0.095,
-            color: score === null 
-              ? hasContent 
-                ? 'hsl(0 0% 100% / 0.4)'
-                : 'hsl(0 0% 100%)'
-              : currentLabelColor,
-            letterSpacing: '0.2em',
-            fontFamily: 'var(--font-sans)',
-            textShadow: score !== null 
-              ? `0 0 20px ${currentLabelColor.replace(')', ' / 0.8)')}, 0 0 40px ${currentLabelColor.replace(')', ' / 0.5)')}, 0 0 60px ${currentLabelColor.replace(')', ' / 0.3)')}`
-              : score === null && !hasContent 
-                ? '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)' 
-                : 'none',
-          }}
-        >
-          {currentLabel || t('gauge.readyToAnalyze')}
-        </span>
+        {/* When no score: Idle or Active state */}
+        {score === null && (
+          <div 
+            className="relative flex flex-col items-center justify-center w-full"
+            style={{ minHeight: '70px' }}
+          >
+            {/* IDLE STATE: "READY TO ANALYZE" + Arrow */}
+            <div 
+              className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-200 ${
+                hasContent ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
+              }`}
+              style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+            >
+              {/* Pulse effect for ready state */}
+              <div 
+                className="absolute -inset-x-6 -inset-y-3 rounded-full"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 70% 55% / 0.3), hsl(174 70% 50% / 0.5))',
+                  animation: 'ready-pulse 2s ease-in-out infinite',
+                  filter: 'blur(10px)',
+                }}
+              />
+              
+              {/* Status text */}
+              <span
+                className="relative text-center uppercase font-bold"
+                style={{
+                  fontSize: size * 0.095,
+                  color: 'hsl(0 0% 100%)',
+                  letterSpacing: '0.2em',
+                  fontFamily: 'var(--font-sans)',
+                  textShadow: '0 0 20px hsl(0 0% 100% / 0.4), 0 0 40px hsl(0 0% 100% / 0.2)',
+                }}
+              >
+                {t('gauge.readyToAnalyze')}
+              </span>
+              
+              {/* Teal arrow pointing down toward input */}
+              <div 
+                className="relative mt-3"
+                style={{
+                  animation: 'arrow-bounce 2s ease-in-out infinite',
+                }}
+              >
+                {/* Glow behind arrow */}
+                <div 
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, hsl(174 70% 55% / 0.5), transparent 70%)',
+                    animation: 'arrow-glow 2s ease-in-out infinite',
+                    filter: 'blur(8px)',
+                    transform: 'scale(3)',
+                  }}
+                />
+                <svg 
+                  width="20"
+                  height="12"
+                  viewBox="0 0 20 12" 
+                  fill="none"
+                  className="relative"
+                >
+                  <path 
+                    d="M2 2L10 10L18 2" 
+                    stroke="hsl(174 70% 60%)" 
+                    strokeWidth="2.5"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    style={{
+                      filter: 'drop-shadow(0 0 8px hsl(174 70% 55% / 0.7))',
+                    }}
+                  />
+                </svg>
+              </div>
+            </div>
+            
+            {/* ACTIVE STATE: "ANALYZE" button */}
+            <div 
+              className={`w-full max-w-xs transition-all duration-200 ${
+                hasContent ? 'opacity-100 scale-100' : 'opacity-0 pointer-events-none scale-105'
+              }`}
+              style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+            >
+              <div className="relative group">
+                {/* Outer glow ring */}
+                <div 
+                  className="absolute -inset-2 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.6), hsl(200 80% 55% / 0.4), hsl(174 70% 50% / 0.6))',
+                    animation: 'button-pulse 2s ease-in-out infinite',
+                    filter: 'blur(14px)',
+                  }}
+                />
+                
+                {/* Inner shimmer layer */}
+                <div 
+                  className="absolute -inset-0.5 rounded-xl overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
+                  }}
+                >
+                  {/* Animated shine effect */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.35) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 60%)',
+                      animation: 'button-shine 3s ease-in-out infinite',
+                    }}
+                  />
+                </div>
+                
+                <Button
+                  type="button"
+                  onClick={onAnalyze}
+                  disabled={isLoading}
+                  className="relative w-full rounded-xl py-4 md:py-5 text-sm md:text-base font-bold tracking-wider uppercase text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)',
+                    boxShadow: '0 0 50px hsl(174 60% 50% / 0.5), 0 10px 30px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.2), inset 0 -1px 0 hsl(0 0% 0% / 0.1)',
+                    textShadow: '0 2px 4px hsl(0 0% 0% / 0.4)',
+                    letterSpacing: '0.15em',
+                  }}
+                >
+                  {isLoading ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 2px hsl(0 0% 0% / 0.3))' }} />
+                  )}
+                  <span className="relative">
+                    {t('common.analyze')}
+                  </span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* CSS animations */}
         <style>{`
@@ -461,6 +587,22 @@ export const ScoreGauge = ({
           @keyframes label-glow {
             0% { opacity: 0.5; transform: scale(0.95); }
             100% { opacity: 0.8; transform: scale(1.05); }
+          }
+          @keyframes arrow-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+          }
+          @keyframes arrow-glow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+          }
+          @keyframes button-pulse {
+            0%, 100% { opacity: 0.5; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+          }
+          @keyframes button-shine {
+            0% { transform: translateX(-100%); }
+            50%, 100% { transform: translateX(100%); }
           }
         `}</style>
       </div>
