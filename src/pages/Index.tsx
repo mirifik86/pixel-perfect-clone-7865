@@ -709,10 +709,10 @@ const Index = () => {
             <div 
               className="relative flex items-center justify-center"
               style={{ 
-                marginTop: '0',
-                marginBottom: '0',
-                height: '24px',
-                width: '60px',
+                marginTop: '-4px',
+                marginBottom: '-4px',
+                height: '18px',
+                width: '50px',
               }}
             >
               {/* Arrow pointing DOWN (to input) - shown when NO content */}
