@@ -370,6 +370,16 @@
   }
 }
 
+/* Premium floating animation for upward arrow */
+@keyframes arrow-float-up {
+  0%, 100% {
+    transform: translateY(2px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 /* Premium pulse glow for active state dot */
 @keyframes pulse-glow {
   0%, 100% {

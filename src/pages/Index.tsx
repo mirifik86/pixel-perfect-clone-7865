@@ -777,37 +777,79 @@ const Index = () => {
                 </svg>
               </div>
 
-              {/* Premium connecting glow line - shown when HAS content (replaces arrow) */}
+              {/* Premium arrow pointing UP (to gauge/analyze) - shown when HAS content */}
               <div 
                 className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
-                  hasFormContent ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
                 }`}
                 style={{
+                  animation: hasFormContent ? 'arrow-float-up 2s ease-in-out infinite' : 'none',
                   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {/* Central luminous dot with pulse */}
-                <div 
-                  className="relative"
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, hsl(174 85% 70%) 0%, hsl(174 70% 55%) 60%, transparent 100%)',
-                    boxShadow: '0 0 12px hsl(174 80% 60% / 0.8), 0 0 24px hsl(174 70% 55% / 0.5), 0 0 40px hsl(174 60% 50% / 0.3)',
-                    animation: 'pulse-glow 2s ease-in-out infinite',
-                  }}
-                />
-                
-                {/* Expanding ring effect */}
+                {/* Multi-layer premium glow effect */}
                 <div 
                   className="absolute"
                   style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    border: '1px solid hsl(174 70% 55% / 0.4)',
-                    animation: 'ring-expand 2s ease-out infinite',
+                    width: '60px',
+                    height: '40px',
+                    background: 'radial-gradient(ellipse at center, hsl(174 80% 60% / 0.5), hsl(174 70% 50% / 0.25) 40%, hsl(280 50% 55% / 0.1) 70%, transparent 100%)',
+                    filter: 'blur(12px)',
+                    animation: 'arrow-glow-intense 2s ease-in-out infinite',
+                  }}
+                />
+                
+                {/* Premium double chevron arrow pointing UP */}
+                <svg 
+                  width="28"
+                  height="20"
+                  viewBox="0 0 28 20" 
+                  fill="none"
+                  className="relative"
+                  style={{
+                    filter: 'drop-shadow(0 0 8px hsl(174 80% 60% / 0.9)) drop-shadow(0 0 16px hsl(174 70% 55% / 0.5))',
+                  }}
+                >
+                  {/* Primary chevron - brighter, thicker */}
+                  <path 
+                    d="M4 14L14 6L24 14" 
+                    stroke="url(#arrowGradientUpPremium)" 
+                    strokeWidth="3"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                  {/* Secondary chevron - softer, creates depth */}
+                  <path 
+                    d="M4 18L14 10L24 18" 
+                    stroke="url(#arrowGradientUpSecondary)" 
+                    strokeWidth="2"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    opacity="0.5"
+                  />
+                  <defs>
+                    {/* Premium gradient with teal to cyan to slight purple hint */}
+                    <linearGradient id="arrowGradientUpPremium" x1="14" y1="14" x2="14" y2="6" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 60% 45%)" />
+                      <stop offset="0.4" stopColor="hsl(174 80% 60%)" />
+                      <stop offset="0.7" stopColor="hsl(180 85% 70%)" />
+                      <stop offset="1" stopColor="hsl(190 90% 78%)" />
+                    </linearGradient>
+                    <linearGradient id="arrowGradientUpSecondary" x1="14" y1="18" x2="14" y2="10" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 50% 40%)" />
+                      <stop offset="1" stopColor="hsl(174 70% 55%)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                
+                {/* Subtle pulsing halo ring behind arrow */}
+                <div 
+                  className="absolute rounded-full"
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    border: '1.5px solid hsl(174 70% 55% / 0.3)',
+                    animation: 'ring-expand 2.5s ease-out infinite',
                   }}
                 />
               </div>
