@@ -321,7 +321,7 @@ export const ScoreGauge = ({
             : 'radial-gradient(circle, hsl(174 60% 45% / 0.12) 0%, hsl(200 50% 40% / 0.06) 40%, transparent 70%)',
           filter: 'blur(20px)',
           pointerEvents: 'none',
-          animation: score === null ? 'idle-glow-pulse 4s ease-in-out infinite' : 'none',
+          animation: score === null ? 'idle-glow-pulse 3.8s ease-in-out infinite' : 'none',
         }}
       />
       
@@ -341,7 +341,7 @@ export const ScoreGauge = ({
               ? `0 0 30px ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}, 0 0 60px ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')}, inset 0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.1)')}`
               : '0 0 25px hsl(174 60% 45% / 0.15), 0 0 50px hsl(200 50% 45% / 0.08), inset 0 0 15px hsl(174 50% 40% / 0.08)',
             transition: 'box-shadow 0.5s ease-out',
-            animation: score === null ? 'idle-ring-pulse 3.5s ease-in-out infinite' : 'none',
+            animation: score === null ? 'idle-ring-pulse 3.8s ease-in-out infinite' : 'none',
           }}
         />
         
@@ -406,7 +406,7 @@ export const ScoreGauge = ({
           />
         )}
         
-        {/* Idle state premium contour ring */}
+        {/* Idle state premium contour ring - synchronized with halo pulse */}
         {score === null && !isLoading && (
           <div 
             className="absolute rounded-full pointer-events-none"
@@ -414,7 +414,7 @@ export const ScoreGauge = ({
               inset: strokeWidth / 2 - 1,
               border: '1px solid hsl(174 50% 50% / 0.2)',
               boxShadow: 'inset 0 0 20px hsl(174 60% 50% / 0.1), 0 0 1px hsl(174 60% 55% / 0.3)',
-              animation: 'idle-contour-glow 3.5s ease-in-out infinite',
+              animation: 'idle-contour-glow 3.8s ease-in-out infinite',
             }}
           />
         )}
