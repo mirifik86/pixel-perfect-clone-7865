@@ -1,4 +1,7 @@
-// Main i18n exports
+/**
+ * Centralized i18n exports
+ * All language-related utilities should be imported from this file
+ */
 export { LanguageProvider, useLanguage, getLanguageNativeName } from './useLanguage';
 export { 
   type SupportedLanguage, 
