@@ -530,54 +530,55 @@ export const ScoreGauge = ({
           )}
         </div>
         
-        {/* Animated arrows pointing to input - only in idle state */}
+        {/* Animated cascading arrows pointing to input - only in idle state */}
         {uiState === 'idle' && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none overflow-hidden"
             style={{ 
-              top: size + 10,
-              gap: '4px',
+              top: size * 0.65,
+              height: size * 0.55,
+              width: 30,
             }}
           >
+            {/* Three arrows with staggered relay animation */}
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="relative"
+                className="absolute left-1/2 -translate-x-1/2"
                 style={{
-                  animation: `arrow-cascade 1.8s ease-in-out ${i * 0.2}s infinite`,
+                  animation: `arrow-relay 2.4s ease-in-out ${i * 0.8}s infinite`,
                 }}
               >
                 {/* Arrow glow background */}
                 <div 
-                  className="absolute inset-0 -m-1"
+                  className="absolute inset-0 -m-2"
                   style={{
-                    background: 'radial-gradient(circle, hsl(174 65% 55% / 0.4) 0%, transparent 70%)',
-                    filter: 'blur(6px)',
-                    animation: `arrow-glow ${1.8}s ease-in-out ${i * 0.2}s infinite`,
+                    background: 'radial-gradient(circle, hsl(174 65% 55% / 0.5) 0%, transparent 70%)',
+                    filter: 'blur(8px)',
                   }}
                 />
                 {/* Arrow SVG */}
                 <svg 
-                  width="18" 
-                  height="10" 
-                  viewBox="0 0 18 10" 
+                  width="20" 
+                  height="12" 
+                  viewBox="0 0 20 12" 
                   fill="none"
                   style={{
-                    filter: 'drop-shadow(0 0 4px hsl(174 65% 55% / 0.6))',
+                    filter: 'drop-shadow(0 0 6px hsl(174 65% 55% / 0.8))',
                   }}
                 >
                   <path 
-                    d="M1 1L9 8L17 1" 
+                    d="M1 1L10 10L19 1" 
                     stroke="url(#arrow-gradient)" 
-                    strokeWidth="2" 
+                    strokeWidth="2.5" 
                     strokeLinecap="round" 
                     strokeLinejoin="round"
                   />
                   <defs>
-                    <linearGradient id="arrow-gradient" x1="1" y1="1" x2="17" y2="1">
-                      <stop offset="0%" stopColor="hsl(174 60% 50% / 0.4)" />
-                      <stop offset="50%" stopColor="hsl(174 70% 60%)" />
-                      <stop offset="100%" stopColor="hsl(174 60% 50% / 0.4)" />
+                    <linearGradient id="arrow-gradient" x1="1" y1="1" x2="19" y2="1">
+                      <stop offset="0%" stopColor="hsl(174 60% 55% / 0.3)" />
+                      <stop offset="50%" stopColor="hsl(174 70% 65%)" />
+                      <stop offset="100%" stopColor="hsl(174 60% 55% / 0.3)" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -656,24 +657,26 @@ export const ScoreGauge = ({
           0% { transform: translateX(-150%); }
           60%, 100% { transform: translateX(150%); }
         }
-        @keyframes arrow-cascade {
-          0%, 100% { 
-            opacity: 0.3;
-            transform: translateY(-4px);
+        @keyframes arrow-relay {
+          0% { 
+            opacity: 0;
+            transform: translateY(-10px);
           }
-          50% { 
+          15% { 
             opacity: 1;
-            transform: translateY(4px);
+            transform: translateY(10px);
           }
-        }
-        @keyframes arrow-glow {
-          0%, 100% { 
-            opacity: 0.4;
-            transform: scale(0.9);
-          }
-          50% { 
+          30% { 
             opacity: 1;
-            transform: scale(1.3);
+            transform: translateY(35px);
+          }
+          45% { 
+            opacity: 0;
+            transform: translateY(60px);
+          }
+          100% { 
+            opacity: 0;
+            transform: translateY(60px);
           }
         }
       `}</style>
