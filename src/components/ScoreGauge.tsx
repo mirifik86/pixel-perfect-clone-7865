@@ -37,7 +37,10 @@ export const ScoreGauge = ({
   const [animatedScore, setAnimatedScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
   const [showSparkles, setShowSparkles] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [buttonAbsorbed, setButtonAbsorbed] = useState(false);
   const animationRef = useRef<number | null>(null);
+  const prevUiStateRef = useRef<string>('idle');
   
   // Memoize sparkles to prevent regeneration on each render
   const sparkles = useMemo(() => generateSparkles(16), []);
@@ -179,6 +182,33 @@ export const ScoreGauge = ({
 
   // UI States: idle | ready | analyzing | result
   const uiState = score !== null ? 'result' : (isLoading ? 'analyzing' : (hasContent ? 'ready' : 'idle'));
+  
+  // Track state transitions for animations
+  useEffect(() => {
+    const prevState = prevUiStateRef.current;
+    
+    // Idle → Ready transition
+    if (prevState === 'idle' && uiState === 'ready') {
+      setIsTransitioning(true);
+      setTimeout(() => setIsTransitioning(false), 500);
+    }
+    
+    // Ready → Analyzing transition (button absorbed)
+    if (prevState === 'ready' && uiState === 'analyzing') {
+      setButtonAbsorbed(true);
+      setTimeout(() => setButtonAbsorbed(false), 600);
+    }
+    
+    prevUiStateRef.current = uiState;
+  }, [uiState]);
+  
+  // Handle analyze click with absorption animation
+  const handleAnalyzeClick = () => {
+    setButtonAbsorbed(true);
+    setTimeout(() => {
+      onAnalyze?.();
+    }, 200);
+  };
 
   return (
     <div className={`relative flex flex-col items-center ${className || ''}`}>
@@ -271,7 +301,13 @@ export const ScoreGauge = ({
       />
       
       {/* Gauge container */}
-      <div className="relative" style={{ width: size, height: size }}>
+      <div 
+        className="relative" 
+        style={{ 
+          width: size, 
+          height: size,
+        }}
+      >
         {/* Premium outer ring glow */}
         <div 
           className="absolute inset-0 rounded-full"
@@ -280,24 +316,43 @@ export const ScoreGauge = ({
               ? `0 0 30px ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}, 0 0 60px ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')}, inset 0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.1)')}`
               : '0 0 25px hsl(174 60% 45% / 0.15), 0 0 50px hsl(200 50% 45% / 0.08), inset 0 0 15px hsl(174 50% 40% / 0.08)',
             transition: 'box-shadow 0.5s ease-out',
-            animation: score === null ? 'idle-ring-pulse 4s ease-in-out infinite' : 'none',
+            animation: score === null ? 'idle-ring-pulse 3.5s ease-in-out infinite' : 'none',
           }}
         />
         
+        {/* Activation wave - triggers when content is detected */}
+        {uiState === 'ready' && isTransitioning && (
+          <div 
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, hsl(174 65% 55% / 0.4) 0%, hsl(174 60% 50% / 0.2) 30%, transparent 70%)',
+              animation: 'activation-wave 500ms ease-out forwards',
+            }}
+          />
+        )}
+        
         {/* Idle state premium contour ring */}
-        {score === null && (
+        {score === null && !isLoading && (
           <div 
             className="absolute rounded-full pointer-events-none"
             style={{
               inset: strokeWidth / 2 - 1,
               border: '1px solid hsl(174 50% 50% / 0.2)',
               boxShadow: 'inset 0 0 20px hsl(174 60% 50% / 0.1), 0 0 1px hsl(174 60% 55% / 0.3)',
-              animation: 'idle-contour-glow 4s ease-in-out infinite',
+              animation: 'idle-contour-glow 3.5s ease-in-out infinite',
             }}
           />
         )}
         
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* SVG with ultra-slow rotation in idle */}
+        <svg 
+          width={size} 
+          height={size} 
+          viewBox={`0 0 ${size} ${size}`}
+          style={{
+            animation: uiState === 'idle' ? 'gauge-slow-rotate 25s linear infinite' : 'none',
+          }}
+        >
           <defs>
             {colorPairs.map((pair, i) => (
               <linearGradient 
@@ -436,21 +491,24 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* IDLE STATE: "READY TO ANALYZE" text with animated arrows */}
+          {/* IDLE STATE: "READY TO ANALYZE" text with premium breathing animation */}
           {uiState === 'idle' && (
             <div 
-              className="flex flex-col items-center justify-center text-center animate-fade-in"
-              style={{ padding: 'var(--space-2)' }}
+              className="flex flex-col items-center justify-center text-center"
+              style={{ 
+                padding: 'var(--space-2)',
+                animation: 'idle-text-breathe 3.5s ease-in-out infinite',
+              }}
             >
-              {/* Breathing halo */}
+              {/* Soft radial glow from center */}
               <div 
                 className="absolute rounded-full pointer-events-none"
                 style={{
-                  width: size * 0.7,
-                  height: size * 0.7,
-                  background: 'radial-gradient(circle, hsl(174 60% 50% / 0.15) 0%, transparent 70%)',
-                  filter: 'blur(15px)',
-                  animation: 'idle-center-breathe 3s ease-in-out infinite',
+                  width: size * 0.75,
+                  height: size * 0.75,
+                  background: 'radial-gradient(circle, hsl(174 60% 50% / 0.12) 0%, hsl(174 50% 45% / 0.06) 40%, transparent 70%)',
+                  filter: 'blur(12px)',
+                  animation: 'idle-center-glow 3.5s ease-in-out infinite',
                 }}
               />
               <span
@@ -462,7 +520,31 @@ export const ScoreGauge = ({
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
-                  filter: 'drop-shadow(0 0 15px hsl(174 60% 55% / 0.4))',
+                  filter: 'drop-shadow(0 0 12px hsl(174 60% 55% / 0.35))',
+                }}
+              >
+                {t('gauge.readyToAnalyze')}
+              </span>
+            </div>
+          )}
+          
+          {/* TRANSITIONING STATE: Text fading out with blur */}
+          {uiState === 'ready' && isTransitioning && (
+            <div 
+              className="flex flex-col items-center justify-center text-center absolute inset-0"
+              style={{ 
+                animation: 'idle-text-exit 450ms ease-out forwards',
+              }}
+            >
+              <span
+                className="relative uppercase font-black tracking-[0.15em] text-center"
+                style={{
+                  fontSize: 'clamp(0.7rem, 2.5vw, 0.9rem)',
+                  lineHeight: 1.3,
+                  background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(174 30% 80%) 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
@@ -470,19 +552,23 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* READY STATE: ANALYZE button inside gauge */}
-          {uiState === 'ready' && (
+          {/* READY STATE: ANALYZE button emerging from center */}
+          {uiState === 'ready' && !buttonAbsorbed && (
             <div 
-              className="relative animate-scale-in"
-              style={{ width: size * 0.65, maxWidth: '140px' }}
+              className="relative"
+              style={{ 
+                width: size * 0.65, 
+                maxWidth: '140px',
+                animation: 'button-emerge 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              }}
             >
-              {/* Outer glow ring */}
+              {/* Soft outer glow ramp-in */}
               <div 
-                className="absolute -inset-2 rounded-full opacity-80"
+                className="absolute -inset-2 rounded-full"
                 style={{
-                  background: 'radial-gradient(circle, hsl(174 70% 50% / 0.5) 0%, hsl(174 60% 45% / 0.2) 60%, transparent 100%)',
+                  background: 'radial-gradient(circle, hsl(174 70% 50% / 0.4) 0%, hsl(174 60% 45% / 0.15) 60%, transparent 100%)',
                   filter: 'blur(10px)',
-                  animation: 'center-button-glow 2s ease-in-out infinite',
+                  animation: 'button-glow-ramp 600ms ease-out forwards',
                 }}
               />
               
@@ -497,35 +583,67 @@ export const ScoreGauge = ({
                   className="absolute inset-0"
                   style={{
                     background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.6) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 70%)',
-                    animation: 'center-shine-sweep 2.5s ease-in-out infinite',
+                    animation: 'center-shine-sweep 3s ease-in-out infinite 0.6s',
                   }}
                 />
               </div>
               
               <Button
                 type="button"
-                onClick={onAnalyze}
+                onClick={handleAnalyzeClick}
                 disabled={isLoading}
-                className="relative w-full rounded-full py-3 text-xs font-bold tracking-wider uppercase text-white transition-all duration-300 hover:scale-105 active:scale-95 border-0 focus:outline-none overflow-hidden"
+                className="relative w-full rounded-full py-3 text-xs font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden"
                 style={{
                   background: 'linear-gradient(135deg, hsl(174 68% 46%) 0%, hsl(182 58% 40%) 50%, hsl(174 65% 44%) 100%)',
-                  boxShadow: '0 0 30px hsl(174 65% 55% / 0.5), 0 0 15px hsl(174 60% 50% / 0.3), 0 6px 20px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.2)',
+                  boxShadow: '0 0 25px hsl(174 65% 55% / 0.4), 0 0 12px hsl(174 60% 50% / 0.25), 0 4px 16px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.2)',
                   textShadow: '0 1px 3px hsl(0 0% 0% / 0.4)',
                   letterSpacing: '0.12em',
-                  animation: 'center-button-pulse 2s ease-in-out infinite',
+                  transition: 'transform 200ms ease-out, box-shadow 200ms ease-out',
+                }}
+                onMouseDown={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.96)';
+                }}
+                onMouseUp={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                 }}
               >
                 {/* Inner shine */}
                 <div 
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.3) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 70%)',
-                    animation: 'center-inner-shine 3s ease-in-out infinite 0.5s',
+                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.12) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.12) 55%, transparent 70%)',
+                    animation: 'center-inner-shine 3.5s ease-in-out infinite 0.8s',
                   }}
                 />
                 <Search className="mr-1.5 h-3.5 w-3.5" style={{ filter: 'drop-shadow(0 1px 2px hsl(0 0% 0% / 0.3))' }} />
                 <span className="relative z-10">{t('common.analyze')}</span>
               </Button>
+            </div>
+          )}
+          
+          {/* Button absorption animation when clicked */}
+          {uiState === 'ready' && buttonAbsorbed && (
+            <div 
+              className="relative flex items-center justify-center"
+              style={{ 
+                width: size * 0.65, 
+                maxWidth: '140px',
+                animation: 'button-absorb 400ms cubic-bezier(0.4, 0, 1, 1) forwards',
+              }}
+            >
+              <div 
+                className="w-full rounded-full py-3 text-xs font-bold tracking-wider uppercase text-white flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(174 68% 46%) 0%, hsl(182 58% 40%) 50%, hsl(174 65% 44%) 100%)',
+                  boxShadow: '0 0 25px hsl(174 65% 55% / 0.4), 0 0 12px hsl(174 60% 50% / 0.25)',
+                }}
+              >
+                <Search className="mr-1.5 h-3.5 w-3.5" />
+                <span>{t('common.analyze')}</span>
+              </div>
             </div>
           )}
         </div>
@@ -677,6 +795,88 @@ export const ScoreGauge = ({
           100% { 
             opacity: 0;
             transform: translateY(60px);
+          }
+        }
+        /* Premium idle animations */
+        @keyframes gauge-slow-rotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes idle-text-breathe {
+          0%, 100% { 
+            opacity: 0.92;
+            transform: scale(1);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.015);
+          }
+        }
+        @keyframes idle-center-glow {
+          0%, 100% { 
+            opacity: 0.7;
+            transform: scale(0.97);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.03);
+          }
+        }
+        @keyframes idle-text-exit {
+          0% { 
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+          }
+          100% { 
+            opacity: 0;
+            transform: scale(0.92);
+            filter: blur(4px);
+          }
+        }
+        @keyframes activation-wave {
+          0% { 
+            opacity: 0.8;
+            transform: scale(0.5);
+          }
+          100% { 
+            opacity: 0;
+            transform: scale(1.4);
+          }
+        }
+        @keyframes button-emerge {
+          0% { 
+            opacity: 0;
+            transform: scale(0.92);
+          }
+          100% { 
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes button-glow-ramp {
+          0% { 
+            opacity: 0;
+          }
+          100% { 
+            opacity: 0.7;
+          }
+        }
+        @keyframes button-absorb {
+          0% { 
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+          }
+          60% { 
+            opacity: 0.7;
+            transform: scale(0.85);
+            filter: blur(1px);
+          }
+          100% { 
+            opacity: 0;
+            transform: scale(0.3);
+            filter: blur(6px);
           }
         }
       `}</style>
