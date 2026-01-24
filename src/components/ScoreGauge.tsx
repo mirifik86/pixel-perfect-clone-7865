@@ -637,6 +637,37 @@ export const ScoreGauge = ({
                 opacity: isTransitioning ? 0 : 1,
               }}
             >
+              {/* Floating particles around button */}
+              {!isTransitioning && (
+                <>
+                  {[...Array(8)].map((_, i) => {
+                    const angle = (i / 8) * 360;
+                    const distance = 28 + (i % 3) * 8;
+                    const particleSize = 2 + (i % 2);
+                    const delay = i * 0.4;
+                    const duration = 3 + (i % 3) * 0.5;
+                    
+                    return (
+                      <div
+                        key={i}
+                        className="absolute pointer-events-none"
+                        style={{
+                          left: '50%',
+                          top: '50%',
+                          width: `${particleSize}px`,
+                          height: `${particleSize}px`,
+                          borderRadius: '50%',
+                          background: 'radial-gradient(circle, hsl(180 75% 70%) 0%, hsl(174 70% 60%) 50%, transparent 100%)',
+                          boxShadow: `0 0 ${particleSize * 2}px hsl(174 70% 60% / 0.6), 0 0 ${particleSize * 4}px hsl(174 65% 55% / 0.3)`,
+                          transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${distance}px)`,
+                          animation: `particle-float ${duration}s ease-in-out ${delay}s infinite, particle-twinkle ${duration * 0.6}s ease-in-out ${delay}s infinite`,
+                        }}
+                      />
+                    );
+                  })}
+                </>
+              )}
+              
               {/* Outer halo with gentle pulse */}
               <div 
                 className="absolute -inset-4 rounded-full pointer-events-none"
@@ -1170,6 +1201,31 @@ export const ScoreGauge = ({
           }
           100% { 
             transform: translateX(150%) rotate(15deg);
+          }
+        }
+        /* Floating particles around button */
+        @keyframes particle-float {
+          0%, 100% { 
+            transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateY(var(--distance, -28px));
+          }
+          25% { 
+            transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 15deg)) translateY(calc(var(--distance, -28px) - 4px));
+          }
+          50% { 
+            transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 25deg)) translateY(calc(var(--distance, -28px) - 2px));
+          }
+          75% { 
+            transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 10deg)) translateY(calc(var(--distance, -28px) - 5px));
+          }
+        }
+        @keyframes particle-twinkle {
+          0%, 100% { 
+            opacity: 0.4;
+            transform: scale(0.8);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.2);
           }
         }
       `}</style>
