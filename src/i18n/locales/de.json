@@ -47,8 +47,7 @@
     "tapToUpload": "Tippen zum Hochladen",
     "addImage": "Bild hinzufügen",
     "then": "Dann",
-    "disclaimer": "LeenScore erklärt keine Fakten. Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten.",
-    "disclaimerText": "erklärt keine Fakten. Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten."
+    "disclaimer": "LeenScore erklärt keine Fakten. Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten."
   },
   "gauge": {
     "pending": "Ausstehend",

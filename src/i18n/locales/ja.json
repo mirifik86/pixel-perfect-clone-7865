@@ -47,8 +47,7 @@
     "tapToUpload": "タップしてアップロード",
     "addImage": "画像を追加",
     "then": "次へ",
-    "disclaimer": "LeenScoreは事実を宣言しません。情報の信頼性を評価するお手伝いをします。",
-    "disclaimerText": "は事実を宣言しません。情報の信頼性を評価するお手伝いをします。"
+    "disclaimer": "LeenScoreは事実を宣言しません。情報の信頼性を評価するお手伝いをします。"
   },
   "gauge": {
     "pending": "保留中",
