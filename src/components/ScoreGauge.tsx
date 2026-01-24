@@ -11,6 +11,7 @@ interface ScoreGaugeProps {
   onAnalyze?: () => void; // Callback when ANALYZE button is clicked
   isLoading?: boolean; // Loading state for the button
   onChevronCycleComplete?: () => void; // Callback when chevron cascade completes (for input highlight)
+  onTransferStart?: () => void; // Callback when idle→ready transfer animation starts (for input capture effect)
 }
 
 // Generate sparkle particles configuration
@@ -33,7 +34,8 @@ export const ScoreGauge = ({
   hasContent = false,
   onAnalyze,
   isLoading = false,
-  onChevronCycleComplete
+  onChevronCycleComplete,
+  onTransferStart
 }: ScoreGaugeProps) => {
   const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -41,6 +43,8 @@ export const ScoreGauge = ({
   const [showSparkles, setShowSparkles] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [buttonAbsorbed, setButtonAbsorbed] = useState(false);
+  const [showTransferBeam, setShowTransferBeam] = useState(false);
+  const [buttonCharged, setButtonCharged] = useState(false);
   const animationRef = useRef<number | null>(null);
   const prevUiStateRef = useRef<string>('idle');
   
@@ -189,10 +193,29 @@ export const ScoreGauge = ({
   useEffect(() => {
     const prevState = prevUiStateRef.current;
     
-    // Idle → Ready transition
+    // Idle → Ready transition: Trigger transfer animation sequence
     if (prevState === 'idle' && uiState === 'ready') {
       setIsTransitioning(true);
-      setTimeout(() => setIsTransitioning(false), 500);
+      
+      // 1) Input capture phase (notify parent to show input glow)
+      onTransferStart?.();
+      
+      // 2) Beam transfer phase (starts after 180ms)
+      setTimeout(() => {
+        setShowTransferBeam(true);
+      }, 180);
+      
+      // 3) Button charge phase (starts when beam arrives ~460ms)
+      setTimeout(() => {
+        setShowTransferBeam(false);
+        setButtonCharged(true);
+      }, 500);
+      
+      // 4) Settle into armed state
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setButtonCharged(false);
+      }, 800);
     }
     
     // Ready → Analyzing transition (button absorbed)
@@ -202,7 +225,7 @@ export const ScoreGauge = ({
     }
     
     prevUiStateRef.current = uiState;
-  }, [uiState]);
+  }, [uiState, onTransferStart]);
   
   // Handle analyze click with absorption animation
   const handleAnalyzeClick = () => {
@@ -322,13 +345,63 @@ export const ScoreGauge = ({
           }}
         />
         
+        {/* Transfer beam - traveling from input to gauge center */}
+        {showTransferBeam && (
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none z-50"
+            style={{
+              bottom: -size * 0.45,
+              width: '4px',
+              height: size * 0.5,
+            }}
+          >
+            {/* Beam path */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to top, transparent 0%, hsl(174 70% 55% / 0.15) 20%, hsl(174 70% 55% / 0.15) 80%, transparent 100%)',
+                animation: 'beam-path-fade 320ms ease-out forwards',
+              }}
+            />
+            {/* Luminous orb head */}
+            <div 
+              style={{
+                position: 'absolute',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, hsl(180 80% 75%) 0%, hsl(174 75% 60%) 40%, transparent 70%)',
+                boxShadow: '0 0 12px hsl(174 80% 65% / 0.8), 0 0 25px hsl(174 70% 55% / 0.5)',
+                animation: 'orb-travel 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
+              }}
+            />
+            {/* Trailing blur */}
+            <div 
+              style={{
+                position: 'absolute',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '6px',
+                height: '30px',
+                borderRadius: '3px',
+                background: 'linear-gradient(to top, transparent 0%, hsl(174 65% 55% / 0.4) 50%, hsl(174 70% 60% / 0.6) 100%)',
+                filter: 'blur(2px)',
+                animation: 'trail-travel 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
+              }}
+            />
+          </div>
+        )}
+        
         {/* Activation wave - triggers when content is detected */}
         {uiState === 'ready' && isTransitioning && (
           <div 
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: 'radial-gradient(circle, hsl(174 65% 55% / 0.4) 0%, hsl(174 60% 50% / 0.2) 30%, transparent 70%)',
-              animation: 'activation-wave 500ms ease-out forwards',
+              background: 'radial-gradient(circle, hsl(174 65% 55% / 0.5) 0%, hsl(174 60% 50% / 0.25) 30%, transparent 70%)',
+              animation: 'activation-wave 600ms ease-out 460ms forwards',
+              opacity: 0,
             }}
           />
         )}
@@ -556,35 +629,44 @@ export const ScoreGauge = ({
             <div 
               className="relative group"
               style={{ 
-                width: size * 0.58, 
-                maxWidth: '130px',
-                animation: 'button-emerge 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                width: size * 0.65, 
+                maxWidth: '150px',
+                animation: isTransitioning 
+                  ? 'button-emerge 450ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
+                  : 'none',
+                opacity: isTransitioning ? 0 : 1,
               }}
             >
               {/* Outer halo with gentle pulse */}
               <div 
-                className="absolute -inset-3 rounded-full pointer-events-none"
+                className="absolute -inset-4 rounded-full pointer-events-none"
                 style={{
-                  background: 'radial-gradient(circle, hsl(174 70% 55% / 0.35) 0%, hsl(174 60% 50% / 0.12) 50%, transparent 80%)',
-                  filter: 'blur(12px)',
-                  animation: 'button-halo-pulse 4s ease-in-out infinite',
+                  background: 'radial-gradient(circle, hsl(174 70% 55% / 0.4) 0%, hsl(174 60% 50% / 0.15) 50%, transparent 80%)',
+                  filter: 'blur(14px)',
+                  animation: buttonCharged 
+                    ? 'button-charge-glow 260ms ease-out forwards' 
+                    : 'button-halo-pulse 4s ease-in-out infinite',
                 }}
               />
               
-              {/* Crisp border ring with shimmer */}
+              {/* Crisp glass border ring */}
               <div 
                 className="absolute -inset-[2px] rounded-full overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 75% 55%), hsl(185 70% 50%), hsl(174 75% 55%))',
-                  boxShadow: '0 0 8px hsl(174 70% 55% / 0.5)',
+                  background: 'linear-gradient(135deg, hsl(174 80% 58%), hsl(185 75% 52%), hsl(174 80% 58%))',
+                  boxShadow: buttonCharged 
+                    ? '0 0 16px hsl(174 75% 60% / 0.7), 0 0 30px hsl(174 70% 55% / 0.4)' 
+                    : '0 0 10px hsl(174 70% 55% / 0.5)',
                 }}
               >
-                {/* Sheen sweep every 5-7 seconds */}
+                {/* Sheen sweep every 6-8 seconds + charge sheen */}
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.25) 45%, hsl(0 0% 100% / 0.7) 50%, hsl(0 0% 100% / 0.25) 55%, transparent 70%)',
-                    animation: 'signature-sheen 6s ease-in-out infinite 1s',
+                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.3) 45%, hsl(0 0% 100% / 0.8) 50%, hsl(0 0% 100% / 0.3) 55%, transparent 70%)',
+                    animation: buttonCharged 
+                      ? 'charge-sheen-sweep 200ms ease-out forwards' 
+                      : 'signature-sheen 7s ease-in-out infinite 1.5s',
                   }}
                 />
               </div>
@@ -593,7 +675,10 @@ export const ScoreGauge = ({
               <div 
                 className="absolute inset-0 rounded-full pointer-events-none"
                 style={{
-                  boxShadow: 'inset 0 0 12px hsl(174 65% 60% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.2)',
+                  boxShadow: buttonCharged 
+                    ? 'inset 0 0 20px hsl(174 70% 65% / 0.45), inset 0 1px 0 hsl(0 0% 100% / 0.35)' 
+                    : 'inset 0 0 14px hsl(174 65% 60% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.25)',
+                  transition: 'box-shadow 200ms ease-out',
                 }}
               />
               
@@ -601,39 +686,40 @@ export const ScoreGauge = ({
                 type="button"
                 onClick={handleAnalyzeClick}
                 disabled={isLoading}
-                className="relative w-full rounded-full py-2.5 text-xs font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
+                className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
                 style={{
-                  background: 'linear-gradient(145deg, hsl(174 68% 48%) 0%, hsl(180 60% 42%) 50%, hsl(174 65% 45%) 100%)',
-                  boxShadow: '0 0 20px hsl(174 65% 55% / 0.35), 0 4px 14px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 2px hsl(0 0% 0% / 0.15)',
-                  textShadow: '0 1px 3px hsl(0 0% 0% / 0.4)',
-                  letterSpacing: '0.1em',
+                  background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
+                  boxShadow: buttonCharged 
+                    ? '0 0 30px hsl(174 70% 58% / 0.55), 0 6px 20px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.35), inset 0 -1px 3px hsl(0 0% 0% / 0.2)' 
+                    : '0 0 22px hsl(174 65% 55% / 0.4), 0 5px 16px hsl(0 0% 0% / 0.28), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)',
+                  textShadow: '0 1px 3px hsl(0 0% 0% / 0.5)',
+                  letterSpacing: '0.08em',
                   transform: 'scale(1)',
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.03) translateY(-1px)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 28px hsl(174 65% 55% / 0.5), 0 6px 18px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.04) translateY(-1px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 35px hsl(174 70% 58% / 0.6), 0 8px 22px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.4), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 20px hsl(174 65% 55% / 0.35), 0 4px 14px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 22px hsl(174 65% 55% / 0.4), 0 5px 16px hsl(0 0% 0% / 0.28), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
                 }}
                 onMouseDown={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.95)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)';
                 }}
                 onMouseUp={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                 }}
               >
-                {/* Inner shine */}
+                {/* Inner shine sweep */}
                 <div 
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.1) 45%, hsl(0 0% 100% / 0.2) 50%, hsl(0 0% 100% / 0.1) 55%, transparent 70%)',
-                    animation: 'center-inner-shine 4s ease-in-out infinite 1.5s',
+                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.12) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.12) 55%, transparent 70%)',
+                    animation: 'center-inner-shine 4.5s ease-in-out infinite 2s',
                   }}
                 />
-                <Search className="mr-1.5 h-3 w-3" style={{ filter: 'drop-shadow(0 1px 2px hsl(0 0% 0% / 0.3))' }} />
-                <span className="relative z-10">{t('common.analyze')}</span>
+                <span className="relative z-10">{t('common.launchAnalysis')}</span>
               </Button>
             </div>
           )}
@@ -643,20 +729,19 @@ export const ScoreGauge = ({
             <div 
               className="relative flex items-center justify-center"
               style={{ 
-                width: size * 0.58, 
-                maxWidth: '130px',
+                width: size * 0.65, 
+                maxWidth: '150px',
                 animation: 'button-absorb 400ms cubic-bezier(0.4, 0, 1, 1) forwards',
               }}
             >
               <div 
-                className="w-full rounded-full py-2.5 text-xs font-bold tracking-wider uppercase text-white flex items-center justify-center"
+                className="w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white flex items-center justify-center"
                 style={{
-                  background: 'linear-gradient(145deg, hsl(174 68% 48%) 0%, hsl(180 60% 42%) 50%, hsl(174 65% 45%) 100%)',
-                  boxShadow: '0 0 25px hsl(174 65% 55% / 0.5), 0 0 12px hsl(174 60% 50% / 0.3)',
+                  background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
+                  boxShadow: '0 0 30px hsl(174 70% 58% / 0.6), 0 0 15px hsl(174 65% 55% / 0.4)',
                 }}
               >
-                <Search className="mr-1.5 h-3 w-3" />
-                <span>{t('common.analyze')}</span>
+                <span>{t('common.launchAnalysis')}</span>
               </div>
             </div>
           )}
@@ -1015,6 +1100,76 @@ export const ScoreGauge = ({
           100% { 
             opacity: 0.15;
             transform: scaleX(0.9);
+          }
+        }
+        /* Transfer beam animations */
+        @keyframes orb-travel {
+          0% { 
+            bottom: 0;
+            opacity: 0;
+          }
+          10% { 
+            opacity: 1;
+          }
+          90% { 
+            opacity: 1;
+          }
+          100% { 
+            bottom: 100%;
+            opacity: 0;
+          }
+        }
+        @keyframes trail-travel {
+          0% { 
+            bottom: -10px;
+            opacity: 0;
+          }
+          15% { 
+            opacity: 0.8;
+          }
+          85% { 
+            opacity: 0.6;
+          }
+          100% { 
+            bottom: calc(100% - 20px);
+            opacity: 0;
+          }
+        }
+        @keyframes beam-path-fade {
+          0% { 
+            opacity: 0;
+          }
+          30% { 
+            opacity: 1;
+          }
+          70% { 
+            opacity: 0.6;
+          }
+          100% { 
+            opacity: 0;
+          }
+        }
+        /* Button charge animations */
+        @keyframes button-charge-glow {
+          0% { 
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.15);
+          }
+          100% { 
+            opacity: 0.75;
+            transform: scale(1.05);
+          }
+        }
+        @keyframes charge-sheen-sweep {
+          0% { 
+            transform: translateX(-150%) rotate(15deg);
+          }
+          100% { 
+            transform: translateX(150%) rotate(15deg);
           }
         }
       `}</style>
