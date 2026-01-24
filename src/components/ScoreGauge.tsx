@@ -750,7 +750,7 @@ export const ScoreGauge = ({
                     animation: 'center-inner-shine 4.5s ease-in-out infinite 2s',
                   }}
                 />
-                <span className="relative z-10">{t('common.launchAnalysis')}</span>
+                <span className="relative z-10">{t('gauge.startAnalysis')}</span>
               </Button>
             </div>
           )}
@@ -772,7 +772,7 @@ export const ScoreGauge = ({
                   boxShadow: '0 0 30px hsl(174 70% 58% / 0.6), 0 0 15px hsl(174 65% 55% / 0.4)',
                 }}
               >
-                <span>{t('common.launchAnalysis')}</span>
+                <span>{t('gauge.startAnalysis')}</span>
               </div>
             </div>
           )}

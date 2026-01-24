@@ -509,12 +509,12 @@ const Index = () => {
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
       <main className="container-unified relative z-10 flex flex-1 flex-col items-center overflow-x-hidden py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div className="flex w-full max-w-full flex-col items-center overflow-hidden">
-          {/* Logo & branding with unified halo - MOBILE OPTIMIZED */}
+          {/* Logo & branding - CLEAN HIERARCHY */}
           <div 
             className="relative flex animate-fade-in flex-col items-center overflow-visible" 
             style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: '0' }}
           >
-            {/* Unified halo effect behind logo + subtitles - constrained */}
+            {/* Unified halo effect behind logo */}
             <div 
               className="pointer-events-none absolute inset-0"
               style={{
@@ -524,95 +524,22 @@ const Index = () => {
             />
             
             <LeenScoreLogo />
-            
-            {/* Premium light beam separator */}
-            <div className="relative flex w-full items-center justify-center" style={{ marginTop: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
-              {/* Central glow dot */}
-              <div 
-                className="absolute h-1.5 w-1.5 rounded-full"
-                style={{
-                  background: 'hsl(174 80% 60%)',
-                  boxShadow: '0 0 8px 2px hsl(174 80% 55% / 0.8), 0 0 20px 4px hsl(174 60% 45% / 0.4)'
-                }}
-              />
-              {/* Light beam left */}
-              <div 
-                className="h-px w-24"
-                style={{
-                  background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.6) 100%)'
-                }}
-              />
-              {/* Light beam right */}
-              <div 
-                className="h-px w-24"
-                style={{
-                  background: 'linear-gradient(90deg, hsl(174 60% 50% / 0.6) 0%, transparent 100%)'
-                }}
-              />
-            </div>
-            
-            {/* Byline - clean, compact, premium */}
-            <p 
-              className="animate-fade-in font-semibold uppercase text-center"
-              style={{ 
-                animationDelay: '150ms', 
-                animationFillMode: 'both',
-                marginTop: 'var(--space-2)',
-                fontSize: 'clamp(0.65rem, 0.6rem + 0.3vw, 0.8rem)',
-                letterSpacing: '0.3em',
-                color: 'hsl(174 85% 68%)',
-                textShadow: '0 0 15px hsl(174 90% 60% / 0.7), 0 0 30px hsl(174 80% 55% / 0.5)'
-              }}
-            >
-              {i18nT('hero.byLine')}
-            </p>
           </div>
 
-          {/* Premium separator between header and language toggle */}
-          <div 
-            className="relative w-full flex items-center justify-center"
-            style={{ 
-              marginTop: 'clamp(1rem, 3vh, 1.75rem)',
-              marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)'
-            }}
-          >
-            {/* Subtle horizontal line with fade */}
-            <div 
-              className="absolute h-px"
-              style={{
-                width: 'clamp(120px, 25vw, 200px)',
-                background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.06) 30%, hsl(0 0% 100% / 0.06) 70%, transparent 100%)'
-              }}
-            />
-          </div>
-
-          {/* Language toggle - centered with premium spacing */}
+          {/* Language toggle - subtle, not dominant */}
           <div 
             className="flex w-full justify-center animate-fade-in"
-            style={{ animationDelay: '200ms', animationFillMode: 'both' }}
+            style={{ 
+              animationDelay: '200ms', 
+              animationFillMode: 'both',
+              marginTop: 'clamp(0.75rem, 2vh, 1.25rem)',
+              marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)',
+            }}
           >
             <LanguageToggle 
               mode={languageMode} 
               language={resolvedLanguage} 
               onLanguageChange={handleLanguageChange} 
-            />
-          </div>
-
-          {/* Premium separator between language toggle and gauge */}
-          <div 
-            className="relative w-full flex items-center justify-center"
-            style={{ 
-              marginTop: 'clamp(0.75rem, 2vh, 1.25rem)',
-              marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)'
-            }}
-          >
-            {/* Subtle horizontal line with fade */}
-            <div 
-              className="absolute h-px"
-              style={{
-                width: 'clamp(80px, 15vw, 140px)',
-                background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.04) 30%, hsl(0 0% 100% / 0.04) 70%, transparent 100%)'
-              }}
             />
           </div>
 
@@ -829,84 +756,18 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - premium signature */}
-        <footer className="relative mt-auto flex flex-col items-center text-center py-5">
-          {/* Subtle premium separator */}
-          <div 
-            className="mb-4"
-            style={{ 
-              width: '60px',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.3) 50%, transparent 100%)',
-            }}
-          />
-          
-          {/* LeenScore brand - same style as main title */}
-          <div 
-            className="brand-text tracking-tight"
-            style={{ 
-              fontSize: 'clamp(1.3rem, 1.2rem + 0.5vw, 1.6rem)',
-              letterSpacing: '-0.03em'
-            }}
-          >
-            <span 
-              className="italic"
-              style={{
-                color: 'hsl(174 65% 52%)',
-                textShadow: '0 0 30px hsl(174 60% 45% / 0.5), 0 0 60px hsl(40 100% 60% / 0.2)'
-              }}
-            >Leen</span>
-            <span 
-              className="font-semibold not-italic" 
-              style={{
-                color: 'hsl(0 0% 98%)',
-                textShadow: '0 0 25px hsl(40 100% 70% / 0.25), 0 2px 12px hsl(30 90% 55% / 0.1)'
-              }}
-            >Score</span>
-          </div>
-          
-          {/* Signature premium */}
+        {/* Footer - minimal and clean */}
+        <footer className="relative mt-auto flex flex-col items-center text-center py-4">
+          {/* Simple footer text */}
           <p 
-            className="mt-3 flex items-center gap-1.5"
             style={{ 
-              fontSize: '0.72rem',
-              letterSpacing: '0.06em',
-              color: 'hsl(0 0% 55%)',
+              fontSize: 'clamp(0.7rem, 0.65rem + 0.2vw, 0.8rem)',
+              letterSpacing: '0.05em',
+              color: 'hsl(0 0% 50%)',
             }}
           >
-            <span style={{ opacity: 0.8 }}>{i18nT('index.developedBy')}</span>
-            <span 
-              className="transition-all duration-300 relative inline-block"
-              style={{ 
-                color: 'hsl(174 65% 52%)',
-                fontWeight: 500,
-                letterSpacing: '0.08em',
-                textShadow: '0 0 12px hsl(174 60% 45% / 0.35), 0 0 24px hsl(174 60% 45% / 0.15)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'hsl(174 65% 60%)';
-                e.currentTarget.style.textShadow = '0 0 16px hsl(174 60% 50% / 0.5), 0 0 32px hsl(174 60% 45% / 0.25)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'hsl(174 65% 52%)';
-                e.currentTarget.style.textShadow = '0 0 12px hsl(174 60% 45% / 0.35), 0 0 24px hsl(174 60% 45% / 0.15)';
-              }}
-            >
-              Sol&Air
-            </span>
+            {i18nT('index.footer')}
           </p>
-          
-          {/* Version */}
-          <div 
-            className="mt-1 uppercase"
-            style={{ 
-              fontSize: '0.6rem',
-              letterSpacing: '0.15em',
-              color: 'hsl(0 0% 45%)'
-            }}
-          >
-            {i18nT('index.version')}
-          </div>
         </footer>
       </main>
       

@@ -188,50 +188,50 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
         className="hidden"
       />
       
-      {/* Premium Drop Card */}
+      {/* Premium Drop Card - HIGH CONTRAST from background */}
       <div 
         className="relative cursor-text"
         onClick={handleCardClick}
       >
         {/* Outer glow ring - enhanced on hover/drag/capture */}
         <div 
-          className="absolute -inset-1 rounded-2xl transition-all duration-300"
+          className="absolute -inset-2 rounded-2xl transition-all duration-300"
           style={{
             background: showCaptureGlow
-              ? 'linear-gradient(135deg, hsl(174 75% 55% / 0.5), hsl(174 70% 60% / 0.35), hsl(174 75% 55% / 0.5))'
+              ? 'linear-gradient(135deg, hsl(174 75% 55% / 0.6), hsl(174 70% 60% / 0.45), hsl(174 75% 55% / 0.6))'
               : isActive
-              ? 'linear-gradient(135deg, hsl(174 70% 50% / 0.4), hsl(174 60% 55% / 0.25), hsl(174 70% 50% / 0.4))'
-              : hasImage
-              ? 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), transparent, hsl(174 60% 45% / 0.25))'
-              : 'linear-gradient(135deg, hsl(174 60% 45% / 0.15), transparent, hsl(174 60% 45% / 0.1))',
+              ? 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 60% 55% / 0.35), hsl(174 70% 50% / 0.5))'
+              : hasContent
+              ? 'linear-gradient(135deg, hsl(174 65% 50% / 0.35), hsl(174 55% 45% / 0.2), hsl(174 65% 50% / 0.35))'
+              : 'linear-gradient(135deg, hsl(174 60% 45% / 0.25), hsl(174 50% 40% / 0.15), hsl(174 60% 45% / 0.25))',
             animation: showCaptureGlow ? 'capture-glow-pulse 180ms ease-out forwards' : 'card-glow 3s ease-in-out infinite',
-            filter: showCaptureGlow ? 'blur(14px)' : isActive ? 'blur(12px)' : 'blur(8px)',
-            opacity: showCaptureGlow ? 1 : isActive ? 1 : 0.7,
+            filter: showCaptureGlow ? 'blur(16px)' : isActive ? 'blur(14px)' : 'blur(10px)',
+            opacity: 1,
           }}
         />
         
-        {/* Glass card container */}
+        {/* Glass card container - STRONG CONTRAST */}
         <div 
-          className="relative rounded-2xl border transition-all duration-300"
+          className="relative rounded-2xl border-2 transition-all duration-300"
           style={{
             borderColor: showCaptureGlow
-              ? 'hsl(174 70% 55% / 0.5)'
+              ? 'hsl(174 70% 55% / 0.6)'
               : isActive 
-              ? 'hsl(174 60% 50% / 0.4)' 
-              : hasImage 
-              ? 'hsl(174 60% 45% / 0.25)'
-              : 'hsl(0 0% 100% / 0.1)',
+              ? 'hsl(174 60% 50% / 0.5)' 
+              : hasContent 
+              ? 'hsl(174 60% 48% / 0.4)'
+              : 'hsl(174 50% 45% / 0.25)',
             background: isActive
-              ? 'linear-gradient(to bottom, hsl(0 0% 100% / 0.1), hsl(0 0% 100% / 0.04))'
-              : 'linear-gradient(to bottom, hsl(0 0% 100% / 0.07), hsl(0 0% 100% / 0.02))',
-            backdropFilter: 'blur(20px)',
+              ? 'linear-gradient(to bottom, hsl(220 25% 12% / 0.95), hsl(220 30% 8% / 0.98))'
+              : 'linear-gradient(to bottom, hsl(220 25% 11% / 0.92), hsl(220 30% 7% / 0.96))',
+            backdropFilter: 'blur(24px)',
             boxShadow: showCaptureGlow
-              ? '0 0 60px hsl(174 70% 55% / 0.35), 0 12px 40px hsl(0 0% 0% / 0.4), inset 0 0 20px hsl(174 60% 55% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.2)'
+              ? '0 0 70px hsl(174 70% 55% / 0.4), 0 16px 48px hsl(0 0% 0% / 0.5), inset 0 0 25px hsl(174 60% 55% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.25)'
               : isActive
-              ? '0 0 50px hsl(174 60% 50% / 0.25), 0 12px 40px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
-              : hasImage
-              ? '0 0 40px hsl(174 60% 45% / 0.2), 0 8px 32px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.1)'
-              : '0 8px 32px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.08)',
+              ? '0 0 60px hsl(174 60% 50% / 0.3), 0 16px 48px hsl(0 0% 0% / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.2)'
+              : hasContent
+              ? '0 0 50px hsl(174 60% 45% / 0.25), 0 12px 40px hsl(0 0% 0% / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
+              : '0 0 40px hsl(174 55% 45% / 0.15), 0 12px 40px hsl(0 0% 0% / 0.45), inset 0 1px 0 hsl(0 0% 100% / 0.12)',
           }}
         >
           {/* Capture glow inner pulse - triggered during idle→ready transfer */}
