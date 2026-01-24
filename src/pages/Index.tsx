@@ -555,9 +555,9 @@ const Index = () => {
                 }}
               >
                 {isImageAnalysis ? (
-                  <MissionControlLoader language={language} />
+                  <MissionControlLoader />
                 ) : (
-                  <AnalysisLoader size={gaugeSize} language={language} />
+                  <AnalysisLoader size={gaugeSize} />
                 )}
               </div>
             )}
@@ -647,7 +647,6 @@ const Index = () => {
           {/* Error Panel - shown when analysis fails (stays on page, no redirect) */}
           {analysisError && !isLoading && (
             <AnalysisError
-              language={language}
               errorMessage={analysisError.message}
               errorCode={analysisError.code}
               onRetry={handleRetry}
