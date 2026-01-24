@@ -551,61 +551,76 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* READY STATE: ANALYZE button emerging from center */}
+          {/* READY STATE: ANALYZE button emerging from center - Premium signature control */}
           {uiState === 'ready' && !buttonAbsorbed && (
             <div 
-              className="relative"
+              className="relative group"
               style={{ 
-                width: size * 0.65, 
-                maxWidth: '140px',
+                width: size * 0.58, 
+                maxWidth: '130px',
                 animation: 'button-emerge 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
               }}
             >
-              {/* Soft outer glow ramp-in */}
+              {/* Outer halo with gentle pulse */}
               <div 
-                className="absolute -inset-2 rounded-full"
+                className="absolute -inset-3 rounded-full pointer-events-none"
                 style={{
-                  background: 'radial-gradient(circle, hsl(174 70% 50% / 0.4) 0%, hsl(174 60% 45% / 0.15) 60%, transparent 100%)',
-                  filter: 'blur(10px)',
-                  animation: 'button-glow-ramp 600ms ease-out forwards',
+                  background: 'radial-gradient(circle, hsl(174 70% 55% / 0.35) 0%, hsl(174 60% 50% / 0.12) 50%, transparent 80%)',
+                  filter: 'blur(12px)',
+                  animation: 'button-halo-pulse 4s ease-in-out infinite',
                 }}
               />
               
-              {/* Border shimmer */}
+              {/* Crisp border ring with shimmer */}
               <div 
-                className="absolute -inset-0.5 rounded-full overflow-hidden"
+                className="absolute -inset-[2px] rounded-full overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 70% 52%), hsl(185 65% 48%), hsl(174 70% 52%))',
+                  background: 'linear-gradient(135deg, hsl(174 75% 55%), hsl(185 70% 50%), hsl(174 75% 55%))',
+                  boxShadow: '0 0 8px hsl(174 70% 55% / 0.5)',
                 }}
               >
+                {/* Sheen sweep every 5-7 seconds */}
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.6) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 70%)',
-                    animation: 'center-shine-sweep 3s ease-in-out infinite 0.6s',
+                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.25) 45%, hsl(0 0% 100% / 0.7) 50%, hsl(0 0% 100% / 0.25) 55%, transparent 70%)',
+                    animation: 'signature-sheen 6s ease-in-out infinite 1s',
                   }}
                 />
               </div>
+              
+              {/* Inner glow ring */}
+              <div 
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  boxShadow: 'inset 0 0 12px hsl(174 65% 60% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.2)',
+                }}
+              />
               
               <Button
                 type="button"
                 onClick={handleAnalyzeClick}
                 disabled={isLoading}
-                className="relative w-full rounded-full py-3 text-xs font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden"
+                className="relative w-full rounded-full py-2.5 text-xs font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 68% 46%) 0%, hsl(182 58% 40%) 50%, hsl(174 65% 44%) 100%)',
-                  boxShadow: '0 0 25px hsl(174 65% 55% / 0.4), 0 0 12px hsl(174 60% 50% / 0.25), 0 4px 16px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.2)',
+                  background: 'linear-gradient(145deg, hsl(174 68% 48%) 0%, hsl(180 60% 42%) 50%, hsl(174 65% 45%) 100%)',
+                  boxShadow: '0 0 20px hsl(174 65% 55% / 0.35), 0 4px 14px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 2px hsl(0 0% 0% / 0.15)',
                   textShadow: '0 1px 3px hsl(0 0% 0% / 0.4)',
-                  letterSpacing: '0.12em',
-                  transition: 'transform 200ms ease-out, box-shadow 200ms ease-out',
+                  letterSpacing: '0.1em',
+                  transform: 'scale(1)',
                 }}
-                onMouseDown={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.96)';
-                }}
-                onMouseUp={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.03) translateY(-1px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 28px hsl(174 65% 55% / 0.5), 0 6px 18px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
                 }}
                 onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 20px hsl(174 65% 55% / 0.35), 0 4px 14px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
+                }}
+                onMouseDown={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.95)';
+                }}
+                onMouseUp={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                 }}
               >
@@ -613,11 +628,11 @@ export const ScoreGauge = ({
                 <div 
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.12) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.12) 55%, transparent 70%)',
-                    animation: 'center-inner-shine 3.5s ease-in-out infinite 0.8s',
+                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.1) 45%, hsl(0 0% 100% / 0.2) 50%, hsl(0 0% 100% / 0.1) 55%, transparent 70%)',
+                    animation: 'center-inner-shine 4s ease-in-out infinite 1.5s',
                   }}
                 />
-                <Search className="mr-1.5 h-3.5 w-3.5" style={{ filter: 'drop-shadow(0 1px 2px hsl(0 0% 0% / 0.3))' }} />
+                <Search className="mr-1.5 h-3 w-3" style={{ filter: 'drop-shadow(0 1px 2px hsl(0 0% 0% / 0.3))' }} />
                 <span className="relative z-10">{t('common.analyze')}</span>
               </Button>
             </div>
@@ -628,26 +643,49 @@ export const ScoreGauge = ({
             <div 
               className="relative flex items-center justify-center"
               style={{ 
-                width: size * 0.65, 
-                maxWidth: '140px',
+                width: size * 0.58, 
+                maxWidth: '130px',
                 animation: 'button-absorb 400ms cubic-bezier(0.4, 0, 1, 1) forwards',
               }}
             >
               <div 
-                className="w-full rounded-full py-3 text-xs font-bold tracking-wider uppercase text-white flex items-center justify-center"
+                className="w-full rounded-full py-2.5 text-xs font-bold tracking-wider uppercase text-white flex items-center justify-center"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 68% 46%) 0%, hsl(182 58% 40%) 50%, hsl(174 65% 44%) 100%)',
-                  boxShadow: '0 0 25px hsl(174 65% 55% / 0.4), 0 0 12px hsl(174 60% 50% / 0.25)',
+                  background: 'linear-gradient(145deg, hsl(174 68% 48%) 0%, hsl(180 60% 42%) 50%, hsl(174 65% 45%) 100%)',
+                  boxShadow: '0 0 25px hsl(174 65% 55% / 0.5), 0 0 12px hsl(174 60% 50% / 0.3)',
                 }}
               >
-                <Search className="mr-1.5 h-3.5 w-3.5" />
+                <Search className="mr-1.5 h-3 w-3" />
                 <span>{t('common.analyze')}</span>
               </div>
             </div>
           )}
         </div>
         
-        {/* Premium cascade guidance chevrons - only in idle state */}
+        {/* Gauge bottom impact glow - triggered when upward chevrons reach the gauge */}
+        {uiState === 'ready' && (
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+            style={{ 
+              bottom: size * 0.08,
+              width: size * 0.6,
+              height: '8px',
+            }}
+          >
+            {/* Impact glow that pulses with chevron cycle */}
+            <div 
+              style={{
+                width: '100%',
+                height: '100%',
+                background: 'radial-gradient(ellipse 80% 100% at center, hsl(174 60% 55% / 0.25) 0%, transparent 70%)',
+                filter: 'blur(4px)',
+                animation: 'gauge-bottom-impact 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite',
+              }}
+            />
+          </div>
+        )}
+        
+        {/* Premium cascade guidance chevrons - DOWNWARD for idle state */}
         {uiState === 'idle' && (
           <div 
             className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
@@ -687,6 +725,56 @@ export const ScoreGauge = ({
                   <path 
                     d="M1 1L7 6L13 1" 
                     stroke="hsl(180 40% 65% / 0.7)" 
+                    strokeWidth="1.25" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Premium UPWARD chevrons - READY state (between input and gauge) */}
+        {uiState === 'ready' && (
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
+            style={{ 
+              bottom: -32, // Position below gauge (pointing upward toward it)
+              gap: '5px',
+            }}
+          >
+            {/* Three upward chevrons with waterfall cascade animation - reversed order for upward motion */}
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="relative"
+                style={{
+                  animation: `chevron-up-cascade 3.2s cubic-bezier(0.22, 1, 0.36, 1) ${(2 - i) * 140}ms infinite`,
+                }}
+              >
+                {/* Subtle chevron glow */}
+                <div 
+                  className="absolute inset-0 -m-2"
+                  style={{
+                    background: 'radial-gradient(circle, hsl(174 50% 55% / 0.12) 0%, transparent 60%)',
+                    filter: 'blur(3px)',
+                  }}
+                />
+                {/* Upward chevron SVG - subtle, lower opacity than downward */}
+                <svg 
+                  width="12" 
+                  height="6" 
+                  viewBox="0 0 14 7" 
+                  fill="none"
+                  style={{
+                    filter: 'drop-shadow(0 0 2px hsl(174 45% 55% / 0.2))',
+                    transform: 'rotate(180deg)', // Flip to point upward
+                  }}
+                >
+                  <path 
+                    d="M1 1L7 6L13 1" 
+                    stroke="hsl(174 50% 60% / 0.55)" 
                     strokeWidth="1.25" 
                     strokeLinecap="round" 
                     strokeLinejoin="round"
@@ -865,6 +953,68 @@ export const ScoreGauge = ({
             opacity: 0;
             transform: scale(0.3);
             filter: blur(6px);
+          }
+        }
+        /* Premium halo pulse for signature button */
+        @keyframes button-halo-pulse {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: scale(0.98);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.04);
+          }
+        }
+        /* Sheen sweep for premium button */
+        @keyframes signature-sheen {
+          0%, 85% { 
+            transform: translateX(-200%) rotate(15deg);
+          }
+          100% { 
+            transform: translateX(200%) rotate(15deg);
+          }
+        }
+        /* Upward chevron animation for READY state */
+        @keyframes chevron-up-cascade {
+          0% { 
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          15% { 
+            opacity: 0.5;
+            transform: translateY(5px);
+          }
+          50% { 
+            opacity: 0.45;
+            transform: translateY(-2px);
+          }
+          75% { 
+            opacity: 0.2;
+            transform: translateY(-6px);
+          }
+          88%, 100% { 
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+        }
+        /* Gauge bottom impact glow synced with upward chevrons */
+        @keyframes gauge-bottom-impact {
+          0%, 70% { 
+            opacity: 0.15;
+            transform: scaleX(0.9);
+          }
+          80% { 
+            opacity: 0.6;
+            transform: scaleX(1.1);
+          }
+          85% { 
+            opacity: 0.4;
+            transform: scaleX(1);
+          }
+          100% { 
+            opacity: 0.15;
+            transform: scaleX(0.9);
           }
         }
       `}</style>
