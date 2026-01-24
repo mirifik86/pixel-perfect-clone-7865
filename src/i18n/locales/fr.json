@@ -177,7 +177,9 @@
   },
   "footer": {
     "madeWith": "Fait avec",
-    "by": "par"
+    "by": "par",
+    "developedBy": "Développé par",
+    "version": "Version"
   },
   "screenshotEvidence": {
     "title": "Éléments de la capture",

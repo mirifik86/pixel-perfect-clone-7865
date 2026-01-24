@@ -177,7 +177,9 @@
   },
   "footer": {
     "madeWith": "Made with",
-    "by": "by"
+    "by": "by",
+    "developedBy": "Developed by",
+    "version": "Version"
   },
   "screenshotEvidence": {
     "title": "Screenshot Evidence",
