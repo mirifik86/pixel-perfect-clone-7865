@@ -288,24 +288,39 @@ export const ScoreGauge = ({
           transform: 'translate(-50%, -50%)',
           background: score !== null 
             ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
-            : 'radial-gradient(circle, hsl(174 60% 45% / 0.08) 0%, transparent 70%)',
+            : 'radial-gradient(circle, hsl(174 60% 45% / 0.12) 0%, hsl(200 50% 40% / 0.06) 40%, transparent 70%)',
           filter: 'blur(20px)',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          animation: score === null ? 'idle-glow-pulse 4s ease-in-out infinite' : 'none',
         }}
       />
       
       {/* Gauge container */}
       <div className="relative" style={{ width: size, height: size }}>
-        {/* Premium outer ring glow */}
+        {/* Premium outer ring glow - enhanced for idle state */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             boxShadow: score !== null 
               ? `0 0 30px ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}, 0 0 60px ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')}, inset 0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.1)')}`
-              : '0 0 20px hsl(174 60% 45% / 0.1), 0 0 40px hsl(174 60% 45% / 0.05)',
-            transition: 'box-shadow 0.5s ease-out'
+              : '0 0 25px hsl(174 60% 45% / 0.15), 0 0 50px hsl(200 50% 45% / 0.08), inset 0 0 15px hsl(174 50% 40% / 0.08)',
+            transition: 'box-shadow 0.5s ease-out',
+            animation: score === null ? 'idle-ring-pulse 4s ease-in-out infinite' : 'none',
           }}
         />
+        
+        {/* Idle state premium contour ring */}
+        {score === null && (
+          <div 
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              inset: strokeWidth / 2 - 1,
+              border: '1px solid hsl(174 50% 50% / 0.2)',
+              boxShadow: 'inset 0 0 20px hsl(174 60% 50% / 0.1), 0 0 1px hsl(174 60% 55% / 0.3)',
+              animation: 'idle-contour-glow 4s ease-in-out infinite',
+            }}
+          />
+        )}
         
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {/* Gradient definitions for smooth color transitions */}
@@ -323,6 +338,13 @@ export const ScoreGauge = ({
               </linearGradient>
             ))}
             
+            {/* Idle state gradient - subtle teal-to-slate */}
+            <linearGradient id="idle-segment-gradient" gradientUnits="userSpaceOnUse" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(174 40% 35%)" />
+              <stop offset="50%" stopColor="hsl(190 35% 40%)" />
+              <stop offset="100%" stopColor="hsl(210 30% 35%)" />
+            </linearGradient>
+            
             {/* Glow filter for active segments */}
             <filter id="segment-glow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -331,7 +353,34 @@ export const ScoreGauge = ({
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
+            
+            {/* Subtle glow filter for idle segments */}
+            <filter id="idle-segment-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
+
+          {/* Background arc track - visible in idle state for premium contour effect */}
+          {score === null && (
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke="hsl(200 20% 25% / 0.4)"
+              strokeWidth={strokeWidth}
+              strokeLinecap="butt"
+              strokeDasharray={`${totalArc} ${circumference}`}
+              style={{
+                transform: 'rotate(135deg)',
+                transformOrigin: 'center',
+              }}
+            />
+          )}
 
           {/* 5 equal color segments with gradient fills */}
           {colorPairs.map((pair, i) => {
@@ -339,6 +388,7 @@ export const ScoreGauge = ({
             const rotation = 135 + i * 270 / 5;
             const opacity = getSegmentOpacity(i);
             const isActive = opacity > 0.5;
+            const isIdle = score === null;
             
             return (
               <circle
@@ -347,15 +397,15 @@ export const ScoreGauge = ({
                 cy={size / 2}
                 r={radius}
                 fill="none"
-                stroke={`url(#segment-gradient-${i})`}
+                stroke={isIdle ? 'url(#idle-segment-gradient)' : `url(#segment-gradient-${i})`}
                 strokeWidth={strokeWidth}
                 strokeLinecap="butt"
                 strokeDasharray={`${segmentLength} ${circumference}`}
-                filter={isActive ? 'url(#segment-glow)' : undefined}
+                filter={isActive ? 'url(#segment-glow)' : isIdle ? 'url(#idle-segment-glow)' : undefined}
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center',
-                  opacity: opacity,
+                  opacity: isIdle ? 0.25 + (i * 0.03) : opacity,
                   transition: 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               />
@@ -759,6 +809,35 @@ export const ScoreGauge = ({
             0% { opacity: 0; transform: translateY(0); }
             15% { opacity: 1; transform: translateY(10px); }
             40%, 100% { opacity: 0; transform: translateY(25px); }
+          }
+          /* Idle state premium animations */
+          @keyframes idle-glow-pulse {
+            0%, 100% { 
+              opacity: 0.7; 
+              transform: translate(-50%, -50%) scale(0.98);
+            }
+            50% { 
+              opacity: 1; 
+              transform: translate(-50%, -50%) scale(1.02);
+            }
+          }
+          @keyframes idle-ring-pulse {
+            0%, 100% { 
+              box-shadow: 0 0 25px hsl(174 60% 45% / 0.12), 0 0 50px hsl(200 50% 45% / 0.06), inset 0 0 15px hsl(174 50% 40% / 0.06);
+            }
+            50% { 
+              box-shadow: 0 0 35px hsl(174 60% 45% / 0.2), 0 0 70px hsl(200 50% 45% / 0.1), inset 0 0 20px hsl(174 50% 40% / 0.1);
+            }
+          }
+          @keyframes idle-contour-glow {
+            0%, 100% { 
+              border-color: hsl(174 50% 50% / 0.15);
+              box-shadow: inset 0 0 15px hsl(174 60% 50% / 0.08), 0 0 1px hsl(174 60% 55% / 0.2);
+            }
+            50% { 
+              border-color: hsl(174 50% 50% / 0.3);
+              box-shadow: inset 0 0 25px hsl(174 60% 50% / 0.15), 0 0 2px hsl(174 60% 55% / 0.4);
+            }
           }
         `}</style>
       </div>
