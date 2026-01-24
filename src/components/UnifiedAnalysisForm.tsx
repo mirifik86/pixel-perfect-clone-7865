@@ -150,7 +150,7 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, on
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="w-full animate-fade-in"
+      className="w-full animate-fade-in flex flex-col"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -163,6 +163,91 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, on
         onChange={handleFileSelect}
         className="hidden"
       />
+      
+      {/* Contextual Primary CTA - ABOVE input, transforms based on content */}
+      <div className="relative mb-3 md:mb-4">
+        {/* CTA Container with fixed height to prevent layout jumps */}
+        <div 
+          className="relative flex items-center justify-center"
+          style={{ minHeight: '52px' }}
+        >
+          {/* Initial State: "READY TO ANALYZE" informational text */}
+          <div 
+            className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+              hasContent ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
+            }`}
+            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+          >
+            <span 
+              className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase"
+              style={{
+                color: 'hsl(174 55% 50% / 0.7)',
+                textShadow: '0 0 20px hsl(174 60% 50% / 0.25)',
+                animation: 'cta-status-pulse 2.5s ease-in-out infinite',
+              }}
+            >
+              {t('gauge.readyToAnalyze')}
+            </span>
+          </div>
+          
+          {/* Active State: "ANALYZE" button */}
+          <div 
+            className={`w-full transition-all duration-200 ${
+              hasContent ? 'opacity-100 scale-100' : 'opacity-0 pointer-events-none scale-105'
+            }`}
+            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+          >
+            <div className="relative group">
+              {/* Outer glow ring */}
+              <div 
+                className="absolute -inset-1.5 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 80% 55% / 0.3), hsl(174 70% 50% / 0.5))',
+                  animation: 'button-pulse 2s ease-in-out infinite',
+                  filter: 'blur(12px)',
+                }}
+              />
+              
+              {/* Inner shimmer layer */}
+              <div 
+                className="absolute -inset-0.5 rounded-xl overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
+                }}
+              >
+                {/* Animated shine effect */}
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 60%)',
+                    animation: 'button-shine 3s ease-in-out infinite',
+                  }}
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="relative w-full rounded-xl py-4 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)',
+                  boxShadow: '0 0 40px hsl(174 60% 50% / 0.4), 0 8px 24px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.1)',
+                  textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
+                }}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2))' }} />
+                )}
+                <span className="relative">
+                  {t('common.analyze')}
+                </span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Premium Drop Card */}
       <div 
@@ -376,127 +461,6 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, on
         </div>
       </div>
       
-      {/* Transition cue - MOBILE: hidden "Puis" text to save space */}
-      <div className="flex justify-center py-1 md:py-2">
-        <div className="relative flex flex-col items-center gap-0.5 md:gap-1">
-          {/* "Puis" text - HIDDEN on mobile to save vertical space */}
-          {!hasContent && (
-            <span 
-              className="hidden md:block text-[10px] font-light tracking-[0.25em] uppercase transition-opacity duration-300"
-              style={{
-                color: 'hsl(174 65% 55% / 0.72)',
-                textShadow: '0 0 10px hsl(174 70% 50% / 0.3)',
-              }}
-            >
-              {t('form.then')}
-            </span>
-          )}
-          
-          {/* Arrow - always visible, intensified when content is present */}
-          <div 
-            className="relative transition-transform duration-300"
-            style={{
-              animation: hasContent 
-                ? 'arrow-bounce-intense 1.5s ease-in-out infinite' 
-                : 'arrow-bounce 2s ease-in-out infinite',
-              transform: hasContent ? 'scale(1.3)' : 'scale(1)',
-            }}
-          >
-            {/* Glow behind arrow - intensified when content is present */}
-            <div 
-              className="absolute inset-0 rounded-full transition-all duration-300"
-              style={{
-                background: hasContent 
-                  ? 'radial-gradient(circle, hsl(174 70% 55% / 0.7), transparent 70%)'
-                  : 'radial-gradient(circle, hsl(174 70% 55% / 0.4), transparent 70%)',
-                animation: hasContent 
-                  ? 'arrow-glow-intense 1.5s ease-in-out infinite' 
-                  : 'arrow-glow 2s ease-in-out infinite',
-                filter: hasContent ? 'blur(10px)' : 'blur(6px)',
-                transform: hasContent ? 'scale(3.5)' : 'scale(2.5)',
-              }}
-            />
-            <svg 
-              width={hasContent ? "22" : "18"}
-              height={hasContent ? "12" : "10"}
-              viewBox="0 0 18 10" 
-              fill="none"
-              className="relative transition-all duration-300"
-            >
-              <path 
-                d="M1 1L9 9L17 1" 
-                stroke={hasContent ? "hsl(174 80% 65%)" : "hsl(174 70% 60%)"} 
-                strokeWidth={hasContent ? "2.5" : "2"}
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{
-                  filter: hasContent 
-                    ? 'drop-shadow(0 0 10px hsl(174 80% 60% / 0.8))'
-                    : 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.6))',
-                }}
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
-      
-      {/* Premium Analyze Button - compact */}
-      <div className="relative mt-2 group">
-        {/* Outer glow ring - only visible when content is ready */}
-        {(hasText || hasImage) && (
-          <div 
-            className="absolute -inset-1.5 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
-            style={{
-              background: 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(200 80% 55% / 0.3), hsl(174 70% 50% / 0.5))',
-              animation: 'button-pulse 2s ease-in-out infinite',
-              filter: 'blur(12px)',
-            }}
-          />
-        )}
-        
-        {/* Inner shimmer layer - only visible when content is ready */}
-        {(hasText || hasImage) && (
-          <div 
-            className="absolute -inset-0.5 rounded-xl overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, hsl(174 65% 48%), hsl(180 60% 42%), hsl(174 65% 48%))',
-            }}
-          >
-            {/* Animated shine effect */}
-            <div 
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 60%)',
-                animation: 'button-shine 3s ease-in-out infinite',
-              }}
-            />
-          </div>
-        )}
-        
-        <Button
-          type="submit"
-          disabled={isLoading || (!hasText && !hasImage)}
-          className="relative w-full rounded-xl py-4 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 border-0"
-          style={{
-            background: (hasText || hasImage)
-              ? 'linear-gradient(135deg, hsl(174 65% 45%) 0%, hsl(180 55% 38%) 50%, hsl(174 60% 42%) 100%)'
-              : 'linear-gradient(135deg, hsl(174 40% 35% / 0.6) 0%, hsl(180 35% 30% / 0.6) 50%, hsl(174 40% 32% / 0.6) 100%)',
-            boxShadow: (hasText || hasImage)
-              ? '0 0 40px hsl(174 60% 50% / 0.4), 0 8px 24px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.1)'
-              : '0 4px 12px hsl(0 0% 0% / 0.2)',
-            textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
-          }}
-        >
-          {isLoading ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          ) : (
-            <Search className="mr-2 h-5 w-5" style={{ filter: 'drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2))' }} />
-          )}
-          <span className="relative">
-            {t('common.analyze')}
-          </span>
-        </Button>
-      </div>
       
       {/* CSS for animations */}
       <style>{`
@@ -516,12 +480,8 @@ export const UnifiedAnalysisForm = ({ onAnalyzeText, onImageReady, isLoading, on
           0% { transform: translateX(-100%); }
           50%, 100% { transform: translateX(100%); }
         }
-        @keyframes arrow-bounce-intense {
-          0%, 100% { transform: translateY(0) scale(1.3); }
-          50% { transform: translateY(6px) scale(1.3); }
-        }
-        @keyframes arrow-glow-intense {
-          0%, 100% { opacity: 0.5; }
+        @keyframes cta-status-pulse {
+          0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
         }
       `}</style>
