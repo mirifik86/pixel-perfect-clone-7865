@@ -1,4 +1,7 @@
+import { useLanguage } from '@/i18n/useLanguage';
+
 export const LeenScoreLogo = () => {
+  const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center gap-1 md:gap-2">
       {/* Premium icon with layered glow effects - compact */}
@@ -116,7 +119,7 @@ export const LeenScoreLogo = () => {
             textShadow: '0 0 20px hsl(0 0% 100% / 0.2)'
           }}
         >
-          La crédibilité mesurée.
+          {t('hero.tagline')}
         </p>
       </div>
     </div>

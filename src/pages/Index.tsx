@@ -780,7 +780,7 @@ const Index = () => {
               color: 'hsl(0 0% 45%)'
             }}
           >
-            Version 1.2 BETA
+            {i18nT('index.version')}
           </div>
         </footer>
       </main>
