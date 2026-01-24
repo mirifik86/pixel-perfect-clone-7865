@@ -709,56 +709,70 @@ const Index = () => {
             <div 
               className="relative flex items-center justify-center"
               style={{ 
-                marginTop: '-4px',
-                marginBottom: '-4px',
-                height: '18px',
-                width: '50px',
+                marginTop: '2px',
+                marginBottom: '2px',
+                height: '28px',
+                width: '60px',
               }}
             >
               {/* Arrow pointing DOWN (to input) - shown when NO content */}
               <div 
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
-                  !hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                  !hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
                 }`}
                 style={{
-                  animation: !hasFormContent ? 'arrow-float 2s ease-in-out infinite' : 'none',
+                  animation: !hasFormContent ? 'arrow-float 2.5s ease-in-out infinite' : 'none',
                   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {/* Outer glow effect */}
+                {/* Multi-layer glow effect */}
                 <div 
                   className="absolute"
                   style={{
-                    width: '36px',
-                    height: '24px',
-                    background: 'radial-gradient(ellipse at center, hsl(174 70% 55% / 0.3), transparent 70%)',
-                    filter: 'blur(8px)',
-                    animation: 'arrow-glow 2s ease-in-out infinite',
+                    width: '50px',
+                    height: '35px',
+                    background: 'radial-gradient(ellipse at center, hsl(174 70% 55% / 0.35), hsl(174 60% 45% / 0.15) 50%, transparent 80%)',
+                    filter: 'blur(10px)',
+                    animation: 'arrow-glow 2.5s ease-in-out infinite',
                   }}
                 />
                 
-                {/* Single chevron arrow pointing DOWN - smaller */}
+                {/* Double chevron arrow pointing DOWN */}
                 <svg 
-                  width="18"
-                  height="10"
-                  viewBox="0 0 18 10" 
+                  width="24"
+                  height="16"
+                  viewBox="0 0 24 16" 
                   fill="none"
                   className="relative"
                 >
+                  {/* First chevron (main) */}
                   <path 
-                    d="M2 2L9 8L16 2" 
+                    d="M3 3L12 10L21 3" 
                     stroke="url(#arrowGradientDown)" 
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
                     style={{
-                      filter: 'drop-shadow(0 0 4px hsl(174 70% 55% / 0.6))',
+                      filter: 'drop-shadow(0 0 6px hsl(174 70% 55% / 0.8))',
+                    }}
+                  />
+                  {/* Second chevron (trailing, subtle) */}
+                  <path 
+                    d="M3 8L12 15L21 8" 
+                    stroke="url(#arrowGradientDown)" 
+                    strokeWidth="1.5"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    opacity="0.4"
+                    style={{
+                      filter: 'drop-shadow(0 0 4px hsl(174 70% 55% / 0.5))',
                     }}
                   />
                   <defs>
-                    <linearGradient id="arrowGradientDown" x1="9" y1="2" x2="9" y2="8" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="hsl(174 80% 70%)" />
-                      <stop offset="1" stopColor="hsl(174 60% 50%)" />
+                    <linearGradient id="arrowGradientDown" x1="12" y1="3" x2="12" y2="15" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 85% 72%)" />
+                      <stop offset="0.5" stopColor="hsl(174 70% 58%)" />
+                      <stop offset="1" stopColor="hsl(174 55% 45%)" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -766,49 +780,63 @@ const Index = () => {
 
               {/* Arrow pointing UP (to Analyze button) - shown when HAS content */}
               <div 
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
-                  hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                  hasFormContent ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
                 }`}
                 style={{
-                  animation: hasFormContent ? 'arrow-float-up 2s ease-in-out infinite' : 'none',
+                  animation: hasFormContent ? 'arrow-float-up 1.8s ease-in-out infinite' : 'none',
                   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {/* Outer glow effect - slightly intensified for active state */}
+                {/* Multi-layer glow effect - intensified for active state */}
                 <div 
                   className="absolute"
                   style={{
-                    width: '40px',
-                    height: '28px',
-                    background: 'radial-gradient(ellipse at center, hsl(174 75% 55% / 0.4), transparent 70%)',
-                    filter: 'blur(10px)',
+                    width: '60px',
+                    height: '40px',
+                    background: 'radial-gradient(ellipse at center, hsl(174 80% 60% / 0.5), hsl(174 70% 50% / 0.25) 50%, transparent 80%)',
+                    filter: 'blur(12px)',
                     animation: 'arrow-glow-intense 1.5s ease-in-out infinite',
                   }}
                 />
                 
-                {/* Single chevron arrow pointing UP - smaller */}
+                {/* Double chevron arrow pointing UP */}
                 <svg 
-                  width="18"
-                  height="10"
-                  viewBox="0 0 18 10" 
+                  width="24"
+                  height="16"
+                  viewBox="0 0 24 16" 
                   fill="none"
                   className="relative"
                   style={{ transform: 'rotate(180deg)' }}
                 >
+                  {/* First chevron (main) */}
                   <path 
-                    d="M2 2L9 8L16 2" 
+                    d="M3 3L12 10L21 3" 
                     stroke="url(#arrowGradientUp)" 
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round" 
                     strokeLinejoin="round"
                     style={{
-                      filter: 'drop-shadow(0 0 5px hsl(174 75% 60% / 0.8))',
+                      filter: 'drop-shadow(0 0 8px hsl(174 80% 60% / 0.9))',
+                    }}
+                  />
+                  {/* Second chevron (trailing, subtle) */}
+                  <path 
+                    d="M3 8L12 15L21 8" 
+                    stroke="url(#arrowGradientUp)" 
+                    strokeWidth="1.5"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    opacity="0.5"
+                    style={{
+                      filter: 'drop-shadow(0 0 6px hsl(174 80% 60% / 0.7))',
                     }}
                   />
                   <defs>
-                    <linearGradient id="arrowGradientUp" x1="9" y1="2" x2="9" y2="8" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="hsl(174 85% 75%)" />
-                      <stop offset="1" stopColor="hsl(174 70% 55%)" />
+                    <linearGradient id="arrowGradientUp" x1="12" y1="3" x2="12" y2="15" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="hsl(174 90% 78%)" />
+                      <stop offset="0.5" stopColor="hsl(174 80% 62%)" />
+                      <stop offset="1" stopColor="hsl(174 65% 50%)" />
                     </linearGradient>
                   </defs>
                 </svg>
