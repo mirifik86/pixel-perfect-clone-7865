@@ -32,7 +32,8 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
   useEffect(() => {
     if (highlightInput) {
       setShowHighlight(true);
-      const timer = setTimeout(() => setShowHighlight(false), 250);
+      // Extended duration to cover full beam sweep (impact 120ms + delay 60ms + beams 280ms)
+      const timer = setTimeout(() => setShowHighlight(false), 400);
       return () => clearTimeout(timer);
     }
   }, [highlightInput]);
