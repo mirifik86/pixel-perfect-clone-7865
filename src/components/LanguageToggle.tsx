@@ -15,7 +15,7 @@ export const LanguageToggle = ({ language, onLanguageChange }: LanguageTogglePro
         }}
       />
       
-      {/* PRO border glow ring */}
+      {/* PRO border glow ring with pulse animation */}
       <div 
         className="pointer-events-none absolute -inset-[1px] rounded-full"
         style={{
@@ -23,9 +23,43 @@ export const LanguageToggle = ({ language, onLanguageChange }: LanguageTogglePro
           padding: '1px',
           WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
           WebkitMaskComposite: 'xor',
-          maskComposite: 'exclude'
+          maskComposite: 'exclude',
+          animation: 'lang-border-pulse 3s ease-in-out infinite'
         }}
       />
+      
+      {/* Animated glow aura */}
+      <div 
+        className="pointer-events-none absolute -inset-1 rounded-full"
+        style={{
+          background: 'radial-gradient(ellipse at center, hsl(174 60% 50% / 0.2) 0%, transparent 70%)',
+          animation: 'lang-glow-pulse 3s ease-in-out infinite',
+          filter: 'blur(4px)'
+        }}
+      />
+      
+      <style>{`
+        @keyframes lang-border-pulse {
+          0%, 100% {
+            opacity: 0.6;
+            filter: brightness(1);
+          }
+          50% {
+            opacity: 1;
+            filter: brightness(1.3);
+          }
+        }
+        @keyframes lang-glow-pulse {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.05);
+          }
+        }
+      `}</style>
       
       {/* Main container - larger touch targets on mobile */}
       <div 
