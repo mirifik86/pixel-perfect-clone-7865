@@ -1,11 +1,10 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Image, X } from 'lucide-react';
+import { CheckCircle2, Image, X, ImagePlus } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/i18n/useLanguage';
 
 interface UnifiedAnalysisFormProps {
-  onAnalyzeText: (input: string) => void;
-  onImageReady: (file: File, preview: string) => void;
+  onAnalyze: (input: string, image: { file: File; preview: string } | null) => void;
   isLoading: boolean;
   onContentChange?: (hasContent: boolean) => void;
 }
@@ -18,28 +17,26 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
-  ({ onAnalyzeText, onImageReady, isLoading, onContentChange }, ref) => {
+  ({ onAnalyze, isLoading, onContentChange }, ref) => {
   const { t } = useLanguage();
-  const [input, setInput] = useState('');
-  const [uploadedImage, setUploadedImage] = useState<{ file: File; preview: string } | null>(null);
+  const [inputText, setInputText] = useState('');
+  const [attachedImage, setAttachedImage] = useState<{ file: File; preview: string } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
-  const hasImage = Boolean(uploadedImage);
-  const hasText = input.trim().length > 0;
+  const hasImage = Boolean(attachedImage);
+  const hasText = inputText.trim().length > 0;
   const hasContent = hasText || hasImage;
-  const isActive = isDragOver; // Only drag-over triggers card glow, not focus
+  const isActive = isDragOver;
 
   // Expose submit method to parent via ref
   const triggerSubmit = useCallback(() => {
-    if (uploadedImage) {
-      onImageReady(uploadedImage.file, uploadedImage.preview);
-    } else if (input.trim()) {
-      onAnalyzeText(input.trim());
+    if (hasContent && !isLoading) {
+      onAnalyze(inputText.trim(), attachedImage);
     }
-  }, [uploadedImage, input, onImageReady, onAnalyzeText]);
+  }, [hasContent, isLoading, inputText, attachedImage, onAnalyze]);
 
   useImperativeHandle(ref, () => ({
     submit: triggerSubmit
@@ -66,8 +63,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
     const reader = new FileReader();
     reader.onload = (e) => {
       const preview = e.target?.result as string;
-      setUploadedImage({ file, preview });
-      setInput('');
+      setAttachedImage({ file, preview });
     };
     reader.readAsDataURL(file);
   }, []);
@@ -101,7 +97,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
 
   const handleRemoveImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setUploadedImage(null);
+    setAttachedImage(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -109,43 +105,27 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (uploadedImage) {
-      onImageReady(uploadedImage.file, uploadedImage.preview);
-    } else if (input.trim()) {
-      onAnalyzeText(input.trim());
-    }
+    triggerSubmit();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter without Shift triggers submit
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (input.trim() && !isLoading) {
-        onAnalyzeText(input.trim());
+      if (hasContent && !isLoading) {
+        triggerSubmit();
       }
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    if (uploadedImage && e.target.value.trim()) {
-      setUploadedImage(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
+    setInputText(e.target.value);
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Only trigger file picker if clicking on the icon/upload area, not the textarea
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA') return;
-    
-    if (!hasImage && !hasText) {
-      // Focus textarea to allow typing
-      textareaRef.current?.focus();
-    }
+    textareaRef.current?.focus();
   };
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -163,6 +143,11 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
       }
     }
   }, [handleFile]);
+
+  const handleAddImageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    fileInputRef.current?.click();
+  };
 
   return (
     <form 
@@ -183,7 +168,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
       
       {/* Premium Drop Card */}
       <div 
-        className="relative cursor-pointer"
+        className="relative cursor-text"
         onClick={handleCardClick}
       >
         {/* Outer glow ring - enhanced on hover/drag */}
@@ -251,79 +236,24 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
             </div>
           )}
 
-          {/* Main content area - compact padding */}
+          {/* Main content area */}
           <div style={{ padding: 'var(--space-4)' }}>
-            
-            {/* Image uploaded state */}
-            {uploadedImage ? (
-              <div className="flex flex-col items-center" style={{ gap: 'var(--space-4)' }}>
-                {/* Image preview */}
-                <div className="relative">
-                  <img 
-                    src={uploadedImage.preview} 
-                    alt="Preview" 
-                    className="rounded-xl object-cover"
-                    style={{ 
-                      width: '5rem',
-                      height: '5rem',
-                      boxShadow: '0 4px 20px hsl(0 0% 0% / 0.4), 0 0 30px hsl(174 60% 50% / 0.2)',
-                      border: '2px solid hsl(174 60% 50% / 0.3)',
-                    }}
-                  />
-                  <div 
-                    className="absolute -bottom-1 -right-1 rounded-full"
-                    style={{
-                      padding: 'var(--space-1)',
-                      background: 'linear-gradient(135deg, hsl(174 70% 45%) 0%, hsl(174 60% 40%) 100%)',
-                      boxShadow: '0 2px 8px hsl(0 0% 0% / 0.3)',
-                    }}
-                  >
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                  </div>
-                </div>
-                
-                {/* File info */}
-                <div className="text-center">
-                  <p className="font-medium text-white/90 truncate max-w-[200px]" style={{ fontSize: 'var(--text-sm)' }}>
-                    {uploadedImage.file.name}
-                  </p>
-                  <p className="text-white/50" style={{ marginTop: 'var(--space-1)', fontSize: 'var(--text-xs)' }}>
-                    {(uploadedImage.file.size / 1024).toFixed(0)} KB · {t('form.imageReady')}
-                  </p>
-                </div>
-                
-                {/* Remove button */}
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  className="flex items-center rounded-full font-medium transition-all hover:bg-white/10"
-                  style={{ 
-                    gap: 'var(--space-2)',
-                    padding: 'var(--space-2) var(--space-4)',
-                    fontSize: 'var(--text-xs)',
-                    color: 'hsl(0 0% 100% / 0.6)',
-                    border: '1px solid hsl(0 0% 100% / 0.1)',
-                  }}
-                >
-                  <X className="h-3.5 w-3.5" />
-                  {t('form.removeImage')}
-                </button>
-              </div>
-            ) : (
-              /* Text/Image input state - unified layout */
-              <div className="flex items-stretch w-full" style={{ gap: 'var(--space-4)' }}>
-                {/* Text input zone - always visible, full width when hasText */}
-                <div className={`relative transition-all duration-200 ${hasText ? 'flex-1' : 'flex-1'}`} onClick={(e) => e.stopPropagation()}>
+            {/* Text input + optional attached image preview */}
+            <div className="flex flex-col" style={{ gap: 'var(--space-3)' }}>
+              {/* Textarea row with image button */}
+              <div className="flex items-start w-full" style={{ gap: 'var(--space-3)' }}>
+                {/* Text input zone - always visible */}
+                <div className="relative flex-1" onClick={(e) => e.stopPropagation()}>
                   <Textarea
                     ref={textareaRef}
-                    value={input}
+                    value={inputText}
                     onChange={handleInputChange}
                     onPaste={handlePaste}
                     onKeyDown={handleKeyDown}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={t('form.placeholder')}
-                    className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 placeholder:text-center focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                    className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                     style={{
                       minHeight: '80px',
                       padding: 'var(--space-3)',
@@ -333,76 +263,138 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                   />
                 </div>
                 
-                {/* Vertical divider - hidden when text is entered */}
-                {!hasText && (
+                {/* Image button - ALWAYS visible */}
+                <button
+                  type="button"
+                  onClick={handleAddImageClick}
+                  className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-105 group/img shrink-0"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    gap: 'var(--space-1)',
+                    background: hasImage 
+                      ? 'linear-gradient(135deg, hsl(174 60% 35% / 0.4), hsl(174 50% 30% / 0.3))'
+                      : 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
+                    border: hasImage 
+                      ? '1px solid hsl(174 60% 50% / 0.5)'
+                      : '1px dashed hsl(174 50% 50% / 0.35)',
+                    boxShadow: hasImage
+                      ? '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 16px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.1)'
+                      : '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+                  }}
+                  title={t('form.addImage')}
+                >
+                  {/* Icon container with glow */}
                   <div 
-                    className="w-px self-stretch"
+                    className="rounded-lg transition-all group-hover/img:scale-110"
                     style={{
-                      marginTop: 'var(--space-2)',
-                      marginBottom: 'var(--space-2)',
-                      background: 'linear-gradient(to bottom, transparent, hsl(0 0% 100% / 0.15), transparent)',
+                      padding: 'var(--space-2)',
+                      background: hasImage 
+                        ? 'linear-gradient(135deg, hsl(174 70% 45% / 0.5), hsl(174 60% 40% / 0.4))'
+                        : 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
+                      boxShadow: '0 0 15px hsl(174 60% 50% / 0.15), 0 2px 8px hsl(0 0% 0% / 0.15)',
                     }}
-                  />
-                )}
-                
-                {/* Image upload zone - hidden when text is entered */}
-                {!hasText && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                    className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-105 group/img"
-                    style={{
-                      padding: '0 var(--space-6)',
-                      gap: 'var(--space-2)',
-                      background: 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
-                      border: '1px dashed hsl(174 50% 50% / 0.35)',
-                      boxShadow: '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-                    }}
-                    title={t('form.addImage')}
                   >
-                    {/* Icon container with glow */}
+                    {hasImage ? (
+                      <CheckCircle2 className="h-5 w-5" style={{ color: 'hsl(174 80% 65%)' }} />
+                    ) : (
+                      <ImagePlus className="h-5 w-5" style={{ color: 'hsl(174 65% 60%)' }} />
+                    )}
+                  </div>
+                  
+                  {/* Label */}
+                  <span 
+                    className="font-medium tracking-wide uppercase"
+                    style={{ 
+                      color: hasImage ? 'hsl(174 70% 65%)' : 'hsl(174 60% 55% / 0.8)', 
+                      fontSize: '9px' 
+                    }}
+                  >
+                    {hasImage ? t('form.imageReady') : t('form.imageUpload')}
+                  </span>
+                </button>
+              </div>
+              
+              {/* Attached image preview - shown below text input when image is attached */}
+              {attachedImage && (
+                <div 
+                  className="flex items-center rounded-xl animate-fade-in"
+                  style={{
+                    padding: 'var(--space-2) var(--space-3)',
+                    gap: 'var(--space-3)',
+                    background: 'linear-gradient(135deg, hsl(174 50% 25% / 0.3), hsl(174 40% 20% / 0.2))',
+                    border: '1px solid hsl(174 50% 45% / 0.25)',
+                  }}
+                >
+                  {/* Thumbnail */}
+                  <div className="relative shrink-0">
+                    <img 
+                      src={attachedImage.preview} 
+                      alt="Attached" 
+                      className="rounded-lg object-cover"
+                      style={{ 
+                        width: '48px',
+                        height: '48px',
+                        boxShadow: '0 2px 8px hsl(0 0% 0% / 0.3)',
+                        border: '1px solid hsl(174 50% 50% / 0.2)',
+                      }}
+                    />
+                    {/* Success badge */}
                     <div 
-                      className="rounded-xl transition-all group-hover/img:scale-110"
+                      className="absolute -bottom-1 -right-1 rounded-full"
                       style={{
-                        padding: 'var(--space-3)',
-                        background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
-                        boxShadow: '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.2)',
+                        padding: '2px',
+                        background: 'linear-gradient(135deg, hsl(174 70% 45%) 0%, hsl(174 60% 40%) 100%)',
+                        boxShadow: '0 1px 4px hsl(0 0% 0% / 0.3)',
                       }}
                     >
-                      <Image 
-                        className="h-7 w-7" 
-                        style={{ color: 'hsl(174 65% 60%)' }}
-                      />
+                      <CheckCircle2 className="h-3 w-3 text-white" />
                     </div>
-                    
-                    {/* Label */}
-                    <span 
-                      className="font-medium tracking-wide uppercase"
-                      style={{ color: 'hsl(174 60% 55% / 0.8)', fontSize: 'var(--text-xs)' }}
+                  </div>
+                  
+                  {/* File info */}
+                  <div className="flex-1 min-w-0">
+                    <p 
+                      className="font-medium truncate text-white/90" 
+                      style={{ fontSize: 'var(--text-xs)' }}
                     >
-                      {t('form.imageUpload')}
-                    </span>
+                      {attachedImage.file.name}
+                    </p>
+                    <p 
+                      className="text-white/50" 
+                      style={{ fontSize: '10px' }}
+                    >
+                      {(attachedImage.file.size / 1024).toFixed(0)} KB
+                    </p>
+                  </div>
+                  
+                  {/* Remove button */}
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="flex items-center justify-center rounded-full transition-all hover:bg-red-500/20 hover:text-red-400 shrink-0"
+                    style={{ 
+                      width: '28px',
+                      height: '28px',
+                      color: 'hsl(0 0% 100% / 0.5)',
+                      border: '1px solid hsl(0 0% 100% / 0.1)',
+                    }}
+                    title={t('form.removeImage')}
+                  >
+                    <X className="h-4 w-4" />
                   </button>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-      
       
       {/* CSS for animations */}
       <style>{`
         @keyframes card-glow {
           0%, 100% { opacity: 0.6; transform: scale(1); }
           50% { opacity: 0.85; transform: scale(1.005); }
-        }
-        @keyframes icon-pulse {
-          0%, 100% { opacity: 0.5; transform: scale(0.95); }
-          50% { opacity: 0.8; transform: scale(1.05); }
         }
       `}</style>
     </form>
