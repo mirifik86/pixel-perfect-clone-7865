@@ -10,6 +10,7 @@ interface ScoreGaugeProps {
   hasContent?: boolean; // When true, shows ANALYZE button instead of READY status
   onAnalyze?: () => void; // Callback when ANALYZE button is clicked
   isLoading?: boolean; // Loading state for the button
+  onChevronCycleComplete?: () => void; // Callback when chevron cascade completes (for input highlight)
 }
 
 // Generate sparkle particles configuration
@@ -31,7 +32,8 @@ export const ScoreGauge = ({
   className,
   hasContent = false,
   onAnalyze,
-  isLoading = false
+  isLoading = false,
+  onChevronCycleComplete
 }: ScoreGaugeProps) => {
   const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -344,14 +346,11 @@ export const ScoreGauge = ({
           />
         )}
         
-        {/* SVG with ultra-slow rotation in idle */}
+        {/* SVG - static (no rotation) */}
         <svg 
           width={size} 
           height={size} 
           viewBox={`0 0 ${size} ${size}`}
-          style={{
-            animation: uiState === 'idle' ? 'gauge-slow-rotate 25s linear infinite' : 'none',
-          }}
         >
           <defs>
             {colorPairs.map((pair, i) => (
@@ -648,57 +647,53 @@ export const ScoreGauge = ({
           )}
         </div>
         
-        {/* Animated cascading arrows pointing to input - only in idle state */}
+        {/* Premium cascade guidance chevrons - only in idle state */}
         {uiState === 'idle' && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none overflow-hidden"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
             style={{ 
-              top: size * 0.65,
-              height: size * 0.55,
-              width: 30,
+              top: size + 8,
+              gap: '6px',
             }}
           >
-            {/* Three arrows with staggered relay animation */}
+            {/* Three chevrons with waterfall cascade animation */}
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="absolute left-1/2 -translate-x-1/2"
+                className="relative"
                 style={{
-                  animation: `arrow-relay 2.4s ease-in-out ${i * 0.8}s infinite`,
+                  animation: `chevron-cascade 2.8s cubic-bezier(0.22, 1, 0.36, 1) ${i * 140}ms infinite`,
                 }}
+                onAnimationIteration={i === 2 ? () => onChevronCycleComplete?.() : undefined}
               >
-                {/* Arrow glow background */}
+                {/* Chevron glow */}
                 <div 
-                  className="absolute inset-0 -m-2"
+                  className="absolute inset-0 -m-1"
                   style={{
-                    background: 'radial-gradient(circle, hsl(174 65% 55% / 0.5) 0%, transparent 70%)',
-                    filter: 'blur(8px)',
+                    background: 'radial-gradient(circle, hsl(174 65% 55% / 0.35) 0%, transparent 70%)',
+                    filter: 'blur(4px)',
                   }}
                 />
-                {/* Arrow SVG */}
+                {/* Chevron SVG */}
                 <svg 
-                  width="20" 
-                  height="12" 
-                  viewBox="0 0 20 12" 
+                  width="16" 
+                  height="8" 
+                  viewBox="0 0 16 8" 
                   fill="none"
                   style={{
-                    filter: 'drop-shadow(0 0 6px hsl(174 65% 55% / 0.8))',
+                    filter: 'drop-shadow(0 0 3px hsl(174 65% 55% / 0.5))',
                   }}
                 >
                   <path 
-                    d="M1 1L10 10L19 1" 
-                    stroke="url(#arrow-gradient)" 
-                    strokeWidth="2.5" 
+                    d="M1 1L8 7L15 1" 
+                    stroke="hsl(174 65% 58%)" 
+                    strokeWidth="1.5" 
                     strokeLinecap="round" 
                     strokeLinejoin="round"
+                    style={{
+                      filter: 'drop-shadow(0 0 2px hsl(174 60% 50% / 0.4))',
+                    }}
                   />
-                  <defs>
-                    <linearGradient id="arrow-gradient" x1="1" y1="1" x2="19" y2="1">
-                      <stop offset="0%" stopColor="hsl(174 60% 55% / 0.3)" />
-                      <stop offset="50%" stopColor="hsl(174 70% 65%)" />
-                      <stop offset="100%" stopColor="hsl(174 60% 55% / 0.3)" />
-                    </linearGradient>
-                  </defs>
                 </svg>
               </div>
             ))}
@@ -775,32 +770,28 @@ export const ScoreGauge = ({
           0% { transform: translateX(-150%); }
           60%, 100% { transform: translateX(150%); }
         }
-        @keyframes arrow-relay {
+        /* Premium chevron cascade animation */
+        @keyframes chevron-cascade {
           0% { 
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-6px);
           }
-          15% { 
-            opacity: 1;
+          20% { 
+            opacity: 0.9;
+            transform: translateY(0px);
+          }
+          60% { 
+            opacity: 0.7;
+            transform: translateY(6px);
+          }
+          85% { 
+            opacity: 0.2;
             transform: translateY(10px);
-          }
-          30% { 
-            opacity: 1;
-            transform: translateY(35px);
-          }
-          45% { 
-            opacity: 0;
-            transform: translateY(60px);
           }
           100% { 
             opacity: 0;
-            transform: translateY(60px);
+            transform: translateY(10px);
           }
-        }
-        /* Premium idle animations */
-        @keyframes gauge-slow-rotate {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
         }
         @keyframes idle-text-breathe {
           0%, 100% { 
