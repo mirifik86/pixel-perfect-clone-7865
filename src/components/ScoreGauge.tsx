@@ -436,7 +436,7 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* IDLE STATE: "READY TO ANALYZE" text */}
+          {/* IDLE STATE: "READY TO ANALYZE" text with animated arrows */}
           {uiState === 'idle' && (
             <div 
               className="flex flex-col items-center justify-center text-center animate-fade-in"
@@ -529,8 +529,64 @@ export const ScoreGauge = ({
             </div>
           )}
         </div>
+        
+        {/* Animated arrows pointing to input - only in idle state */}
+        {uiState === 'idle' && (
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+            style={{ 
+              top: size + 10,
+              gap: '4px',
+            }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="relative"
+                style={{
+                  animation: `arrow-cascade 1.8s ease-in-out ${i * 0.2}s infinite`,
+                }}
+              >
+                {/* Arrow glow background */}
+                <div 
+                  className="absolute inset-0 -m-1"
+                  style={{
+                    background: 'radial-gradient(circle, hsl(174 65% 55% / 0.4) 0%, transparent 70%)',
+                    filter: 'blur(6px)',
+                    animation: `arrow-glow ${1.8}s ease-in-out ${i * 0.2}s infinite`,
+                  }}
+                />
+                {/* Arrow SVG */}
+                <svg 
+                  width="18" 
+                  height="10" 
+                  viewBox="0 0 18 10" 
+                  fill="none"
+                  style={{
+                    filter: 'drop-shadow(0 0 4px hsl(174 65% 55% / 0.6))',
+                  }}
+                >
+                  <path 
+                    d="M1 1L9 8L17 1" 
+                    stroke="url(#arrow-gradient)" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                  <defs>
+                    <linearGradient id="arrow-gradient" x1="1" y1="1" x2="17" y2="1">
+                      <stop offset="0%" stopColor="hsl(174 60% 50% / 0.4)" />
+                      <stop offset="50%" stopColor="hsl(174 70% 60%)" />
+                      <stop offset="100%" stopColor="hsl(174 60% 50% / 0.4)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-
+      
       {/* Credibility label BELOW gauge - only shown when score exists */}
       {score !== null && (
         <div 
@@ -599,6 +655,26 @@ export const ScoreGauge = ({
         @keyframes center-inner-shine {
           0% { transform: translateX(-150%); }
           60%, 100% { transform: translateX(150%); }
+        }
+        @keyframes arrow-cascade {
+          0%, 100% { 
+            opacity: 0.3;
+            transform: translateY(-4px);
+          }
+          50% { 
+            opacity: 1;
+            transform: translateY(4px);
+          }
+        }
+        @keyframes arrow-glow {
+          0%, 100% { 
+            opacity: 0.4;
+            transform: scale(0.9);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.3);
+          }
         }
       `}</style>
     </div>
