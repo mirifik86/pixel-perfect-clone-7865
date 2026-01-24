@@ -153,19 +153,58 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
         })}
       </div>
       
-      {/* Auto mode indicator - shows resolved language */}
-      {mode === 'auto' && (
+      {/* Premium language indicator - right side */}
+      <div 
+        className="ml-3 flex items-center gap-1.5 animate-fade-in"
+        style={{
+          background: 'linear-gradient(135deg, hsl(174 60% 45% / 0.15) 0%, hsl(180 55% 40% / 0.08) 100%)',
+          borderRadius: '6px',
+          padding: '6px 10px',
+          border: '1px solid hsl(174 60% 50% / 0.25)',
+          boxShadow: `
+            0 0 12px hsl(174 60% 45% / 0.1),
+            inset 0 1px 1px hsl(0 0% 100% / 0.05)
+          `
+        }}
+      >
+        {/* Subtle glow dot */}
         <div 
-          className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-center animate-fade-in"
+          className="w-1.5 h-1.5 rounded-full"
           style={{
-            fontSize: '0.6rem',
-            color: 'hsl(174 60% 55%)',
-            letterSpacing: '0.05em'
+            background: 'hsl(174 65% 55%)',
+            boxShadow: '0 0 6px hsl(174 65% 55% / 0.6)',
+            animation: 'lang-dot-pulse 2s ease-in-out infinite'
+          }}
+        />
+        
+        {/* Language name */}
+        <span
+          style={{
+            fontSize: '0.7rem',
+            fontWeight: 500,
+            letterSpacing: '0.04em',
+            background: 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textTransform: 'uppercase'
           }}
         >
           {SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()}
-        </div>
-      )}
+        </span>
+      </div>
+      
+      <style>{`
+        @keyframes lang-dot-pulse {
+          0%, 100% {
+            opacity: 0.7;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.2);
+          }
+        }
+      `}</style>
     </div>
   );
 };
