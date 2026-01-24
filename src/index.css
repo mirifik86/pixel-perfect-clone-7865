@@ -225,6 +225,28 @@
   .text-unified-hero { font-size: var(--text-hero); }
 }
 
+/* Premium idle halo pulse - slow breathing animation */
+@keyframes idle-halo-pulse {
+  0%, 100% {
+    opacity: 0.08;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.12;
+    transform: scale(1.04);
+  }
+}
+
+/* Idle text brightness sync - subtle brightness increase at peak */
+@keyframes idle-text-brightness {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.03);
+  }
+}
+
 /* PRO button shine animation */
 @keyframes shine {
   0% {

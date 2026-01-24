@@ -609,36 +609,32 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* IDLE STATE: "READY TO ANALYZE" text with premium breathing animation */}
+          {/* IDLE STATE: "READY TO ANALYZE" with premium halo pulse */}
           {uiState === 'idle' && (
             <div 
-              className="flex flex-col items-center justify-center text-center"
-              style={{ 
-                padding: 'var(--space-2)',
-                animation: 'idle-text-breathe 3.5s ease-in-out infinite',
-              }}
+              className="flex flex-col items-center justify-center text-center relative"
+              style={{ padding: 'var(--space-2)' }}
             >
-              {/* Soft radial glow from center */}
+              {/* Premium halo - breathing pulse animation */}
               <div 
                 className="absolute rounded-full pointer-events-none"
                 style={{
-                  width: size * 0.75,
-                  height: size * 0.75,
-                  background: 'radial-gradient(circle, hsl(174 60% 50% / 0.12) 0%, hsl(174 50% 45% / 0.06) 40%, transparent 70%)',
-                  filter: 'blur(12px)',
-                  animation: 'idle-center-glow 3.5s ease-in-out infinite',
+                  width: size * 0.55,
+                  height: size * 0.35,
+                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.10) 0%, hsl(174 30% 50% / 0.05) 50%, transparent 80%)',
+                  filter: 'blur(8px)',
+                  animation: 'idle-halo-pulse 3.8s ease-in-out infinite',
                 }}
               />
+              
+              {/* Text with subtle brightness sync */}
               <span
-                className="relative uppercase font-black tracking-[0.15em] text-center"
+                className="relative uppercase font-medium tracking-[0.18em] text-center"
                 style={{
-                  fontSize: 'clamp(0.7rem, 2.5vw, 0.9rem)',
-                  lineHeight: 1.3,
-                  background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(174 30% 80%) 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  filter: 'drop-shadow(0 0 12px hsl(174 60% 55% / 0.35))',
+                  fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
+                  lineHeight: 1.4,
+                  color: 'hsl(0 0% 94%)',
+                  animation: 'idle-text-brightness 3.8s ease-in-out infinite',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
@@ -650,19 +646,14 @@ export const ScoreGauge = ({
           {uiState === 'ready' && isTransitioning && (
             <div 
               className="flex flex-col items-center justify-center text-center absolute inset-0"
-              style={{ 
-                animation: 'idle-text-exit 450ms ease-out forwards',
-              }}
+              style={{ animation: 'idle-text-exit 450ms ease-out forwards' }}
             >
               <span
-                className="relative uppercase font-black tracking-[0.15em] text-center"
+                className="relative uppercase font-medium tracking-[0.18em] text-center"
                 style={{
-                  fontSize: 'clamp(0.7rem, 2.5vw, 0.9rem)',
-                  lineHeight: 1.3,
-                  background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(174 30% 80%) 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
+                  fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
+                  lineHeight: 1.4,
+                  color: 'hsl(0 0% 94%)',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
