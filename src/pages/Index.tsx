@@ -725,15 +725,15 @@ const Index = () => {
               
               {/* Disclaimer note - single line, branded */}
               <p 
-                className="text-center animate-fade-in"
+                className="text-center animate-fade-in px-4"
                 style={{ 
                   marginTop: 'var(--space-3)',
-                  fontSize: 'clamp(0.7rem, 0.65rem + 0.25vw, 0.85rem)',
+                  fontSize: 'clamp(0.55rem, 0.5rem + 0.5vw, 0.8rem)',
                   color: 'hsl(0 0% 100% / 0.65)',
-                  lineHeight: 1.5,
+                  lineHeight: 1.4,
                   animationDelay: '500ms',
                   animationFillMode: 'both',
-                  whiteSpace: 'nowrap',
+                  maxWidth: '100%',
                 }}
               >
                 <span 
