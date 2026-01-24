@@ -1,9 +1,41 @@
+import { Globe } from 'lucide-react';
+import { 
+  LanguageMode, 
+  SupportedLanguage, 
+  PRIMARY_LANGUAGES,
+  SUPPORTED_LANGUAGES 
+} from '@/i18n';
+
 interface LanguageToggleProps {
-  language: 'en' | 'fr';
-  onLanguageChange: (lang: 'en' | 'fr') => void;
+  mode: LanguageMode;
+  language: SupportedLanguage; // Resolved language for display
+  onLanguageChange: (lang: LanguageMode) => void;
 }
 
-export const LanguageToggle = ({ language, onLanguageChange }: LanguageToggleProps) => {
+type ToggleOption = {
+  value: LanguageMode;
+  label: string | React.ReactNode;
+  isIcon?: boolean;
+};
+
+export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageToggleProps) => {
+  // Build toggle options: EN | FR | Auto(🌐)
+  const options: ToggleOption[] = [
+    ...PRIMARY_LANGUAGES.map(lang => ({
+      value: lang as LanguageMode,
+      label: lang.toUpperCase()
+    })),
+    {
+      value: 'auto' as LanguageMode,
+      label: <Globe className="h-3.5 w-3.5" />,
+      isIcon: true
+    }
+  ];
+
+  // Find active index for slider positioning
+  const activeIndex = options.findIndex(opt => opt.value === mode);
+  const optionCount = options.length;
+
   return (
     <div className="relative inline-flex items-center">
       {/* Subtle outer glow - reduced for discretion */}
@@ -78,8 +110,8 @@ export const LanguageToggle = ({ language, onLanguageChange }: LanguageTogglePro
         <div 
           className="pointer-events-none absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-out"
           style={{
-            width: 'calc(50% - 4px)',
-            left: language === 'en' ? '4px' : 'calc(50%)',
+            width: `calc(${100 / optionCount}% - 4px)`,
+            left: `calc(${(activeIndex / optionCount) * 100}% + 2px)`,
             background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
             boxShadow: `
               0 0 10px hsl(174 60% 45% / 0.4),
@@ -89,46 +121,51 @@ export const LanguageToggle = ({ language, onLanguageChange }: LanguageTogglePro
           }}
         />
         
-        {/* EN Button - larger touch area */}
-        <button
-          onClick={() => onLanguageChange('en')}
-          className={`relative z-10 flex items-center justify-center rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
-            language === 'en'
-              ? 'text-primary-foreground'
-              : 'text-muted-foreground/60 hover:text-foreground/80'
-          }`}
-          style={{
-            minWidth: '2.75rem',
-            minHeight: '2.25rem',
-            padding: '0.5rem 0.75rem',
-            fontSize: 'clamp(0.65rem, 2vw, 0.7rem)',
-            letterSpacing: '0.08em',
-            textShadow: language === 'en' ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
-          }}
-        >
-          EN
-        </button>
-        
-        {/* FR Button - larger touch area */}
-        <button
-          onClick={() => onLanguageChange('fr')}
-          className={`relative z-10 flex items-center justify-center rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
-            language === 'fr'
-              ? 'text-primary-foreground'
-              : 'text-muted-foreground/60 hover:text-foreground/80'
-          }`}
-          style={{
-            minWidth: '2.75rem',
-            minHeight: '2.25rem',
-            padding: '0.5rem 0.75rem',
-            fontSize: 'clamp(0.65rem, 2vw, 0.7rem)',
-            letterSpacing: '0.08em',
-            textShadow: language === 'fr' ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
-          }}
-        >
-          FR
-        </button>
+        {/* Option buttons */}
+        {options.map((option, index) => {
+          const isActive = mode === option.value;
+          
+          return (
+            <button
+              key={option.value}
+              onClick={() => onLanguageChange(option.value)}
+              className={`relative z-10 flex items-center justify-center rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
+                isActive
+                  ? 'text-primary-foreground'
+                  : 'text-muted-foreground/60 hover:text-foreground/80'
+              }`}
+              style={{
+                minWidth: option.isIcon ? '2.25rem' : '2.75rem',
+                minHeight: '2.25rem',
+                padding: option.isIcon ? '0.5rem' : '0.5rem 0.75rem',
+                fontSize: option.isIcon ? undefined : 'clamp(0.65rem, 2vw, 0.7rem)',
+                letterSpacing: option.isIcon ? undefined : '0.08em',
+                textShadow: isActive ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
+              }}
+              title={option.value === 'auto' 
+                ? `Auto (${SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()})` 
+                : SUPPORTED_LANGUAGES[option.value as SupportedLanguage]?.nativeName
+              }
+            >
+              {option.label}
+            </button>
+          );
+        })}
       </div>
+      
+      {/* Auto mode indicator - shows resolved language */}
+      {mode === 'auto' && (
+        <div 
+          className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-center animate-fade-in"
+          style={{
+            fontSize: '0.6rem',
+            color: 'hsl(174 60% 55%)',
+            letterSpacing: '0.05em'
+          }}
+        >
+          {SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()}
+        </div>
+      )}
     </div>
   );
 };
