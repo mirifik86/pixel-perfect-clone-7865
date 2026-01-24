@@ -3,9 +3,9 @@ import { useLanguage } from '@/i18n/useLanguage';
 export const LeenScoreLogo = () => {
   const { t } = useLanguage();
   return (
-    <div className="flex flex-col items-center gap-0.5 md:gap-2">
-      {/* Premium icon with layered glow effects - MOBILE: smaller */}
-      <div className="relative hidden md:block">
+    <div className="flex flex-col items-center gap-1 md:gap-2">
+      {/* Premium icon with layered glow effects - compact */}
+      <div className="relative">
         {/* Outer glow ring */}
         <div 
           className="absolute -inset-3 rounded-2xl"
@@ -67,19 +67,19 @@ export const LeenScoreLogo = () => {
         </div>
       </div>
       
-      {/* Title with solar halo reflection effect - MOBILE: more compact */}
+      {/* Title with solar halo reflection effect */}
       <div className="relative overflow-hidden">
-        {/* Solar halo glow behind title - DESKTOP only */}
+        {/* Solar halo glow behind title - constrained to prevent overflow */}
         <div 
-          className="pointer-events-none absolute inset-0 hidden md:block" 
+          className="pointer-events-none absolute inset-0" 
           style={{
             background: 'radial-gradient(ellipse 80% 60% at center, hsl(40 100% 60% / 0.15) 0%, hsl(30 100% 50% / 0.08) 30%, transparent 70%)'
           }} 
         />
         
-        {/* Subtle dark vignette for contrast - DESKTOP only */}
+        {/* Subtle dark vignette for contrast */}
         <div 
-          className="pointer-events-none absolute inset-0 hidden md:block" 
+          className="pointer-events-none absolute inset-0" 
           style={{
             background: 'radial-gradient(ellipse at center, hsl(240 20% 4% / 0.6) 0%, transparent 70%)'
           }} 
@@ -87,16 +87,13 @@ export const LeenScoreLogo = () => {
         
         <h1 
           className="relative brand-text font-normal tracking-tight"
-          style={{ 
-            letterSpacing: '-0.03em', 
-            fontSize: 'clamp(2.25rem, 2rem + 3.5vw, 6.5rem)' 
-          }}
+          style={{ letterSpacing: '-0.03em', fontSize: 'clamp(2.75rem, 2.5rem + 4vw, 6.5rem)' }}
         >
           <span 
             className="brand-accent italic"
             style={{
               color: 'hsl(174 65% 52%)',
-              textShadow: '0 0 40px hsl(174 60% 45% / 0.5), 0 0 80px hsl(40 100% 60% / 0.2)'
+              textShadow: '0 0 60px hsl(174 60% 45% / 0.6), 0 0 120px hsl(40 100% 60% / 0.3), 0 4px 40px hsl(30 90% 55% / 0.25)'
             }}
           >
             Leen
@@ -105,21 +102,21 @@ export const LeenScoreLogo = () => {
             className="font-semibold not-italic" 
             style={{
               color: 'hsl(0 0% 98%)',
-              textShadow: '0 0 35px hsl(40 100% 70% / 0.3), 0 3px 20px hsl(30 90% 55% / 0.15)'
+              textShadow: '0 0 50px hsl(40 100% 70% / 0.35), 0 4px 25px hsl(30 90% 55% / 0.2)'
             }}
           >
             Score
           </span>
         </h1>
         
-        {/* Tagline - MOBILE: smaller, tighter */}
+        {/* Tagline - MOBILE: tighter spacing */}
         <p 
-          className="relative tracking-widest uppercase text-center mt-0.5 md:mt-3"
+          className="relative tracking-widest uppercase text-center mt-1 md:mt-3"
           style={{ 
-            fontSize: 'clamp(0.5rem, 0.45rem + 0.4vw, 1rem)',
-            letterSpacing: '0.15em',
-            color: 'hsl(0 0% 88%)',
-            textShadow: '0 0 15px hsl(0 0% 100% / 0.15)'
+            fontSize: 'clamp(0.625rem, 0.55rem + 0.5vw, 1rem)',
+            letterSpacing: '0.2em',
+            color: 'hsl(0 0% 92%)',
+            textShadow: '0 0 20px hsl(0 0% 100% / 0.2)'
           }}
         >
           {t('hero.tagline')}

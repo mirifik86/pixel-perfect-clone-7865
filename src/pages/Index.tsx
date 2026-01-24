@@ -466,17 +466,17 @@ const Index = () => {
         }} 
       />
       
-      {/* Main content - MOBILE-FIRST: optimized for above-the-fold clarity */}
-      <main className="container-unified relative z-10 flex flex-1 flex-col items-center overflow-x-hidden py-1 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
+      <main className="container-unified relative z-10 flex flex-1 flex-col items-center overflow-x-hidden py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div className="flex w-full max-w-full flex-col items-center overflow-hidden">
-          {/* Logo & branding - MOBILE: ultra-compact */}
+          {/* Logo & branding with unified halo - MOBILE OPTIMIZED */}
           <div 
             className="relative flex animate-fade-in flex-col items-center overflow-visible" 
             style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: '0' }}
           >
-            {/* Unified halo effect - subtle on mobile */}
+            {/* Unified halo effect behind logo + subtitles - constrained */}
             <div 
-              className="pointer-events-none absolute inset-0 hidden md:block"
+              className="pointer-events-none absolute inset-0"
               style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 40%, hsl(174 60% 45% / 0.15) 0%, transparent 70%)',
                 filter: 'blur(20px)'
@@ -485,8 +485,9 @@ const Index = () => {
             
             <LeenScoreLogo />
             
-            {/* Premium light beam separator - hidden on mobile */}
-            <div className="relative hidden md:flex w-full items-center justify-center" style={{ marginTop: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
+            {/* Premium light beam separator */}
+            <div className="relative flex w-full items-center justify-center" style={{ marginTop: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
+              {/* Central glow dot */}
               <div 
                 className="absolute h-1.5 w-1.5 rounded-full"
                 style={{
@@ -494,12 +495,14 @@ const Index = () => {
                   boxShadow: '0 0 8px 2px hsl(174 80% 55% / 0.8), 0 0 20px 4px hsl(174 60% 45% / 0.4)'
                 }}
               />
+              {/* Light beam left */}
               <div 
                 className="h-px w-24"
                 style={{
                   background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.6) 100%)'
                 }}
               />
+              {/* Light beam right */}
               <div 
                 className="h-px w-24"
                 style={{
@@ -508,9 +511,9 @@ const Index = () => {
               />
             </div>
             
-            {/* Byline - MOBILE: hidden, DESKTOP: visible */}
+            {/* Byline - clean, compact, premium */}
             <p 
-              className="animate-fade-in font-semibold uppercase text-center hidden md:block"
+              className="animate-fade-in font-semibold uppercase text-center"
               style={{ 
                 animationDelay: '150ms', 
                 animationFillMode: 'both',
@@ -525,15 +528,28 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Separator & Language toggle - MOBILE: compact inline row */}
+          {/* Premium separator between header and language toggle */}
           <div 
-            className="flex items-center justify-center gap-3 animate-fade-in"
+            className="relative w-full flex items-center justify-center"
             style={{ 
-              marginTop: 'clamp(0.5rem, 1.5vh, 1rem)',
-              marginBottom: 'clamp(0.25rem, 1vh, 0.75rem)',
-              animationDelay: '200ms', 
-              animationFillMode: 'both'
+              marginTop: 'clamp(1rem, 3vh, 1.75rem)',
+              marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)'
             }}
+          >
+            {/* Subtle horizontal line with fade */}
+            <div 
+              className="absolute h-px"
+              style={{
+                width: 'clamp(120px, 25vw, 200px)',
+                background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.06) 30%, hsl(0 0% 100% / 0.06) 70%, transparent 100%)'
+              }}
+            />
+          </div>
+
+          {/* Language toggle - centered with premium spacing */}
+          <div 
+            className="flex w-full justify-center animate-fade-in"
+            style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
             <LanguageToggle 
               mode={languageMode} 
@@ -542,14 +558,15 @@ const Index = () => {
             />
           </div>
 
-          {/* Separator between language toggle and gauge - hidden on mobile */}
+          {/* Premium separator between language toggle and gauge */}
           <div 
-            className="relative w-full hidden md:flex items-center justify-center"
+            className="relative w-full flex items-center justify-center"
             style={{ 
-              marginTop: 'clamp(0.5rem, 1.5vh, 1rem)',
-              marginBottom: 'clamp(0.25rem, 1vh, 0.75rem)'
+              marginTop: 'clamp(0.75rem, 2vh, 1.25rem)',
+              marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)'
             }}
           >
+            {/* Subtle horizontal line with fade */}
             <div 
               className="absolute h-px"
               style={{
@@ -559,13 +576,13 @@ const Index = () => {
             />
           </div>
 
-          {/* Score gauge - MOBILE: ultra-compact to keep everything above fold */}
+          {/* Score gauge - MOBILE: reduced height to keep button above fold */}
           <div 
-            className="relative flex justify-center items-center mb-1 md:mb-6"
+            className="relative flex justify-center items-center mb-2 md:mb-6"
             style={{ 
               minHeight: isLoading && isImageAnalysis 
-                ? 'clamp(240px, 40vh, 400px)'
-                : `clamp(${gaugeSize - 20}px, 15vh, ${gaugeSize + 40}px)`
+                ? 'clamp(280px, 45vh, 400px)' // MOBILE: smaller container
+                : `clamp(${gaugeSize}px, 18vh, ${gaugeSize + 40}px)` // MOBILE: dynamic height
             }}
           >
             {/* Loader - shows during analysis with smooth exit */}
@@ -882,11 +899,11 @@ const Index = () => {
         {/* Spacer to push footer down when content is short */}
         <div className="flex-grow" />
 
-        {/* Footer - MOBILE: minimal, DESKTOP: full signature */}
-        <footer className="relative mt-auto flex flex-col items-center text-center py-3 md:py-5">
-          {/* Subtle premium separator - hidden on mobile */}
+        {/* Footer - premium signature */}
+        <footer className="relative mt-auto flex flex-col items-center text-center py-5">
+          {/* Subtle premium separator */}
           <div 
-            className="mb-3 md:mb-4 hidden md:block"
+            className="mb-4"
             style={{ 
               width: '60px',
               height: '1px',
@@ -894,9 +911,9 @@ const Index = () => {
             }}
           />
           
-          {/* LeenScore brand - MOBILE: hidden, DESKTOP: visible */}
+          {/* LeenScore brand - same style as main title */}
           <div 
-            className="brand-text tracking-tight hidden md:block"
+            className="brand-text tracking-tight"
             style={{ 
               fontSize: 'clamp(1.3rem, 1.2rem + 0.5vw, 1.6rem)',
               letterSpacing: '-0.03em'
@@ -918,31 +935,40 @@ const Index = () => {
             >Score</span>
           </div>
           
-          {/* Signature - MOBILE: minimal Sol&Air only, DESKTOP: full */}
+          {/* Signature premium */}
           <p 
-            className="mt-1 md:mt-3 flex items-center gap-1.5"
+            className="mt-3 flex items-center gap-1.5"
             style={{ 
-              fontSize: 'clamp(0.6rem, 0.55rem + 0.15vw, 0.72rem)',
+              fontSize: '0.72rem',
               letterSpacing: '0.06em',
-              color: 'hsl(0 0% 50%)',
+              color: 'hsl(0 0% 55%)',
             }}
           >
-            <span className="hidden md:inline" style={{ opacity: 0.8 }}>{i18nT('index.developedBy')}</span>
+            <span style={{ opacity: 0.8 }}>{i18nT('index.developedBy')}</span>
             <span 
               className="transition-all duration-300 relative inline-block"
               style={{ 
-                color: 'hsl(174 55% 48%)',
+                color: 'hsl(174 65% 52%)',
                 fontWeight: 500,
                 letterSpacing: '0.08em',
+                textShadow: '0 0 12px hsl(174 60% 45% / 0.35), 0 0 24px hsl(174 60% 45% / 0.15)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'hsl(174 65% 60%)';
+                e.currentTarget.style.textShadow = '0 0 16px hsl(174 60% 50% / 0.5), 0 0 32px hsl(174 60% 45% / 0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'hsl(174 65% 52%)';
+                e.currentTarget.style.textShadow = '0 0 12px hsl(174 60% 45% / 0.35), 0 0 24px hsl(174 60% 45% / 0.15)';
               }}
             >
               Sol&Air
             </span>
           </p>
           
-          {/* Version - DESKTOP only */}
+          {/* Version */}
           <div 
-            className="mt-1 uppercase hidden md:block"
+            className="mt-1 uppercase"
             style={{ 
               fontSize: '0.6rem',
               letterSpacing: '0.15em',
