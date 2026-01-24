@@ -723,20 +723,66 @@ const Index = () => {
                 captureGlow={inputCaptureGlow}
               />
               
-              {/* Disclaimer note - subtle, informational, centered */}
-              <p 
-                className="text-center animate-fade-in"
+              {/* Disclaimer note - branded, editorial, with divider */}
+              <div 
+                className="flex flex-col items-center animate-fade-in"
                 style={{ 
-                  marginTop: 'var(--space-3)',
-                  fontSize: 'clamp(0.65rem, 0.6rem + 0.2vw, 0.75rem)',
-                  color: 'hsl(0 0% 100% / 0.58)',
-                  lineHeight: 1.5,
+                  marginTop: 'var(--space-4)',
                   animationDelay: '500ms',
                   animationFillMode: 'both',
                 }}
               >
-                {i18nT('form.disclaimer')}
-              </p>
+                {/* Thin divider line */}
+                <div 
+                  style={{
+                    width: '48px',
+                    height: '1px',
+                    background: 'linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.25), transparent)',
+                    marginBottom: 'var(--space-3)',
+                  }}
+                />
+                
+                {/* Disclaimer text with branded LeenScore */}
+                <p 
+                  className="text-center"
+                  style={{ 
+                    fontSize: 'clamp(0.65rem, 0.6rem + 0.2vw, 0.75rem)',
+                    color: 'hsl(0 0% 100% / 0.78)',
+                    lineHeight: 1.7,
+                    maxWidth: '320px',
+                  }}
+                >
+                  {/* Line 1: LeenScore branded */}
+                  <span className="block" style={{ marginBottom: '2px' }}>
+                    <span 
+                      className="brand-accent italic"
+                      style={{
+                        color: 'hsl(174 65% 52%)',
+                        fontFamily: 'var(--font-display)',
+                      }}
+                    >
+                      Leen
+                    </span>
+                    <span 
+                      className="font-semibold not-italic"
+                      style={{
+                        color: 'hsl(0 0% 98%)',
+                        fontFamily: 'var(--font-display)',
+                      }}
+                    >
+                      Score
+                    </span>
+                    <span style={{ color: 'hsl(0 0% 100% / 0.78)' }}>
+                      {' '}{i18nT('form.disclaimerLine1')}
+                    </span>
+                  </span>
+                  
+                  {/* Line 2: Helping statement */}
+                  <span className="block" style={{ color: 'hsl(0 0% 100% / 0.78)' }}>
+                    {i18nT('form.disclaimerLine2')}
+                  </span>
+                </p>
+              </div>
             </div>
           )}
 
