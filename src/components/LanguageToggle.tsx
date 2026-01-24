@@ -183,69 +183,155 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
         </button>
       </div>
       
-      {/* Dropdown menu */}
+      {/* Premium Dropdown menu */}
       {isDropdownOpen && (
         <div 
-          className="absolute top-full right-0 mt-2 z-50 min-w-[180px] rounded-xl border border-primary/20 bg-secondary/95 backdrop-blur-xl shadow-xl animate-fade-in"
+          className="absolute top-full right-0 mt-2 z-50 min-w-[220px] rounded-2xl border border-primary/30 bg-background/95 backdrop-blur-xl animate-fade-in overflow-hidden"
           style={{
             boxShadow: `
-              0 0 20px hsl(174 60% 45% / 0.15),
-              0 10px 40px hsl(0 0% 0% / 0.3)
+              0 0 30px hsl(174 60% 45% / 0.2),
+              0 15px 50px hsl(0 0% 0% / 0.4),
+              inset 0 1px 1px hsl(0 0% 100% / 0.1)
             `
           }}
         >
-          {/* Auto option */}
-          <button
-            onClick={() => {
-              onLanguageChange('auto');
-              setIsDropdownOpen(false);
+          {/* Auto option - Featured prominently */}
+          <div 
+            className="relative"
+            style={{
+              background: mode === 'auto' 
+                ? 'linear-gradient(135deg, hsl(174 60% 45% / 0.25) 0%, hsl(180 55% 40% / 0.15) 100%)'
+                : 'linear-gradient(135deg, hsl(174 60% 45% / 0.08) 0%, hsl(180 55% 40% / 0.04) 100%)'
             }}
-            className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors rounded-t-xl ${
-              mode === 'auto' 
-                ? 'bg-primary/20 text-primary-foreground' 
-                : 'text-foreground/80 hover:bg-primary/10'
-            }`}
           >
-            <span className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              <span>Auto</span>
-              <span className="text-xs text-muted-foreground">(Recommended)</span>
-            </span>
-            {mode === 'auto' && <Check className="h-4 w-4 text-primary" />}
-          </button>
-          
-          <div className="h-px bg-primary/10" />
-          
-          {/* Secondary languages */}
-          {SECONDARY_LANGUAGES.map((lang, index) => {
-            const config = SUPPORTED_LANGUAGES[lang];
-            const isActive = mode === lang;
-            const isLast = index === SECONDARY_LANGUAGES.length - 1;
+            {/* Glow effect for Auto */}
+            <div 
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background: 'radial-gradient(ellipse at center, hsl(174 60% 50% / 0.1) 0%, transparent 70%)',
+                animation: mode === 'auto' ? 'lang-glow-pulse 3s ease-in-out infinite' : 'none'
+              }}
+            />
             
-            return (
-              <button
-                key={lang}
-                onClick={() => {
-                  onLanguageChange(lang);
-                  setIsDropdownOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
-                  isLast ? 'rounded-b-xl' : ''
-                } ${
-                  isActive 
-                    ? 'bg-primary/20 text-primary-foreground' 
-                    : 'text-foreground/80 hover:bg-primary/10'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <span>{config.flag}</span>
-                  <span>{config.nativeName}</span>
-                  <span className="text-xs text-muted-foreground">({lang.toUpperCase()})</span>
-                </span>
-                {isActive && <Check className="h-4 w-4 text-primary" />}
-              </button>
-            );
-          })}
+            <button
+              onClick={() => {
+                onLanguageChange('auto');
+                setIsDropdownOpen(false);
+              }}
+              className={`relative w-full flex items-center justify-between px-4 py-4 text-sm transition-all duration-300 ${
+                mode === 'auto' 
+                  ? 'text-foreground' 
+                  : 'text-foreground/80 hover:text-foreground'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                {/* Animated globe */}
+                <div 
+                  className="relative flex items-center justify-center w-8 h-8 rounded-full"
+                  style={{
+                    background: mode === 'auto'
+                      ? 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)'
+                      : 'linear-gradient(135deg, hsl(174 65% 48% / 0.3) 0%, hsl(180 55% 40% / 0.2) 100%)',
+                    boxShadow: mode === 'auto' 
+                      ? '0 0 12px hsl(174 60% 45% / 0.5), inset 0 1px 1px hsl(0 0% 100% / 0.2)'
+                      : '0 0 8px hsl(174 60% 45% / 0.2)'
+                  }}
+                >
+                  <Globe className={`h-4 w-4 ${mode === 'auto' ? 'text-white' : 'text-primary'}`} />
+                </div>
+                
+                <div className="flex flex-col items-start">
+                  <span 
+                    className="font-semibold"
+                    style={{
+                      background: mode === 'auto' 
+                        ? 'linear-gradient(135deg, hsl(174 70% 65%) 0%, hsl(180 60% 75%) 100%)'
+                        : 'none',
+                      WebkitBackgroundClip: mode === 'auto' ? 'text' : 'unset',
+                      WebkitTextFillColor: mode === 'auto' ? 'transparent' : 'inherit'
+                    }}
+                  >
+                    Auto
+                  </span>
+                  <span 
+                    className="text-xs"
+                    style={{ color: 'hsl(174 50% 55%)' }}
+                  >
+                    ✨ Recommended
+                  </span>
+                </div>
+              </span>
+              
+              {mode === 'auto' && (
+                <div 
+                  className="flex items-center justify-center w-5 h-5 rounded-full"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
+                    boxShadow: '0 0 8px hsl(174 60% 45% / 0.4)'
+                  }}
+                >
+                  <Check className="h-3 w-3 text-white" />
+                </div>
+              )}
+            </button>
+          </div>
+          
+          {/* Separator with gradient */}
+          <div 
+            className="h-px mx-3"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, hsl(174 60% 50% / 0.3) 50%, transparent 100%)'
+            }}
+          />
+          
+          {/* Secondary languages - compact list */}
+          <div className="py-1">
+            {SECONDARY_LANGUAGES.map((lang, index) => {
+              const config = SUPPORTED_LANGUAGES[lang];
+              const isActive = mode === lang;
+              const isLast = index === SECONDARY_LANGUAGES.length - 1;
+              
+              return (
+                <button
+                  key={lang}
+                  onClick={() => {
+                    onLanguageChange(lang);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-all duration-200 ${
+                    isLast ? 'rounded-b-2xl' : ''
+                  } ${
+                    isActive 
+                      ? 'bg-primary/15 text-foreground' 
+                      : 'text-foreground/70 hover:bg-primary/8 hover:text-foreground'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span 
+                      className="text-lg"
+                      style={{ 
+                        filter: isActive ? 'drop-shadow(0 0 4px hsl(174 60% 50% / 0.5))' : 'none'
+                      }}
+                    >
+                      {config.flag}
+                    </span>
+                    <span className={isActive ? 'font-medium' : ''}>{config.nativeName}</span>
+                    <span className="text-xs text-muted-foreground">({lang.toUpperCase()})</span>
+                  </span>
+                  {isActive && (
+                    <div 
+                      className="flex items-center justify-center w-4 h-4 rounded-full"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)'
+                      }}
+                    >
+                      <Check className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
       
