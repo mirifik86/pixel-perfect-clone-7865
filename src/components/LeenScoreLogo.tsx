@@ -4,25 +4,27 @@ export const LeenScoreLogo = () => {
   const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center gap-2 md:gap-3">
-      {/* Title - clean, no background overlay */}
+      {/* Title - clean, editorial, no decorative effects */}
       <h1 
-        className="brand-text font-normal tracking-tight"
-        style={{ letterSpacing: '-0.03em', fontSize: 'clamp(3rem, 3rem + 4vw, 6.5rem)' }}
+        className="font-semibold tracking-tight"
+        style={{ 
+          letterSpacing: '-0.02em', 
+          fontSize: 'clamp(3rem, 3rem + 4vw, 6.5rem)',
+          fontFamily: 'var(--font-display)',
+        }}
       >
         <span 
-          className="brand-accent italic"
+          className="italic"
           style={{
             color: 'hsl(174 65% 52%)',
-            textShadow: '0 0 40px hsl(174 60% 45% / 0.4)'
           }}
         >
           Leen
         </span>
         <span 
-          className="font-semibold not-italic" 
+          className="not-italic" 
           style={{
             color: 'hsl(0 0% 98%)',
-            textShadow: '0 0 30px hsl(0 0% 100% / 0.15)'
           }}
         >
           Score
