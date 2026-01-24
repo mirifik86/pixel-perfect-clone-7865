@@ -3,7 +3,12 @@ import { SupportedLanguage, DEFAULT_LANGUAGE } from './config';
 // Import all locale files
 import en from './locales/en.json';
 import fr from './locales/fr.json';
+import es from './locales/es.json';
+import de from './locales/de.json';
+import pt from './locales/pt.json';
+import it from './locales/it.json';
 import ja from './locales/ja.json';
+import ko from './locales/ko.json';
 
 // Type for translation keys (nested object paths)
 type TranslationValue = string | string[] | Record<string, unknown>;
@@ -13,7 +18,12 @@ type TranslationObject = Record<string, TranslationValue | Record<string, Transl
 const translations: Record<SupportedLanguage, TranslationObject> = {
   en,
   fr,
-  ja
+  es,
+  de,
+  pt,
+  it,
+  ja,
+  ko
 };
 
 /**

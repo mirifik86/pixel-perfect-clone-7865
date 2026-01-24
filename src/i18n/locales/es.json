@@ -1,0 +1,108 @@
+{
+  "common": {
+    "analyze": "Analizar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "close": "Cerrar"
+  },
+  "language": {
+    "auto": "Automático",
+    "autoDetected": "Detectado automáticamente",
+    "promptTitle": "Idioma detectado",
+    "promptMessage": "Hemos detectado {{language}}. ¿Desea cambiar?",
+    "switchTo": "Cambiar a {{language}}",
+    "keepCurrent": "Mantener actual"
+  },
+  "hero": {
+    "tagline": "Credibilidad medida."
+  },
+  "form": {
+    "placeholder": "Pegue un fragmento del mensaje o describa la afirmación a verificar…",
+    "placeholderHint": "luego",
+    "description": "Analizamos la credibilidad de las fuentes, los patrones lingüísticos y el contexto para ayudarle a comprender la información en línea.",
+    "urlDetected": "URL detectada"
+  },
+  "gauge": {
+    "pending": "Pendiente",
+    "ready": "Listo",
+    "analyzing": "Analizando...",
+    "credibilityLevels": {
+      "veryLow": "Muy baja",
+      "low": "Baja",
+      "moderate": "Moderada",
+      "high": "Alta",
+      "veryHigh": "Muy alta"
+    }
+  },
+  "analysis": {
+    "title": "Resultado del análisis",
+    "summary": "Resumen",
+    "confidence": "Confianza",
+    "signals": "Señales",
+    "breakdown": "Desglose de puntuación",
+    "corroboration": "Corroboración",
+    "sources": "Fuentes",
+    "proAnalysis": "Análisis PRO",
+    "imageSignals": "Análisis de señales de imagen"
+  },
+  "loader": {
+    "primary": "Escaneando el espacio de información",
+    "subtitle": "Análisis orbital activo",
+    "secondary": [
+      "Analizando fuentes y consistencia contextual…",
+      "Evaluando señales lingüísticas y fiabilidad de fuentes…",
+      "Procesando análisis de credibilidad estructurado…"
+    ]
+  },
+  "articleSummary": {
+    "title": "Resumen del artículo"
+  },
+  "error": {
+    "title": "Error de análisis",
+    "message": "Se produjo un error durante el análisis. Por favor, inténtelo de nuevo.",
+    "networkError": "Error de red. Por favor, verifique su conexión.",
+    "timeout": "Tiempo de espera agotado. Por favor, inténtelo de nuevo."
+  },
+  "footer": {
+    "madeWith": "Hecho con",
+    "by": "por"
+  },
+  "screenshotEvidence": {
+    "title": "Evidencia de captura",
+    "extractedText": "Texto extraído",
+    "visualDescription": "Descripción visual",
+    "ocrConfidence": "Confianza OCR",
+    "imagePreview": "Vista previa de imagen",
+    "showPreview": "Mostrar vista previa",
+    "hidePreview": "Ocultar vista previa",
+    "editText": "Editar texto extraído",
+    "rerunAnalysis": "Volver a analizar",
+    "lowConfidenceWarning": "Baja confianza OCR - el texto puede ser inexacto",
+    "mismatchWarning": "Discrepancia visual-texto detectada"
+  },
+  "pro": {
+    "badge": "PRO",
+    "title": "Análisis profundo",
+    "subtitle": "Información avanzada de credibilidad",
+    "launchAnalysis": "Iniciar análisis PRO",
+    "features": {
+      "corroboration": {
+        "title": "Corroboración de fuentes",
+        "description": "Referencias cruzadas con múltiples fuentes confiables"
+      },
+      "linguistic": {
+        "title": "Análisis lingüístico",
+        "description": "Detección avanzada de patrones y análisis de sentimiento"
+      },
+      "context": {
+        "title": "Evaluación contextual",
+        "description": "Verificación profunda del contexto y precisión histórica"
+      }
+    }
+  }
+}

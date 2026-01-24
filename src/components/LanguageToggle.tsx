@@ -1,8 +1,10 @@
-import { Globe } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Globe, ChevronDown, Check } from 'lucide-react';
 import { 
   LanguageMode, 
   SupportedLanguage, 
   PRIMARY_LANGUAGES,
+  SECONDARY_LANGUAGES,
   SUPPORTED_LANGUAGES 
 } from '@/i18n';
 
@@ -12,33 +14,38 @@ interface LanguageToggleProps {
   onLanguageChange: (lang: LanguageMode) => void;
 }
 
-type ToggleOption = {
-  value: LanguageMode;
-  label: string | React.ReactNode;
-  isIcon?: boolean;
-};
-
 export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageToggleProps) => {
-  // Build toggle options: EN | FR | Auto(🌐)
-  const options: ToggleOption[] = [
-    ...PRIMARY_LANGUAGES.map(lang => ({
-      value: lang as LanguageMode,
-      label: lang.toUpperCase()
-    })),
-    {
-      value: 'auto' as LanguageMode,
-      label: <Globe className="h-3.5 w-3.5" />,
-      isIcon: true
-    }
-  ];
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Find active index for slider positioning
-  const activeIndex = options.findIndex(opt => opt.value === mode);
-  const optionCount = options.length;
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Check if current mode is a secondary language or auto
+  const isSecondaryActive = mode === 'auto' || SECONDARY_LANGUAGES.includes(mode as SupportedLanguage);
+
+  // Get display info for the globe button
+  const getGlobeLabel = () => {
+    if (mode === 'auto') return 'Auto';
+    if (SECONDARY_LANGUAGES.includes(mode as SupportedLanguage)) {
+      return mode.toUpperCase();
+    }
+    return null;
+  };
+
+  const globeLabel = getGlobeLabel();
 
   return (
-    <div className="relative inline-flex items-center">
-      {/* Subtle outer glow - reduced for discretion */}
+    <div className="relative inline-flex items-center" ref={dropdownRef}>
+      {/* Subtle outer glow */}
       <div 
         className="pointer-events-none absolute -inset-1 rounded-full opacity-40"
         style={{
@@ -72,28 +79,20 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
       
       <style>{`
         @keyframes lang-border-pulse {
-          0%, 100% {
-            opacity: 0.6;
-            filter: brightness(1);
-          }
-          50% {
-            opacity: 1;
-            filter: brightness(1.3);
-          }
+          0%, 100% { opacity: 0.6; filter: brightness(1); }
+          50% { opacity: 1; filter: brightness(1.3); }
         }
         @keyframes lang-glow-pulse {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.6;
-            transform: scale(1.05);
-          }
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        @keyframes lang-dot-pulse {
+          0%, 100% { opacity: 0.7; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
         }
       `}</style>
       
-      {/* Main container - larger touch targets on mobile */}
+      {/* Main container */}
       <div 
         className="relative inline-flex items-center rounded-full border border-primary/25 bg-secondary/70 backdrop-blur-xl"
         style={{
@@ -110,8 +109,10 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
         <div 
           className="pointer-events-none absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-out"
           style={{
-            width: `calc(${100 / optionCount}% - 4px)`,
-            left: `calc(${(activeIndex / optionCount) * 100}% + 2px)`,
+            width: `calc(${100 / 3}% - 4px)`,
+            left: PRIMARY_LANGUAGES.includes(mode as SupportedLanguage) 
+              ? `calc(${(PRIMARY_LANGUAGES.indexOf(mode as SupportedLanguage) / 3) * 100}% + 2px)`
+              : `calc(${(2 / 3) * 100}% + 2px)`,
             background: 'linear-gradient(135deg, hsl(174 65% 48%) 0%, hsl(180 55% 40%) 100%)',
             boxShadow: `
               0 0 10px hsl(174 60% 45% / 0.4),
@@ -121,37 +122,130 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
           }}
         />
         
-        {/* Option buttons */}
-        {options.map((option, index) => {
-          const isActive = mode === option.value;
+        {/* EN and FR buttons */}
+        {PRIMARY_LANGUAGES.map((lang) => {
+          const isActive = mode === lang;
           
           return (
             <button
-              key={option.value}
-              onClick={() => onLanguageChange(option.value)}
+              key={lang}
+              onClick={() => {
+                onLanguageChange(lang);
+                setIsDropdownOpen(false);
+              }}
               className={`relative z-10 flex items-center justify-center rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
                 isActive
                   ? 'text-primary-foreground'
                   : 'text-muted-foreground/60 hover:text-foreground/80'
               }`}
               style={{
-                minWidth: option.isIcon ? '2.25rem' : '2.75rem',
+                minWidth: '2.75rem',
                 minHeight: '2.25rem',
-                padding: option.isIcon ? '0.5rem' : '0.5rem 0.75rem',
-                fontSize: option.isIcon ? undefined : 'clamp(0.65rem, 2vw, 0.7rem)',
-                letterSpacing: option.isIcon ? undefined : '0.08em',
+                padding: '0.5rem 0.75rem',
+                fontSize: 'clamp(0.65rem, 2vw, 0.7rem)',
+                letterSpacing: '0.08em',
                 textShadow: isActive ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
               }}
-              title={option.value === 'auto' 
-                ? `Auto (${SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()})` 
-                : SUPPORTED_LANGUAGES[option.value as SupportedLanguage]?.nativeName
-              }
+              title={SUPPORTED_LANGUAGES[lang]?.nativeName}
             >
-              {option.label}
+              {lang.toUpperCase()}
             </button>
           );
         })}
+        
+        {/* Globe dropdown button */}
+        <button
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className={`relative z-10 flex items-center justify-center gap-1 rounded-full font-medium uppercase tracking-wider transition-all duration-300 ${
+            isSecondaryActive
+              ? 'text-primary-foreground'
+              : 'text-muted-foreground/60 hover:text-foreground/80'
+          }`}
+          style={{
+            minWidth: globeLabel ? '3rem' : '2.25rem',
+            minHeight: '2.25rem',
+            padding: '0.5rem',
+            textShadow: isSecondaryActive ? '0 1px 2px hsl(0 0% 0% / 0.25)' : 'none'
+          }}
+          title="More languages"
+        >
+          <Globe className="h-3.5 w-3.5" />
+          {globeLabel && (
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.05em' }}>
+              {globeLabel}
+            </span>
+          )}
+          <ChevronDown 
+            className={`h-3 w-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+          />
+        </button>
       </div>
+      
+      {/* Dropdown menu */}
+      {isDropdownOpen && (
+        <div 
+          className="absolute top-full right-0 mt-2 z-50 min-w-[180px] rounded-xl border border-primary/20 bg-secondary/95 backdrop-blur-xl shadow-xl animate-fade-in"
+          style={{
+            boxShadow: `
+              0 0 20px hsl(174 60% 45% / 0.15),
+              0 10px 40px hsl(0 0% 0% / 0.3)
+            `
+          }}
+        >
+          {/* Auto option */}
+          <button
+            onClick={() => {
+              onLanguageChange('auto');
+              setIsDropdownOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors rounded-t-xl ${
+              mode === 'auto' 
+                ? 'bg-primary/20 text-primary-foreground' 
+                : 'text-foreground/80 hover:bg-primary/10'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span>Auto</span>
+              <span className="text-xs text-muted-foreground">(Recommended)</span>
+            </span>
+            {mode === 'auto' && <Check className="h-4 w-4 text-primary" />}
+          </button>
+          
+          <div className="h-px bg-primary/10" />
+          
+          {/* Secondary languages */}
+          {SECONDARY_LANGUAGES.map((lang, index) => {
+            const config = SUPPORTED_LANGUAGES[lang];
+            const isActive = mode === lang;
+            const isLast = index === SECONDARY_LANGUAGES.length - 1;
+            
+            return (
+              <button
+                key={lang}
+                onClick={() => {
+                  onLanguageChange(lang);
+                  setIsDropdownOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
+                  isLast ? 'rounded-b-xl' : ''
+                } ${
+                  isActive 
+                    ? 'bg-primary/20 text-primary-foreground' 
+                    : 'text-foreground/80 hover:bg-primary/10'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span>{config.flag}</span>
+                  <span>{config.nativeName}</span>
+                  <span className="text-xs text-muted-foreground">({lang.toUpperCase()})</span>
+                </span>
+                {isActive && <Check className="h-4 w-4 text-primary" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
       
       {/* Premium language indicator - right side */}
       <div 
@@ -192,19 +286,6 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
           {SUPPORTED_LANGUAGES[language]?.nativeName || language.toUpperCase()}
         </span>
       </div>
-      
-      <style>{`
-        @keyframes lang-dot-pulse {
-          0%, 100% {
-            opacity: 0.7;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 1;
-            transform: scale(1.2);
-          }
-        }
-      `}</style>
     </div>
   );
 };
