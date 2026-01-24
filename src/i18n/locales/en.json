@@ -16,7 +16,10 @@
     "promptTitle": "Language Detected",
     "promptMessage": "We detected {{language}}. Would you like to switch?",
     "switchTo": "Switch to {{language}}",
-    "keepCurrent": "Keep current"
+    "keepCurrent": "Keep current",
+    "detected": "We detected",
+    "switch": "Switch",
+    "keep": "Keep English"
   },
   "hero": {
     "tagline": "Credibility measured.",
@@ -60,30 +63,110 @@
     "title": "Analysis Result",
     "summary": "Summary",
     "confidence": "Confidence",
+    "confidenceLow": "Low",
+    "confidenceMedium": "Medium",
+    "confidenceHigh": "High",
     "signals": "Signals",
     "breakdown": "Score Breakdown",
+    "proBreakdown": "Pro Analysis Breakdown",
+    "proExplanation": "PRO Explanation",
     "corroboration": "Corroboration",
-    "sources": "Sources",
+    "sources": "Sources & Corroboration",
     "proAnalysis": "PRO Analysis",
-    "imageSignals": "Image Signals Analysis"
+    "imageSignals": "Image Signals Analysis",
+    "factual": "Factual Consistency",
+    "tone": "Tone & Language",
+    "context": "Context Clarity",
+    "transparency": "Transparency",
+    "claimGravity": "Claim Gravity",
+    "contextualCoherence": "Contextual Coherence",
+    "webCorroboration": "Web Corroboration",
+    "imageCoherence": "Image Signals",
+    "limitedVerificationTitle": "Limited Verification (Standard)",
+    "noSourceFound": "No corroborating source found.",
+    "oneSourceFound": "1 corroborating source found:",
+    "limitedVerificationNote": "Standard analysis checks for one corroborating source. Upgrade to PRO for extended verification.",
+    "extendedVerificationTitle": "Extended Verification (PRO)",
+    "corroborationTitle": "Web Corroboration",
+    "corroborated": "Clear Corroboration",
+    "neutral": "Neutral Mentions",
+    "constrained": "Limited Coverage",
+    "sourcesConsulted": "sources consulted",
+    "corroborationBonus": "Corroboration Bonus",
+    "maxBonus": "max +20 pts",
+    "sourceGroupCorroborated": "Clear corroboration",
+    "sourceGroupNeutral": "Neutral or contextual mentions",
+    "sourceGroupConstrained": "Limited or constrained coverage",
+    "plausibilityScore": "Plausibility Score (PRO Analysis)",
+    "signalsTitle": "Credibility signals reviewed",
+    "proSignalsTitle": "Pro signals evaluated",
+    "signalSource": "Source reliability",
+    "signalFactual": "Factual coherence",
+    "signalContext": "Context clarity",
+    "signalPrudence": "Language prudence",
+    "signalVisual": "Visual coherence",
+    "signalGravity": "Claim gravity",
+    "signalCoherence": "Coherence",
+    "signalWeb": "Web corroboration",
+    "signalImage": "Image signals",
+    "expertVisualAnalysis": "Expert Visual Analysis",
+    "imageProvidedAndAnalyzed": "Image provided and analyzed",
+    "visualRelevance": "Visual Relevance to Claim",
+    "contextualCoherenceLabel": "Contextual Coherence",
+    "coherenceConfirmed": "Coherence confirmed",
+    "incoherenceDetected": "Incoherence detected",
+    "neutralLabel": "Neutral",
+    "neutralPoints": "Neutral (0 points)",
+    "minorReinforcement": "minor reinforcement",
+    "visualRelevanceHigh": "The image visually supports the claim content.",
+    "visualRelevancePartial": "The image shows a partial connection to the content.",
+    "visualRelevanceNone": "The image has no visual connection to the claim.",
+    "proTooltip": "PRO checks up to 10 sources with progressive scoring: +5, +4, +3, +2, then +1 per source (max +20 pts).",
+    "officialSource": "Official Source",
+    "majorMedia": "Major Media",
+    "reference": "Reference",
+    "contextLabel": "Context"
   },
   "loader": {
     "primary": "Scanning information space",
     "subtitle": "Orbital analysis active",
+    "processing": "Processing…",
     "secondary": [
       "Analyzing sources and contextual consistency…",
       "Evaluating linguistic signals and source reliability…",
       "Processing structured credibility analysis…"
     ]
   },
+  "missionControl": {
+    "primary": "Analysis in progress…",
+    "subtitle": "Building a Trust Score",
+    "secondary": [
+      "Extracting visual signals",
+      "Evaluating credibility indicators",
+      "Cross-verifying factual consistency",
+      "Finalizing assessment"
+    ]
+  },
+  "screenshotLoader": {
+    "title": "Analyzing Screenshot",
+    "steps": [
+      { "label": "Extracting text (OCR)…", "description": "Reading visible text from your screenshot" },
+      { "label": "Checking image signals…", "description": "Analyzing visual authenticity indicators" },
+      { "label": "Running LeenScore analysis…", "description": "Evaluating credibility signals" }
+    ]
+  },
   "articleSummary": {
     "title": "Article Summary"
   },
   "error": {
-    "title": "Analysis Error",
+    "title": "Analysis Failed",
+    "description": "We encountered an error while processing your request.",
     "message": "An error occurred during analysis. Please try again.",
     "networkError": "Network error. Please check your connection.",
-    "timeout": "Request timed out. Please try again."
+    "timeout": "Request timed out. Please try again.",
+    "retry": "Retry",
+    "newAnalysis": "New Analysis",
+    "debugId": "Debug ID"
   },
   "footer": {
     "madeWith": "Made with",
@@ -95,19 +178,77 @@
     "visualDescription": "Visual Description",
     "ocrConfidence": "OCR Confidence",
     "imagePreview": "Image Preview",
-    "showPreview": "Show Preview",
-    "hidePreview": "Hide Preview",
+    "showPreview": "Show original",
+    "hidePreview": "Hide original",
     "editText": "Edit extracted text",
     "rerunAnalysis": "Re-run analysis",
+    "rerunning": "Re-analyzing...",
     "lowConfidenceWarning": "Low OCR confidence - text may be inaccurate",
-    "mismatchWarning": "Visual-text mismatch detected"
+    "mismatchWarning": "Visual-text mismatch detected",
+    "contextWarning": "Critical Disclaimer",
+    "contextWarningText": "This analysis is based on extracted text and limited visual context. Screenshots can be partial or misleading and do not constitute proof of factual claims.",
+    "ocrLowConfidence": "OCR confidence is low. Crop or edit the extracted text, then re-run.",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "visualTextMismatch": "Visual-Text Mismatch Detected",
+    "visualTextMismatchDesc": "The image shows a different person/entity than the text refers to. No verified link exists.",
+    "imageSignals": "Image Signals",
+    "signals": {
+      "screenshotLikelihood": {
+        "likely": "Image appears to be a screenshot (likely).",
+        "uncertain": "Image type uncertain (may not be a screenshot)."
+      },
+      "blurLevel": {
+        "low": "Image clarity: Good",
+        "medium": "Image clarity: Moderate blur detected",
+        "high": "Image clarity: Significant blur (may affect readability)"
+      },
+      "compressionArtifacts": {
+        "low": "Compression: Low artifacts",
+        "medium": "Compression: Medium artifacts (may reduce readability)",
+        "high": "Compression: High artifacts (quality degraded)"
+      },
+      "suspiciousEditingHints": {
+        "none": "No obvious editing indicators detected",
+        "possible": "Possible editing hints (low confidence)"
+      },
+      "metadataPresent": {
+        "yes": "Metadata: Present",
+        "no": "Metadata: Not detected",
+        "partial": "Metadata: Partial"
+      }
+    }
+  },
+  "screenshotUpload": {
+    "title": "Analyze a Screenshot",
+    "dragDrop": "Drag & drop your screenshot here",
+    "or": "or",
+    "browse": "Browse files",
+    "recommendation": "Best results: PNG screenshot, cropped to the claim + source.",
+    "constraints": "PNG/JPG · up to 10MB",
+    "remove": "Remove",
+    "launchAnalysis": "Launch Analysis",
+    "fileSelected": "File selected",
+    "fileTooLarge": "File too large. Maximum 10MB.",
+    "invalidType": "Invalid file type. Please use PNG or JPG."
   },
   "pro": {
     "badge": "PRO",
     "title": "Deep Analysis",
+    "titleSuffix": "In-Depth Verification",
     "subtitle": "Advanced credibility insights",
+    "subtitleLong": "Advanced plausibility assessment with web research and cross-source analysis.",
     "launchAnalysis": "Launch PRO Analysis",
     "analysisComplete": "PRO Analysis complete",
+    "loading": "Analysis in progress…",
+    "ctaPrice": "$2.99",
+    "disclaimer": "PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.",
+    "scoreRange": "Plausibility score range: 5–98.",
+    "steps": [
+      { "label": "Scanning trusted sources" },
+      { "label": "Verifying credibility" },
+      { "label": "Cross-referencing data" }
+    ],
     "features": {
       "corroboration": {
         "title": "Source Corroboration",
@@ -120,7 +261,28 @@
       "context": {
         "title": "Contextual Evaluation",
         "description": "Deep context and historical accuracy check"
+      },
+      "webCorroboration": {
+        "title": "Web Corroboration",
+        "description": "Web research and cross-checking across up to 10 sources from recognized media outlets and official institutions."
+      },
+      "claimGravity": {
+        "title": "Claim Gravity & Context",
+        "description": "Evaluation of the real-world weight of the claim and its coherence with known contextual patterns."
+      },
+      "imageSignals": {
+        "title": "Image Signal Analysis",
+        "description": "Assessment of visual signals including probable origin, available metadata, and image coherence."
       }
     }
+  },
+  "proLoader": {
+    "title": "PRO Analysis in progress",
+    "subtitle": "Searching and cross-checking reliable sources",
+    "steps": [
+      { "label": "Scanning trusted sources" },
+      { "label": "Verifying credibility" },
+      { "label": "Cross-referencing data" }
+    ]
   }
 }

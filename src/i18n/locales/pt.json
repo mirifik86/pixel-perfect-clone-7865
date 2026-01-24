@@ -16,7 +16,10 @@
     "promptTitle": "Idioma detectado",
     "promptMessage": "Detectamos {{language}}. Gostaria de mudar?",
     "switchTo": "Mudar para {{language}}",
-    "keepCurrent": "Manter atual"
+    "keepCurrent": "Manter atual",
+    "detected": "Detectamos",
+    "switch": "Mudar",
+    "keep": "Manter atual"
   },
   "hero": {
     "tagline": "Credibilidade medida.",
@@ -60,30 +63,110 @@
     "title": "Resultado da análise",
     "summary": "Resumo",
     "confidence": "Confiança",
+    "confidenceLow": "Baixa",
+    "confidenceMedium": "Média",
+    "confidenceHigh": "Alta",
     "signals": "Sinais",
     "breakdown": "Detalhamento da pontuação",
+    "proBreakdown": "Detalhamento Análise Pro",
+    "proExplanation": "Explicação PRO",
     "corroboration": "Corroboração",
-    "sources": "Fontes",
+    "sources": "Fontes e Corroboração",
     "proAnalysis": "Análise PRO",
-    "imageSignals": "Análise de sinais de imagem"
+    "imageSignals": "Análise de sinais de imagem",
+    "factual": "Coerência Factual",
+    "tone": "Tom e Linguagem",
+    "context": "Clareza do Contexto",
+    "transparency": "Transparência",
+    "claimGravity": "Gravidade da Afirmação",
+    "contextualCoherence": "Coerência Contextual",
+    "webCorroboration": "Corroboração Web",
+    "imageCoherence": "Sinais de Imagem",
+    "limitedVerificationTitle": "Verificação Limitada (Padrão)",
+    "noSourceFound": "Nenhuma fonte de corroboração encontrada.",
+    "oneSourceFound": "1 fonte de corroboração encontrada:",
+    "limitedVerificationNote": "A análise Padrão verifica uma fonte de corroboração. Atualize para PRO para verificação estendida.",
+    "extendedVerificationTitle": "Verificação Estendida (PRO)",
+    "corroborationTitle": "Corroboração Web",
+    "corroborated": "Corroboração clara",
+    "neutral": "Menções neutras",
+    "constrained": "Cobertura limitada",
+    "sourcesConsulted": "fontes consultadas",
+    "corroborationBonus": "Bônus de Corroboração",
+    "maxBonus": "máx +20 pts",
+    "sourceGroupCorroborated": "Corroboração clara",
+    "sourceGroupNeutral": "Menções neutras ou contextuais",
+    "sourceGroupConstrained": "Cobertura limitada ou restrita",
+    "plausibilityScore": "Pontuação de Plausibilidade (Análise PRO)",
+    "signalsTitle": "Sinais de credibilidade revisados",
+    "proSignalsTitle": "Sinais Pro avaliados",
+    "signalSource": "Confiabilidade das fontes",
+    "signalFactual": "Coerência factual",
+    "signalContext": "Clareza do contexto",
+    "signalPrudence": "Prudência linguística",
+    "signalVisual": "Coerência visual",
+    "signalGravity": "Gravidade",
+    "signalCoherence": "Coerência",
+    "signalWeb": "Corroboração web",
+    "signalImage": "Sinais de imagem",
+    "expertVisualAnalysis": "Análise Visual Especializada",
+    "imageProvidedAndAnalyzed": "Imagem fornecida e analisada",
+    "visualRelevance": "Relevância Visual da Afirmação",
+    "contextualCoherenceLabel": "Coerência Contextual",
+    "coherenceConfirmed": "Coerência confirmada",
+    "incoherenceDetected": "Incoerência detectada",
+    "neutralLabel": "Neutro",
+    "neutralPoints": "Neutro (0 pontos)",
+    "minorReinforcement": "reforço menor",
+    "visualRelevanceHigh": "A imagem apoia visualmente o conteúdo da afirmação.",
+    "visualRelevancePartial": "A imagem mostra uma conexão parcial com o conteúdo.",
+    "visualRelevanceNone": "A imagem não tem conexão visual com a afirmação.",
+    "proTooltip": "PRO verifica até 10 fontes com pontuação progressiva: +5, +4, +3, +2, depois +1 por fonte (máx +20 pts).",
+    "officialSource": "Fonte Oficial",
+    "majorMedia": "Mídia Principal",
+    "reference": "Referência",
+    "contextLabel": "Contexto"
   },
   "loader": {
     "primary": "Escaneando espaço de informação",
     "subtitle": "Análise orbital ativa",
+    "processing": "Processando…",
     "secondary": [
       "Analisando fontes e consistência contextual…",
       "Avaliando sinais linguísticos e confiabilidade das fontes…",
       "Processando análise de credibilidade estruturada…"
     ]
   },
+  "missionControl": {
+    "primary": "Análise em progresso…",
+    "subtitle": "Construindo Pontuação de Confiança",
+    "secondary": [
+      "Extraindo sinais visuais",
+      "Avaliando indicadores de credibilidade",
+      "Verificação cruzada de consistência factual",
+      "Finalizando avaliação"
+    ]
+  },
+  "screenshotLoader": {
+    "title": "Analisando Captura",
+    "steps": [
+      { "label": "Extraindo texto (OCR)…", "description": "Lendo texto visível da sua captura" },
+      { "label": "Verificando sinais de imagem…", "description": "Analisando indicadores de autenticidade visual" },
+      { "label": "Executando análise LeenScore…", "description": "Avaliando sinais de credibilidade" }
+    ]
+  },
   "articleSummary": {
     "title": "Resumo do artigo"
   },
   "error": {
-    "title": "Erro de análise",
+    "title": "Análise Falhou",
+    "description": "Encontramos um erro ao processar sua solicitação.",
     "message": "Ocorreu um erro durante a análise. Por favor, tente novamente.",
     "networkError": "Erro de rede. Por favor, verifique sua conexão.",
-    "timeout": "Tempo esgotado. Por favor, tente novamente."
+    "timeout": "Tempo esgotado. Por favor, tente novamente.",
+    "retry": "Tentar novamente",
+    "newAnalysis": "Nova Análise",
+    "debugId": "ID de depuração"
   },
   "footer": {
     "madeWith": "Feito com",
@@ -95,32 +178,111 @@
     "visualDescription": "Descrição visual",
     "ocrConfidence": "Confiança OCR",
     "imagePreview": "Pré-visualização da imagem",
-    "showPreview": "Mostrar pré-visualização",
-    "hidePreview": "Ocultar pré-visualização",
+    "showPreview": "Mostrar original",
+    "hidePreview": "Ocultar original",
     "editText": "Editar texto extraído",
     "rerunAnalysis": "Executar análise novamente",
+    "rerunning": "Re-analisando...",
     "lowConfidenceWarning": "Baixa confiança OCR - texto pode estar impreciso",
-    "mismatchWarning": "Discrepância visual-texto detectada"
+    "mismatchWarning": "Discrepância visual-texto detectada",
+    "contextWarning": "Aviso Crítico",
+    "contextWarningText": "Esta análise é baseada em texto extraído e contexto visual limitado. Capturas podem ser parciais ou enganosas e não constituem prova de fatos.",
+    "ocrLowConfidence": "Baixa confiança OCR. Recorte ou edite o texto extraído, depois execute novamente.",
+    "expand": "Expandir",
+    "collapse": "Recolher",
+    "visualTextMismatch": "Discrepância Visual-Texto Detectada",
+    "visualTextMismatchDesc": "A imagem mostra uma pessoa/entidade diferente do que o texto menciona. Não existe vínculo verificado.",
+    "imageSignals": "Sinais de imagem",
+    "signals": {
+      "screenshotLikelihood": {
+        "likely": "A imagem parece ser uma captura de tela.",
+        "uncertain": "Tipo de imagem incerto (pode não ser uma captura)."
+      },
+      "blurLevel": {
+        "low": "Clareza: Boa",
+        "medium": "Clareza: Desfoque moderado detectado",
+        "high": "Clareza: Desfoque significativo (pode afetar legibilidade)"
+      },
+      "compressionArtifacts": {
+        "low": "Compressão: Artefatos baixos",
+        "medium": "Compressão: Artefatos médios (pode reduzir legibilidade)",
+        "high": "Compressão: Artefatos altos (qualidade degradada)"
+      },
+      "suspiciousEditingHints": {
+        "none": "Nenhum indicador óbvio de edição detectado",
+        "possible": "Possíveis indícios de edição (baixa confiança)"
+      },
+      "metadataPresent": {
+        "yes": "Metadados: Presentes",
+        "no": "Metadados: Não detectados",
+        "partial": "Metadados: Parciais"
+      }
+    }
+  },
+  "screenshotUpload": {
+    "title": "Analisar uma captura",
+    "dragDrop": "Arraste e solte sua captura aqui",
+    "or": "ou",
+    "browse": "Procurar arquivos",
+    "recommendation": "Melhores resultados: captura PNG, recortada para a afirmação + fonte.",
+    "constraints": "PNG/JPG · até 10MB",
+    "remove": "Remover",
+    "launchAnalysis": "Iniciar Análise",
+    "fileSelected": "Arquivo selecionado",
+    "fileTooLarge": "Arquivo muito grande. Máximo 10MB.",
+    "invalidType": "Tipo de arquivo inválido. Use PNG ou JPG."
   },
   "pro": {
     "badge": "PRO",
-    "title": "Análise profunda",
+    "title": "Análise Profunda",
+    "titleSuffix": "Verificação Aprofundada",
     "subtitle": "Insights avançados de credibilidade",
-    "launchAnalysis": "Iniciar análise PRO",
+    "subtitleLong": "Avaliação de plausibilidade avançada com pesquisa web e análise multi-fonte.",
+    "launchAnalysis": "Iniciar Análise PRO",
     "analysisComplete": "Análise PRO concluída",
+    "loading": "Análise em progresso…",
+    "ctaPrice": "$2.99",
+    "disclaimer": "A Análise PRO fornece uma avaliação de plausibilidade baseada em sinais confiáveis, não verdade absoluta.",
+    "scoreRange": "Faixa de pontuação de plausibilidade: 5–98.",
+    "steps": [
+      { "label": "Escaneando fontes confiáveis" },
+      { "label": "Verificando credibilidade" },
+      { "label": "Cruzando dados" }
+    ],
     "features": {
       "corroboration": {
-        "title": "Corroboração de fontes",
+        "title": "Corroboração de Fontes",
         "description": "Referência cruzada com múltiplas fontes confiáveis"
       },
       "linguistic": {
-        "title": "Análise linguística",
+        "title": "Análise Linguística",
         "description": "Detecção avançada de padrões e análise de sentimento"
       },
       "context": {
-        "title": "Avaliação contextual",
+        "title": "Avaliação Contextual",
         "description": "Verificação profunda de contexto e precisão histórica"
+      },
+      "webCorroboration": {
+        "title": "Corroboração Web",
+        "description": "Pesquisa web e verificação cruzada com até 10 fontes de mídias reconhecidas e instituições oficiais."
+      },
+      "claimGravity": {
+        "title": "Gravidade e Contexto",
+        "description": "Avaliação do peso real da afirmação e sua coerência com padrões contextuais conhecidos."
+      },
+      "imageSignals": {
+        "title": "Análise de Sinais de Imagem",
+        "description": "Avaliação de sinais visuais incluindo origem provável, metadados disponíveis e coerência de imagem."
       }
     }
+  },
+  "proLoader": {
+    "title": "Análise PRO em progresso",
+    "subtitle": "Buscando e verificando fontes confiáveis",
+    "steps": [
+      { "label": "Escaneando fontes confiáveis" },
+      { "label": "Verificando credibilidade" },
+      { "label": "Cruzando dados" }
+    ]
   }
 }

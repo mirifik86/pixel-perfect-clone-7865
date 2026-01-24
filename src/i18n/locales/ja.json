@@ -16,7 +16,10 @@
     "promptTitle": "言語を検出しました",
     "promptMessage": "{{language}}を検出しました。切り替えますか？",
     "switchTo": "{{language}}に切り替える",
-    "keepCurrent": "現在のまま"
+    "keepCurrent": "現在のまま",
+    "detected": "検出しました",
+    "switch": "切り替え",
+    "keep": "現在のまま"
   },
   "hero": {
     "tagline": "信頼性を測定。",
@@ -60,30 +63,110 @@
     "title": "分析結果",
     "summary": "要約",
     "confidence": "信頼度",
+    "confidenceLow": "低",
+    "confidenceMedium": "中",
+    "confidenceHigh": "高",
     "signals": "シグナル",
     "breakdown": "スコア内訳",
+    "proBreakdown": "Pro分析内訳",
+    "proExplanation": "PRO説明",
     "corroboration": "裏付け",
-    "sources": "ソース",
+    "sources": "ソースと裏付け",
     "proAnalysis": "PRO分析",
-    "imageSignals": "画像シグナル分析"
+    "imageSignals": "画像シグナル分析",
+    "factual": "事実の一貫性",
+    "tone": "トーンと言語",
+    "context": "コンテキストの明確さ",
+    "transparency": "透明性",
+    "claimGravity": "主張の重大性",
+    "contextualCoherence": "コンテキストの一貫性",
+    "webCorroboration": "ウェブ裏付け",
+    "imageCoherence": "画像シグナル",
+    "limitedVerificationTitle": "限定検証（標準）",
+    "noSourceFound": "裏付けソースが見つかりません。",
+    "oneSourceFound": "1つの裏付けソースが見つかりました：",
+    "limitedVerificationNote": "標準分析は1つの裏付けソースを確認します。拡張検証にはPROにアップグレードしてください。",
+    "extendedVerificationTitle": "拡張検証（PRO）",
+    "corroborationTitle": "ウェブ裏付け",
+    "corroborated": "明確な裏付け",
+    "neutral": "中立的な言及",
+    "constrained": "限定的なカバレッジ",
+    "sourcesConsulted": "参照ソース数",
+    "corroborationBonus": "裏付けボーナス",
+    "maxBonus": "最大+20ポイント",
+    "sourceGroupCorroborated": "明確な裏付け",
+    "sourceGroupNeutral": "中立的またはコンテキスト的な言及",
+    "sourceGroupConstrained": "限定的または制約のあるカバレッジ",
+    "plausibilityScore": "妥当性スコア（PRO分析）",
+    "signalsTitle": "評価された信頼性シグナル",
+    "proSignalsTitle": "評価されたProシグナル",
+    "signalSource": "ソースの信頼性",
+    "signalFactual": "事実の一貫性",
+    "signalContext": "コンテキストの明確さ",
+    "signalPrudence": "言語の慎重さ",
+    "signalVisual": "視覚的一貫性",
+    "signalGravity": "重大性",
+    "signalCoherence": "一貫性",
+    "signalWeb": "ウェブ裏付け",
+    "signalImage": "画像シグナル",
+    "expertVisualAnalysis": "エキスパート視覚分析",
+    "imageProvidedAndAnalyzed": "画像が提供され、分析されました",
+    "visualRelevance": "主張への視覚的関連性",
+    "contextualCoherenceLabel": "コンテキストの一貫性",
+    "coherenceConfirmed": "一貫性確認",
+    "incoherenceDetected": "不整合を検出",
+    "neutralLabel": "中立",
+    "neutralPoints": "中立（0ポイント）",
+    "minorReinforcement": "軽微な補強",
+    "visualRelevanceHigh": "画像は主張の内容を視覚的にサポートしています。",
+    "visualRelevancePartial": "画像はコンテンツと部分的なつながりを示しています。",
+    "visualRelevanceNone": "画像は主張と視覚的なつながりがありません。",
+    "proTooltip": "PROは最大10のソースを段階的スコアリングで確認：+5、+4、+3、+2、その後ソースごとに+1（最大+20ポイント）。",
+    "officialSource": "公式ソース",
+    "majorMedia": "主要メディア",
+    "reference": "参照",
+    "contextLabel": "コンテキスト"
   },
   "loader": {
     "primary": "情報空間をスキャン中",
     "subtitle": "軌道分析アクティブ",
+    "processing": "処理中…",
     "secondary": [
       "ソースとコンテキストの一貫性を分析中…",
       "言語シグナルとソースの信頼性を評価中…",
       "構造化された信頼性分析を処理中…"
     ]
   },
+  "missionControl": {
+    "primary": "分析進行中…",
+    "subtitle": "信頼スコアを構築中",
+    "secondary": [
+      "視覚シグナルを抽出中",
+      "信頼性指標を評価中",
+      "事実の一貫性をクロス検証中",
+      "評価を最終化中"
+    ]
+  },
+  "screenshotLoader": {
+    "title": "スクリーンショット分析中",
+    "steps": [
+      { "label": "テキスト抽出（OCR）…", "description": "スクリーンショットから表示テキストを読み取り中" },
+      { "label": "画像シグナルを確認中…", "description": "視覚的真正性指標を分析中" },
+      { "label": "LeenScore分析実行中…", "description": "信頼性シグナルを評価中" }
+    ]
+  },
   "articleSummary": {
     "title": "記事の要約"
   },
   "error": {
-    "title": "分析エラー",
+    "title": "分析失敗",
+    "description": "リクエストの処理中にエラーが発生しました。",
     "message": "分析中にエラーが発生しました。もう一度お試しください。",
     "networkError": "ネットワークエラー。接続を確認してください。",
-    "timeout": "リクエストがタイムアウトしました。もう一度お試しください。"
+    "timeout": "リクエストがタイムアウトしました。もう一度お試しください。",
+    "retry": "再試行",
+    "newAnalysis": "新しい分析",
+    "debugId": "デバッグID"
   },
   "footer": {
     "madeWith": "作成",
@@ -95,19 +178,77 @@
     "visualDescription": "視覚的説明",
     "ocrConfidence": "OCR信頼度",
     "imagePreview": "画像プレビュー",
-    "showPreview": "プレビューを表示",
-    "hidePreview": "プレビューを非表示",
+    "showPreview": "元画像を表示",
+    "hidePreview": "元画像を非表示",
     "editText": "抽出テキストを編集",
     "rerunAnalysis": "分析を再実行",
+    "rerunning": "再分析中...",
     "lowConfidenceWarning": "OCR信頼度が低い - テキストが不正確な可能性があります",
-    "mismatchWarning": "視覚-テキストの不一致を検出"
+    "mismatchWarning": "視覚-テキストの不一致を検出",
+    "contextWarning": "重要な免責事項",
+    "contextWarningText": "この分析は抽出されたテキストと限られた視覚コンテキストに基づいています。スクリーンショットは部分的または誤解を招く可能性があり、事実の証拠とはなりません。",
+    "ocrLowConfidence": "OCR信頼度が低いです。トリミングまたはテキストを編集して再実行してください。",
+    "expand": "展開",
+    "collapse": "折りたたむ",
+    "visualTextMismatch": "視覚-テキスト不一致を検出",
+    "visualTextMismatchDesc": "画像はテキストが言及している人物/エンティティとは異なるものを表示しています。確認されたリンクは存在しません。",
+    "imageSignals": "画像シグナル",
+    "signals": {
+      "screenshotLikelihood": {
+        "likely": "画像はスクリーンショットのようです。",
+        "uncertain": "画像タイプ不明（スクリーンショットではない可能性）。"
+      },
+      "blurLevel": {
+        "low": "画像の鮮明さ：良好",
+        "medium": "画像の鮮明さ：中程度のぼやけを検出",
+        "high": "画像の鮮明さ：大幅なぼやけ（可読性に影響する可能性）"
+      },
+      "compressionArtifacts": {
+        "low": "圧縮：低アーティファクト",
+        "medium": "圧縮：中程度のアーティファクト（可読性が低下する可能性）",
+        "high": "圧縮：高アーティファクト（品質劣化）"
+      },
+      "suspiciousEditingHints": {
+        "none": "明らかな編集指標は検出されませんでした",
+        "possible": "編集の可能性あり（低信頼度）"
+      },
+      "metadataPresent": {
+        "yes": "メタデータ：存在",
+        "no": "メタデータ：検出されず",
+        "partial": "メタデータ：部分的"
+      }
+    }
+  },
+  "screenshotUpload": {
+    "title": "スクリーンショットを分析",
+    "dragDrop": "スクリーンショットをここにドラッグ＆ドロップ",
+    "or": "または",
+    "browse": "ファイルを参照",
+    "recommendation": "最良の結果：PNGスクリーンショット、主張+ソースにトリミング。",
+    "constraints": "PNG/JPG・最大10MB",
+    "remove": "削除",
+    "launchAnalysis": "分析を開始",
+    "fileSelected": "ファイル選択済み",
+    "fileTooLarge": "ファイルが大きすぎます。最大10MB。",
+    "invalidType": "無効なファイルタイプ。PNGまたはJPGを使用してください。"
   },
   "pro": {
     "badge": "PRO",
     "title": "詳細分析",
+    "titleSuffix": "深層検証",
     "subtitle": "高度な信頼性インサイト",
+    "subtitleLong": "ウェブリサーチとマルチソース分析による高度な妥当性評価。",
     "launchAnalysis": "PRO分析を開始",
     "analysisComplete": "PRO分析完了",
+    "loading": "分析進行中…",
+    "ctaPrice": "$2.99",
+    "disclaimer": "PRO分析は信頼できるシグナルに基づく妥当性評価を提供し、絶対的な真実ではありません。",
+    "scoreRange": "妥当性スコア範囲：5〜98。",
+    "steps": [
+      { "label": "信頼できるソースをスキャン中" },
+      { "label": "信頼性を検証中" },
+      { "label": "データをクロスリファレンス中" }
+    ],
     "features": {
       "corroboration": {
         "title": "ソースの裏付け",
@@ -120,7 +261,28 @@
       "context": {
         "title": "コンテキスト評価",
         "description": "深いコンテキストと歴史的正確性のチェック"
+      },
+      "webCorroboration": {
+        "title": "ウェブ裏付け",
+        "description": "認知されたメディアや公式機関からの最大10ソースとのウェブリサーチとクロスチェック。"
+      },
+      "claimGravity": {
+        "title": "重大性とコンテキスト",
+        "description": "主張の現実世界での重みと既知のコンテキストパターンとの一貫性の評価。"
+      },
+      "imageSignals": {
+        "title": "画像シグナル分析",
+        "description": "推定される起源、利用可能なメタデータ、画像の一貫性を含む視覚シグナルの評価。"
       }
     }
+  },
+  "proLoader": {
+    "title": "PRO分析進行中",
+    "subtitle": "信頼できるソースを検索・クロスチェック中",
+    "steps": [
+      { "label": "信頼できるソースをスキャン中" },
+      { "label": "信頼性を検証中" },
+      { "label": "データをクロスリファレンス中" }
+    ]
   }
 }

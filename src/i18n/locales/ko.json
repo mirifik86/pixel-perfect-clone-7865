@@ -16,7 +16,10 @@
     "promptTitle": "언어 감지됨",
     "promptMessage": "{{language}}이(가) 감지되었습니다. 변경하시겠습니까?",
     "switchTo": "{{language}}로 전환",
-    "keepCurrent": "현재 유지"
+    "keepCurrent": "현재 유지",
+    "detected": "감지되었습니다",
+    "switch": "전환",
+    "keep": "현재 유지"
   },
   "hero": {
     "tagline": "신뢰성 측정.",
@@ -60,30 +63,110 @@
     "title": "분석 결과",
     "summary": "요약",
     "confidence": "신뢰도",
+    "confidenceLow": "낮음",
+    "confidenceMedium": "중간",
+    "confidenceHigh": "높음",
     "signals": "신호",
     "breakdown": "점수 분석",
+    "proBreakdown": "Pro 분석 분석",
+    "proExplanation": "PRO 설명",
     "corroboration": "확증",
-    "sources": "출처",
+    "sources": "출처 및 확증",
     "proAnalysis": "PRO 분석",
-    "imageSignals": "이미지 신호 분석"
+    "imageSignals": "이미지 신호 분석",
+    "factual": "사실적 일관성",
+    "tone": "어조와 언어",
+    "context": "맥락의 명확성",
+    "transparency": "투명성",
+    "claimGravity": "주장의 중대성",
+    "contextualCoherence": "맥락적 일관성",
+    "webCorroboration": "웹 확증",
+    "imageCoherence": "이미지 신호",
+    "limitedVerificationTitle": "제한된 검증 (표준)",
+    "noSourceFound": "확증 출처를 찾을 수 없습니다.",
+    "oneSourceFound": "1개의 확증 출처를 찾았습니다:",
+    "limitedVerificationNote": "표준 분석은 하나의 확증 출처를 확인합니다. 확장 검증을 위해 PRO로 업그레이드하세요.",
+    "extendedVerificationTitle": "확장 검증 (PRO)",
+    "corroborationTitle": "웹 확증",
+    "corroborated": "명확한 확증",
+    "neutral": "중립적 언급",
+    "constrained": "제한된 범위",
+    "sourcesConsulted": "참조된 출처",
+    "corroborationBonus": "확증 보너스",
+    "maxBonus": "최대 +20점",
+    "sourceGroupCorroborated": "명확한 확증",
+    "sourceGroupNeutral": "중립적 또는 맥락적 언급",
+    "sourceGroupConstrained": "제한적 또는 제약된 범위",
+    "plausibilityScore": "타당성 점수 (PRO 분석)",
+    "signalsTitle": "평가된 신뢰성 신호",
+    "proSignalsTitle": "평가된 Pro 신호",
+    "signalSource": "출처 신뢰성",
+    "signalFactual": "사실적 일관성",
+    "signalContext": "맥락의 명확성",
+    "signalPrudence": "언어의 신중함",
+    "signalVisual": "시각적 일관성",
+    "signalGravity": "중대성",
+    "signalCoherence": "일관성",
+    "signalWeb": "웹 확증",
+    "signalImage": "이미지 신호",
+    "expertVisualAnalysis": "전문가 시각 분석",
+    "imageProvidedAndAnalyzed": "이미지 제공 및 분석 완료",
+    "visualRelevance": "주장에 대한 시각적 관련성",
+    "contextualCoherenceLabel": "맥락적 일관성",
+    "coherenceConfirmed": "일관성 확인됨",
+    "incoherenceDetected": "불일치 감지됨",
+    "neutralLabel": "중립",
+    "neutralPoints": "중립 (0점)",
+    "minorReinforcement": "경미한 보강",
+    "visualRelevanceHigh": "이미지가 주장 내용을 시각적으로 지원합니다.",
+    "visualRelevancePartial": "이미지가 내용과 부분적인 연결을 보여줍니다.",
+    "visualRelevanceNone": "이미지가 주장과 시각적 연결이 없습니다.",
+    "proTooltip": "PRO는 점진적 점수로 최대 10개의 출처를 확인합니다: +5, +4, +3, +2, 그 후 출처당 +1 (최대 +20점).",
+    "officialSource": "공식 출처",
+    "majorMedia": "주요 미디어",
+    "reference": "참조",
+    "contextLabel": "맥락"
   },
   "loader": {
     "primary": "정보 공간 스캔 중",
     "subtitle": "궤도 분석 활성화",
+    "processing": "처리 중…",
     "secondary": [
       "출처 및 맥락적 일관성 분석 중…",
       "언어 신호 및 출처 신뢰성 평가 중…",
       "구조화된 신뢰성 분석 처리 중…"
     ]
   },
+  "missionControl": {
+    "primary": "분석 진행 중…",
+    "subtitle": "신뢰 점수 구축 중",
+    "secondary": [
+      "시각 신호 추출 중",
+      "신뢰성 지표 평가 중",
+      "사실적 일관성 교차 검증 중",
+      "평가 최종화 중"
+    ]
+  },
+  "screenshotLoader": {
+    "title": "스크린샷 분석 중",
+    "steps": [
+      { "label": "텍스트 추출 (OCR)…", "description": "스크린샷에서 보이는 텍스트 읽는 중" },
+      { "label": "이미지 신호 확인 중…", "description": "시각적 진위성 지표 분석 중" },
+      { "label": "LeenScore 분석 실행 중…", "description": "신뢰성 신호 평가 중" }
+    ]
+  },
   "articleSummary": {
     "title": "기사 요약"
   },
   "error": {
-    "title": "분석 오류",
+    "title": "분석 실패",
+    "description": "요청 처리 중 오류가 발생했습니다.",
     "message": "분석 중 오류가 발생했습니다. 다시 시도해 주세요.",
     "networkError": "네트워크 오류. 연결을 확인해 주세요.",
-    "timeout": "요청 시간이 초과되었습니다. 다시 시도해 주세요."
+    "timeout": "요청 시간이 초과되었습니다. 다시 시도해 주세요.",
+    "retry": "다시 시도",
+    "newAnalysis": "새 분석",
+    "debugId": "디버그 ID"
   },
   "footer": {
     "madeWith": "제작:",
@@ -95,19 +178,77 @@
     "visualDescription": "시각적 설명",
     "ocrConfidence": "OCR 신뢰도",
     "imagePreview": "이미지 미리보기",
-    "showPreview": "미리보기 표시",
-    "hidePreview": "미리보기 숨기기",
+    "showPreview": "원본 표시",
+    "hidePreview": "원본 숨기기",
     "editText": "추출된 텍스트 편집",
     "rerunAnalysis": "분석 다시 실행",
+    "rerunning": "재분석 중...",
     "lowConfidenceWarning": "낮은 OCR 신뢰도 - 텍스트가 부정확할 수 있습니다",
-    "mismatchWarning": "시각-텍스트 불일치 감지됨"
+    "mismatchWarning": "시각-텍스트 불일치 감지됨",
+    "contextWarning": "중요 면책 조항",
+    "contextWarningText": "이 분석은 추출된 텍스트와 제한된 시각적 맥락을 기반으로 합니다. 스크린샷은 부분적이거나 오해를 불러일으킬 수 있으며 사실의 증거가 되지 않습니다.",
+    "ocrLowConfidence": "OCR 신뢰도가 낮습니다. 트리밍하거나 텍스트를 편집한 후 다시 실행하세요.",
+    "expand": "확장",
+    "collapse": "접기",
+    "visualTextMismatch": "시각-텍스트 불일치 감지됨",
+    "visualTextMismatchDesc": "이미지는 텍스트가 언급하는 사람/엔티티와 다른 것을 보여줍니다. 확인된 연결이 없습니다.",
+    "imageSignals": "이미지 신호",
+    "signals": {
+      "screenshotLikelihood": {
+        "likely": "이미지가 스크린샷인 것 같습니다.",
+        "uncertain": "이미지 유형 불확실 (스크린샷이 아닐 수 있음)."
+      },
+      "blurLevel": {
+        "low": "이미지 선명도: 양호",
+        "medium": "이미지 선명도: 중간 정도의 흐림 감지됨",
+        "high": "이미지 선명도: 상당한 흐림 (가독성에 영향을 줄 수 있음)"
+      },
+      "compressionArtifacts": {
+        "low": "압축: 낮은 아티팩트",
+        "medium": "압축: 중간 아티팩트 (가독성 저하 가능)",
+        "high": "압축: 높은 아티팩트 (품질 저하)"
+      },
+      "suspiciousEditingHints": {
+        "none": "명백한 편집 지표가 감지되지 않음",
+        "possible": "편집 가능성 있음 (낮은 신뢰도)"
+      },
+      "metadataPresent": {
+        "yes": "메타데이터: 존재",
+        "no": "메타데이터: 감지되지 않음",
+        "partial": "메타데이터: 부분적"
+      }
+    }
+  },
+  "screenshotUpload": {
+    "title": "스크린샷 분석",
+    "dragDrop": "스크린샷을 여기에 드래그 앤 드롭",
+    "or": "또는",
+    "browse": "파일 찾아보기",
+    "recommendation": "최상의 결과: PNG 스크린샷, 주장 + 출처로 트리밍.",
+    "constraints": "PNG/JPG · 최대 10MB",
+    "remove": "삭제",
+    "launchAnalysis": "분석 시작",
+    "fileSelected": "파일 선택됨",
+    "fileTooLarge": "파일이 너무 큽니다. 최대 10MB.",
+    "invalidType": "잘못된 파일 형식입니다. PNG 또는 JPG를 사용하세요."
   },
   "pro": {
     "badge": "PRO",
     "title": "심층 분석",
+    "titleSuffix": "심층 검증",
     "subtitle": "고급 신뢰성 인사이트",
+    "subtitleLong": "웹 리서치와 다중 소스 분석을 통한 고급 타당성 평가.",
     "launchAnalysis": "PRO 분석 시작",
     "analysisComplete": "PRO 분석 완료",
+    "loading": "분석 진행 중…",
+    "ctaPrice": "$2.99",
+    "disclaimer": "PRO 분석은 신뢰할 수 있는 신호를 기반으로 한 타당성 평가를 제공하며, 절대적 진실이 아닙니다.",
+    "scoreRange": "타당성 점수 범위: 5–98.",
+    "steps": [
+      { "label": "신뢰할 수 있는 출처 스캔 중" },
+      { "label": "신뢰성 검증 중" },
+      { "label": "데이터 교차 참조 중" }
+    ],
     "features": {
       "corroboration": {
         "title": "출처 확증",
@@ -120,7 +261,28 @@
       "context": {
         "title": "맥락 평가",
         "description": "깊은 맥락 및 역사적 정확성 검증"
+      },
+      "webCorroboration": {
+        "title": "웹 확증",
+        "description": "인정받는 미디어와 공식 기관의 최대 10개 출처와 웹 리서치 및 교차 확인."
+      },
+      "claimGravity": {
+        "title": "중대성 및 맥락",
+        "description": "주장의 실제 중요성과 알려진 맥락 패턴과의 일관성 평가."
+      },
+      "imageSignals": {
+        "title": "이미지 신호 분석",
+        "description": "추정 출처, 사용 가능한 메타데이터 및 이미지 일관성을 포함한 시각 신호 평가."
       }
     }
+  },
+  "proLoader": {
+    "title": "PRO 분석 진행 중",
+    "subtitle": "신뢰할 수 있는 출처 검색 및 교차 확인 중",
+    "steps": [
+      { "label": "신뢰할 수 있는 출처 스캔 중" },
+      { "label": "신뢰성 검증 중" },
+      { "label": "데이터 교차 참조 중" }
+    ]
   }
 }
