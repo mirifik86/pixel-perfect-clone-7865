@@ -31,14 +31,22 @@
     "newAnalysis": "Nuevo análisis"
   },
   "form": {
-    "placeholder": "Pegue un fragmento del mensaje o describa la afirmación a verificar…",
+    "placeholder": "Pega texto o arrastra una imagen",
     "placeholderHint": "luego",
     "description": "Analizamos la credibilidad de las fuentes, los patrones lingüísticos y el contexto para ayudarle a comprender la información en línea.",
-    "urlDetected": "URL detectada"
+    "urlDetected": "URL detectada",
+    "imageUpload": "Imagen",
+    "imageReady": "Listo",
+    "removeImage": "Eliminar",
+    "dropHere": "Suelta la imagen aquí",
+    "tapToUpload": "Toca para subir",
+    "addImage": "Agregar imagen",
+    "then": "Luego"
   },
   "gauge": {
     "pending": "Pendiente",
     "ready": "Listo",
+    "readyToAnalyze": "LISTO PARA ANALIZAR",
     "analyzing": "Analizando...",
     "credibilityLevels": {
       "veryLow": "Muy baja",

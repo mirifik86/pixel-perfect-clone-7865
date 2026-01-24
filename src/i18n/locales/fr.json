@@ -31,14 +31,22 @@
     "newAnalysis": "Faire autre analyse"
   },
   "form": {
-    "placeholder": "Collez un extrait du message ou décrivez l'affirmation à vérifier…",
+    "placeholder": "Collez un texte ou déposez une image",
     "placeholderHint": "puis",
     "description": "Nous analysons la crédibilité des sources, les modèles linguistiques et le contexte pour vous aider à comprendre les informations en ligne.",
-    "urlDetected": "URL détectée"
+    "urlDetected": "URL détectée",
+    "imageUpload": "Image",
+    "imageReady": "Prêt",
+    "removeImage": "Retirer",
+    "dropHere": "Déposez l'image ici",
+    "tapToUpload": "Touchez pour importer",
+    "addImage": "Ajouter une image",
+    "then": "Puis"
   },
   "gauge": {
     "pending": "En attente",
     "ready": "Prêt",
+    "readyToAnalyze": "PRÊT À ANALYSER",
     "analyzing": "Analyse en cours...",
     "credibilityLevels": {
       "veryLow": "Très faible",

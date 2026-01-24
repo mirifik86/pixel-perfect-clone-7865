@@ -565,7 +565,7 @@ const Index = () => {
             {/* Score Gauge - shows when not loading */}
             {!isLoading && (
               <div className="animate-scale-in" style={{ animationDuration: '500ms' }}>
-                <ScoreGauge score={score} size={gaugeSize} language={language} hasContent={hasFormContent} />
+                <ScoreGauge score={score} size={gaugeSize} hasContent={hasFormContent} />
               </div>
             )}
           </div>
@@ -665,7 +665,6 @@ const Index = () => {
                 onAnalyzeText={handleAnalyze} 
                 onImageReady={(file, preview) => handleImageAnalysis(file, preview, 'standard')}
                 isLoading={isLoading} 
-                language={language}
                 onContentChange={setHasFormContent}
               />
             </div>

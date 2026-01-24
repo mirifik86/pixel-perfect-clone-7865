@@ -31,14 +31,22 @@
     "newAnalysis": "新しい分析"
   },
   "form": {
-    "placeholder": "メッセージの抜粋を貼り付けるか、確認したい主張を説明してください…",
+    "placeholder": "テキストを貼り付けるか画像をドロップ",
     "placeholderHint": "そして",
     "description": "ソースの信頼性、言語パターン、コンテキストを分析し、オンライン情報の理解を支援します。",
-    "urlDetected": "URL検出"
+    "urlDetected": "URL検出",
+    "imageUpload": "画像",
+    "imageReady": "準備完了",
+    "removeImage": "削除",
+    "dropHere": "画像をここにドロップ",
+    "tapToUpload": "タップしてアップロード",
+    "addImage": "画像を追加",
+    "then": "次へ"
   },
   "gauge": {
     "pending": "保留中",
     "ready": "準備完了",
+    "readyToAnalyze": "分析準備完了",
     "analyzing": "分析中...",
     "credibilityLevels": {
       "veryLow": "非常に低い",

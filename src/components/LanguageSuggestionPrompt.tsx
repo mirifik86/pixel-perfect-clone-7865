@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { SupportedLanguage, SUPPORTED_LANGUAGES } from '@/i18n';
+import { type SupportedLanguage, SUPPORTED_LANGUAGES } from '@/i18n/config';
 import { Button } from '@/components/ui/button';
 
 interface LanguageSuggestionPromptProps {
