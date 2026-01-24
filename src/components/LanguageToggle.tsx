@@ -213,54 +213,106 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
 
   return (
     <>
-      {/* Single trigger button */}
+      {/* Premium trigger button with glow effects */}
       <button
         ref={triggerRef}
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="relative inline-flex items-center gap-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50"
+        className="group relative inline-flex items-center gap-2.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50 hover:scale-[1.02]"
         style={{
-          padding: '8px 14px 8px 12px',
-          background: 'linear-gradient(180deg, hsl(220 15% 15% / 0.9) 0%, hsl(220 15% 12% / 0.95) 100%)',
-          border: '1px solid hsl(0 0% 100% / 0.1)',
-          backdropFilter: 'blur(16px)',
+          padding: '10px 16px 10px 14px',
+          background: 'linear-gradient(180deg, hsl(220 18% 16% / 0.95) 0%, hsl(220 18% 11% / 0.98) 100%)',
+          border: '1px solid hsl(174 50% 50% / 0.15)',
+          backdropFilter: 'blur(20px)',
           boxShadow: `
-            0 0 0 1px hsl(0 0% 0% / 0.2),
-            0 4px 16px hsl(0 0% 0% / 0.25),
-            0 0 20px hsl(174 40% 40% / 0.04),
-            inset 0 1px 0 hsl(0 0% 100% / 0.05)
+            0 0 0 1px hsl(0 0% 0% / 0.25),
+            0 6px 24px hsl(0 0% 0% / 0.35),
+            0 0 30px hsl(174 50% 45% / 0.08),
+            inset 0 1px 0 hsl(0 0% 100% / 0.08),
+            inset 0 -1px 0 hsl(0 0% 0% / 0.1)
           `
         }}
       >
-        {/* Always show the resolved language flag */}
+        {/* Outer glow ring on hover */}
+        <div 
+          className="absolute -inset-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, hsl(174 60% 50% / 0.15), transparent 70%)',
+            filter: 'blur(8px)',
+          }}
+        />
+        
+        {/* Inner shimmer effect */}
+        <div 
+          className="absolute inset-0 rounded-full overflow-hidden pointer-events-none"
+        >
+          <div 
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            style={{
+              background: 'linear-gradient(105deg, transparent 40%, hsl(174 60% 60% / 0.1) 50%, transparent 60%)',
+              animation: isDropdownOpen ? 'none' : undefined,
+            }}
+          />
+        </div>
+        
+        {/* Flag with subtle glow */}
         <span 
-          className="text-base transition-transform duration-200"
-          style={{ lineHeight: 1 }}
+          className="relative text-lg transition-all duration-200 group-hover:scale-110"
+          style={{ 
+            lineHeight: 1,
+            filter: 'drop-shadow(0 0 4px hsl(0 0% 100% / 0.2))',
+          }}
         >
           {activeConfig?.flag}
         </span>
         
-        {/* Always show the resolved language name */}
+        {/* Language name with gradient text on hover */}
         <span 
-          className="text-sm font-medium text-white/90 transition-colors duration-200"
-          style={{ letterSpacing: '-0.01em' }}
+          className="relative text-sm font-semibold transition-all duration-200"
+          style={{ 
+            letterSpacing: '0.02em',
+            color: 'hsl(0 0% 95%)',
+            textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
+          }}
         >
           {activeConfig?.nativeName}
         </span>
         
-        {/* Chevron */}
-        <ChevronDown 
-          className="transition-all duration-200 text-white/50"
-          style={{
-            width: '14px',
-            height: '14px',
-            transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            marginLeft: '-2px'
-          }}
-        />
+        {/* Premium chevron with glow */}
+        <div className="relative flex items-center justify-center">
+          <ChevronDown 
+            className="relative transition-all duration-300"
+            style={{
+              width: '16px',
+              height: '16px',
+              color: 'hsl(174 50% 60%)',
+              transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              filter: 'drop-shadow(0 0 3px hsl(174 60% 50% / 0.5))',
+            }}
+          />
+        </div>
+        
+        {/* Animated border glow when open */}
+        {isDropdownOpen && (
+          <div 
+            className="absolute -inset-px rounded-full pointer-events-none"
+            style={{
+              background: 'linear-gradient(135deg, hsl(174 60% 50% / 0.3), hsl(200 60% 55% / 0.2), hsl(174 60% 50% / 0.3))',
+              animation: 'toggle-border-glow 2s ease-in-out infinite',
+            }}
+          />
+        )}
       </button>
       
       {/* Portal dropdown */}
       {dropdownContent}
+      
+      {/* CSS for animations */}
+      <style>{`
+        @keyframes toggle-border-glow {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+      `}</style>
     </>
   );
 };
