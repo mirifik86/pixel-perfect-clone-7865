@@ -23,19 +23,20 @@
     "keep": "Manter atual"
   },
   "hero": {
-    "tagline": "Credibilidade medida.",
-    "byLine": "POR SOL&AIR"
+    "tagline": "Credibilidade, medida.",
+    "byLine": "POR SOL&AIR",
+    "valueProp": "Analise a credibilidade de um texto, imagem ou informação em segundos."
   },
   "index": {
     "scoreLabel": "Índice LeenScore",
-    "footer": "LeenScore ilumina a informação, sem orientar a sua opinião.",
+    "footer": "LeenScore — Criado por Sol&Air",
     "developedBy": "Desenvolvido por",
     "version": "Versão 1.2 BETA",
     "errorAnalysis": "A análise falhou. Por favor, tente novamente.",
     "newAnalysis": "Nova análise"
   },
   "form": {
-    "placeholder": "Cole texto ou arraste uma imagem",
+    "placeholder": "Cole um artigo, afirmação ou carregue uma imagem para verificar a credibilidade.",
     "placeholderHint": "depois",
     "description": "Analisamos a credibilidade das fontes, padrões linguísticos e contexto para ajudá-lo a compreender informações online.",
     "urlDetected": "URL detectada",
@@ -51,6 +52,7 @@
     "pending": "Pendente",
     "ready": "Pronto",
     "readyToAnalyze": "PRONTO PARA ANALISAR",
+    "startAnalysis": "INICIAR ANÁLISE",
     "analyzing": "Analisando...",
     "methodology": "Esta pontuação de credibilidade é gerada usando uma análise estruturada de múltiplos sinais, combinando consistência de conteúdo, sinais de verificação contextual e indicadores de risco. As pontuações seguem uma escala de credibilidade clara, de baixa a alta confiança, e são acompanhadas de uma explicação detalhada destacando os principais fatores que influenciam o resultado.",
     "credibilityLevels": {

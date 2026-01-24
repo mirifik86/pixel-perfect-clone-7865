@@ -23,19 +23,20 @@
     "keep": "Garder le français"
   },
   "hero": {
-    "tagline": "La crédibilité mesurée.",
-    "byLine": "PAR SOL&AIR"
+    "tagline": "La crédibilité, mesurée.",
+    "byLine": "PAR SOL&AIR",
+    "valueProp": "Analysez la crédibilité d'un texte, image ou information en quelques secondes."
   },
   "index": {
     "scoreLabel": "Indice LeenScore",
-    "footer": "LeenScore éclaire l'information, sans orienter votre opinion.",
+    "footer": "LeenScore — Créé par Sol&Air",
     "developedBy": "Développé par",
     "version": "Version 1.2 BETA",
     "errorAnalysis": "L'analyse a échoué. Veuillez réessayer.",
-    "newAnalysis": "Faire autre analyse"
+    "newAnalysis": "Nouvelle analyse"
   },
   "form": {
-    "placeholder": "Collez un texte ou déposez une image",
+    "placeholder": "Collez un article, une affirmation ou importez une image pour vérifier sa crédibilité.",
     "placeholderHint": "puis",
     "description": "Nous analysons la crédibilité des sources, les modèles linguistiques et le contexte pour vous aider à comprendre les informations en ligne.",
     "urlDetected": "URL détectée",
@@ -51,6 +52,7 @@
     "pending": "En attente",
     "ready": "Prêt",
     "readyToAnalyze": "PRÊT À ANALYSER",
+    "startAnalysis": "LANCER L'ANALYSE",
     "analyzing": "Analyse en cours...",
     "methodology": "Ce score de crédibilité est généré à l'aide d'une analyse multi-signaux structurée combinant cohérence du contenu, signaux de vérification contextuelle et indicateurs de risque. Les scores suivent une échelle de crédibilité claire, de faible à haute confiance, et sont accompagnés d'une explication détaillée des facteurs clés influençant le résultat.",
     "credibilityLevels": {

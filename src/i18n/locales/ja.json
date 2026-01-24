@@ -23,19 +23,20 @@
     "keep": "現在のまま"
   },
   "hero": {
-    "tagline": "信頼性を測定。",
-    "byLine": "BY SOL&AIR"
+    "tagline": "信頼性を、測定。",
+    "byLine": "BY SOL&AIR",
+    "valueProp": "テキスト、画像、または情報の信頼性を数秒で分析します。"
   },
   "index": {
     "scoreLabel": "LeenScoreインデックス",
-    "footer": "LeenScoreは情報を照らし、あなたの意見を誘導しません。",
+    "footer": "LeenScore — Sol&Air制作",
     "developedBy": "開発元",
     "version": "バージョン 1.2 BETA",
     "errorAnalysis": "分析に失敗しました。もう一度お試しください。",
     "newAnalysis": "新しい分析"
   },
   "form": {
-    "placeholder": "テキストを貼り付けるか画像をドロップ",
+    "placeholder": "記事、主張を貼り付けるか、画像をアップロードして信頼性を確認してください。",
     "placeholderHint": "そして",
     "description": "ソースの信頼性、言語パターン、コンテキストを分析し、オンライン情報の理解を支援します。",
     "urlDetected": "URL検出",
@@ -51,6 +52,7 @@
     "pending": "保留中",
     "ready": "準備完了",
     "readyToAnalyze": "分析準備完了",
+    "startAnalysis": "分析を開始",
     "analyzing": "分析中...",
     "methodology": "この信頼性スコアは、コンテンツの一貫性、文脈的検証シグナル、リスク指標を組み合わせた構造化されたマルチシグナル分析を使用して生成されます。スコアは低信頼から高信頼までの明確な信頼性スケールに従い、結果に影響を与える主要な要因を強調する説明付きの内訳が付属しています。",
     "credibilityLevels": {

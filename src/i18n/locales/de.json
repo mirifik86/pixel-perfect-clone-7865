@@ -23,19 +23,20 @@
     "keep": "Aktuell beibehalten"
   },
   "hero": {
-    "tagline": "Glaubwürdigkeit gemessen.",
-    "byLine": "VON SOL&AIR"
+    "tagline": "Glaubwürdigkeit, gemessen.",
+    "byLine": "VON SOL&AIR",
+    "valueProp": "Analysieren Sie die Glaubwürdigkeit eines Textes, Bildes oder einer Information in Sekunden."
   },
   "index": {
     "scoreLabel": "LeenScore Index",
-    "footer": "LeenScore beleuchtet Informationen, ohne Ihre Meinung zu beeinflussen.",
+    "footer": "LeenScore — Entwickelt von Sol&Air",
     "developedBy": "Entwickelt von",
     "version": "Version 1.2 BETA",
     "errorAnalysis": "Analyse fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "newAnalysis": "Neue Analyse"
   },
   "form": {
-    "placeholder": "Text einfügen oder Bild ablegen",
+    "placeholder": "Fügen Sie einen Artikel, eine Behauptung ein oder laden Sie ein Bild hoch, um die Glaubwürdigkeit zu überprüfen.",
     "placeholderHint": "dann",
     "description": "Wir analysieren die Glaubwürdigkeit der Quellen, sprachliche Muster und den Kontext, um Ihnen zu helfen, Online-Informationen zu verstehen.",
     "urlDetected": "URL erkannt",
@@ -51,6 +52,7 @@
     "pending": "Ausstehend",
     "ready": "Bereit",
     "readyToAnalyze": "BEREIT ZUR ANALYSE",
+    "startAnalysis": "ANALYSE STARTEN",
     "analyzing": "Analysieren...",
     "methodology": "Dieser Glaubwürdigkeitswert wird durch eine strukturierte Multi-Signal-Analyse generiert, die Inhaltskonsistenz, kontextuelle Verifizierungssignale und Risikoindikatoren kombiniert. Die Werte folgen einer klaren Glaubwürdigkeitsskala von niedrigem bis hohem Vertrauen und werden von einer erklärbaren Aufschlüsselung begleitet, die die wichtigsten Einflussfaktoren hervorhebt.",
     "credibilityLevels": {
