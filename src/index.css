@@ -569,3 +569,17 @@
     transform: scale(2);
   }
 }
+
+/* Teal dot breathing pulse - subtle premium effect */
+@keyframes teal-dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px hsl(174 70% 55% / 0.8), 0 0 16px hsl(174 70% 55% / 0.4);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.15);
+    box-shadow: 0 0 12px hsl(174 75% 58% / 1), 0 0 24px hsl(174 70% 55% / 0.6), 0 0 36px hsl(174 65% 52% / 0.3);
+  }
+}
