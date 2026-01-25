@@ -527,7 +527,7 @@ export const ScoreGauge = ({
             </filter>
           </defs>
           
-          {/* Segment arcs with state-dependent brightness */}
+          {/* Segment arcs with state-dependent brightness - FLAT colors (no gradient) */}
           {[0, 1, 2, 3, 4].map((i) => {
             const startAngle = 135 + i * 54;
             const endAngle = startAngle + 54;
@@ -546,7 +546,7 @@ export const ScoreGauge = ({
                 key={i}
                 d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
                 fill="none"
-                stroke={score !== null ? `url(#segment-gradient-${i})` : colors[i]}
+                stroke={colors[i]}
                 strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 opacity={baseOpacity}
@@ -558,9 +558,9 @@ export const ScoreGauge = ({
             );
           })}
           
-          {/* Calibration-style segment separators - hairline marks between segments */}
+          {/* Premium calibration-style segment separators with hover glow effect */}
           {score === null && [1, 2, 3, 4].map((i) => {
-            const separatorAngle = 135 + i * 54 - 1; // Position at segment boundary
+            const separatorAngle = 135 + i * 54 - 1;
             const separatorRad = (separatorAngle * Math.PI) / 180;
             const innerRadius = radius - strokeWidth / 2 + 2;
             const outerRadius = radius + strokeWidth / 2 - 2;
@@ -571,19 +571,37 @@ export const ScoreGauge = ({
             const y2 = size / 2 + outerRadius * Math.sin(separatorRad);
             
             return (
-              <line
-                key={`sep-${i}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="hsl(0 0% 30%)"
-                strokeWidth={0.75}
-                opacity={uiState === 'ready' ? 0.35 : 0.2}
-                style={{
-                  transition: 'opacity 0.3s ease-out',
-                }}
-              />
+              <g key={`sep-group-${i}`} className="separator-line">
+                {/* Glow layer - visible on hover */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(174 55% 55%)"
+                  strokeWidth={2}
+                  opacity={0}
+                  className="separator-glow"
+                  style={{
+                    filter: 'blur(2px)',
+                    transition: 'opacity 0.3s ease-out',
+                  }}
+                />
+                {/* Main separator line */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(0 0% 45%)"
+                  strokeWidth={0.75}
+                  opacity={uiState === 'ready' ? 0.45 : 0.25}
+                  className="separator-main"
+                  style={{
+                    transition: 'opacity 0.3s ease-out, stroke 0.3s ease-out',
+                  }}
+                />
+              </g>
             );
           })}
           

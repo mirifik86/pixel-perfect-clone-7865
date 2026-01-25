@@ -593,3 +593,13 @@
     background-position: 300% 50%;
   }
 }
+
+/* Gauge separator hover glow effect */
+svg:hover .separator-glow {
+  opacity: 0.5 !important;
+}
+
+svg:hover .separator-main {
+  stroke: hsl(0 0% 60%) !important;
+  opacity: 0.6 !important;
+}
