@@ -293,5 +293,34 @@
       { "label": "신뢰성 검증 중" },
       { "label": "데이터 교차 참조 중" }
     ]
+  },
+  "landing": {
+    "methodology": {
+      "title": "신뢰도 평가 방법",
+      "linguistic": "언어적 및 의미적 일관성",
+      "contextual": "맥락적 일관성 및 메타데이터 신호",
+      "visual": "시각적 무결성 및 이미지 분석",
+      "corroboration": "공개 출처 확인 지표",
+      "disclaimer": "LeenScore는 의사결정 지원을 제공하며, 진실 선언을 제공하지 않습니다."
+    },
+    "scale": {
+      "title": "신뢰도 점수 척도",
+      "description": "각 점수는 신뢰도 신호의 가중 평가를 반영합니다."
+    },
+    "analyzer": {
+      "prompt": "기사, 주장을 붙여넣거나 이미지를 업로드하여 신뢰도를 평가하세요.",
+      "text": "텍스트 콘텐츠",
+      "visual": "비주얼 콘텐츠",
+      "viral": "온라인 및 바이럴 정보",
+      "standard": "표준 분석",
+      "available": "사용 가능"
+    },
+    "cta": {
+      "analyze": "신뢰도 분석"
+    },
+    "footer": {
+      "noTruth": "사실적 진실을 판단하지 않습니다.",
+      "structuredAssessment": "관찰 가능한 신호와 AI 지원 분석을 기반으로 구조화된 신뢰도 평가를 제공합니다."
+    }
   }
 }

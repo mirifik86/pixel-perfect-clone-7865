@@ -293,5 +293,34 @@
       { "label": "Verificando credibilidade" },
       { "label": "Cruzando dados" }
     ]
+  },
+  "landing": {
+    "methodology": {
+      "title": "Como a credibilidade é avaliada",
+      "linguistic": "Consistência linguística e semântica",
+      "contextual": "Coerência contextual e sinais de metadados",
+      "visual": "Integridade visual e análise de imagem",
+      "corroboration": "Indicadores de corroboração de fontes públicas",
+      "disclaimer": "LeenScore fornece suporte à decisão, não afirmações de verdade."
+    },
+    "scale": {
+      "title": "Escala de pontuação de credibilidade",
+      "description": "Cada pontuação reflete uma avaliação ponderada dos sinais de credibilidade."
+    },
+    "analyzer": {
+      "prompt": "Cole um artigo, uma afirmação ou envie uma imagem para avaliar sua credibilidade.",
+      "text": "Conteúdo escrito",
+      "visual": "Conteúdo visual",
+      "viral": "Informação online e viral",
+      "standard": "Análise padrão",
+      "available": "disponível"
+    },
+    "cta": {
+      "analyze": "Analisar Credibilidade"
+    },
+    "footer": {
+      "noTruth": "não determina a verdade factual.",
+      "structuredAssessment": "Fornece uma avaliação estruturada de credibilidade baseada em sinais observáveis e análise assistida por IA."
+    }
   }
 }
