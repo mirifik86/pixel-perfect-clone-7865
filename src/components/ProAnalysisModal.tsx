@@ -61,26 +61,26 @@ export const ProAnalysisModal = ({
     en: {
       title: "PRO Analysis",
       titleSuffix: "In-Depth Verification",
-      subtitle: "Advanced plausibility assessment with web research and cross-source analysis.",
+      authorityLine: "Advanced credibility analysis used for deeper verification.",
       features: [
         {
           icon: Search,
-          title: "Web Corroboration",
-          description: "Web research and cross-checking across up to 10 sources from recognized media outlets and official institutions."
+          title: "Source Corroboration",
+          description: "Cross-verification against up to 10 recognized sources from institutional and editorial references."
         },
         {
           icon: Scale,
-          title: "Claim Gravity & Context",
-          description: "Evaluation of the real-world weight of the claim and its coherence with known contextual patterns."
+          title: "Claim Assessment",
+          description: "Evaluation of claim gravity and contextual coherence with established patterns."
         },
         {
           icon: Image,
-          title: "Image Signal Analysis",
-          description: "Assessment of visual signals including probable origin, available metadata, and image coherence."
+          title: "Visual Signal Evaluation",
+          description: "Assessment of image origin indicators, metadata integrity, and visual-content alignment."
         }
       ],
-      disclaimer: "PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.",
-      scoreRange: "Plausibility score range: 5–98.",
+      disclaimer: "LeenScore PRO provides a plausibility-based assessment using reliable signals, not absolute truth.",
+      analysisTime: "Typical analysis time: 30–60 seconds.",
       cta: "Launch PRO Analysis",
       ctaPrice: "$2.99",
       loading: "Analysis in progress…"
@@ -88,26 +88,26 @@ export const ProAnalysisModal = ({
     fr: {
       title: "Analyse PRO",
       titleSuffix: "Vérification approfondie",
-      subtitle: "Évaluation de plausibilité avancée avec recherche web et analyse multi-sources.",
+      authorityLine: "Analyse de crédibilité avancée pour une vérification approfondie.",
       features: [
         {
           icon: Search,
-          title: "Corroboration Web",
-          description: "Recherche web et recoupement sur jusqu'à 10 sources provenant de médias reconnus et d'institutions officielles."
+          title: "Corroboration des Sources",
+          description: "Vérification croisée sur jusqu'à 10 sources reconnues issues de références institutionnelles et éditoriales."
         },
         {
           icon: Scale,
-          title: "Gravité & Contexte",
-          description: "Évaluation du poids réel de l'affirmation et de sa cohérence avec les schémas contextuels connus."
+          title: "Évaluation de l'Affirmation",
+          description: "Analyse de la gravité de l'affirmation et de sa cohérence contextuelle avec les schémas établis."
         },
         {
           icon: Image,
-          title: "Analyse des Signaux Image",
-          description: "Évaluation des signaux visuels incluant l'origine probable, les métadonnées disponibles et la cohérence de l'image."
+          title: "Évaluation des Signaux Visuels",
+          description: "Analyse des indicateurs d'origine de l'image, de l'intégrité des métadonnées et de l'alignement visuel-contenu."
         }
       ],
-      disclaimer: "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue.",
-      scoreRange: "Plage du score de plausibilité : 5–98.",
+      disclaimer: "LeenScore PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue.",
+      analysisTime: "Temps d'analyse typique : 30–60 secondes.",
       cta: "Lancer l'Analyse PRO",
       ctaPrice: "2,99$",
       loading: "Analyse en cours…"
@@ -201,9 +201,9 @@ export const ProAnalysisModal = ({
             {t.title} — {t.titleSuffix}
           </h2>
 
-          {/* Subtitle - hidden on mobile */}
-          <p className="hidden md:block text-base text-muted-foreground leading-relaxed max-w-lg mx-auto">
-            {t.subtitle}
+          {/* Authority line */}
+          <p className="text-xs md:text-sm text-muted-foreground/80 tracking-wide max-w-md mx-auto">
+            {t.authorityLine}
           </p>
         </div>
 
@@ -244,15 +244,15 @@ export const ProAnalysisModal = ({
             })}
           </div>
 
-          {/* Disclaimer - hidden on mobile */}
+          {/* Disclaimer */}
           <div 
-            className="hidden md:block mt-6 rounded-xl p-4"
+            className="mt-4 md:mt-6 rounded-xl p-3 md:p-4"
             style={{
               background: 'hsl(220 20% 15% / 0.6)',
               border: '1px solid hsl(220 20% 25% / 0.4)'
             }}
           >
-            <p className="text-sm leading-relaxed text-muted-foreground text-center">
+            <p className="text-[10px] md:text-sm leading-relaxed text-muted-foreground text-center">
               {t.disclaimer}
             </p>
           </div>
@@ -260,13 +260,17 @@ export const ProAnalysisModal = ({
 
         {/* Sticky CTA Bar */}
         <div 
-          className="sticky bottom-0 px-5 md:px-10 pt-3 pb-4 md:pt-4 md:pb-8"
+          className="sticky bottom-0 px-5 md:px-10 pt-2 pb-4 md:pt-4 md:pb-8"
           style={{
             background: 'linear-gradient(180deg, transparent 0%, hsl(240 20% 8% / 0.95) 20%, hsl(240 20% 8%) 100%)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
           }}
         >
+          {/* Analysis time reassurance */}
+          <p className="text-center text-[10px] md:text-xs text-muted-foreground/70 mb-2 md:mb-3">
+            {t.analysisTime}
+          </p>
           <button
             onClick={onLaunchPro}
             disabled={isLoading || isClosing}
