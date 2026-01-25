@@ -621,51 +621,63 @@ const Index = () => {
                 
                 {/* Secondary CTA - Pro Analysis (Hidden after PRO analysis is complete) */}
                 {analysisData?.analysisType !== 'pro' && (
-                  <button
-                    onClick={() => setIsProModalOpen(true)}
-                    className="btn-unified group relative overflow-hidden"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
-                      boxShadow: '0 0 25px hsl(200 80% 55% / 0.5), 0 0 50px hsl(174 70% 45% / 0.3), 0 4px 20px hsl(0 0% 0% / 0.3)',
-                    }}
-                  >
-                    {/* Animated shine effect */}
+                  <div className="relative group">
+                    {/* Premium animated border container */}
                     <div 
-                      className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      className="absolute -inset-[2px] rounded-full opacity-80 motion-reduce:opacity-60"
                       style={{
-                        background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
-                        animation: 'shine 2s infinite',
+                        background: 'linear-gradient(90deg, hsl(200 85% 60%), hsl(174 75% 55%), hsl(280 65% 60%), hsl(320 70% 55%), hsl(200 85% 60%))',
+                        backgroundSize: '300% 100%',
+                        animation: 'pro-border-flow 3s linear infinite',
+                        filter: 'blur(1px)',
                       }}
                     />
-                    
-                    {/* PRO badge with glow */}
-                    <span 
-                      className="relative rounded-md font-black tracking-wider"
+                    {/* Inner glow layer */}
+                    <div 
+                      className="absolute -inset-[3px] rounded-full opacity-40 motion-reduce:hidden"
                       style={{
-                        padding: '2px 6px',
-                        fontSize: 'var(--text-xs)',
-                        background: 'rgba(255,255,255,0.2)',
-                        color: 'white',
-                        textShadow: '0 0 10px rgba(255,255,255,0.5)',
+                        background: 'linear-gradient(90deg, hsl(200 85% 60%), hsl(174 75% 55%), hsl(280 65% 60%), hsl(320 70% 55%), hsl(200 85% 60%))',
+                        backgroundSize: '300% 100%',
+                        animation: 'pro-border-flow 3s linear infinite',
+                        filter: 'blur(6px)',
+                      }}
+                    />
+                    <button
+                      onClick={() => setIsProModalOpen(true)}
+                      className="btn-unified relative overflow-hidden"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(174 70% 45%) 50%, hsl(280 60% 55%) 100%)',
+                        boxShadow: '0 4px 20px hsl(0 0% 0% / 0.3)',
                       }}
                     >
-                      PRO
-                    </span>
-                    
-                    <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
-                      {i18nT('pro.launchAnalysis')}
-                    </span>
-                    
-                    {/* Subtle pulse ring */}
-                    <div 
-                      className="absolute -inset-1 -z-10 rounded-full opacity-50"
-                      style={{
-                        background: 'linear-gradient(135deg, hsl(200 80% 55%) 0%, hsl(174 70% 50%) 50%, hsl(280 60% 60%) 100%)',
-                        animation: 'pulse 2s ease-in-out infinite',
-                        filter: 'blur(8px)',
-                      }}
-                    />
-                  </button>
+                      {/* Animated shine effect */}
+                      <div 
+                        className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        style={{
+                          background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)',
+                          animation: 'shine 2s infinite',
+                        }}
+                      />
+                      
+                      {/* PRO badge with glow */}
+                      <span 
+                        className="relative rounded-md font-black tracking-wider"
+                        style={{
+                          padding: '2px 6px',
+                          fontSize: 'var(--text-xs)',
+                          background: 'rgba(255,255,255,0.2)',
+                          color: 'white',
+                          textShadow: '0 0 10px rgba(255,255,255,0.5)',
+                        }}
+                      >
+                        PRO
+                      </span>
+                      
+                      <span className="relative text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                        {i18nT('pro.launchAnalysis')}
+                      </span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
