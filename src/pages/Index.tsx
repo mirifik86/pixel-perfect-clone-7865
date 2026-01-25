@@ -5,7 +5,7 @@ import { type SupportedLanguage, type LanguageMode } from '@/i18n/config';
 import { LeenScoreLogo, ValueProposition } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { LanguageSuggestionPrompt } from '@/components/LanguageSuggestionPrompt';
-import { ScoreGauge } from '@/components/ScoreGauge';
+import { SegmentedGauge } from '@/components/SegmentedGauge';
 import { AnalysisLoader } from '@/components/AnalysisLoader';
 import { UnifiedAnalysisForm, UnifiedAnalysisFormHandle } from '@/components/UnifiedAnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
@@ -584,9 +584,8 @@ const Index = () => {
                     }}
                   />
                 )}
-                <ScoreGauge 
+                <SegmentedGauge 
                   score={score} 
-                  size={gaugeSize} 
                   hasContent={hasFormContent}
                   onAnalyze={handleGaugeAnalyze}
                   isLoading={isLoading}
