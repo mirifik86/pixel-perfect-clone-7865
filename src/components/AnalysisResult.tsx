@@ -103,6 +103,11 @@ const translations = {
     noSourceFound: 'No corroborating source found.',
     oneSourceFound: '1 corroborating source found:',
     limitedVerificationNote: 'Standard analysis checks for one corroborating source. Upgrade to PRO for extended verification.',
+    // Standard - Neutral corroboration messaging (never show "failed" signals)
+    standardCorroborationNotIncluded: 'External source corroboration is not included in Standard analysis.',
+    standardUpgradeToPro: 'Upgrade to PRO for multi-source verification.',
+    standardSourcesNotEvaluated: 'Not evaluated in Standard analysis.',
+    standardProUnlocks: 'PRO unlocks multi-source corroboration.',
     // Corroboration - PRO
     extendedVerificationTitle: 'Extended Verification (PRO)',
     corroborationTitle: 'Web Corroboration',
@@ -157,6 +162,11 @@ const translations = {
     noSourceFound: 'Aucune source de corroboration trouvée.',
     oneSourceFound: '1 source de corroboration trouvée :',
     limitedVerificationNote: 'L\'analyse Standard recherche une seule source. Passez en PRO pour une vérification étendue.',
+    // Standard - Neutral corroboration messaging (never show "failed" signals)
+    standardCorroborationNotIncluded: 'La corroboration par sources externes n\'est pas incluse dans l\'analyse Standard.',
+    standardUpgradeToPro: 'Passez en PRO pour une vérification multi-sources.',
+    standardSourcesNotEvaluated: 'Non évalué dans l\'analyse Standard.',
+    standardProUnlocks: 'PRO débloque la corroboration multi-sources.',
     // Corroboration - PRO
     extendedVerificationTitle: 'Vérification Étendue (PRO)',
     corroborationTitle: 'Corroboration Web',
@@ -455,7 +465,8 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
             <h3 className="font-serif text-lg font-semibold text-slate-900">{t.limitedVerificationTitle}</h3>
           </div>
           
-          {data.corroboration && data.corroboration.sourcesConsulted > 0 && data.corroboration.sources?.corroborated?.[0] ? (
+          {/* Only show positive corroboration result if a real source was found */}
+          {hasRealCorroboration && data.corroboration?.sources?.corroborated?.[0] ? (
             <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle className="h-4 w-4 text-emerald-600" />
@@ -471,16 +482,15 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               </div>
             </div>
           ) : (
+            /* Neutral messaging: Never show "no source found" or "0 pts" */
             <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-slate-500" />
-                <span className="text-sm font-medium text-slate-600">{t.noSourceFound}</span>
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="h-4 w-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-600">{t.standardCorroborationNotIncluded}</span>
               </div>
-              <span className="text-xs text-slate-400 mt-1 block">+0 pts</span>
+              <p className="text-sm text-cyan-600 font-medium">{t.standardUpgradeToPro}</p>
             </div>
           )}
-          
-          <p className="text-xs text-slate-500 mt-3 italic">{t.limitedVerificationNote}</p>
         </div>
       )}
 
@@ -783,11 +793,33 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               const item = data.breakdown[key as keyof AnalysisBreakdown];
               if (!item) return null;
               
-              // CRITICAL: Override sources points with real corroboration-based value
+              // For 'sources' key in Standard: show neutral messaging if no real corroboration
+              const isSourcesWithNoCorroboration = key === 'sources' && !hasRealCorroboration;
+              
+              // If sources with no corroboration, show neutral "not evaluated" instead of failed attempt
+              if (isSourcesWithNoCorroboration) {
+                return (
+                  <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-4 w-4 text-slate-400" />
+                        <span className="font-semibold text-slate-800">{standardCriteriaLabels[key]}</span>
+                      </div>
+                      {/* No numeric value shown - neutral status instead */}
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">
+                        {language === 'fr' ? 'Non inclus' : 'Not included'}
+                      </span>
+                    </div>
+                    <p className="ml-6 text-sm text-slate-500">
+                      {t.standardSourcesNotEvaluated} <span className="text-cyan-600 font-medium">{t.standardProUnlocks}</span>
+                    </p>
+                  </div>
+                );
+              }
+              
+              // For sources with real corroboration, show positive result
               const displayPoints = key === 'sources' ? realSourcesPoints : item.points;
-              const displayReason = key === 'sources' && !hasRealCorroboration
-                ? (language === 'fr' ? 'Aucune source de corroboration trouvée.' : 'No corroborating source found.')
-                : item.reason;
+              const displayReason = item.reason;
               
               return (
                 <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
