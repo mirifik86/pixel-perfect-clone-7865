@@ -302,11 +302,11 @@ export const ScoreGauge = ({
   // Segment brightness based on state - premium vehicle gauge effect
   const getSegmentBrightness = (segmentIndex: number) => {
     switch (uiState) {
-      case 'idle': return 0.1; // Very dim when idle
-      case 'ready': return 0.55 + segmentIndex * 0.06; // Progressively brighter segments
-      case 'analyzing': return 0.65 + segmentIndex * 0.05; // Even brighter during analysis
+      case 'idle': return 0.08; // Very dim when idle
+      case 'ready': return 0.7 + segmentIndex * 0.05; // Bright illumination - vehicle ready
+      case 'analyzing': return 0.8 + segmentIndex * 0.04; // Even brighter during analysis
       case 'result': return 1;
-      default: return 0.12;
+      default: return 0.1;
     }
   };
   
@@ -582,22 +582,36 @@ export const ScoreGauge = ({
             
             return (
               <g key={i}>
-                {/* Background segment glow layer for ready/analyzing states */}
+                {/* Background segment glow layer for ready/analyzing states - INTENSE */}
                 {(uiState === 'ready' || uiState === 'analyzing') && score === null && (
-                  <path
-                    d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-                    fill="none"
-                    stroke={colorPairs[i].light}
-                    strokeWidth={strokeWidth + 4}
-                    strokeLinecap="round"
-                    opacity={uiState === 'ready' ? 0.15 : 0.2}
-                    filter="url(#ready-segment-glow)"
-                    className="motion-reduce:hidden"
-                    style={{
-                      animation: `segment-breathe-${i} 2s ease-in-out infinite`,
-                      animationDelay: `${i * 80}ms`,
-                    }}
-                  />
+                  <>
+                    {/* Outer intense glow */}
+                    <path
+                      d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+                      fill="none"
+                      stroke={colorPairs[i].light}
+                      strokeWidth={strokeWidth + 8}
+                      strokeLinecap="round"
+                      opacity={uiState === 'ready' ? 0.25 : 0.3}
+                      filter="url(#analyzing-segment-glow)"
+                      className="motion-reduce:hidden"
+                      style={{
+                        animation: `segment-breathe-${i} 2s ease-in-out infinite`,
+                        animationDelay: `${i * 80}ms`,
+                      }}
+                    />
+                    {/* Inner bright glow */}
+                    <path
+                      d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+                      fill="none"
+                      stroke={colorPairs[i].light}
+                      strokeWidth={strokeWidth + 3}
+                      strokeLinecap="round"
+                      opacity={uiState === 'ready' ? 0.4 : 0.5}
+                      filter="url(#ready-segment-glow)"
+                      className="motion-reduce:hidden"
+                    />
+                  </>
                 )}
                 {/* Main segment */}
                 <path
@@ -1090,27 +1104,27 @@ export const ScoreGauge = ({
           }
         }
         
-        /* Premium vehicle-gauge segment breathing animations */
+        /* Premium vehicle-gauge segment breathing animations - INTENSE */
         @keyframes segment-breathe-0 {
-          0%, 100% { opacity: 0.12; }
-          50% { opacity: 0.22; }
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.45; }
         }
         @keyframes segment-breathe-1 {
-          0%, 100% { opacity: 0.14; }
-          50% { opacity: 0.25; }
+          0%, 100% { opacity: 0.22; }
+          50% { opacity: 0.5; }
         }
         @keyframes segment-breathe-2 {
-          0%, 100% { opacity: 0.16; }
-          50% { opacity: 0.28; }
+          0%, 100% { opacity: 0.25; }
+          50% { opacity: 0.55; }
         }
         @keyframes segment-breathe-3 {
-          0%, 100% { opacity: 0.18; }
-          50% { opacity: 0.32; }
+          0%, 100% { opacity: 0.28; }
+          50% { opacity: 0.6; }
         }
         @keyframes segment-breathe-4 {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.38; }
-        
+          0%, 100% { opacity: 0.32; }
+          50% { opacity: 0.65; }
+        }
         /* Button breathing glow - synced with gauge (2s) */
         @keyframes button-breathing-glow {
           0%, 100% { 
