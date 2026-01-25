@@ -749,6 +749,60 @@ export const ScoreGauge = ({
                       opacity: 0,
                     }}
                   />
+                  
+                  {/* Particle burst on impact */}
+                  {[...Array(12)].map((_, i) => {
+                    const angle = (i / 12) * 360;
+                    const delay = 180 + Math.random() * 40; // Staggered around impact time
+                    const distance = 35 + Math.random() * 25;
+                    const particleSize = 3 + Math.random() * 3;
+                    
+                    return (
+                      <div
+                        key={`particle-${i}`}
+                        className="absolute top-1/2 left-1/2 pointer-events-none"
+                        style={{
+                          width: `${particleSize}px`,
+                          height: `${particleSize}px`,
+                          borderRadius: '50%',
+                          background: 'radial-gradient(circle, hsl(180 90% 85%) 0%, hsl(174 80% 65%) 60%, transparent 100%)',
+                          boxShadow: '0 0 8px hsl(174 80% 65% / 0.9), 0 0 16px hsl(174 70% 55% / 0.6)',
+                          opacity: 0,
+                          transform: 'translate(-50%, -50%)',
+                          '--particle-angle': `${angle}deg`,
+                          '--particle-distance': `${distance}px`,
+                          animation: `particle-burst 450ms cubic-bezier(0.25, 1, 0.5, 1) ${delay}ms forwards`,
+                        } as React.CSSProperties}
+                      />
+                    );
+                  })}
+                  
+                  {/* Secondary smaller particles */}
+                  {[...Array(8)].map((_, i) => {
+                    const angle = (i / 8) * 360 + 22.5; // Offset from main particles
+                    const delay = 200 + Math.random() * 60;
+                    const distance = 20 + Math.random() * 15;
+                    const particleSize = 2 + Math.random() * 2;
+                    
+                    return (
+                      <div
+                        key={`particle-secondary-${i}`}
+                        className="absolute top-1/2 left-1/2 pointer-events-none"
+                        style={{
+                          width: `${particleSize}px`,
+                          height: `${particleSize}px`,
+                          borderRadius: '50%',
+                          background: 'hsl(180 85% 80%)',
+                          boxShadow: '0 0 6px hsl(174 75% 70% / 0.8)',
+                          opacity: 0,
+                          transform: 'translate(-50%, -50%)',
+                          '--particle-angle': `${angle}deg`,
+                          '--particle-distance': `${distance}px`,
+                          animation: `particle-burst-fast 350ms cubic-bezier(0.25, 1, 0.5, 1) ${delay}ms forwards`,
+                        } as React.CSSProperties}
+                      />
+                    );
+                  })}
                 </div>
               )}
               
