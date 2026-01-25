@@ -70,60 +70,77 @@ export const ValueProposition = ({ children }: ValuePropositionProps) => {
   const { t } = useLanguage();
   
   return (
-    <div className="flex flex-col items-center gap-3 md:gap-4 animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
-      {/* Value proposition - premium glassmorphic card with stronger presence */}
+    <div className="flex flex-col items-center gap-4 md:gap-5 animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+      {/* Value proposition - premium "instruction manual" style */}
       <div 
-        className="relative px-6 py-4 md:px-8 md:py-5 max-w-xs md:max-w-md overflow-hidden"
+        className="relative px-7 py-5 md:px-10 md:py-6 max-w-sm md:max-w-lg overflow-hidden"
         style={{
           background: `
-            linear-gradient(135deg, 
-              hsl(220 20% 12% / 0.85) 0%, 
-              hsl(200 25% 10% / 0.9) 50%, 
-              hsl(220 20% 12% / 0.85) 100%
+            linear-gradient(180deg, 
+              hsl(200 15% 8% / 0.95) 0%, 
+              hsl(210 20% 6% / 0.98) 100%
             )
           `,
-          borderRadius: '14px',
-          border: '1px solid hsl(174 45% 55% / 0.18)',
+          borderRadius: '4px',
+          border: '1px solid hsl(0 0% 100% / 0.06)',
           boxShadow: `
-            inset 0 1px 0 hsl(0 0% 100% / 0.1),
-            inset 0 -1px 0 hsl(0 0% 0% / 0.15),
-            0 6px 32px hsl(0 0% 0% / 0.35),
-            0 0 50px hsl(174 50% 45% / 0.08),
-            0 0 80px hsl(174 60% 50% / 0.04)
+            inset 0 1px 0 hsl(0 0% 100% / 0.04),
+            inset 0 0 20px hsl(174 40% 50% / 0.03),
+            0 8px 40px hsl(0 0% 0% / 0.5),
+            0 2px 8px hsl(0 0% 0% / 0.3)
           `,
-          backdropFilter: 'blur(16px)',
         }}
       >
-        {/* Top edge highlight */}
+        {/* Subtle corner brackets - top left */}
         <div 
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px"
+          className="absolute top-2 left-2 w-4 h-4 pointer-events-none"
           style={{
-            background: 'linear-gradient(90deg, transparent, hsl(174 60% 55% / 0.35), transparent)',
+            borderTop: '1px solid hsl(174 50% 55% / 0.35)',
+            borderLeft: '1px solid hsl(174 50% 55% / 0.35)',
+          }}
+        />
+        {/* Top right bracket */}
+        <div 
+          className="absolute top-2 right-2 w-4 h-4 pointer-events-none"
+          style={{
+            borderTop: '1px solid hsl(174 50% 55% / 0.35)',
+            borderRight: '1px solid hsl(174 50% 55% / 0.35)',
+          }}
+        />
+        {/* Bottom left bracket */}
+        <div 
+          className="absolute bottom-2 left-2 w-4 h-4 pointer-events-none"
+          style={{
+            borderBottom: '1px solid hsl(174 50% 55% / 0.35)',
+            borderLeft: '1px solid hsl(174 50% 55% / 0.35)',
+          }}
+        />
+        {/* Bottom right bracket */}
+        <div 
+          className="absolute bottom-2 right-2 w-4 h-4 pointer-events-none"
+          style={{
+            borderBottom: '1px solid hsl(174 50% 55% / 0.35)',
+            borderRight: '1px solid hsl(174 50% 55% / 0.35)',
           }}
         />
         
-        {/* Subtle corner accents */}
+        {/* Top center accent line */}
         <div 
-          className="absolute top-0 left-0 w-8 h-8 pointer-events-none"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-px"
           style={{
-            background: 'radial-gradient(circle at top left, hsl(174 50% 50% / 0.1), transparent 70%)',
-          }}
-        />
-        <div 
-          className="absolute top-0 right-0 w-8 h-8 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle at top right, hsl(174 50% 50% / 0.1), transparent 70%)',
+            background: 'linear-gradient(90deg, transparent, hsl(174 50% 55% / 0.4), transparent)',
           }}
         />
         
         <p 
           className="text-center relative z-10"
           style={{ 
-            fontSize: 'clamp(0.85rem, 0.8rem + 0.5vw, 1rem)',
-            lineHeight: 1.7,
-            color: 'hsl(0 0% 92%)',
+            fontSize: 'clamp(0.8rem, 0.75rem + 0.5vw, 0.95rem)',
+            lineHeight: 1.8,
+            color: 'hsl(0 0% 80%)',
             fontWeight: 400,
-            textShadow: '0 1px 3px hsl(0 0% 0% / 0.4)',
+            letterSpacing: '0.02em',
+            fontFamily: 'var(--font-sans)',
           }}
         >
           {t('hero.valueProp')}
