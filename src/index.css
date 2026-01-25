@@ -594,6 +594,47 @@
   }
 }
 
+/* Idle state breathing animations - instrument-grade readiness */
+@keyframes idle-text-breathe {
+  0%, 100% {
+    opacity: 0.85;
+    text-shadow: 0 0 10px hsl(174 55% 55% / 0.4), 0 0 20px hsl(174 50% 50% / 0.2), 0 0 35px hsl(174 45% 48% / 0.08);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 14px hsl(174 55% 55% / 0.6), 0 0 28px hsl(174 50% 50% / 0.35), 0 0 45px hsl(174 45% 48% / 0.15);
+  }
+}
+
+@keyframes idle-halo-breathe {
+  0%, 100% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.98);
+  }
+  50% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
+@keyframes idle-ring-breathe {
+  0%, 100% {
+    box-shadow: 0 0 16px hsl(174 50% 48% / 0.08), 0 0 30px hsl(174 45% 45% / 0.03), inset 0 0 10px hsl(174 45% 48% / 0.04);
+  }
+  50% {
+    box-shadow: 0 0 22px hsl(174 50% 48% / 0.14), 0 0 42px hsl(174 45% 45% / 0.06), inset 0 0 14px hsl(174 45% 48% / 0.07);
+  }
+}
+
+/* Reduced motion: static illuminated state */
+@media (prefers-reduced-motion: reduce) {
+  .motion-reduce\:\!animation-none {
+    animation: none !important;
+    opacity: 1 !important;
+    text-shadow: 0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.28) !important;
+  }
+}
+
 /* Gauge separator hover glow effect */
 svg:hover .separator-glow {
   opacity: 0.5 !important;
