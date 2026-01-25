@@ -45,6 +45,7 @@ export const ScoreGauge = ({
   const [buttonAbsorbed, setButtonAbsorbed] = useState(false);
   const [showTransferBeam, setShowTransferBeam] = useState(false);
   const [buttonCharged, setButtonCharged] = useState(false);
+  const [isRevealingScore, setIsRevealingScore] = useState(false); // Loader → Score morph transition
   const animationRef = useRef<number | null>(null);
   const prevUiStateRef = useRef<string>('idle');
   
@@ -223,6 +224,13 @@ export const ScoreGauge = ({
     if (prevState === 'ready' && uiState === 'analyzing') {
       setButtonAbsorbed(true);
       setTimeout(() => setButtonAbsorbed(false), 600);
+    }
+    
+    // Analyzing → Result transition (loader morphs to score)
+    if (prevState === 'analyzing' && uiState === 'result') {
+      setIsRevealingScore(true);
+      // Keep reveal state active during score animation
+      setTimeout(() => setIsRevealingScore(false), 800);
     }
     
     prevUiStateRef.current = uiState;
@@ -584,9 +592,28 @@ export const ScoreGauge = ({
           className="absolute inset-0 flex items-center justify-center"
           style={{ marginTop: -verticalOffset }}
         >
-          {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT */}
+          {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT with morph reveal */}
           {uiState === 'result' && (
-            <div className="relative flex items-center justify-center">
+            <div 
+              className="relative flex items-center justify-center"
+              style={{
+                animation: isRevealingScore ? 'score-reveal-container 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards' : 'none',
+              }}
+            >
+              {/* Reveal flash ring - appears during morph transition */}
+              {isRevealingScore && (
+                <div 
+                  className="absolute rounded-full pointer-events-none"
+                  style={{
+                    width: scoreFontSize * 2.5,
+                    height: scoreFontSize * 2.5,
+                    border: '2px solid hsl(174 70% 55% / 0.6)',
+                    boxShadow: '0 0 30px hsl(174 65% 55% / 0.5), 0 0 60px hsl(174 60% 50% / 0.3)',
+                    animation: 'score-reveal-ring 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                  }}
+                />
+              )}
+              
               {/* Score breathing glow - very slow, subtle pulse suggesting intelligence */}
               <div 
                 className="absolute rounded-full pointer-events-none"
@@ -595,12 +622,15 @@ export const ScoreGauge = ({
                   height: scoreFontSize * 2.2,
                   background: `radial-gradient(circle, ${getInterpolatedColor(animatedScore).replace(')', ' / 0.35)')} 0%, ${getInterpolatedColor(animatedScore).replace(')', ' / 0.15)')} 40%, transparent 70%)`,
                   filter: 'blur(12px)',
-                  animation: 'score-breathing-glow 4s ease-in-out infinite',
+                  animation: isRevealingScore 
+                    ? 'score-glow-reveal 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards, score-breathing-glow 4s ease-in-out 600ms infinite'
+                    : 'score-breathing-glow 4s ease-in-out infinite',
                 }}
               />
-              {/* Score number with strong controlled glow */}
+              
+              {/* Score number with strong controlled glow - premium reveal animation */}
               <span
-                className="relative font-semibold tabular-nums animate-scale-in"
+                className="relative font-semibold tabular-nums"
                 style={{
                   fontSize: scoreFontSize,
                   lineHeight: 1,
@@ -612,11 +642,25 @@ export const ScoreGauge = ({
                     0 0 50px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.35)')},
                     0 0 80px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.2)')}
                   `,
-                  animation: 'score-text-pulse 4s ease-in-out infinite',
+                  animation: isRevealingScore
+                    ? 'score-number-reveal 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                    : 'score-text-pulse 4s ease-in-out infinite',
                 }}
               >
                 {displayScore}
               </span>
+              
+              {/* Confirmation pulse ring - subtle signal that score is locked */}
+              {isRevealingScore && (
+                <div 
+                  className="absolute rounded-full pointer-events-none"
+                  style={{
+                    width: scoreFontSize * 1.8,
+                    height: scoreFontSize * 1.8,
+                    animation: 'score-confirm-pulse 800ms cubic-bezier(0.16, 1, 0.3, 1) 400ms forwards',
+                  }}
+                />
+              )}
             </div>
           )}
 
@@ -1001,6 +1045,102 @@ export const ScoreGauge = ({
         
       {/* CSS animations */}
       <style>{`
+        /* ===== LOADER → SCORE MORPH REVEAL ANIMATIONS ===== */
+        
+        /* Container reveal - slight scale up with blur clear */
+        @keyframes score-reveal-container {
+          0% { 
+            opacity: 0;
+            transform: scale(0.7);
+            filter: blur(8px);
+          }
+          40% {
+            opacity: 1;
+            filter: blur(2px);
+          }
+          100% { 
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+          }
+        }
+        
+        /* Flash ring that expands outward during reveal */
+        @keyframes score-reveal-ring {
+          0% { 
+            opacity: 1;
+            transform: scale(0.6);
+          }
+          60% { 
+            opacity: 0.8;
+            transform: scale(1.2);
+          }
+          100% { 
+            opacity: 0;
+            transform: scale(1.5);
+          }
+        }
+        
+        /* Glow intensifies then settles during reveal */
+        @keyframes score-glow-reveal {
+          0% { 
+            opacity: 0;
+            transform: scale(0.5);
+          }
+          50% { 
+            opacity: 1.2;
+            transform: scale(1.15);
+          }
+          100% { 
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        
+        /* Score number morphs in with premium reveal */
+        @keyframes score-number-reveal {
+          0% { 
+            opacity: 0;
+            transform: scale(0.5) translateY(8px);
+            filter: blur(6px);
+          }
+          30% {
+            opacity: 0.8;
+            filter: blur(2px);
+          }
+          60% { 
+            opacity: 1;
+            transform: scale(1.08) translateY(-2px);
+            filter: blur(0px);
+          }
+          100% { 
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            filter: blur(0px);
+          }
+        }
+        
+        /* Confirmation pulse - subtle ring that signals score is locked */
+        @keyframes score-confirm-pulse {
+          0% { 
+            opacity: 0;
+            transform: scale(0.9);
+            box-shadow: 0 0 0 0 hsl(174 70% 55% / 0);
+          }
+          50% { 
+            opacity: 0.6;
+            transform: scale(1);
+            box-shadow: 0 0 20px 4px hsl(174 65% 55% / 0.4);
+          }
+          100% { 
+            opacity: 0;
+            transform: scale(1.3);
+            box-shadow: 0 0 30px 8px hsl(174 60% 50% / 0);
+          }
+        }
+        
+        /* ===== EXISTING ANIMATIONS ===== */
+        
         /* Premium score breathing glow - very slow, intelligent rhythm */
         @keyframes score-breathing-glow {
           0%, 100% { 
