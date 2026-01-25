@@ -1,289 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useLanguage } from '@/i18n/useLanguage';
+import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-// Analyzing state explanations
-const ANALYZING_EXPLANATIONS = {
-  en: [
-    'Checking source consistency',
-    'Cross-referencing signals',
-    'Evaluating credibility indicators'
-  ],
-  fr: [
-    'Vérification de la cohérence des sources',
-    'Recoupement des signaux',
-    'Évaluation des indicateurs de crédibilité'
-  ]
-};
-
-// Premium circular loader component for analyzing state
-const AnalyzingStateContent = ({ size }: { size: number }) => {
-  const { language, t } = useLanguage();
-  const [explanationIndex, setExplanationIndex] = useState(0);
-  const explanations = ANALYZING_EXPLANATIONS[language] || ANALYZING_EXPLANATIONS.en;
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setExplanationIndex((prev) => (prev + 1) % explanations.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [explanations.length]);
-  
-  const loaderSize = size * 0.45;
-  const strokeWidth = 3;
-  const radius = (loaderSize - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  
-  return (
-    <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-1)' }}>
-      {/* Circular loader ring */}
-      <div 
-        className="relative"
-        style={{ 
-          width: loaderSize, 
-          height: loaderSize,
-        }}
-      >
-        {/* Background ring */}
-        <svg 
-          width={loaderSize} 
-          height={loaderSize} 
-          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
-          className="absolute inset-0"
-        >
-          <circle
-            cx={loaderSize / 2}
-            cy={loaderSize / 2}
-            r={radius}
-            fill="none"
-            stroke="hsl(174 30% 30% / 0.3)"
-            strokeWidth={strokeWidth}
-          />
-        </svg>
-        
-        {/* Animated arc */}
-        <svg 
-          width={loaderSize} 
-          height={loaderSize} 
-          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
-          className="absolute inset-0 motion-reduce:animate-none"
-          style={{
-            animation: 'analyzing-spin 1.8s linear infinite',
-          }}
-        >
-          <circle
-            cx={loaderSize / 2}
-            cy={loaderSize / 2}
-            r={radius}
-            fill="none"
-            stroke="hsl(174 55% 52%)"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={`${circumference * 0.3} ${circumference * 0.7}`}
-            style={{
-              filter: 'drop-shadow(0 0 4px hsl(174 60% 55% / 0.5))',
-            }}
-          />
-        </svg>
-        
-        {/* Center text */}
-        <div 
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <span 
-            className="uppercase font-medium tracking-wide text-center"
-            style={{ 
-              fontSize: 'clamp(0.5rem, 1.8vw, 0.65rem)',
-              lineHeight: 1.2,
-              color: 'hsl(174 45% 65%)',
-              maxWidth: loaderSize * 0.8,
-            }}
-          >
-            {t('gauge.analyzing')}
-          </span>
-        </div>
-      </div>
-      
-      {/* Cycling explanation text */}
-      <div 
-        className="relative overflow-hidden"
-        style={{ 
-          height: '1.2em',
-          minWidth: size * 0.9,
-        }}
-      >
-        <span 
-          key={explanationIndex}
-          className="absolute inset-x-0 text-center font-normal tracking-wide"
-          style={{ 
-            fontSize: 'clamp(0.55rem, 1.6vw, 0.7rem)',
-            color: 'hsl(0 0% 60%)',
-            animation: 'explanation-fade 2s ease-in-out forwards',
-          }}
-        >
-          {explanations[explanationIndex]}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-// Morphing transition component: pill → circle
-const MorphingLoaderTransition = ({ size }: { size: number }) => {
-  const { t } = useLanguage();
-  const loaderSize = size * 0.45;
-  const strokeWidth = 3;
-  const radius = (loaderSize - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  
-  // Generate morph particles
-  const morphParticles = useMemo(() => 
-    Array.from({ length: 16 }, (_, i) => ({
-      id: i,
-      angle: (i / 16) * 360,
-      delay: 50 + Math.random() * 150,
-      distance: 25 + Math.random() * 20,
-      size: 2 + Math.random() * 2,
-      duration: 350 + Math.random() * 150,
-    })), []
-  );
-  
-  return (
-    <div 
-      className="relative flex items-center justify-center"
-      style={{
-        animation: 'pill-to-circle-morph 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
-      }}
-    >
-      {/* Particle trail effect during morph */}
-      {morphParticles.map((particle) => (
-        <div
-          key={`morph-particle-${particle.id}`}
-          className="absolute pointer-events-none"
-          style={{
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            borderRadius: '50%',
-            background: 'hsl(174 70% 65%)',
-            boxShadow: '0 0 6px hsl(174 65% 60% / 0.8), 0 0 12px hsl(174 55% 55% / 0.4)',
-            opacity: 0,
-            '--particle-angle': `${particle.angle}deg`,
-            '--particle-distance': `${particle.distance}px`,
-            animation: `morph-particle-burst ${particle.duration}ms cubic-bezier(0.25, 1, 0.5, 1) ${particle.delay}ms forwards`,
-          } as React.CSSProperties}
-        />
-      ))}
-      
-      {/* Secondary smaller particles for depth */}
-      {Array.from({ length: 8 }, (_, i) => {
-        const angle = (i / 8) * 360 + 22.5;
-        const delay = 100 + Math.random() * 100;
-        const distance = 15 + Math.random() * 12;
-        return (
-          <div
-            key={`morph-particle-secondary-${i}`}
-            className="absolute pointer-events-none"
-            style={{
-              width: '1.5px',
-              height: '1.5px',
-              borderRadius: '50%',
-              background: 'hsl(180 75% 75%)',
-              boxShadow: '0 0 4px hsl(180 70% 70% / 0.7)',
-              opacity: 0,
-              '--particle-angle': `${angle}deg`,
-              '--particle-distance': `${distance}px`,
-              animation: `morph-particle-burst 280ms cubic-bezier(0.25, 1, 0.5, 1) ${delay}ms forwards`,
-            } as React.CSSProperties}
-          />
-        );
-      })}
-      
-      {/* Morphing container */}
-      <div 
-        className="relative overflow-hidden"
-        style={{
-          width: loaderSize,
-          height: loaderSize,
-          animation: 'morph-container 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        }}
-      >
-        {/* Background glow during morph */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, hsl(174 55% 52% / 0.25) 0%, transparent 70%)',
-            animation: 'morph-glow 600ms ease-out forwards',
-          }}
-        />
-        
-        {/* Forming circular ring */}
-        <svg 
-          width={loaderSize} 
-          height={loaderSize} 
-          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
-          className="absolute inset-0"
-          style={{
-            opacity: 0,
-            animation: 'ring-appear 400ms ease-out 250ms forwards',
-          }}
-        >
-          <circle
-            cx={loaderSize / 2}
-            cy={loaderSize / 2}
-            r={radius}
-            fill="none"
-            stroke="hsl(174 30% 30% / 0.3)"
-            strokeWidth={strokeWidth}
-          />
-        </svg>
-        
-        {/* Animated arc forming */}
-        <svg 
-          width={loaderSize} 
-          height={loaderSize} 
-          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
-          className="absolute inset-0"
-          style={{
-            opacity: 0,
-            animation: 'ring-appear 400ms ease-out 300ms forwards, analyzing-spin 1.8s linear 450ms infinite',
-          }}
-        >
-          <circle
-            cx={loaderSize / 2}
-            cy={loaderSize / 2}
-            r={radius}
-            fill="none"
-            stroke="hsl(174 55% 52%)"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={`${circumference * 0.3} ${circumference * 0.7}`}
-            style={{
-              filter: 'drop-shadow(0 0 4px hsl(174 60% 55% / 0.5))',
-            }}
-          />
-        </svg>
-        
-        {/* Loader text fading in */}
-        <div 
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <span 
-            className="uppercase font-medium tracking-wide text-center"
-            style={{ 
-              fontSize: 'clamp(0.5rem, 1.8vw, 0.65rem)',
-              lineHeight: 1.2,
-              color: 'hsl(174 45% 65%)',
-              opacity: 0,
-              animation: 'text-fade-in 300ms ease-out 400ms forwards',
-            }}
-          >
-            {t('gauge.analyzing')}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
@@ -327,8 +45,6 @@ export const ScoreGauge = ({
   const [buttonAbsorbed, setButtonAbsorbed] = useState(false);
   const [showTransferBeam, setShowTransferBeam] = useState(false);
   const [buttonCharged, setButtonCharged] = useState(false);
-  const [isButtonPressed, setIsButtonPressed] = useState(false);
-  const [showClickFlash, setShowClickFlash] = useState(false);
   const animationRef = useRef<number | null>(null);
   const prevUiStateRef = useRef<string>('idle');
   
@@ -355,13 +71,14 @@ export const ScoreGauge = ({
       
       const startValue = 0;
       const endValue = score;
-      const duration = 1800;
+      const duration = 1800; // Slightly shorter for snappier feel
       const startTime = performance.now();
       
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
+        // Smooth easing without bounce
         const easeOutQuart = (t: number) => {
           return 1 - Math.pow(1 - t, 4);
         };
@@ -377,6 +94,7 @@ export const ScoreGauge = ({
         }
       };
       
+      // Small delay before starting animation
       const timer = setTimeout(() => {
         animationRef.current = requestAnimationFrame(animate);
       }, 150);
@@ -396,11 +114,11 @@ export const ScoreGauge = ({
 
   // Premium gradient colors with smooth transitions
   const colorPairs = [
-    { base: 'hsl(0 70% 45%)', light: 'hsl(0 75% 55%)' },
-    { base: 'hsl(25 85% 48%)', light: 'hsl(30 90% 58%)' },
-    { base: 'hsl(45 80% 45%)', light: 'hsl(50 85% 55%)' },
-    { base: 'hsl(145 55% 40%)', light: 'hsl(150 60% 50%)' },
-    { base: 'hsl(174 60% 42%)', light: 'hsl(174 70% 52%)' }
+    { base: 'hsl(0 70% 45%)', light: 'hsl(0 75% 55%)' },      // Red - Very Low
+    { base: 'hsl(25 85% 48%)', light: 'hsl(30 90% 58%)' },    // Orange - Low
+    { base: 'hsl(45 80% 45%)', light: 'hsl(50 85% 55%)' },    // Yellow - Moderate
+    { base: 'hsl(145 55% 40%)', light: 'hsl(150 60% 50%)' },  // Green - Good
+    { base: 'hsl(174 60% 42%)', light: 'hsl(174 70% 52%)' }   // Leen Blue - High
   ];
   
   const colors = colorPairs.map(c => c.base);
@@ -414,6 +132,7 @@ export const ScoreGauge = ({
     { en: 'HIGH CREDIBILITY', fr: 'HAUTE CRÉDIBILITÉ' }
   ];
 
+  // Get current color and label index based on score
   const getSegmentIndex = (value: number) => {
     if (value < 20) return 0;
     if (value < 40) return 1;
@@ -422,6 +141,7 @@ export const ScoreGauge = ({
     return 4;
   };
 
+  // Smooth interpolated color for fluid transitions
   const getInterpolatedColor = (value: number) => {
     const segmentIndex = getSegmentIndex(value);
     const segmentStart = segmentIndex * 20;
@@ -473,133 +193,46 @@ export const ScoreGauge = ({
   useEffect(() => {
     const prevState = prevUiStateRef.current;
     
-    // Idle → Ready transition: Synchronized transfer beam + morph sequence
+    // Idle → Ready transition: Trigger transfer animation sequence
     if (prevState === 'idle' && uiState === 'ready') {
       setIsTransitioning(true);
+      
+      // 1) Input capture phase (notify parent to show input glow)
       onTransferStart?.();
       
-      // Phase 1: Start transfer beam as text begins morphing out (0ms)
-      setShowTransferBeam(true);
+      // 2) Beam transfer phase (starts after 180ms)
+      setTimeout(() => {
+        setShowTransferBeam(true);
+      }, 180);
       
-      // Phase 2: Transfer beam reaches gauge center, button starts morphing in (350ms)
+      // 3) Button charge phase (starts when beam arrives ~460ms)
       setTimeout(() => {
         setShowTransferBeam(false);
         setButtonCharged(true);
-      }, 350);
+      }, 500);
       
-      // Phase 3: Button fully charged, sheen sweep (550ms)
-      setTimeout(() => {
-        setButtonCharged(false);
-      }, 650);
-      
-      // Phase 4: Transition complete (850ms total)
+      // 4) Settle into armed state
       setTimeout(() => {
         setIsTransitioning(false);
-      }, 850);
+        setButtonCharged(false);
+      }, 800);
     }
     
-    // Ready → Analyzing transition (pill morphs to circle)
+    // Ready → Analyzing transition (button absorbed)
     if (prevState === 'ready' && uiState === 'analyzing') {
       setButtonAbsorbed(true);
-      // Keep the morph visible longer for smooth transition
-      setTimeout(() => setButtonAbsorbed(false), 800);
+      setTimeout(() => setButtonAbsorbed(false), 600);
     }
     
     prevUiStateRef.current = uiState;
   }, [uiState, onTransferStart]);
   
-  // Handle analyze click with premium tactile feedback
+  // Handle analyze click with absorption animation
   const handleAnalyzeClick = () => {
-    setIsButtonPressed(true);
-    setShowClickFlash(true);
-    
-    setTimeout(() => {
-      setIsButtonPressed(false);
-      setShowClickFlash(false);
-      setButtonAbsorbed(true);
-    }, 120);
-    
+    setButtonAbsorbed(true);
     setTimeout(() => {
       onAnalyze?.();
     }, 200);
-  };
-
-  // Instrument-grade state-based styling
-  const getGaugeGlowStyle = () => {
-    switch (uiState) {
-      case 'idle':
-        // Powered & calibrated - visible presence halo
-        return {
-          background: 'radial-gradient(circle, hsl(174 50% 48% / 0.10) 0%, hsl(174 45% 45% / 0.04) 50%, transparent 75%)',
-          filter: 'blur(32px)',
-          animation: 'idle-halo-breathe 3.2s ease-in-out infinite',
-          opacity: 0.7,
-        };
-      case 'ready':
-        // 50% awake - soft diffused halo, static (no pulse animation yet)
-        return {
-          background: 'radial-gradient(circle, hsl(174 50% 50% / 0.14) 0%, hsl(174 45% 48% / 0.06) 50%, transparent 70%)',
-          filter: 'blur(28px)',
-          animation: 'none', // Static - no pulse at 50% awake
-          opacity: 0.85,
-        };
-      case 'analyzing':
-        return {
-          background: 'radial-gradient(circle, hsl(174 60% 50% / 0.22) 0%, hsl(174 55% 48% / 0.1) 50%, transparent 75%)',
-          filter: 'blur(26px)',
-          animation: 'instrument-glow-analyzing 1.4s ease-in-out infinite',
-          opacity: 1,
-        };
-      case 'result':
-        return {
-          background: `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')} 0%, transparent 70%)`,
-          filter: 'blur(22px)',
-          animation: 'none',
-          opacity: 1,
-        };
-      default:
-        return {};
-    }
-  };
-
-  const getRingGlowStyle = () => {
-    switch (uiState) {
-      case 'idle':
-        // Powered state - subtle ring presence
-        return {
-          boxShadow: '0 0 18px hsl(174 50% 48% / 0.10), 0 0 35px hsl(174 45% 45% / 0.04), inset 0 0 12px hsl(174 45% 48% / 0.05)',
-          animation: 'idle-ring-breathe 3.2s ease-in-out infinite',
-        };
-      case 'ready':
-        // 50% awake - subtle glow, static (no animation)
-        return {
-          boxShadow: '0 0 22px hsl(174 50% 50% / 0.12), 0 0 40px hsl(174 45% 48% / 0.05), inset 0 0 14px hsl(174 48% 48% / 0.06)',
-          animation: 'none', // Static - presence, not urgency
-        };
-      case 'analyzing':
-        return {
-          boxShadow: '0 0 35px hsl(174 60% 50% / 0.22), 0 0 60px hsl(174 55% 48% / 0.1), inset 0 0 22px hsl(174 55% 48% / 0.1)',
-          animation: 'instrument-ring-analyzing 1.4s ease-in-out infinite',
-        };
-      case 'result':
-        return {
-          boxShadow: `0 0 30px ${getCurrentColor(animatedScore).replace(')', ' / 0.25)')}, 0 0 55px ${getCurrentColor(animatedScore).replace(')', ' / 0.12)')}, inset 0 0 18px ${getCurrentColor(animatedScore).replace(')', ' / 0.08)')}`,
-          animation: 'none',
-        };
-      default:
-        return {};
-    }
-  };
-
-  // Segment brightness based on state - 50% awake in ready state
-  const getSegmentBrightness = () => {
-    switch (uiState) {
-      case 'idle': return 0.28; // Powered & calibrated - clearly readable segments
-      case 'ready': return 0.50; // 50% brightness - clearly visible but restrained
-      case 'analyzing': return 0.60;
-      case 'result': return 1;
-      default: return 0.12;
-    }
   };
 
   return (
@@ -674,18 +307,21 @@ export const ScoreGauge = ({
         </>
       )}
       
-      {/* Instrument-grade ambient glow behind gauge - state-dependent */}
+      {/* Premium ambient glow behind gauge */}
       <div 
-        className="absolute rounded-full motion-reduce:!animation-none"
+        className="absolute rounded-full"
         style={{
-          width: size * 1.35,
-          height: size * 1.35,
+          width: size * 1.3,
+          height: size * 1.3,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
+          background: score !== null 
+            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
+            : 'radial-gradient(circle, hsl(174 60% 45% / 0.12) 0%, hsl(200 50% 40% / 0.06) 40%, transparent 70%)',
+          filter: 'blur(20px)',
           pointerEvents: 'none',
-          transition: 'opacity 0.4s ease-out',
-          ...getGaugeGlowStyle(),
+          animation: score === null ? 'idle-glow-pulse 3.8s ease-in-out infinite' : 'none',
         }}
       />
       
@@ -697,12 +333,15 @@ export const ScoreGauge = ({
           height: size,
         }}
       >
-        {/* Instrument-grade outer ring glow - state-dependent */}
+        {/* Premium outer ring glow */}
         <div 
-          className="absolute inset-0 rounded-full motion-reduce:!animation-none"
+          className="absolute inset-0 rounded-full"
           style={{
-            transition: 'box-shadow 0.4s ease-out',
-            ...getRingGlowStyle(),
+            boxShadow: score !== null 
+              ? `0 0 30px ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}, 0 0 60px ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')}, inset 0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.1)')}`
+              : '0 0 25px hsl(174 60% 45% / 0.15), 0 0 50px hsl(200 50% 45% / 0.08), inset 0 0 15px hsl(174 50% 40% / 0.08)',
+            transition: 'box-shadow 0.5s ease-out',
+            animation: score === null ? 'idle-ring-pulse 3.8s ease-in-out 75ms infinite' : 'none',
           }}
         />
         
@@ -716,6 +355,7 @@ export const ScoreGauge = ({
               height: size * 0.5,
             }}
           >
+            {/* Beam path */}
             <div 
               className="absolute inset-0"
               style={{
@@ -723,6 +363,7 @@ export const ScoreGauge = ({
                 animation: 'beam-path-fade 320ms ease-out forwards',
               }}
             />
+            {/* Luminous orb head */}
             <div 
               style={{
                 position: 'absolute',
@@ -736,6 +377,7 @@ export const ScoreGauge = ({
                 animation: 'orb-travel 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
               }}
             />
+            {/* Trailing blur */}
             <div 
               style={{
                 position: 'absolute',
@@ -755,7 +397,7 @@ export const ScoreGauge = ({
         {/* Activation wave - triggers when content is detected */}
         {uiState === 'ready' && isTransitioning && (
           <div 
-            className="absolute inset-0 rounded-full pointer-events-none motion-reduce:hidden"
+            className="absolute inset-0 rounded-full pointer-events-none"
             style={{
               background: 'radial-gradient(circle, hsl(174 65% 55% / 0.5) 0%, hsl(174 60% 50% / 0.25) 30%, transparent 70%)',
               animation: 'activation-wave 600ms ease-out 460ms forwards',
@@ -764,23 +406,21 @@ export const ScoreGauge = ({
           />
         )}
         
-        {/* Idle/Ready state contour ring - subtle in idle, brighter in ready */}
+        {/* Idle state premium contour ring - synchronized with halo pulse + phase delay for wave effect */}
         {score === null && !isLoading && (
           <div 
-            className="absolute rounded-full pointer-events-none motion-reduce:!animation-none"
+            className="absolute rounded-full pointer-events-none"
             style={{
               inset: strokeWidth / 2 - 1,
-              border: `1px solid hsl(174 50% 50% / ${uiState === 'idle' ? '0.12' : '0.25'})`,
-              boxShadow: uiState === 'idle' 
-                ? 'inset 0 0 12px hsl(174 50% 45% / 0.04), 0 0 1px hsl(174 55% 50% / 0.15)'
-                : 'inset 0 0 18px hsl(174 55% 50% / 0.08), 0 0 2px hsl(174 60% 55% / 0.25)',
-              transition: 'all 0.4s ease-out',
-              animation: uiState === 'ready' ? 'instrument-contour-ready 2s ease-in-out infinite' : 'none',
+              border: '1px solid hsl(174 50% 50% / 0.2)',
+              boxShadow: 'inset 0 0 20px hsl(174 60% 50% / 0.1), 0 0 1px hsl(174 60% 55% / 0.3)',
+              animation: 'idle-contour-glow 3.8s ease-in-out infinite',
+              animationDelay: '150ms',
             }}
           />
         )}
         
-        {/* SVG */}
+        {/* SVG - static (no rotation) */}
         <svg 
           width={size} 
           height={size} 
@@ -816,150 +456,186 @@ export const ScoreGauge = ({
               </feMerge>
             </filter>
           </defs>
-          
-          {/* Segment arcs with state-dependent brightness - FLAT colors (no gradient) */}
-          {[0, 1, 2, 3, 4].map((i) => {
-            const startAngle = 135 + i * 54;
-            const endAngle = startAngle + 54;
-            const startRad = (startAngle * Math.PI) / 180;
-            const endRad = ((endAngle - (gap / (2 * Math.PI * radius) * 360)) * Math.PI) / 180;
+
+          {/* Scientific tick marks - 0-100% reference scale */}
+          {(() => {
+            const ticks = [];
+            const tickRadius = radius - strokeWidth / 2 - 2; // Just inside the inner edge of gauge ring
+            const startAngle = 135; // Gauge starts at 135°
+            const totalDegrees = 270; // Gauge spans 270°
             
-            const x1 = size / 2 + radius * Math.cos(startRad);
-            const y1 = size / 2 + radius * Math.sin(startRad);
-            const x2 = size / 2 + radius * Math.cos(endRad);
-            const y2 = size / 2 + radius * Math.sin(endRad);
-            
-            const baseOpacity = score !== null ? getSegmentOpacity(i) : getSegmentBrightness();
+            for (let i = 0; i <= 100; i += 5) {
+              const isMajor = i % 10 === 0;
+              const angle = startAngle + (i / 100) * totalDegrees;
+              const rad = angle * (Math.PI / 180);
+              
+              // Tick dimensions
+              const tickLength = isMajor ? 6 : 3;
+              const tickWidth = isMajor ? 1.2 : 0.8;
+              
+              // Calculate tick positions (pointing inward from edge)
+              const outerX = size / 2 + tickRadius * Math.cos(rad);
+              const outerY = size / 2 + tickRadius * Math.sin(rad);
+              const innerX = size / 2 + (tickRadius - tickLength) * Math.cos(rad);
+              const innerY = size / 2 + (tickRadius - tickLength) * Math.sin(rad);
+              
+              // Highlight nearest tick when score is displayed
+              const isNearestTick = score !== null && Math.abs(animatedScore - i) < 2.5;
+              const tickOpacity = isNearestTick ? 0.7 : (isMajor ? 0.3 : 0.2);
+              
+              ticks.push(
+                <line
+                  key={`tick-${i}`}
+                  x1={innerX}
+                  y1={innerY}
+                  x2={outerX}
+                  y2={outerY}
+                  stroke={isNearestTick ? 'hsl(0 0% 100%)' : 'hsl(0 0% 85%)'}
+                  strokeWidth={tickWidth}
+                  strokeLinecap="round"
+                  style={{
+                    opacity: tickOpacity,
+                    transition: isNearestTick ? 'opacity 0.3s ease-out' : 'none',
+                  }}
+                />
+              );
+            }
+            return ticks;
+          })()}
+
+          {/* Background arc track for idle state */}
+          {score === null && (
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke="hsl(200 20% 25% / 0.4)"
+              strokeWidth={strokeWidth}
+              strokeLinecap="butt"
+              strokeDasharray={`${totalArc} ${circumference}`}
+              style={{ transform: 'rotate(135deg)', transformOrigin: 'center' }}
+            />
+          )}
+
+          {/* 5 color segments */}
+          {colorPairs.map((pair, i) => {
+            const segmentLength = segmentArc - gap;
+            const rotation = 135 + i * 270 / 5;
+            const opacity = getSegmentOpacity(i);
+            const isActive = opacity > 0.5;
+            const isIdle = score === null;
+            const idleOpacity = 0.35 + (i * 0.04);
             
             return (
-              <path
+              <circle
                 key={i}
-                d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
                 fill="none"
-                stroke={colors[i]}
+                stroke={`url(#segment-gradient-${i})`}
                 strokeWidth={strokeWidth}
-                strokeLinecap="round"
-                opacity={baseOpacity}
-                filter={score !== null && getSegmentOpacity(i) > 0.5 ? 'url(#segment-glow)' : 'url(#idle-segment-glow)'}
+                strokeLinecap="butt"
+                strokeDasharray={`${segmentLength} ${circumference}`}
+                filter={isActive ? 'url(#segment-glow)' : isIdle ? 'url(#idle-segment-glow)' : undefined}
                 style={{
-                  transition: 'opacity 0.4s ease-out',
+                  transform: `rotate(${rotation}deg)`,
+                  transformOrigin: 'center',
+                  opacity: isIdle ? idleOpacity : opacity,
+                  transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               />
             );
           })}
-          
-          {/* Premium calibration-style segment separators with hover glow effect */}
-          {score === null && [1, 2, 3, 4].map((i) => {
-            const separatorAngle = 135 + i * 54 - 1;
-            const separatorRad = (separatorAngle * Math.PI) / 180;
-            const innerRadius = radius - strokeWidth / 2 + 2;
-            const outerRadius = radius + strokeWidth / 2 - 2;
-            
-            const x1 = size / 2 + innerRadius * Math.cos(separatorRad);
-            const y1 = size / 2 + innerRadius * Math.sin(separatorRad);
-            const x2 = size / 2 + outerRadius * Math.cos(separatorRad);
-            const y2 = size / 2 + outerRadius * Math.sin(separatorRad);
-            
-            return (
-              <g key={`sep-group-${i}`} className="separator-line">
-                {/* Glow layer - visible on hover */}
-                <line
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke="hsl(174 55% 55%)"
-                  strokeWidth={2}
-                  opacity={0}
-                  className="separator-glow"
-                  style={{
-                    filter: 'blur(2px)',
-                    transition: 'opacity 0.3s ease-out',
-                  }}
-                />
-                {/* Main separator line */}
-                <line
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke="hsl(0 0% 45%)"
-                  strokeWidth={0.75}
-                  opacity={uiState === 'ready' ? 0.45 : 0.25}
-                  className="separator-main"
-                  style={{
-                    transition: 'opacity 0.3s ease-out, stroke 0.3s ease-out',
-                  }}
-                />
-              </g>
-            );
-          })}
-          
-          {/* Score indicator */}
+
+          {/* Position indicator */}
           {score !== null && (
-            <circle
-              cx={indicatorX}
-              cy={indicatorY}
-              r={6}
-              fill="white"
-              filter="url(#segment-glow)"
-              style={{
-                transition: 'cx 0.1s, cy 0.1s',
-              }}
-            />
+            <g>
+              <circle
+                cx={indicatorX}
+                cy={indicatorY}
+                r={5}
+                fill={getInterpolatedColor(animatedScore)}
+                style={{ filter: 'drop-shadow(0 0 4px currentColor)', transition: 'fill 0.3s ease-out' }}
+              />
+              <circle cx={indicatorX} cy={indicatorY} r={2.5} fill="hsl(0 0% 100%)" />
+            </g>
           )}
         </svg>
-        
-        {/* Center content area */}
+
+        {/* ========== CENTER CONTENT - The single source of action ========== */}
         <div 
-          className="absolute inset-0 flex flex-col items-center justify-center"
-          style={{
-            top: verticalOffset,
-          }}
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ marginTop: -verticalOffset }}
         >
-          {/* RESULT STATE: Score display */}
+          {/* RESULT STATE: Display score */}
           {uiState === 'result' && (
-            <div className="flex flex-col items-center justify-center animate-scale-in">
+            <span
+              className="font-semibold tabular-nums animate-scale-in"
+              style={{
+                fontSize: scoreFontSize,
+                lineHeight: 1,
+                color: getInterpolatedColor(animatedScore),
+                letterSpacing: '-0.02em',
+                textShadow: `0 0 20px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.4)')}, 0 0 40px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.2)')}`
+              }}
+            >
+              {displayScore}
+            </span>
+          )}
+
+          {/* ANALYZING STATE: Loading spinner */}
+          {uiState === 'analyzing' && (
+            <div className="flex flex-col items-center animate-fade-in" style={{ gap: 'var(--space-2)' }}>
+              <Loader2 
+                className="animate-spin" 
+                style={{ 
+                  width: size * 0.18, 
+                  height: size * 0.18, 
+                  color: 'hsl(174 65% 55%)',
+                  filter: 'drop-shadow(0 0 10px hsl(174 60% 50% / 0.5))'
+                }} 
+              />
               <span 
-                className="font-bold tabular-nums"
-                style={{
-                  fontSize: scoreFontSize,
-                  fontFamily: 'var(--font-sans)',
-                  color: getInterpolatedColor(animatedScore),
-                  textShadow: `0 0 30px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.6)')}, 0 0 60px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.3)')}`,
-                  lineHeight: 1,
+                className="uppercase font-semibold tracking-widest"
+                style={{ 
+                  fontSize: 'clamp(0.6rem, 2vw, 0.75rem)', 
+                  color: 'hsl(174 60% 60%)',
+                  textShadow: '0 0 10px hsl(174 60% 50% / 0.5)'
                 }}
               >
-                {displayScore}
+                {t('gauge.analyzing')}
               </span>
             </div>
           )}
-          
-          {/* ANALYZING STATE: Premium circular loader with cycling explanations */}
-          {uiState === 'analyzing' && !buttonAbsorbed && (
-            <AnalyzingStateContent size={size} />
-          )}
-          
-          {/* MORPHING STATE: Pill button transforms into circular loader */}
-          {uiState === 'analyzing' && buttonAbsorbed && (
-            <MorphingLoaderTransition size={size} />
-          )}
 
-          {/* IDLE STATE: Luminous "READY TO ANALYZE" with breathing glow */}
+          {/* IDLE STATE: "READY TO ANALYZE" with premium halo pulse */}
           {uiState === 'idle' && (
             <div 
               className="flex flex-col items-center justify-center text-center relative"
               style={{ padding: 'var(--space-2)' }}
             >
-              <span
-                className="relative uppercase font-semibold tracking-[0.16em] text-center motion-reduce:!animation-none"
+              {/* Premium halo - breathing pulse animation */}
+              <div 
+                className="absolute rounded-full pointer-events-none"
                 style={{
-                  fontSize: 'clamp(0.68rem, 2.4vw, 0.88rem)',
+                  width: size * 0.55,
+                  height: size * 0.35,
+                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.10) 0%, hsl(174 30% 50% / 0.05) 50%, transparent 80%)',
+                  filter: 'blur(8px)',
+                  animation: 'idle-halo-pulse 3.8s ease-in-out infinite',
+                }}
+              />
+              
+              {/* Text with subtle brightness sync */}
+              <span
+                className="relative uppercase font-medium tracking-[0.18em] text-center"
+                style={{
+                  fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
                   lineHeight: 1.4,
-                  color: 'hsl(174 45% 72%)',
-                  textShadow: '0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.25), 0 0 40px hsl(174 45% 48% / 0.12)',
-                  animation: 'idle-text-breathe 3.2s ease-in-out infinite',
-                  transition: 'color 0.3s ease-out, text-shadow 0.3s ease-out',
+                  color: 'hsl(0 0% 94%)',
+                  animation: 'idle-text-brightness 3.8s ease-in-out infinite',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
@@ -967,190 +643,98 @@ export const ScoreGauge = ({
             </div>
           )}
           
-          {/* TRANSITIONING STATE: Text morphing out with synchronized transfer beam */}
+          {/* TRANSITIONING STATE: Text fading out with blur */}
           {uiState === 'ready' && isTransitioning && (
-            <>
-              {/* Transfer beam energy orb - rises from bottom to center */}
-              {showTransferBeam && (
-                <div 
-                  className="absolute inset-0 pointer-events-none motion-reduce:hidden"
-                  style={{
-                    zIndex: 10,
-                  }}
-                >
-                  {/* Central energy convergence */}
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2"
-                    style={{
-                      bottom: '-20%',
-                      width: '4px',
-                      height: '50%',
-                      background: 'linear-gradient(to top, transparent 0%, hsl(174 70% 55% / 0.3) 30%, hsl(174 75% 60% / 0.7) 60%, hsl(174 80% 65% / 0.9) 85%, hsl(180 90% 75%) 100%)',
-                      filter: 'blur(1px)',
-                      animation: 'transfer-beam-rise 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
-                    }}
-                  />
-                  
-                  {/* Energy orb at tip of beam */}
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2"
-                    style={{
-                      bottom: '30%',
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      background: 'radial-gradient(circle, hsl(180 90% 80%) 0%, hsl(174 80% 65% / 0.8) 40%, transparent 70%)',
-                      boxShadow: '0 0 20px hsl(174 80% 60% / 0.8), 0 0 40px hsl(174 70% 55% / 0.5)',
-                      animation: 'transfer-orb-rise 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
-                    }}
-                  />
-                  
-                  {/* Impact glow at center */}
-                  <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      width: '60px',
-                      height: '60px',
-                      borderRadius: '50%',
-                      background: 'radial-gradient(circle, hsl(174 85% 70% / 0.6) 0%, hsl(174 75% 60% / 0.2) 50%, transparent 70%)',
-                      animation: 'transfer-impact-glow 400ms ease-out 200ms forwards',
-                      opacity: 0,
-                    }}
-                  />
-                  
-                  {/* Particle burst on impact */}
-                  {[...Array(12)].map((_, i) => {
-                    const angle = (i / 12) * 360;
-                    const delay = 180 + Math.random() * 40; // Staggered around impact time
-                    const distance = 35 + Math.random() * 25;
-                    const particleSize = 3 + Math.random() * 3;
-                    
-                    return (
-                      <div
-                        key={`particle-${i}`}
-                        className="absolute top-1/2 left-1/2 pointer-events-none"
-                        style={{
-                          width: `${particleSize}px`,
-                          height: `${particleSize}px`,
-                          borderRadius: '50%',
-                          background: 'radial-gradient(circle, hsl(180 90% 85%) 0%, hsl(174 80% 65%) 60%, transparent 100%)',
-                          boxShadow: '0 0 8px hsl(174 80% 65% / 0.9), 0 0 16px hsl(174 70% 55% / 0.6)',
-                          opacity: 0,
-                          transform: 'translate(-50%, -50%)',
-                          '--particle-angle': `${angle}deg`,
-                          '--particle-distance': `${distance}px`,
-                          animation: `particle-burst 450ms cubic-bezier(0.25, 1, 0.5, 1) ${delay}ms forwards`,
-                        } as React.CSSProperties}
-                      />
-                    );
-                  })}
-                  
-                  {/* Secondary smaller particles */}
-                  {[...Array(8)].map((_, i) => {
-                    const angle = (i / 8) * 360 + 22.5; // Offset from main particles
-                    const delay = 200 + Math.random() * 60;
-                    const distance = 20 + Math.random() * 15;
-                    const particleSize = 2 + Math.random() * 2;
-                    
-                    return (
-                      <div
-                        key={`particle-secondary-${i}`}
-                        className="absolute top-1/2 left-1/2 pointer-events-none"
-                        style={{
-                          width: `${particleSize}px`,
-                          height: `${particleSize}px`,
-                          borderRadius: '50%',
-                          background: 'hsl(180 85% 80%)',
-                          boxShadow: '0 0 6px hsl(174 75% 70% / 0.8)',
-                          opacity: 0,
-                          transform: 'translate(-50%, -50%)',
-                          '--particle-angle': `${angle}deg`,
-                          '--particle-distance': `${distance}px`,
-                          animation: `particle-burst-fast 350ms cubic-bezier(0.25, 1, 0.5, 1) ${delay}ms forwards`,
-                        } as React.CSSProperties}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-              
-              {/* Text morphing out */}
-              <div 
-                className="flex flex-col items-center justify-center text-center absolute inset-0 pointer-events-none"
-                style={{ 
-                  animation: 'text-morph-exit 450ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
+            <div 
+              className="flex flex-col items-center justify-center text-center absolute inset-0"
+              style={{ animation: 'idle-text-exit 450ms ease-out forwards' }}
+            >
+              <span
+                className="relative uppercase font-medium tracking-[0.18em] text-center"
+                style={{
+                  fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
+                  lineHeight: 1.4,
+                  color: 'hsl(0 0% 94%)',
                 }}
               >
-                <span
-                  className="relative uppercase font-semibold tracking-[0.16em] text-center"
-                  style={{
-                    fontSize: 'clamp(0.68rem, 2.4vw, 0.88rem)',
-                    lineHeight: 1.4,
-                    color: 'hsl(174 45% 72%)',
-                    textShadow: '0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.25)',
-                  }}
-                >
-                  {t('gauge.readyToAnalyze')}
-                </span>
-              </div>
-            </>
+                {t('gauge.readyToAnalyze')}
+              </span>
+            </div>
           )}
 
-          {/* READY STATE: Premium signature button with synchronized entrance */}
+          {/* READY STATE: ANALYZE button - Premium signature control with entrance animation */}
           {uiState === 'ready' && !buttonAbsorbed && (
             <div 
               className="relative group"
               style={{ 
-                width: size * 0.68, 
-                maxWidth: '155px',
+                width: size * 0.65, 
+                maxWidth: '150px',
                 animation: isTransitioning 
-                  ? 'button-morph-enter 480ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms forwards' 
+                  ? 'button-ready-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
                   : 'none',
                 opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.7) translateY(10px)' : 'scale(1) translateY(-2px)',
-                transition: isTransitioning ? 'none' : 'transform 0.25s ease-out, box-shadow 0.25s ease-out',
+                transform: isTransitioning ? 'scale(0.96)' : 'scale(1)',
               }}
             >
-              {/* Floating particles - removed for cleaner look at 50% state */}
+              {/* Floating particles around button - reduced count for cleaner look */}
+              {!isTransitioning && (
+                <>
+                  {[...Array(6)].map((_, i) => {
+                    const angle = (i / 6) * 360;
+                    const distance = 30 + (i % 2) * 6;
+                    const particleSize = 1.5 + (i % 2);
+                    const delay = i * 0.5;
+                    const duration = 3.5 + (i % 2) * 0.5;
+                    
+                    return (
+                      <div
+                        key={i}
+                        className="absolute pointer-events-none"
+                        style={{
+                          left: '50%',
+                          top: '50%',
+                          width: `${particleSize}px`,
+                          height: `${particleSize}px`,
+                          borderRadius: '50%',
+                          background: 'radial-gradient(circle, hsl(180 75% 70%) 0%, hsl(174 70% 60%) 50%, transparent 100%)',
+                          boxShadow: `0 0 ${particleSize * 2}px hsl(174 70% 60% / 0.5)`,
+                          transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${distance}px)`,
+                          animation: `particle-float ${duration}s ease-in-out ${delay}s infinite`,
+                          opacity: 0.6,
+                        }}
+                      />
+                    );
+                  })}
+                </>
+              )}
               
-              {/* Outer soft halo - no pulse, just presence */}
+              {/* Outer halo - static in ready state (no pulse) */}
               <div 
-                className="absolute -inset-3 rounded-full pointer-events-none motion-reduce:!opacity-50"
+                className="absolute -inset-4 rounded-full pointer-events-none"
                 style={{
-                  background: 'radial-gradient(circle, hsl(174 55% 52% / 0.18) 0%, hsl(174 50% 48% / 0.06) 60%, transparent 80%)',
-                  filter: 'blur(10px)',
-                  opacity: buttonCharged ? 1 : 0.85,
-                  transition: 'opacity 0.3s ease-out',
+                  background: 'radial-gradient(circle, hsl(174 70% 55% / 0.35) 0%, hsl(174 60% 50% / 0.12) 50%, transparent 80%)',
+                  filter: 'blur(12px)',
+                  animation: buttonCharged 
+                    ? 'button-charge-glow 260ms ease-out forwards' 
+                    : 'none',
                 }}
               />
               
-              {/* Click flash overlay */}
-              {showClickFlash && (
-                <div 
-                  className="absolute -inset-2 rounded-full pointer-events-none z-20"
-                  style={{
-                    background: 'radial-gradient(circle, hsl(180 80% 70% / 0.5) 0%, transparent 70%)',
-                    animation: 'click-flash 150ms ease-out forwards',
-                  }}
-                />
-              )}
-              
-              {/* Premium outer border ring - more rounded */}
+              {/* Crisp glass border ring - brightest element */}
               <div 
                 className="absolute -inset-[2px] rounded-full overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 70% 55%), hsl(180 65% 50%), hsl(174 70% 55%))',
+                  background: 'linear-gradient(135deg, hsl(174 85% 60%), hsl(180 80% 55%), hsl(174 85% 60%))',
                   boxShadow: buttonCharged 
-                    ? '0 0 16px hsl(174 65% 58% / 0.5), 0 0 32px hsl(174 60% 52% / 0.25)' 
-                    : '0 0 10px hsl(174 60% 52% / 0.3), 0 0 20px hsl(174 55% 48% / 0.15)',
-                  transition: 'box-shadow 0.25s ease-out',
+                    ? '0 0 20px hsl(174 80% 62% / 0.8), 0 0 40px hsl(174 75% 58% / 0.5)' 
+                    : '0 0 14px hsl(174 75% 58% / 0.6), 0 0 28px hsl(174 70% 55% / 0.3)',
                 }}
               >
-                {/* Entrance sheen */}
+                {/* Single entrance sheen sweep (not looping) + charge sheen */}
                 <div 
-                  className="absolute inset-0 motion-reduce:hidden"
+                  className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.45) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 70%)',
+                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.25) 45%, hsl(0 0% 100% / 0.7) 50%, hsl(0 0% 100% / 0.25) 55%, transparent 70%)',
                     animation: buttonCharged 
                       ? 'charge-sheen-sweep 200ms ease-out forwards' 
                       : (isTransitioning ? 'none' : 'entrance-sheen-sweep 600ms ease-out 100ms forwards'),
@@ -1158,14 +742,14 @@ export const ScoreGauge = ({
                 />
               </div>
               
-              {/* Inner teal glow ring - refined */}
+              {/* Inner glow ring */}
               <div 
                 className="absolute inset-0 rounded-full pointer-events-none"
                 style={{
                   boxShadow: buttonCharged 
-                    ? 'inset 0 0 14px hsl(174 60% 58% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.25)' 
-                    : 'inset 0 0 10px hsl(174 55% 55% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.18)',
-                  transition: 'box-shadow 0.25s ease-out',
+                    ? 'inset 0 0 20px hsl(174 70% 65% / 0.45), inset 0 1px 0 hsl(0 0% 100% / 0.35)' 
+                    : 'inset 0 0 14px hsl(174 65% 60% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.25)',
+                  transition: 'box-shadow 200ms ease-out',
                 }}
               />
               
@@ -1173,47 +757,37 @@ export const ScoreGauge = ({
                 type="button"
                 onClick={handleAnalyzeClick}
                 disabled={isLoading}
-                className="relative w-full py-3 px-5 text-[11px] font-semibold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden"
+                className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
                 style={{
-                  borderRadius: '9999px', // More circular/rounded
-                  background: 'linear-gradient(145deg, hsl(174 58% 46%) 0%, hsl(180 52% 40%) 50%, hsl(174 56% 43%) 100%)',
-                  boxShadow: isButtonPressed
-                    ? '0 1px 6px hsl(0 0% 0% / 0.25), inset 0 0 8px hsl(174 50% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
-                    : '0 3px 12px hsl(0 0% 0% / 0.2), 0 1px 4px hsl(0 0% 0% / 0.15), inset 0 0 10px hsl(174 50% 52% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.2)',
-                  textShadow: '0 1px 2px hsl(0 0% 0% / 0.35)',
-                  letterSpacing: '0.06em',
-                  transform: isButtonPressed ? 'scale(0.98) translateY(0)' : 'scale(1) translateY(-1px)',
-                  transition: 'transform 0.12s ease-out, box-shadow 0.2s ease-out',
+                  background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
+                  boxShadow: buttonCharged 
+                    ? '0 0 30px hsl(174 70% 58% / 0.55), 0 6px 20px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.35), inset 0 -1px 3px hsl(0 0% 0% / 0.2)' 
+                    : '0 0 22px hsl(174 65% 55% / 0.4), 0 5px 16px hsl(0 0% 0% / 0.28), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)',
+                  textShadow: '0 1px 3px hsl(0 0% 0% / 0.5)',
+                  letterSpacing: '0.08em',
+                  transform: 'scale(1)',
                 }}
                 onMouseEnter={(e) => {
-                  if (!isButtonPressed) {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.01) translateY(-2px)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 5px 16px hsl(0 0% 0% / 0.22), 0 2px 6px hsl(0 0% 0% / 0.18), inset 0 0 12px hsl(174 55% 55% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.25)';
-                  }
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.04) translateY(-1px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 35px hsl(174 70% 58% / 0.6), 0 8px 22px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.4), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
                 }}
                 onMouseLeave={(e) => {
-                  if (!isButtonPressed) {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1) translateY(-1px)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 3px 12px hsl(0 0% 0% / 0.2), 0 1px 4px hsl(0 0% 0% / 0.15), inset 0 0 10px hsl(174 50% 52% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.2)';
-                  }
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 22px hsl(174 65% 55% / 0.4), 0 5px 16px hsl(0 0% 0% / 0.28), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
                 }}
                 onMouseDown={(e) => {
-                  setIsButtonPressed(true);
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98) translateY(0)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 6px hsl(0 0% 0% / 0.25), inset 0 0 8px hsl(174 50% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.15)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)';
                 }}
                 onMouseUp={(e) => {
-                  setIsButtonPressed(false);
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1) translateY(-1px)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 3px 12px hsl(0 0% 0% / 0.2), 0 1px 4px hsl(0 0% 0% / 0.15), inset 0 0 10px hsl(174 50% 52% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.2)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                 }}
               >
-                {/* Subtle inner highlight */}
+                {/* Inner shine sweep */}
                 <div 
-                  className="absolute inset-0 pointer-events-none motion-reduce:hidden"
+                  className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'linear-gradient(to bottom, hsl(0 0% 100% / 0.08) 0%, transparent 40%)',
-                    borderRadius: '9999px',
+                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.12) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.12) 55%, transparent 70%)',
+                    animation: 'center-inner-shine 4.5s ease-in-out infinite 2s',
                   }}
                 />
                 <span className="relative z-10">{t('gauge.startAnalysis')}</span>
@@ -1234,8 +808,8 @@ export const ScoreGauge = ({
               <div 
                 className="w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white flex items-center justify-center"
                 style={{
-                  background: 'linear-gradient(145deg, hsl(174 65% 48%) 0%, hsl(180 58% 42%) 50%, hsl(174 63% 45%) 100%)',
-                  boxShadow: '0 0 25px hsl(174 65% 55% / 0.5), 0 0 12px hsl(174 60% 52% / 0.35)',
+                  background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
+                  boxShadow: '0 0 30px hsl(174 70% 58% / 0.6), 0 0 15px hsl(174 65% 55% / 0.4)',
                 }}
               >
                 <span>{t('gauge.startAnalysis')}</span>
@@ -1244,21 +818,22 @@ export const ScoreGauge = ({
           )}
         </div>
         
-        {/* Gauge bottom impact glow - ready state only */}
+        {/* Gauge bottom impact glow - triggered when upward chevrons reach the gauge */}
         {uiState === 'ready' && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none motion-reduce:hidden"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
             style={{ 
               bottom: size * 0.08,
               width: size * 0.6,
               height: '8px',
             }}
           >
+            {/* Impact glow that pulses with chevron cycle */}
             <div 
               style={{
                 width: '100%',
                 height: '100%',
-                background: 'radial-gradient(ellipse 80% 100% at center, hsl(174 55% 52% / 0.2) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse 80% 100% at center, hsl(174 60% 55% / 0.25) 0%, transparent 70%)',
                 filter: 'blur(4px)',
                 animation: 'gauge-bottom-impact 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite',
               }}
@@ -1266,16 +841,16 @@ export const ScoreGauge = ({
           </div>
         )}
         
-        {/* DOWNWARD chevrons for idle state - muted */}
+        {/* Premium cascade guidance chevrons - DOWNWARD for idle state */}
         {uiState === 'idle' && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center motion-reduce:hidden"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
             style={{ 
               top: size + 8,
               gap: '6px',
-              opacity: 0.5,
             }}
           >
+            {/* Three chevrons with waterfall cascade animation */}
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
@@ -1285,25 +860,27 @@ export const ScoreGauge = ({
                 }}
                 onAnimationIteration={i === 2 ? () => onChevronCycleComplete?.() : undefined}
               >
+                {/* Subtle chevron glow - very low opacity */}
                 <div 
                   className="absolute inset-0 -m-2"
                   style={{
-                    background: 'radial-gradient(circle, hsl(180 35% 55% / 0.1) 0%, transparent 60%)',
+                    background: 'radial-gradient(circle, hsl(180 40% 60% / 0.15) 0%, transparent 60%)',
                     filter: 'blur(3px)',
                   }}
                 />
+                {/* Chevron SVG - muted teal with subtle glow */}
                 <svg 
                   width="14" 
                   height="7" 
                   viewBox="0 0 14 7" 
                   fill="none"
                   style={{
-                    filter: 'drop-shadow(0 0 2px hsl(180 30% 50% / 0.2))',
+                    filter: 'drop-shadow(0 0 2px hsl(180 35% 55% / 0.25))',
                   }}
                 >
                   <path 
                     d="M1 1L7 6L13 1" 
-                    stroke="hsl(180 35% 55% / 0.5)" 
+                    stroke="hsl(180 40% 65% / 0.7)" 
                     strokeWidth="1.25" 
                     strokeLinecap="round" 
                     strokeLinejoin="round"
@@ -1314,15 +891,16 @@ export const ScoreGauge = ({
           </div>
         )}
         
-        {/* UPWARD chevrons for ready state */}
+        {/* Premium UPWARD chevrons - READY state (between input and gauge) */}
         {uiState === 'ready' && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center motion-reduce:hidden"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
             style={{ 
-              bottom: -32,
+              bottom: -32, // Position below gauge (pointing upward toward it)
               gap: '5px',
             }}
           >
+            {/* Three upward chevrons with waterfall cascade animation - reversed order for upward motion */}
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
@@ -1331,6 +909,7 @@ export const ScoreGauge = ({
                   animation: `chevron-up-cascade 3.2s cubic-bezier(0.22, 1, 0.36, 1) ${(2 - i) * 140}ms infinite`,
                 }}
               >
+                {/* Subtle chevron glow */}
                 <div 
                   className="absolute inset-0 -m-2"
                   style={{
@@ -1338,6 +917,7 @@ export const ScoreGauge = ({
                     filter: 'blur(3px)',
                   }}
                 />
+                {/* Upward chevron SVG - subtle, lower opacity than downward */}
                 <svg 
                   width="12" 
                   height="6" 
@@ -1345,7 +925,7 @@ export const ScoreGauge = ({
                   fill="none"
                   style={{
                     filter: 'drop-shadow(0 0 2px hsl(174 45% 55% / 0.2))',
-                    transform: 'rotate(180deg)',
+                    transform: 'rotate(180deg)', // Flip to point upward
                   }}
                 >
                   <path 
@@ -1369,7 +949,7 @@ export const ScoreGauge = ({
           style={{ marginTop: 'var(--space-3)', minHeight: '40px' }}
         >
           <div 
-            className="absolute rounded-full motion-reduce:hidden"
+            className="absolute rounded-full"
             style={{
               width: '100%',
               height: '100%',
@@ -1399,269 +979,294 @@ export const ScoreGauge = ({
           0% { opacity: 0.5; transform: scale(0.95); }
           100% { opacity: 0.8; transform: scale(1.05); }
         }
-        
-        /* Instrument-grade gauge glow states */
-        @keyframes instrument-glow-ready {
-          0%, 100% { opacity: 0.85; transform: translate(-50%, -50%) scale(0.98); }
-          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.03); }
+        @keyframes idle-glow-pulse {
+          0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.98); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
         }
-        @keyframes instrument-glow-analyzing {
-          0%, 100% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.97); }
-          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
+        @keyframes idle-ring-pulse {
+          0%, 100% { box-shadow: 0 0 25px hsl(174 60% 45% / 0.12), 0 0 50px hsl(200 50% 45% / 0.06), inset 0 0 15px hsl(174 50% 40% / 0.06); }
+          50% { box-shadow: 0 0 35px hsl(174 60% 45% / 0.2), 0 0 70px hsl(200 50% 45% / 0.1), inset 0 0 20px hsl(174 50% 40% / 0.1); }
         }
-        
-        /* Instrument-grade ring states */
-        @keyframes instrument-ring-ready {
-          0%, 100% { 
-            box-shadow: 0 0 25px hsl(174 55% 48% / 0.15), 0 0 45px hsl(174 50% 45% / 0.06), inset 0 0 16px hsl(174 50% 45% / 0.06); 
-          }
-          50% { 
-            box-shadow: 0 0 32px hsl(174 58% 50% / 0.22), 0 0 55px hsl(174 52% 48% / 0.1), inset 0 0 20px hsl(174 52% 48% / 0.1); 
-          }
+        @keyframes idle-contour-glow {
+          0%, 100% { border-color: hsl(174 50% 50% / 0.15); box-shadow: inset 0 0 15px hsl(174 60% 50% / 0.08), 0 0 1px hsl(174 60% 55% / 0.2); }
+          50% { border-color: hsl(174 50% 50% / 0.3); box-shadow: inset 0 0 25px hsl(174 60% 50% / 0.15), 0 0 2px hsl(174 60% 55% / 0.4); }
         }
-        @keyframes instrument-ring-analyzing {
-          0%, 100% { 
-            box-shadow: 0 0 32px hsl(174 58% 50% / 0.2), 0 0 55px hsl(174 52% 48% / 0.08), inset 0 0 20px hsl(174 52% 48% / 0.08); 
-          }
-          50% { 
-            box-shadow: 0 0 40px hsl(174 62% 52% / 0.28), 0 0 65px hsl(174 55% 50% / 0.12), inset 0 0 24px hsl(174 55% 50% / 0.12); 
-          }
+        @keyframes idle-center-breathe {
+          0%, 100% { opacity: 0.6; transform: scale(0.95); }
+          50% { opacity: 1; transform: scale(1.05); }
         }
-        
-        @keyframes instrument-contour-ready {
-          0%, 100% { 
-            border-color: hsl(174 50% 50% / 0.2); 
-            box-shadow: inset 0 0 16px hsl(174 55% 50% / 0.06), 0 0 2px hsl(174 60% 55% / 0.2); 
-          }
-          50% { 
-            border-color: hsl(174 52% 52% / 0.32); 
-            box-shadow: inset 0 0 22px hsl(174 58% 52% / 0.1), 0 0 3px hsl(174 62% 58% / 0.3); 
-          }
+        @keyframes center-button-glow {
+          0%, 100% { opacity: 0.6; transform: scale(0.98); }
+          50% { opacity: 1; transform: scale(1.05); }
         }
-        
-        /* Button breathing glow - synced with gauge (2s) */
-        @keyframes button-breathing-glow {
-          0%, 100% { 
-            opacity: 0.7; 
-            transform: scale(0.98); 
-          }
-          50% { 
-            opacity: 1; 
-            transform: scale(1.04); 
-          }
+        @keyframes center-button-pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 30px hsl(174 65% 55% / 0.5), 0 0 15px hsl(174 60% 50% / 0.3), 0 6px 20px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.2); }
+          50% { transform: scale(1.02); box-shadow: 0 0 40px hsl(174 65% 55% / 0.7), 0 0 20px hsl(174 60% 50% / 0.5), 0 8px 25px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.25); }
         }
-        
-        /* Click flash */
-        @keyframes click-flash {
-          0% { opacity: 0.8; transform: scale(0.95); }
-          100% { opacity: 0; transform: scale(1.1); }
+        @keyframes center-shine-sweep {
+          0% { transform: translateX(-150%) rotate(15deg); }
+          50%, 100% { transform: translateX(150%) rotate(15deg); }
         }
-        
         @keyframes center-inner-shine {
           0% { transform: translateX(-150%); }
           60%, 100% { transform: translateX(150%); }
         }
-        
+        /* Premium chevron cascade animation - synced with beam impact */
         @keyframes chevron-cascade {
-          0% { opacity: 0; transform: translateY(-8px); }
-          15% { opacity: 0.85; transform: translateY(-2px); }
-          50% { opacity: 0.7; transform: translateY(5px); }
-          75% { opacity: 0.3; transform: translateY(10px); }
-          88%, 100% { opacity: 0; transform: translateY(12px); }
-        }
-        
-        @keyframes idle-text-exit {
-          0% { opacity: 1; transform: scale(1); filter: blur(0px); }
-          100% { opacity: 0; transform: scale(0.92); filter: blur(4px); }
-        }
-        
-        @keyframes activation-wave {
-          0% { opacity: 0.8; transform: scale(0.5); }
-          100% { opacity: 0; transform: scale(1.4); }
-        }
-        
-        @keyframes button-ready-enter {
-          0% { opacity: 0; transform: scale(0.94) translateY(0); }
-          100% { opacity: 1; transform: scale(1) translateY(-2px); }
-        }
-        
-        @keyframes button-absorb {
-          0% { opacity: 1; transform: scale(1); filter: blur(0px); }
-          60% { opacity: 0.7; transform: scale(0.85); filter: blur(1px); }
-          100% { opacity: 0; transform: scale(0.3); filter: blur(6px); }
-        }
-        
-        @keyframes chevron-up-cascade {
-          0% { opacity: 0; transform: translateY(10px); }
-          15% { opacity: 0.5; transform: translateY(5px); }
-          50% { opacity: 0.45; transform: translateY(-2px); }
-          75% { opacity: 0.2; transform: translateY(-6px); }
-          88%, 100% { opacity: 0; transform: translateY(-8px); }
-        }
-        
-        @keyframes gauge-bottom-impact {
-          0%, 70% { opacity: 0.15; transform: scaleX(0.9); }
-          80% { opacity: 0.5; transform: scaleX(1.1); }
-          85% { opacity: 0.35; transform: scaleX(1); }
-          100% { opacity: 0.15; transform: scaleX(0.9); }
-        }
-        
-        @keyframes orb-travel {
-          0% { bottom: 0; opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { bottom: 100%; opacity: 0; }
-        }
-        
-        @keyframes trail-travel {
-          0% { bottom: -10px; opacity: 0; }
-          15% { opacity: 0.8; }
-          85% { opacity: 0.6; }
-          100% { bottom: calc(100% - 20px); opacity: 0; }
-        }
-        
-        @keyframes beam-path-fade {
-          0% { opacity: 0; }
-          30% { opacity: 1; }
-          70% { opacity: 0.6; }
-          100% { opacity: 0; }
-        }
-        
-        @keyframes button-charge-glow {
-          0% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.15); }
-          100% { opacity: 0.75; transform: scale(1.05); }
-        }
-        
-        @keyframes charge-sheen-sweep {
-          0% { transform: translateX(-150%) rotate(15deg); }
-          100% { transform: translateX(150%) rotate(15deg); }
-        }
-        
-        @keyframes entrance-sheen-sweep {
-          0% { transform: translateX(-150%) rotate(15deg); }
-          100% { transform: translateX(150%) rotate(15deg); }
-        }
-        
-        @keyframes particle-float {
-          0%, 100% { transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateY(var(--distance, -28px)); }
-          25% { transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 12deg)) translateY(calc(var(--distance, -28px) - 3px)); }
-          50% { transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 20deg)) translateY(calc(var(--distance, -28px) - 1px)); }
-          75% { transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 8deg)) translateY(calc(var(--distance, -28px) - 4px)); }
-        }
-        
-        /* Analyzing state animations - calm, precise, premium */
-        @keyframes analyzing-spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes explanation-fade {
-          0% { opacity: 0; transform: translateY(4px); }
-          15% { opacity: 1; transform: translateY(0); }
-          85% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(-4px); }
-        }
-        
-        /* Subtle armed state pulse for gauge (very calm) */
-        @keyframes armed-pulse {
-          0%, 100% { opacity: 0.85; }
-          50% { opacity: 1; }
-        }
-        
-        /* Pill to circle morph animations */
-        @keyframes pill-to-circle-morph {
           0% { 
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          15% { 
+            opacity: 0.85;
+            transform: translateY(-2px);
+          }
+          50% { 
+            opacity: 0.7;
+            transform: translateY(5px);
+          }
+          75% { 
+            opacity: 0.3;
+            transform: translateY(10px);
+          }
+          88%, 100% { 
+            opacity: 0;
+            transform: translateY(12px);
+          }
+        }
+        @keyframes idle-text-breathe {
+          0%, 100% { 
+            opacity: 0.92;
             transform: scale(1);
           }
-          30% { 
+          50% { 
+            opacity: 1;
+            transform: scale(1.015);
+          }
+        }
+        @keyframes idle-center-glow {
+          0%, 100% { 
+            opacity: 0.7;
+            transform: scale(0.97);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.03);
+          }
+        }
+        @keyframes idle-text-exit {
+          0% { 
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+          }
+          100% { 
+            opacity: 0;
+            transform: scale(0.92);
+            filter: blur(4px);
+          }
+        }
+        @keyframes activation-wave {
+          0% { 
+            opacity: 0.8;
+            transform: scale(0.5);
+          }
+          100% { 
+            opacity: 0;
+            transform: scale(1.4);
+          }
+        }
+        @keyframes button-emerge {
+          0% { 
+            opacity: 0;
             transform: scale(0.92);
           }
           100% { 
-            transform: scale(1);
-          }
-        }
-        
-        @keyframes morph-container {
-          0% {
-            border-radius: 9999px;
-            transform: scaleX(1.8) scaleY(0.7);
-            opacity: 0.9;
-          }
-          40% {
-            border-radius: 50%;
-            transform: scaleX(1.1) scaleY(0.95);
             opacity: 1;
-          }
-          100% {
-            border-radius: 50%;
             transform: scale(1);
+          }
+        }
+        @keyframes button-glow-ramp {
+          0% { 
+            opacity: 0;
+          }
+          100% { 
+            opacity: 0.7;
+          }
+        }
+        @keyframes button-absorb {
+          0% { 
             opacity: 1;
-          }
-        }
-        
-        @keyframes morph-glow {
-          0% { 
-            opacity: 0.8; 
-            transform: scale(1.3);
-          }
-          50% { 
-            opacity: 0.5; 
-            transform: scale(1.1);
-          }
-          100% { 
-            opacity: 0; 
             transform: scale(1);
-          }
-        }
-        
-        @keyframes ring-appear {
-          0% { 
-            opacity: 0; 
-            transform: scale(0.8);
-          }
-          100% { 
-            opacity: 1; 
-            transform: scale(1);
-          }
-        }
-        
-        @keyframes text-fade-in {
-          0% { 
-            opacity: 0; 
-            transform: scale(0.9);
-          }
-          100% { 
-            opacity: 1; 
-            transform: scale(1);
-          }
-        }
-        
-        /* Morph particle burst animation */
-        @keyframes morph-particle-burst {
-          0% { 
-            opacity: 0; 
-            transform: rotate(var(--particle-angle)) translateX(0) scale(0.5);
-          }
-          20% { 
-            opacity: 1; 
-            transform: rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.4)) scale(1.2);
+            filter: blur(0px);
           }
           60% { 
-            opacity: 0.7; 
-            transform: rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.85)) scale(0.9);
+            opacity: 0.7;
+            transform: scale(0.85);
+            filter: blur(1px);
           }
           100% { 
-            opacity: 0; 
-            transform: rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 1.2)) scale(0.3);
+            opacity: 0;
+            transform: scale(0.3);
+            filter: blur(6px);
           }
         }
-        
-        /* Respect prefers-reduced-motion */
-        @media (prefers-reduced-motion: reduce) {
-          .motion-reduce\\:hidden { display: none !important; }
-          .motion-reduce\\:\\!animation-none { animation: none !important; }
-          .motion-reduce\\:animate-none { animation: none !important; }
+        /* Premium halo pulse for signature button */
+        @keyframes button-halo-pulse {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: scale(0.98);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.04);
+          }
+        }
+        /* Sheen sweep for premium button */
+        @keyframes signature-sheen {
+          0%, 85% { 
+            transform: translateX(-200%) rotate(15deg);
+          }
+          100% { 
+            transform: translateX(200%) rotate(15deg);
+          }
+        }
+        /* Upward chevron animation for READY state */
+        @keyframes chevron-up-cascade {
+          0% { 
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          15% { 
+            opacity: 0.5;
+            transform: translateY(5px);
+          }
+          50% { 
+            opacity: 0.45;
+            transform: translateY(-2px);
+          }
+          75% { 
+            opacity: 0.2;
+            transform: translateY(-6px);
+          }
+          88%, 100% { 
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+        }
+        /* Gauge bottom impact glow synced with upward chevrons */
+        @keyframes gauge-bottom-impact {
+          0%, 70% { 
+            opacity: 0.15;
+            transform: scaleX(0.9);
+          }
+          80% { 
+            opacity: 0.6;
+            transform: scaleX(1.1);
+          }
+          85% { 
+            opacity: 0.4;
+            transform: scaleX(1);
+          }
+          100% { 
+            opacity: 0.15;
+            transform: scaleX(0.9);
+          }
+        }
+        /* Transfer beam animations */
+        @keyframes orb-travel {
+          0% { 
+            bottom: 0;
+            opacity: 0;
+          }
+          10% { 
+            opacity: 1;
+          }
+          90% { 
+            opacity: 1;
+          }
+          100% { 
+            bottom: 100%;
+            opacity: 0;
+          }
+        }
+        @keyframes trail-travel {
+          0% { 
+            bottom: -10px;
+            opacity: 0;
+          }
+          15% { 
+            opacity: 0.8;
+          }
+          85% { 
+            opacity: 0.6;
+          }
+          100% { 
+            bottom: calc(100% - 20px);
+            opacity: 0;
+          }
+        }
+        @keyframes beam-path-fade {
+          0% { 
+            opacity: 0;
+          }
+          30% { 
+            opacity: 1;
+          }
+          70% { 
+            opacity: 0.6;
+          }
+          100% { 
+            opacity: 0;
+          }
+        }
+        /* Button charge animations */
+        @keyframes button-charge-glow {
+          0% { 
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.15);
+          }
+          100% { 
+            opacity: 0.75;
+            transform: scale(1.05);
+          }
+        }
+        @keyframes charge-sheen-sweep {
+          0% { 
+            transform: translateX(-150%) rotate(15deg);
+          }
+          100% { 
+            transform: translateX(150%) rotate(15deg);
+          }
+        }
+        /* Floating particles around button */
+        @keyframes particle-float {
+          0%, 100% { 
+            transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateY(var(--distance, -28px));
+          }
+          25% { 
+            transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 15deg)) translateY(calc(var(--distance, -28px) - 4px));
+          }
+          50% { 
+            transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 25deg)) translateY(calc(var(--distance, -28px) - 2px));
+          }
+          75% { 
+            transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 10deg)) translateY(calc(var(--distance, -28px) - 5px));
+          }
+        }
+        @keyframes particle-twinkle {
+          0%, 100% { 
+            opacity: 0.4;
+            transform: scale(0.8);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.2);
+          }
         }
       `}</style>
     </div>

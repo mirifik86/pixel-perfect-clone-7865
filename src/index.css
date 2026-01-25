@@ -244,142 +244,17 @@
   }
   50% {
     filter: brightness(1.03);
-  }
 }
 
-/* Text morph exit - contracts, blurs, and glows toward center */
-@keyframes text-morph-exit {
-  0% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0px);
-    text-shadow: 0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.25);
-  }
-  40% {
-    opacity: 0.9;
-    transform: scale(0.92) translateY(2px);
-    filter: blur(1px);
-    text-shadow: 0 0 18px hsl(174 60% 58% / 0.7), 0 0 36px hsl(174 55% 55% / 0.4);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.75) translateY(8px);
-    filter: blur(4px);
-    text-shadow: 0 0 25px hsl(174 65% 60% / 0.9), 0 0 50px hsl(174 60% 55% / 0.5);
-  }
-}
-
-/* Button morph enter - expands from contracted state with bounce */
-@keyframes button-morph-enter {
+/* Button ready-state entrance animation (scale + fade) */
+@keyframes button-ready-enter {
   0% {
     opacity: 0;
-    transform: scale(0.75) translateY(8px);
-    filter: blur(3px);
-  }
-  50% {
-    opacity: 0.8;
-    filter: blur(0.5px);
-  }
-  80% {
-    transform: scale(1.02) translateY(-3px);
-    filter: blur(0);
+    transform: scale(0.96);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translateY(-2px);
-    filter: blur(0);
-  }
-}
-
-/* Transfer beam rise - energy beam from input to gauge center */
-@keyframes transfer-beam-rise {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) scaleY(0.2);
-    bottom: -20%;
-  }
-  30% {
-    opacity: 1;
-    transform: translateX(-50%) scaleY(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) scaleY(0.5);
-    bottom: 50%;
-  }
-}
-
-/* Transfer orb rise - luminous orb following the beam */
-@keyframes transfer-orb-rise {
-  0% {
-    opacity: 0;
-    bottom: -10%;
-    transform: translateX(-50%) scale(0.5);
-  }
-  20% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-  80% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1.2);
-  }
-  100% {
-    opacity: 0;
-    bottom: 50%;
-    transform: translateX(-50%) scale(0.3);
-  }
-}
-
-/* Transfer impact glow - burst at center when orb arrives */
-@keyframes transfer-impact-glow {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3);
-  }
-  40% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1.5);
-  }
-}
-
-/* Particle burst explosion - radiates outward from center */
-@keyframes particle-burst {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(0) scale(0.5);
-  }
-  20% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.3)) scale(1.2);
-  }
-  60% {
-    opacity: 0.8;
-    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 1.3)) scale(0.3);
-  }
-}
-
-/* Fast secondary particle burst */
-@keyframes particle-burst-fast {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(0) scale(0.3);
-  }
-  30% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.5)) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(0.2);
+    transform: scale(1);
   }
 }
 
@@ -396,6 +271,7 @@
     transform: translateX(150%);
     opacity: 0;
   }
+}
 }
 
 /* PRO button shine animation */
@@ -692,79 +568,4 @@
     opacity: 0;
     transform: scale(2);
   }
-}
-
-/* Teal dot breathing pulse - subtle premium effect */
-@keyframes teal-dot-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 0 8px hsl(174 70% 55% / 0.8), 0 0 16px hsl(174 70% 55% / 0.4);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.15);
-    box-shadow: 0 0 12px hsl(174 75% 58% / 1), 0 0 24px hsl(174 70% 55% / 0.6), 0 0 36px hsl(174 65% 52% / 0.3);
-  }
-}
-
-/* PRO button premium border flow animation */
-@keyframes pro-border-flow {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 300% 50%;
-  }
-}
-
-/* Idle state breathing animations - instrument-grade readiness */
-@keyframes idle-text-breathe {
-  0%, 100% {
-    opacity: 0.85;
-    text-shadow: 0 0 10px hsl(174 55% 55% / 0.4), 0 0 20px hsl(174 50% 50% / 0.2), 0 0 35px hsl(174 45% 48% / 0.08);
-  }
-  50% {
-    opacity: 1;
-    text-shadow: 0 0 14px hsl(174 55% 55% / 0.6), 0 0 28px hsl(174 50% 50% / 0.35), 0 0 45px hsl(174 45% 48% / 0.15);
-  }
-}
-
-@keyframes idle-halo-breathe {
-  0%, 100% {
-    opacity: 0.55;
-    transform: translate(-50%, -50%) scale(0.98);
-  }
-  50% {
-    opacity: 0.75;
-    transform: translate(-50%, -50%) scale(1.02);
-  }
-}
-
-@keyframes idle-ring-breathe {
-  0%, 100% {
-    box-shadow: 0 0 16px hsl(174 50% 48% / 0.08), 0 0 30px hsl(174 45% 45% / 0.03), inset 0 0 10px hsl(174 45% 48% / 0.04);
-  }
-  50% {
-    box-shadow: 0 0 22px hsl(174 50% 48% / 0.14), 0 0 42px hsl(174 45% 45% / 0.06), inset 0 0 14px hsl(174 45% 48% / 0.07);
-  }
-}
-
-/* Reduced motion: static illuminated state */
-@media (prefers-reduced-motion: reduce) {
-  .motion-reduce\:\!animation-none {
-    animation: none !important;
-    opacity: 1 !important;
-    text-shadow: 0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.28) !important;
-  }
-}
-
-/* Gauge separator hover glow effect */
-svg:hover .separator-glow {
-  opacity: 0.5 !important;
-}
-
-svg:hover .separator-main {
-  stroke: hsl(0 0% 60%) !important;
-  opacity: 0.6 !important;
 }
