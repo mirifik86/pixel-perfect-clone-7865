@@ -43,7 +43,7 @@ export const LeenScoreLogo = () => {
         {t('hero.tagline')}
       </p>
       
-      {/* Premium divider with glowing Leen teal dot */}
+      {/* Premium divider with glowing Leen teal dot - breathing pulse */}
       <div className="flex items-center justify-center w-full max-w-[180px] md:max-w-[220px] -mt-0.5">
         <div 
           className="flex-1 h-px"
@@ -54,6 +54,7 @@ export const LeenScoreLogo = () => {
           style={{ 
             background: 'hsl(174 65% 52%)',
             boxShadow: '0 0 8px hsl(174 70% 55% / 0.8), 0 0 16px hsl(174 70% 55% / 0.4)',
+            animation: 'teal-dot-pulse 3s ease-in-out infinite',
           }}
         />
         <div 
