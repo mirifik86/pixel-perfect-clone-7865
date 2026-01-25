@@ -128,6 +128,108 @@ const AnalyzingStateContent = ({ size }: { size: number }) => {
   );
 };
 
+// Morphing transition component: pill → circle
+const MorphingLoaderTransition = ({ size }: { size: number }) => {
+  const { t } = useLanguage();
+  const loaderSize = size * 0.45;
+  const strokeWidth = 3;
+  const radius = (loaderSize - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  
+  return (
+    <div 
+      className="relative flex items-center justify-center"
+      style={{
+        animation: 'pill-to-circle-morph 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
+      }}
+    >
+      {/* Morphing container */}
+      <div 
+        className="relative overflow-hidden"
+        style={{
+          width: loaderSize,
+          height: loaderSize,
+          animation: 'morph-container 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        }}
+      >
+        {/* Background glow during morph */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: 'radial-gradient(circle, hsl(174 55% 52% / 0.2) 0%, transparent 70%)',
+            animation: 'morph-glow 600ms ease-out forwards',
+          }}
+        />
+        
+        {/* Forming circular ring */}
+        <svg 
+          width={loaderSize} 
+          height={loaderSize} 
+          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+          className="absolute inset-0"
+          style={{
+            opacity: 0,
+            animation: 'ring-appear 400ms ease-out 250ms forwards',
+          }}
+        >
+          <circle
+            cx={loaderSize / 2}
+            cy={loaderSize / 2}
+            r={radius}
+            fill="none"
+            stroke="hsl(174 30% 30% / 0.3)"
+            strokeWidth={strokeWidth}
+          />
+        </svg>
+        
+        {/* Animated arc forming */}
+        <svg 
+          width={loaderSize} 
+          height={loaderSize} 
+          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+          className="absolute inset-0"
+          style={{
+            opacity: 0,
+            animation: 'ring-appear 400ms ease-out 300ms forwards, analyzing-spin 1.8s linear 450ms infinite',
+          }}
+        >
+          <circle
+            cx={loaderSize / 2}
+            cy={loaderSize / 2}
+            r={radius}
+            fill="none"
+            stroke="hsl(174 55% 52%)"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={`${circumference * 0.3} ${circumference * 0.7}`}
+            style={{
+              filter: 'drop-shadow(0 0 4px hsl(174 60% 55% / 0.5))',
+            }}
+          />
+        </svg>
+        
+        {/* Loader text fading in */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <span 
+            className="uppercase font-medium tracking-wide text-center"
+            style={{ 
+              fontSize: 'clamp(0.5rem, 1.8vw, 0.65rem)',
+              lineHeight: 1.2,
+              color: 'hsl(174 45% 65%)',
+              opacity: 0,
+              animation: 'text-fade-in 300ms ease-out 400ms forwards',
+            }}
+          >
+            {t('gauge.analyzing')}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
   size?: number;
@@ -341,10 +443,11 @@ export const ScoreGauge = ({
       }, 850);
     }
     
-    // Ready → Analyzing transition (button absorbed)
+    // Ready → Analyzing transition (pill morphs to circle)
     if (prevState === 'ready' && uiState === 'analyzing') {
       setButtonAbsorbed(true);
-      setTimeout(() => setButtonAbsorbed(false), 600);
+      // Keep the morph visible longer for smooth transition
+      setTimeout(() => setButtonAbsorbed(false), 800);
     }
     
     prevUiStateRef.current = uiState;
@@ -778,8 +881,13 @@ export const ScoreGauge = ({
           )}
           
           {/* ANALYZING STATE: Premium circular loader with cycling explanations */}
-          {uiState === 'analyzing' && (
+          {uiState === 'analyzing' && !buttonAbsorbed && (
             <AnalyzingStateContent size={size} />
+          )}
+          
+          {/* MORPHING STATE: Pill button transforms into circular loader */}
+          {uiState === 'analyzing' && buttonAbsorbed && (
+            <MorphingLoaderTransition size={size} />
           )}
 
           {/* IDLE STATE: Luminous "READY TO ANALYZE" with breathing glow */}
@@ -1404,6 +1512,74 @@ export const ScoreGauge = ({
         @keyframes armed-pulse {
           0%, 100% { opacity: 0.85; }
           50% { opacity: 1; }
+        }
+        
+        /* Pill to circle morph animations */
+        @keyframes pill-to-circle-morph {
+          0% { 
+            transform: scale(1);
+          }
+          30% { 
+            transform: scale(0.92);
+          }
+          100% { 
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes morph-container {
+          0% {
+            border-radius: 9999px;
+            transform: scaleX(1.8) scaleY(0.7);
+            opacity: 0.9;
+          }
+          40% {
+            border-radius: 50%;
+            transform: scaleX(1.1) scaleY(0.95);
+            opacity: 1;
+          }
+          100% {
+            border-radius: 50%;
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes morph-glow {
+          0% { 
+            opacity: 0.8; 
+            transform: scale(1.3);
+          }
+          50% { 
+            opacity: 0.5; 
+            transform: scale(1.1);
+          }
+          100% { 
+            opacity: 0; 
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes ring-appear {
+          0% { 
+            opacity: 0; 
+            transform: scale(0.8);
+          }
+          100% { 
+            opacity: 1; 
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes text-fade-in {
+          0% { 
+            opacity: 0; 
+            transform: scale(0.9);
+          }
+          100% { 
+            opacity: 1; 
+            transform: scale(1);
+          }
         }
         
         /* Respect prefers-reduced-motion */
