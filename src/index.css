@@ -291,6 +291,62 @@
   }
 }
 
+/* Transfer beam rise - energy beam from input to gauge center */
+@keyframes transfer-beam-rise {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(0.2);
+    bottom: -20%;
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(0.5);
+    bottom: 50%;
+  }
+}
+
+/* Transfer orb rise - luminous orb following the beam */
+@keyframes transfer-orb-rise {
+  0% {
+    opacity: 0;
+    bottom: -10%;
+    transform: translateX(-50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    bottom: 50%;
+    transform: translateX(-50%) scale(0.3);
+  }
+}
+
+/* Transfer impact glow - burst at center when orb arrives */
+@keyframes transfer-impact-glow {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
 /* Single entrance sheen sweep (not looping) */
 @keyframes entrance-sheen-sweep {
   0% {

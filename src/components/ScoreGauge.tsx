@@ -191,24 +191,29 @@ export const ScoreGauge = ({
   useEffect(() => {
     const prevState = prevUiStateRef.current;
     
-    // Idle → Ready transition: Trigger transfer animation sequence
+    // Idle → Ready transition: Synchronized transfer beam + morph sequence
     if (prevState === 'idle' && uiState === 'ready') {
       setIsTransitioning(true);
       onTransferStart?.();
       
-      setTimeout(() => {
-        setShowTransferBeam(true);
-      }, 180);
+      // Phase 1: Start transfer beam as text begins morphing out (0ms)
+      setShowTransferBeam(true);
       
+      // Phase 2: Transfer beam reaches gauge center, button starts morphing in (350ms)
       setTimeout(() => {
         setShowTransferBeam(false);
         setButtonCharged(true);
-      }, 500);
+      }, 350);
       
+      // Phase 3: Button fully charged, sheen sweep (550ms)
+      setTimeout(() => {
+        setButtonCharged(false);
+      }, 650);
+      
+      // Phase 4: Transition complete (850ms total)
       setTimeout(() => {
         setIsTransitioning(false);
-        setButtonCharged(false);
-      }, 800);
+      }, 850);
     }
     
     // Ready → Analyzing transition (button absorbed)
@@ -694,29 +699,82 @@ export const ScoreGauge = ({
             </div>
           )}
           
-          {/* TRANSITIONING STATE: Text morphing out with scale + blur + glow fade */}
+          {/* TRANSITIONING STATE: Text morphing out with synchronized transfer beam */}
           {uiState === 'ready' && isTransitioning && (
-            <div 
-              className="flex flex-col items-center justify-center text-center absolute inset-0 pointer-events-none motion-reduce:hidden"
-              style={{ 
-                animation: 'text-morph-exit 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
-              }}
-            >
-              <span
-                className="relative uppercase font-semibold tracking-[0.16em] text-center"
-                style={{
-                  fontSize: 'clamp(0.68rem, 2.4vw, 0.88rem)',
-                  lineHeight: 1.4,
-                  color: 'hsl(174 45% 72%)',
-                  textShadow: '0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.25)',
+            <>
+              {/* Transfer beam energy orb - rises from bottom to center */}
+              {showTransferBeam && (
+                <div 
+                  className="absolute inset-0 pointer-events-none motion-reduce:hidden"
+                  style={{
+                    zIndex: 10,
+                  }}
+                >
+                  {/* Central energy convergence */}
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2"
+                    style={{
+                      bottom: '-20%',
+                      width: '4px',
+                      height: '50%',
+                      background: 'linear-gradient(to top, transparent 0%, hsl(174 70% 55% / 0.3) 30%, hsl(174 75% 60% / 0.7) 60%, hsl(174 80% 65% / 0.9) 85%, hsl(180 90% 75%) 100%)',
+                      filter: 'blur(1px)',
+                      animation: 'transfer-beam-rise 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                    }}
+                  />
+                  
+                  {/* Energy orb at tip of beam */}
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2"
+                    style={{
+                      bottom: '30%',
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, hsl(180 90% 80%) 0%, hsl(174 80% 65% / 0.8) 40%, transparent 70%)',
+                      boxShadow: '0 0 20px hsl(174 80% 60% / 0.8), 0 0 40px hsl(174 70% 55% / 0.5)',
+                      animation: 'transfer-orb-rise 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                    }}
+                  />
+                  
+                  {/* Impact glow at center */}
+                  <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, hsl(174 85% 70% / 0.6) 0%, hsl(174 75% 60% / 0.2) 50%, transparent 70%)',
+                      animation: 'transfer-impact-glow 400ms ease-out 200ms forwards',
+                      opacity: 0,
+                    }}
+                  />
+                </div>
+              )}
+              
+              {/* Text morphing out */}
+              <div 
+                className="flex flex-col items-center justify-center text-center absolute inset-0 pointer-events-none"
+                style={{ 
+                  animation: 'text-morph-exit 450ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
                 }}
               >
-                {t('gauge.readyToAnalyze')}
-              </span>
-            </div>
+                <span
+                  className="relative uppercase font-semibold tracking-[0.16em] text-center"
+                  style={{
+                    fontSize: 'clamp(0.68rem, 2.4vw, 0.88rem)',
+                    lineHeight: 1.4,
+                    color: 'hsl(174 45% 72%)',
+                    textShadow: '0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.25)',
+                  }}
+                >
+                  {t('gauge.readyToAnalyze')}
+                </span>
+              </div>
+            </>
           )}
 
-          {/* READY STATE: Premium signature button with instrument-grade interactions */}
+          {/* READY STATE: Premium signature button with synchronized entrance */}
           {uiState === 'ready' && !buttonAbsorbed && (
             <div 
               className="relative group"
@@ -724,10 +782,10 @@ export const ScoreGauge = ({
                 width: size * 0.68, 
                 maxWidth: '155px',
                 animation: isTransitioning 
-                  ? 'button-morph-enter 450ms cubic-bezier(0.34, 1.56, 0.64, 1) 380ms forwards' 
+                  ? 'button-morph-enter 480ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms forwards' 
                   : 'none',
                 opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.85) translateY(6px)' : 'scale(1) translateY(-2px)',
+                transform: isTransitioning ? 'scale(0.7) translateY(10px)' : 'scale(1) translateY(-2px)',
                 transition: isTransitioning ? 'none' : 'transform 0.25s ease-out, box-shadow 0.25s ease-out',
               }}
             >
