@@ -612,7 +612,7 @@ export const ScoreGauge = ({
             );
           })}
           
-          {/* Score indicator */}
+          {/* Score indicator dot on arc */}
           {score !== null && (
             <circle
               cx={indicatorX}
@@ -626,6 +626,44 @@ export const ScoreGauge = ({
             />
           )}
         </svg>
+        
+        {/* Needle - points to current score */}
+        {score !== null && (
+          <>
+            <div 
+              className="ls-needle"
+              style={{
+                '--score-angle': `${indicatorAngle - 90}deg`,
+                position: 'absolute',
+                width: '2px',
+                height: `${radius - 8}px`,
+                background: 'linear-gradient(to top, hsl(0 0% 100% / 0.9), hsl(0 0% 100%))',
+                top: '50%',
+                left: '50%',
+                transformOrigin: 'bottom center',
+                transform: 'translate(-50%, -100%) rotate(var(--score-angle))',
+                boxShadow: `0 0 10px hsl(0 0% 100% / 0.35), 0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.4)')}`,
+                transition: 'transform 0.25s ease-out',
+                zIndex: 5,
+              } as React.CSSProperties}
+            />
+            <div 
+              className="ls-needle-cap"
+              style={{
+                position: 'absolute',
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: 'hsl(0 0% 100%)',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                boxShadow: `0 0 12px hsl(0 0% 100% / 0.5), 0 0 24px ${getCurrentColor(animatedScore).replace(')', ' / 0.4)')}`,
+                zIndex: 6,
+              }}
+            />
+          </>
+        )}
         
         {/* Center content area */}
         <div 
