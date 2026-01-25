@@ -299,14 +299,27 @@ export const ScoreGauge = ({
     }
   };
 
-  // Segment brightness based on state
-  const getSegmentBrightness = () => {
+  // Segment brightness based on state - premium vehicle gauge effect
+  const getSegmentBrightness = (segmentIndex: number) => {
     switch (uiState) {
-      case 'idle': return 0.12;
-      case 'ready': return 0.22;
-      case 'analyzing': return 0.28;
+      case 'idle': return 0.1; // Very dim when idle
+      case 'ready': return 0.55 + segmentIndex * 0.06; // Progressively brighter segments
+      case 'analyzing': return 0.65 + segmentIndex * 0.05; // Even brighter during analysis
       case 'result': return 1;
-      default: return 0.15;
+      default: return 0.12;
+    }
+  };
+  
+  // Get segment glow intensity based on state
+  const getSegmentGlowFilter = (segmentIndex: number) => {
+    if (score !== null && getSegmentOpacity(segmentIndex) > 0.5) {
+      return 'url(#segment-glow)';
+    }
+    switch (uiState) {
+      case 'idle': return 'url(#idle-segment-glow)';
+      case 'ready': return 'url(#ready-segment-glow)';
+      case 'analyzing': return 'url(#analyzing-segment-glow)';
+      default: return 'url(#idle-segment-glow)';
     }
   };
 
@@ -517,15 +530,35 @@ export const ScoreGauge = ({
             </filter>
             
             <filter id="idle-segment-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+              <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
               <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            
+            {/* Premium ready-state glow - brighter blur for vehicle gauge effect */}
+            <filter id="ready-segment-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            
+            {/* Analyzing state glow - even brighter */}
+            <filter id="analyzing-segment-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
                 <feMergeNode in="coloredBlur"/>
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
           </defs>
           
-          {/* Segment arcs with state-dependent brightness */}
+          {/* Segment arcs with premium vehicle-gauge illumination */}
           {[0, 1, 2, 3, 4].map((i) => {
             const startAngle = 135 + i * 54;
             const endAngle = startAngle + 54;
@@ -537,22 +570,49 @@ export const ScoreGauge = ({
             const x2 = size / 2 + radius * Math.cos(endRad);
             const y2 = size / 2 + radius * Math.sin(endRad);
             
-            const baseOpacity = score !== null ? getSegmentOpacity(i) : getSegmentBrightness();
+            const baseOpacity = score !== null ? getSegmentOpacity(i) : getSegmentBrightness(i);
+            const glowFilter = getSegmentGlowFilter(i);
+            
+            // Use gradient for ready/analyzing states to look more premium
+            const strokeColor = score !== null 
+              ? `url(#segment-gradient-${i})` 
+              : (uiState === 'ready' || uiState === 'analyzing') 
+                ? `url(#segment-gradient-${i})`
+                : colors[i];
             
             return (
-              <path
-                key={i}
-                d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-                fill="none"
-                stroke={score !== null ? `url(#segment-gradient-${i})` : colors[i]}
-                strokeWidth={strokeWidth}
-                strokeLinecap="round"
-                opacity={baseOpacity}
-                filter={score !== null && getSegmentOpacity(i) > 0.5 ? 'url(#segment-glow)' : 'url(#idle-segment-glow)'}
-                style={{
-                  transition: 'opacity 0.4s ease-out',
-                }}
-              />
+              <g key={i}>
+                {/* Background segment glow layer for ready/analyzing states */}
+                {(uiState === 'ready' || uiState === 'analyzing') && score === null && (
+                  <path
+                    d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+                    fill="none"
+                    stroke={colorPairs[i].light}
+                    strokeWidth={strokeWidth + 4}
+                    strokeLinecap="round"
+                    opacity={uiState === 'ready' ? 0.15 : 0.2}
+                    filter="url(#ready-segment-glow)"
+                    className="motion-reduce:hidden"
+                    style={{
+                      animation: `segment-breathe-${i} 2s ease-in-out infinite`,
+                      animationDelay: `${i * 80}ms`,
+                    }}
+                  />
+                )}
+                {/* Main segment */}
+                <path
+                  d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+                  fill="none"
+                  stroke={strokeColor}
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="round"
+                  opacity={baseOpacity}
+                  filter={glowFilter}
+                  style={{
+                    transition: 'opacity 0.5s ease-out, filter 0.5s ease-out',
+                  }}
+                />
+              </g>
             );
           })}
           
@@ -1029,6 +1089,27 @@ export const ScoreGauge = ({
             box-shadow: inset 0 0 22px hsl(174 58% 52% / 0.1), 0 0 3px hsl(174 62% 58% / 0.3); 
           }
         }
+        
+        /* Premium vehicle-gauge segment breathing animations */
+        @keyframes segment-breathe-0 {
+          0%, 100% { opacity: 0.12; }
+          50% { opacity: 0.22; }
+        }
+        @keyframes segment-breathe-1 {
+          0%, 100% { opacity: 0.14; }
+          50% { opacity: 0.25; }
+        }
+        @keyframes segment-breathe-2 {
+          0%, 100% { opacity: 0.16; }
+          50% { opacity: 0.28; }
+        }
+        @keyframes segment-breathe-3 {
+          0%, 100% { opacity: 0.18; }
+          50% { opacity: 0.32; }
+        }
+        @keyframes segment-breathe-4 {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.38; }
         
         /* Button breathing glow - synced with gauge (2s) */
         @keyframes button-breathing-glow {
