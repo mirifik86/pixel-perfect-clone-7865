@@ -583,3 +583,13 @@
     box-shadow: 0 0 12px hsl(174 75% 58% / 1), 0 0 24px hsl(174 70% 55% / 0.6), 0 0 36px hsl(174 65% 52% / 0.3);
   }
 }
+
+/* PRO button premium border flow animation */
+@keyframes pro-border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 300% 50%;
+  }
+}
