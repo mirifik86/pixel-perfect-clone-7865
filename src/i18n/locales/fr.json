@@ -293,34 +293,5 @@
       { "label": "Vérification de crédibilité" },
       { "label": "Recoupement des données" }
     ]
-  },
-  "landing": {
-    "methodology": {
-      "title": "Comment la crédibilité est évaluée",
-      "linguistic": "Cohérence linguistique et sémantique",
-      "contextual": "Cohérence contextuelle et signaux de métadonnées",
-      "visual": "Intégrité visuelle et analyse d'image",
-      "corroboration": "Indicateurs de corroboration de sources publiques",
-      "disclaimer": "LeenScore fournit un support à la décision, pas des affirmations de vérité."
-    },
-    "scale": {
-      "title": "Échelle de score de crédibilité",
-      "description": "Chaque score reflète une évaluation pondérée des signaux de crédibilité."
-    },
-    "analyzer": {
-      "prompt": "Collez un article, une affirmation ou téléchargez une image pour évaluer sa crédibilité.",
-      "text": "Contenu écrit",
-      "visual": "Contenu visuel",
-      "viral": "Information en ligne et virale",
-      "standard": "Analyse standard",
-      "available": "disponible"
-    },
-    "cta": {
-      "analyze": "Analyser la Crédibilité"
-    },
-    "footer": {
-      "noTruth": "ne détermine pas la vérité factuelle.",
-      "structuredAssessment": "Il fournit une évaluation structurée de la crédibilité basée sur des signaux observables et une analyse assistée par IA."
-    }
   }
 }

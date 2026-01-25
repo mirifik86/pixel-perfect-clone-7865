@@ -293,34 +293,5 @@
       { "label": "Verifica credibilità" },
       { "label": "Incrocio dati" }
     ]
-  },
-  "landing": {
-    "methodology": {
-      "title": "Come viene valutata la credibilità",
-      "linguistic": "Coerenza linguistica e semantica",
-      "contextual": "Coerenza contestuale e segnali di metadati",
-      "visual": "Integrità visiva e analisi immagine",
-      "corroboration": "Indicatori di corroborazione da fonti pubbliche",
-      "disclaimer": "LeenScore fornisce supporto decisionale, non dichiarazioni di verità."
-    },
-    "scale": {
-      "title": "Scala del punteggio di credibilità",
-      "description": "Ogni punteggio riflette una valutazione ponderata dei segnali di credibilità."
-    },
-    "analyzer": {
-      "prompt": "Incolla un articolo, un'affermazione o carica un'immagine per valutarne la credibilità.",
-      "text": "Contenuto scritto",
-      "visual": "Contenuto visivo",
-      "viral": "Informazioni online e virali",
-      "standard": "Analisi standard",
-      "available": "disponibile"
-    },
-    "cta": {
-      "analyze": "Analizza Credibilità"
-    },
-    "footer": {
-      "noTruth": "non determina la verità fattuale.",
-      "structuredAssessment": "Fornisce una valutazione strutturata della credibilità basata su segnali osservabili e analisi assistita da IA."
-    }
   }
 }

@@ -293,34 +293,5 @@
       { "label": "信頼性を検証中" },
       { "label": "データをクロスリファレンス中" }
     ]
-  },
-  "landing": {
-    "methodology": {
-      "title": "信頼性の評価方法",
-      "linguistic": "言語的・意味的一貫性",
-      "contextual": "文脈的一貫性とメタデータシグナル",
-      "visual": "視覚的整合性と画像分析",
-      "corroboration": "公開ソース裏付け指標",
-      "disclaimer": "LeenScoreは意思決定支援を提供し、真実の声明を提供しません。"
-    },
-    "scale": {
-      "title": "信頼性スコアスケール",
-      "description": "各スコアは信頼性シグナルの加重評価を反映しています。"
-    },
-    "analyzer": {
-      "prompt": "記事、主張を貼り付けるか、画像をアップロードして信頼性を評価します。",
-      "text": "テキストコンテンツ",
-      "visual": "ビジュアルコンテンツ",
-      "viral": "オンライン・バイラル情報",
-      "standard": "標準分析",
-      "available": "利用可能"
-    },
-    "cta": {
-      "analyze": "信頼性を分析"
-    },
-    "footer": {
-      "noTruth": "事実の真実を判定しません。",
-      "structuredAssessment": "観察可能なシグナルとAI支援分析に基づいた構造化された信頼性評価を提供します。"
-    }
   }
 }

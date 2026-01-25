@@ -293,34 +293,5 @@
       { "label": "Glaubwürdigkeit überprüfen" },
       { "label": "Daten abgleichen" }
     ]
-  },
-  "landing": {
-    "methodology": {
-      "title": "Wie Glaubwürdigkeit bewertet wird",
-      "linguistic": "Linguistische und semantische Konsistenz",
-      "contextual": "Kontextuelle Kohärenz und Metadatensignale",
-      "visual": "Visuelle Integrität und Bildanalyse",
-      "corroboration": "Indikatoren für öffentliche Quellenkorroboration",
-      "disclaimer": "LeenScore bietet Entscheidungsunterstützung, keine Wahrheitsaussagen."
-    },
-    "scale": {
-      "title": "Glaubwürdigkeits-Bewertungsskala",
-      "description": "Jede Bewertung spiegelt eine gewichtete Bewertung der Glaubwürdigkeitssignale wider."
-    },
-    "analyzer": {
-      "prompt": "Fügen Sie einen Artikel, eine Behauptung ein oder laden Sie ein Bild hoch, um dessen Glaubwürdigkeit zu bewerten.",
-      "text": "Schriftlicher Inhalt",
-      "visual": "Visueller Inhalt",
-      "viral": "Online- und virale Informationen",
-      "standard": "Standardanalyse",
-      "available": "verfügbar"
-    },
-    "cta": {
-      "analyze": "Glaubwürdigkeit Analysieren"
-    },
-    "footer": {
-      "noTruth": "bestimmt keine faktische Wahrheit.",
-      "structuredAssessment": "Es bietet eine strukturierte Glaubwürdigkeitsbewertung basierend auf beobachtbaren Signalen und KI-gestützter Analyse."
-    }
   }
 }

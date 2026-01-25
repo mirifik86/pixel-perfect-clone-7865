@@ -293,34 +293,5 @@
       { "label": "Verifying credibility" },
       { "label": "Cross-referencing data" }
     ]
-  },
-  "landing": {
-    "methodology": {
-      "title": "How credibility is evaluated",
-      "linguistic": "Linguistic and semantic consistency",
-      "contextual": "Contextual coherence and metadata signals",
-      "visual": "Visual integrity and image analysis",
-      "corroboration": "Public-source corroboration indicators",
-      "disclaimer": "LeenScore provides decision support, not truth statements."
-    },
-    "scale": {
-      "title": "Credibility score scale",
-      "description": "Each score reflects a weighted assessment of credibility signals."
-    },
-    "analyzer": {
-      "prompt": "Paste an article, a claim, or upload an image to evaluate its credibility.",
-      "text": "Written content",
-      "visual": "Visual content",
-      "viral": "Online and viral information",
-      "standard": "Standard analysis",
-      "available": "available"
-    },
-    "cta": {
-      "analyze": "Analyze Credibility"
-    },
-    "footer": {
-      "noTruth": "does not determine factual truth.",
-      "structuredAssessment": "It provides a structured credibility assessment based on observable signals and AI-assisted analysis."
-    }
   }
 }
