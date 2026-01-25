@@ -112,38 +112,13 @@ export const ScoreGauge = ({
     }
   }, [score]);
 
-  // Premium gradient colors with rich saturation and luminosity for 3D effect
+  // Premium gradient colors with smooth transitions
   const colorPairs = [
-    { 
-      base: 'hsl(0 75% 48%)', 
-      light: 'hsl(0 85% 60%)', 
-      glow: 'hsl(0 90% 55%)',
-      shadow: 'hsl(0 65% 35%)'
-    },
-    { 
-      base: 'hsl(28 90% 52%)', 
-      light: 'hsl(32 95% 62%)', 
-      glow: 'hsl(30 100% 58%)',
-      shadow: 'hsl(25 80% 40%)'
-    },
-    { 
-      base: 'hsl(48 95% 50%)', 
-      light: 'hsl(52 100% 60%)', 
-      glow: 'hsl(50 100% 55%)',
-      shadow: 'hsl(45 85% 38%)'
-    },
-    { 
-      base: 'hsl(140 65% 45%)', 
-      light: 'hsl(145 75% 55%)', 
-      glow: 'hsl(142 80% 50%)',
-      shadow: 'hsl(138 55% 32%)'
-    },
-    { 
-      base: 'hsl(174 70% 45%)', 
-      light: 'hsl(174 80% 55%)', 
-      glow: 'hsl(174 85% 52%)',
-      shadow: 'hsl(174 60% 32%)'
-    }
+    { base: 'hsl(0 70% 45%)', light: 'hsl(0 75% 55%)' },
+    { base: 'hsl(25 85% 48%)', light: 'hsl(30 90% 58%)' },
+    { base: 'hsl(45 80% 45%)', light: 'hsl(50 85% 55%)' },
+    { base: 'hsl(145 55% 40%)', light: 'hsl(150 60% 50%)' },
+    { base: 'hsl(174 60% 42%)', light: 'hsl(174 70% 52%)' }
   ];
   
   const colors = colorPairs.map(c => c.base);
@@ -324,27 +299,14 @@ export const ScoreGauge = ({
     }
   };
 
-  // Segment brightness based on state - premium vehicle gauge effect
-  const getSegmentBrightness = (segmentIndex: number) => {
+  // Segment brightness based on state
+  const getSegmentBrightness = () => {
     switch (uiState) {
-      case 'idle': return 0.08; // Very dim when idle
-      case 'ready': return 0.7 + segmentIndex * 0.05; // Bright illumination - vehicle ready
-      case 'analyzing': return 0.8 + segmentIndex * 0.04; // Even brighter during analysis
+      case 'idle': return 0.12;
+      case 'ready': return 0.22;
+      case 'analyzing': return 0.28;
       case 'result': return 1;
-      default: return 0.1;
-    }
-  };
-  
-  // Get segment glow intensity based on state
-  const getSegmentGlowFilter = (segmentIndex: number) => {
-    if (score !== null && getSegmentOpacity(segmentIndex) > 0.5) {
-      return 'url(#segment-glow)';
-    }
-    switch (uiState) {
-      case 'idle': return 'url(#idle-segment-glow)';
-      case 'ready': return 'url(#ready-segment-glow)';
-      case 'analyzing': return 'url(#analyzing-segment-glow)';
-      default: return 'url(#idle-segment-glow)';
+      default: return 0.15;
     }
   };
 
@@ -533,7 +495,6 @@ export const ScoreGauge = ({
           viewBox={`0 0 ${size} ${size}`}
         >
           <defs>
-            {/* Premium 3D gradient for each segment - creates depth and richness */}
             {colorPairs.map((pair, i) => (
               <linearGradient 
                 key={`gradient-${i}`} 
@@ -541,38 +502,20 @@ export const ScoreGauge = ({
                 gradientUnits="userSpaceOnUse"
                 x1="0%" y1="0%" x2="100%" y2="100%"
               >
-                <stop offset="0%" stopColor={pair.shadow} stopOpacity="0.9" />
-                <stop offset="25%" stopColor={pair.base} stopOpacity="1" />
-                <stop offset="50%" stopColor={pair.light} stopOpacity="1" />
-                <stop offset="75%" stopColor={pair.glow} stopOpacity="1" />
-                <stop offset="100%" stopColor={pair.base} stopOpacity="0.95" />
+                <stop offset="0%" stopColor={pair.base} />
+                <stop offset="50%" stopColor={pair.light} />
+                <stop offset="100%" stopColor={pair.base} />
               </linearGradient>
             ))}
             
-            {/* Outer glow radial for premium halo effect */}
-            {colorPairs.map((pair, i) => (
-              <radialGradient
-                key={`radial-${i}`}
-                id={`segment-radial-${i}`}
-                cx="50%" cy="50%" r="50%"
-              >
-                <stop offset="0%" stopColor={pair.glow} stopOpacity="0.9" />
-                <stop offset="60%" stopColor={pair.light} stopOpacity="0.6" />
-                <stop offset="100%" stopColor={pair.base} stopOpacity="0.2" />
-              </radialGradient>
-            ))}
-            
-            {/* Basic segment glow */}
-            <filter id="segment-glow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <filter id="segment-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
               <feMerge>
-                <feMergeNode in="coloredBlur"/>
                 <feMergeNode in="coloredBlur"/>
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
             
-            {/* Idle state - subtle glow */}
             <filter id="idle-segment-glow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
               <feMerge>
@@ -580,56 +523,9 @@ export const ScoreGauge = ({
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
-            
-            {/* Premium ready-state glow - bright halo effect */}
-            <filter id="ready-segment-glow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-              <feColorMatrix
-                in="coloredBlur"
-                type="saturate"
-                values="1.3"
-              />
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-            
-            {/* Analyzing state glow - intense pulsing effect */}
-            <filter id="analyzing-segment-glow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
-              <feColorMatrix
-                in="coloredBlur"
-                type="saturate"
-                values="1.5"
-              />
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-            
-            {/* Ultra-premium outer halo for ready state */}
-            <filter id="premium-outer-halo" x="-150%" y="-150%" width="400%" height="400%">
-              <feGaussianBlur stdDeviation="8" result="outerBlur"/>
-              <feColorMatrix
-                in="outerBlur"
-                type="saturate"
-                values="1.6"
-              />
-              <feMerge>
-                <feMergeNode in="outerBlur"/>
-                <feMergeNode in="outerBlur"/>
-              </feMerge>
-            </filter>
           </defs>
           
-          {/* Segment arcs with ultra-premium vehicle-gauge illumination */}
+          {/* Segment arcs with state-dependent brightness */}
           {[0, 1, 2, 3, 4].map((i) => {
             const startAngle = 135 + i * 54;
             const endAngle = startAngle + 54;
@@ -641,89 +537,22 @@ export const ScoreGauge = ({
             const x2 = size / 2 + radius * Math.cos(endRad);
             const y2 = size / 2 + radius * Math.sin(endRad);
             
-            const baseOpacity = score !== null ? getSegmentOpacity(i) : getSegmentBrightness(i);
-            const glowFilter = getSegmentGlowFilter(i);
-            
-            // Always use premium gradient for rich colors
-            const strokeColor = `url(#segment-gradient-${i})`;
+            const baseOpacity = score !== null ? getSegmentOpacity(i) : getSegmentBrightness();
             
             return (
-              <g key={i}>
-                {/* Ultra outer halo for premium depth - ready/analyzing only */}
-                {(uiState === 'ready' || uiState === 'analyzing') && score === null && (
-                  <>
-                    {/* Outermost diffuse halo */}
-                    <path
-                      d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-                      fill="none"
-                      stroke={colorPairs[i].glow}
-                      strokeWidth={strokeWidth + 16}
-                      strokeLinecap="round"
-                      opacity={uiState === 'ready' ? 0.15 : 0.2}
-                      filter="url(#premium-outer-halo)"
-                      className="motion-reduce:hidden"
-                      style={{
-                        animation: `segment-breathe-${i} 2.2s ease-in-out infinite`,
-                        animationDelay: `${i * 100}ms`,
-                      }}
-                    />
-                    {/* Mid-range glow layer */}
-                    <path
-                      d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-                      fill="none"
-                      stroke={colorPairs[i].light}
-                      strokeWidth={strokeWidth + 10}
-                      strokeLinecap="round"
-                      opacity={uiState === 'ready' ? 0.35 : 0.45}
-                      filter="url(#analyzing-segment-glow)"
-                      className="motion-reduce:hidden"
-                      style={{
-                        animation: `segment-breathe-${i} 2s ease-in-out infinite`,
-                        animationDelay: `${i * 80}ms`,
-                      }}
-                    />
-                    {/* Inner bright core glow */}
-                    <path
-                      d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-                      fill="none"
-                      stroke={colorPairs[i].glow}
-                      strokeWidth={strokeWidth + 4}
-                      strokeLinecap="round"
-                      opacity={uiState === 'ready' ? 0.5 : 0.6}
-                      filter="url(#ready-segment-glow)"
-                      className="motion-reduce:hidden"
-                    />
-                  </>
-                )}
-                {/* Main segment with rich 3D gradient */}
-                <path
-                  d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-                  fill="none"
-                  stroke={strokeColor}
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="round"
-                  opacity={baseOpacity}
-                  filter={glowFilter}
-                  style={{
-                    transition: 'opacity 0.5s ease-out, filter 0.5s ease-out',
-                  }}
-                />
-                {/* Highlight edge for 3D depth */}
-                {(uiState === 'ready' || uiState === 'analyzing' || score !== null) && (
-                  <path
-                    d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-                    fill="none"
-                    stroke={colorPairs[i].light}
-                    strokeWidth={strokeWidth * 0.3}
-                    strokeLinecap="round"
-                    opacity={score !== null ? 0.6 : (uiState === 'ready' ? 0.4 : 0.5)}
-                    style={{
-                      transform: `translate(-1px, -1px)`,
-                      transition: 'opacity 0.5s ease-out',
-                    }}
-                  />
-                )}
-              </g>
+              <path
+                key={i}
+                d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+                fill="none"
+                stroke={score !== null ? `url(#segment-gradient-${i})` : colors[i]}
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                opacity={baseOpacity}
+                filter={score !== null && getSegmentOpacity(i) > 0.5 ? 'url(#segment-glow)' : 'url(#idle-segment-glow)'}
+                style={{
+                  transition: 'opacity 0.4s ease-out',
+                }}
+              />
             );
           })}
           
@@ -1201,27 +1030,6 @@ export const ScoreGauge = ({
           }
         }
         
-        /* Premium vehicle-gauge segment breathing animations - INTENSE */
-        @keyframes segment-breathe-0 {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.45; }
-        }
-        @keyframes segment-breathe-1 {
-          0%, 100% { opacity: 0.22; }
-          50% { opacity: 0.5; }
-        }
-        @keyframes segment-breathe-2 {
-          0%, 100% { opacity: 0.25; }
-          50% { opacity: 0.55; }
-        }
-        @keyframes segment-breathe-3 {
-          0%, 100% { opacity: 0.28; }
-          50% { opacity: 0.6; }
-        }
-        @keyframes segment-breathe-4 {
-          0%, 100% { opacity: 0.32; }
-          50% { opacity: 0.65; }
-        }
         /* Button breathing glow - synced with gauge (2s) */
         @keyframes button-breathing-glow {
           0%, 100% { 
