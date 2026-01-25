@@ -241,17 +241,18 @@ export const ScoreGauge = ({
     switch (uiState) {
       case 'idle':
         return {
-          background: 'radial-gradient(circle, hsl(174 40% 40% / 0.06) 0%, transparent 70%)',
-          filter: 'blur(20px)',
+          background: 'radial-gradient(circle, hsl(174 40% 40% / 0.04) 0%, transparent 70%)',
+          filter: 'blur(18px)',
           animation: 'none',
-          opacity: 0.5,
+          opacity: 0.4,
         };
       case 'ready':
+        // 50% awake - soft diffused halo, static (no pulse animation yet)
         return {
-          background: 'radial-gradient(circle, hsl(174 55% 48% / 0.18) 0%, hsl(174 50% 45% / 0.08) 50%, transparent 75%)',
-          filter: 'blur(24px)',
-          animation: 'instrument-glow-ready 2s ease-in-out infinite',
-          opacity: 1,
+          background: 'radial-gradient(circle, hsl(174 50% 50% / 0.14) 0%, hsl(174 45% 48% / 0.06) 50%, transparent 70%)',
+          filter: 'blur(28px)',
+          animation: 'none', // Static - no pulse at 50% awake
+          opacity: 0.85,
         };
       case 'analyzing':
         return {
@@ -276,13 +277,14 @@ export const ScoreGauge = ({
     switch (uiState) {
       case 'idle':
         return {
-          boxShadow: '0 0 15px hsl(174 45% 40% / 0.08), inset 0 0 10px hsl(174 40% 38% / 0.04)',
+          boxShadow: '0 0 12px hsl(174 40% 40% / 0.06), inset 0 0 8px hsl(174 35% 38% / 0.03)',
           animation: 'none',
         };
       case 'ready':
+        // 50% awake - subtle glow, static (no animation)
         return {
-          boxShadow: '0 0 28px hsl(174 55% 48% / 0.18), 0 0 50px hsl(174 50% 45% / 0.08), inset 0 0 18px hsl(174 50% 45% / 0.08)',
-          animation: 'instrument-ring-ready 2s ease-in-out infinite',
+          boxShadow: '0 0 22px hsl(174 50% 50% / 0.12), 0 0 40px hsl(174 45% 48% / 0.05), inset 0 0 14px hsl(174 48% 48% / 0.06)',
+          animation: 'none', // Static - presence, not urgency
         };
       case 'analyzing':
         return {
@@ -299,14 +301,14 @@ export const ScoreGauge = ({
     }
   };
 
-  // Segment brightness based on state
+  // Segment brightness based on state - 50% awake in ready state
   const getSegmentBrightness = () => {
     switch (uiState) {
-      case 'idle': return 0.12;
-      case 'ready': return 0.22;
-      case 'analyzing': return 0.28;
+      case 'idle': return 0.10; // Very muted
+      case 'ready': return 0.50; // 50% brightness - clearly visible but restrained
+      case 'analyzing': return 0.60;
       case 'result': return 1;
-      default: return 0.15;
+      default: return 0.12;
     }
   };
 
@@ -556,6 +558,35 @@ export const ScoreGauge = ({
             );
           })}
           
+          {/* Calibration-style segment separators - hairline marks between segments */}
+          {score === null && [1, 2, 3, 4].map((i) => {
+            const separatorAngle = 135 + i * 54 - 1; // Position at segment boundary
+            const separatorRad = (separatorAngle * Math.PI) / 180;
+            const innerRadius = radius - strokeWidth / 2 + 2;
+            const outerRadius = radius + strokeWidth / 2 - 2;
+            
+            const x1 = size / 2 + innerRadius * Math.cos(separatorRad);
+            const y1 = size / 2 + innerRadius * Math.sin(separatorRad);
+            const x2 = size / 2 + outerRadius * Math.cos(separatorRad);
+            const y2 = size / 2 + outerRadius * Math.sin(separatorRad);
+            
+            return (
+              <line
+                key={`sep-${i}`}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="hsl(0 0% 30%)"
+                strokeWidth={0.75}
+                opacity={uiState === 'ready' ? 0.35 : 0.2}
+                style={{
+                  transition: 'opacity 0.3s ease-out',
+                }}
+              />
+            );
+          })}
+          
           {/* Score indicator */}
           {score !== null && (
             <circle
@@ -665,57 +696,26 @@ export const ScoreGauge = ({
             <div 
               className="relative group"
               style={{ 
-                width: size * 0.65, 
-                maxWidth: '150px',
+                width: size * 0.68, 
+                maxWidth: '155px',
                 animation: isTransitioning 
                   ? 'button-ready-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
                   : 'none',
                 opacity: isTransitioning ? 0 : 1,
                 transform: isTransitioning ? 'scale(0.96) translateY(0)' : 'scale(1) translateY(-2px)',
-                transition: isTransitioning ? 'none' : 'transform 0.2s ease-out',
+                transition: isTransitioning ? 'none' : 'transform 0.25s ease-out, box-shadow 0.25s ease-out',
               }}
             >
-              {/* Floating particles - subtle */}
-              {!isTransitioning && (
-                <>
-                  {[...Array(5)].map((_, i) => {
-                    const angle = (i / 5) * 360;
-                    const distance = 28 + (i % 2) * 5;
-                    const particleSize = 1.5 + (i % 2) * 0.5;
-                    const delay = i * 0.6;
-                    const duration = 3.8 + (i % 2) * 0.4;
-                    
-                    return (
-                      <div
-                        key={i}
-                        className="absolute pointer-events-none motion-reduce:hidden"
-                        style={{
-                          left: '50%',
-                          top: '50%',
-                          width: `${particleSize}px`,
-                          height: `${particleSize}px`,
-                          borderRadius: '50%',
-                          background: 'radial-gradient(circle, hsl(180 70% 68%) 0%, hsl(174 65% 58%) 50%, transparent 100%)',
-                          boxShadow: `0 0 ${particleSize * 2}px hsl(174 65% 58% / 0.4)`,
-                          transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${distance}px)`,
-                          animation: `particle-float ${duration}s ease-in-out ${delay}s infinite`,
-                          opacity: 0.5,
-                        }}
-                      />
-                    );
-                  })}
-                </>
-              )}
+              {/* Floating particles - removed for cleaner look at 50% state */}
               
-              {/* Outer breathing halo - synced with gauge pulse (2s) */}
+              {/* Outer soft halo - no pulse, just presence */}
               <div 
-                className="absolute -inset-4 rounded-full pointer-events-none motion-reduce:!animation-none"
+                className="absolute -inset-3 rounded-full pointer-events-none motion-reduce:!opacity-50"
                 style={{
-                  background: 'radial-gradient(circle, hsl(174 60% 52% / 0.28) 0%, hsl(174 55% 48% / 0.1) 50%, transparent 80%)',
-                  filter: 'blur(12px)',
-                  animation: buttonCharged 
-                    ? 'button-charge-glow 260ms ease-out forwards' 
-                    : 'button-breathing-glow 2s ease-in-out infinite',
+                  background: 'radial-gradient(circle, hsl(174 55% 52% / 0.18) 0%, hsl(174 50% 48% / 0.06) 60%, transparent 80%)',
+                  filter: 'blur(10px)',
+                  opacity: buttonCharged ? 1 : 0.85,
+                  transition: 'opacity 0.3s ease-out',
                 }}
               />
               
@@ -730,22 +730,22 @@ export const ScoreGauge = ({
                 />
               )}
               
-              {/* Crisp glass border ring */}
+              {/* Premium outer border ring - more rounded */}
               <div 
                 className="absolute -inset-[2px] rounded-full overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(174 80% 58%), hsl(180 75% 53%), hsl(174 80% 58%))',
+                  background: 'linear-gradient(135deg, hsl(174 70% 55%), hsl(180 65% 50%), hsl(174 70% 55%))',
                   boxShadow: buttonCharged 
-                    ? '0 0 20px hsl(174 75% 60% / 0.7), 0 0 40px hsl(174 70% 55% / 0.4)' 
-                    : '0 0 12px hsl(174 70% 55% / 0.5), 0 0 24px hsl(174 65% 52% / 0.25)',
-                  transition: 'box-shadow 0.2s ease-out',
+                    ? '0 0 16px hsl(174 65% 58% / 0.5), 0 0 32px hsl(174 60% 52% / 0.25)' 
+                    : '0 0 10px hsl(174 60% 52% / 0.3), 0 0 20px hsl(174 55% 48% / 0.15)',
+                  transition: 'box-shadow 0.25s ease-out',
                 }}
               >
                 {/* Entrance sheen */}
                 <div 
                   className="absolute inset-0 motion-reduce:hidden"
                   style={{
-                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.6) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 70%)',
+                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.45) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 70%)',
                     animation: buttonCharged 
                       ? 'charge-sheen-sweep 200ms ease-out forwards' 
                       : (isTransitioning ? 'none' : 'entrance-sheen-sweep 600ms ease-out 100ms forwards'),
@@ -753,14 +753,14 @@ export const ScoreGauge = ({
                 />
               </div>
               
-              {/* Inner glow ring */}
+              {/* Inner teal glow ring - refined */}
               <div 
                 className="absolute inset-0 rounded-full pointer-events-none"
                 style={{
                   boxShadow: buttonCharged 
-                    ? 'inset 0 0 18px hsl(174 65% 62% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.3)' 
-                    : 'inset 0 0 12px hsl(174 60% 58% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.22)',
-                  transition: 'box-shadow 0.2s ease-out',
+                    ? 'inset 0 0 14px hsl(174 60% 58% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.25)' 
+                    : 'inset 0 0 10px hsl(174 55% 55% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.18)',
+                  transition: 'box-shadow 0.25s ease-out',
                 }}
               />
               
@@ -768,43 +768,47 @@ export const ScoreGauge = ({
                 type="button"
                 onClick={handleAnalyzeClick}
                 disabled={isLoading}
-                className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-150"
+                className="relative w-full py-3 px-5 text-[11px] font-semibold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden"
                 style={{
-                  background: 'linear-gradient(145deg, hsl(174 65% 48%) 0%, hsl(180 58% 42%) 50%, hsl(174 63% 45%) 100%)',
+                  borderRadius: '9999px', // More circular/rounded
+                  background: 'linear-gradient(145deg, hsl(174 58% 46%) 0%, hsl(180 52% 40%) 50%, hsl(174 56% 43%) 100%)',
                   boxShadow: isButtonPressed
-                    ? '0 0 15px hsl(174 60% 52% / 0.4), 0 2px 8px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.2), inset 0 -1px 2px hsl(0 0% 0% / 0.15)'
-                    : '0 0 18px hsl(174 60% 52% / 0.35), 0 4px 14px hsl(0 0% 0% / 0.22), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 2px hsl(0 0% 0% / 0.12)',
-                  textShadow: '0 1px 2px hsl(0 0% 0% / 0.4)',
-                  letterSpacing: '0.08em',
-                  transform: isButtonPressed ? 'scale(0.98)' : 'scale(1)',
+                    ? '0 1px 6px hsl(0 0% 0% / 0.25), inset 0 0 8px hsl(174 50% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
+                    : '0 3px 12px hsl(0 0% 0% / 0.2), 0 1px 4px hsl(0 0% 0% / 0.15), inset 0 0 10px hsl(174 50% 52% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.2)',
+                  textShadow: '0 1px 2px hsl(0 0% 0% / 0.35)',
+                  letterSpacing: '0.06em',
+                  transform: isButtonPressed ? 'scale(0.98) translateY(0)' : 'scale(1) translateY(-1px)',
+                  transition: 'transform 0.12s ease-out, box-shadow 0.2s ease-out',
                 }}
                 onMouseEnter={(e) => {
                   if (!isButtonPressed) {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.01)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 24px hsl(174 65% 55% / 0.45), 0 6px 18px hsl(0 0% 0% / 0.28), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.12)';
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.01) translateY(-2px)';
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 5px 16px hsl(0 0% 0% / 0.22), 0 2px 6px hsl(0 0% 0% / 0.18), inset 0 0 12px hsl(174 55% 55% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.25)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isButtonPressed) {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 18px hsl(174 60% 52% / 0.35), 0 4px 14px hsl(0 0% 0% / 0.22), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -1px 2px hsl(0 0% 0% / 0.12)';
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1) translateY(-1px)';
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 3px 12px hsl(0 0% 0% / 0.2), 0 1px 4px hsl(0 0% 0% / 0.15), inset 0 0 10px hsl(174 50% 52% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.2)';
                   }
                 }}
                 onMouseDown={(e) => {
                   setIsButtonPressed(true);
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98) translateY(0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 6px hsl(0 0% 0% / 0.25), inset 0 0 8px hsl(174 50% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.15)';
                 }}
                 onMouseUp={(e) => {
                   setIsButtonPressed(false);
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1) translateY(-1px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 3px 12px hsl(0 0% 0% / 0.2), 0 1px 4px hsl(0 0% 0% / 0.15), inset 0 0 10px hsl(174 50% 52% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.2)';
                 }}
               >
-                {/* Inner shine sweep */}
+                {/* Subtle inner highlight */}
                 <div 
                   className="absolute inset-0 pointer-events-none motion-reduce:hidden"
                   style={{
-                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.1) 45%, hsl(0 0% 100% / 0.2) 50%, hsl(0 0% 100% / 0.1) 55%, transparent 70%)',
-                    animation: 'center-inner-shine 5s ease-in-out infinite 2.5s',
+                    background: 'linear-gradient(to bottom, hsl(0 0% 100% / 0.08) 0%, transparent 40%)',
+                    borderRadius: '9999px',
                   }}
                 />
                 <span className="relative z-10">{t('gauge.startAnalysis')}</span>
