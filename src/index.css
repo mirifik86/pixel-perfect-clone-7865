@@ -347,6 +347,42 @@
   }
 }
 
+/* Particle burst explosion - radiates outward from center */
+@keyframes particle-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.3)) scale(1.2);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 1.3)) scale(0.3);
+  }
+}
+
+/* Fast secondary particle burst */
+@keyframes particle-burst-fast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(0) scale(0.3);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.5)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(0.2);
+  }
+}
+
 /* Single entrance sheen sweep (not looping) */
 @keyframes entrance-sheen-sweep {
   0% {
