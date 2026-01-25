@@ -113,12 +113,13 @@ export const ScoreGauge = ({
   }, [score]);
 
   // Premium gradient colors with smooth transitions
+  // Leen Blue is the signature color - intensified saturation for premium feel
   const colorPairs = [
-    { base: 'hsl(0 70% 45%)', light: 'hsl(0 75% 55%)' },      // Red - Very Low
-    { base: 'hsl(25 85% 48%)', light: 'hsl(30 90% 58%)' },    // Orange - Low
-    { base: 'hsl(45 80% 45%)', light: 'hsl(50 85% 55%)' },    // Yellow - Moderate
-    { base: 'hsl(145 55% 40%)', light: 'hsl(150 60% 50%)' },  // Green - Good
-    { base: 'hsl(174 60% 42%)', light: 'hsl(174 70% 52%)' }   // Leen Blue - High
+    { base: 'hsl(0 65% 42%)', light: 'hsl(0 70% 52%)' },        // Red - Very Low (muted to not compete)
+    { base: 'hsl(28 75% 46%)', light: 'hsl(32 80% 55%)' },      // Orange - Low (slightly muted)
+    { base: 'hsl(45 70% 44%)', light: 'hsl(50 75% 54%)' },      // Yellow - Moderate (balanced)
+    { base: 'hsl(145 50% 38%)', light: 'hsl(150 55% 48%)' },    // Green - Good (secondary)
+    { base: 'hsl(174 78% 44%)', light: 'hsl(174 85% 52%)' }     // Leen Blue - High (INTENSIFIED - deep, clean, premium)
   ];
   
   const colors = colorPairs.map(c => c.base);
@@ -569,20 +570,40 @@ export const ScoreGauge = ({
           className="absolute inset-0 flex items-center justify-center"
           style={{ marginTop: -verticalOffset }}
         >
-          {/* RESULT STATE: Display score */}
+          {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT */}
           {uiState === 'result' && (
-            <span
-              className="font-semibold tabular-nums animate-scale-in"
-              style={{
-                fontSize: scoreFontSize,
-                lineHeight: 1,
-                color: getInterpolatedColor(animatedScore),
-                letterSpacing: '-0.02em',
-                textShadow: `0 0 20px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.4)')}, 0 0 40px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.2)')}`
-              }}
-            >
-              {displayScore}
-            </span>
+            <div className="relative flex items-center justify-center">
+              {/* Score breathing glow - very slow, subtle pulse suggesting intelligence */}
+              <div 
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: scoreFontSize * 2.2,
+                  height: scoreFontSize * 2.2,
+                  background: `radial-gradient(circle, ${getInterpolatedColor(animatedScore).replace(')', ' / 0.35)')} 0%, ${getInterpolatedColor(animatedScore).replace(')', ' / 0.15)')} 40%, transparent 70%)`,
+                  filter: 'blur(12px)',
+                  animation: 'score-breathing-glow 4s ease-in-out infinite',
+                }}
+              />
+              {/* Score number with strong controlled glow */}
+              <span
+                className="relative font-semibold tabular-nums animate-scale-in"
+                style={{
+                  fontSize: scoreFontSize,
+                  lineHeight: 1,
+                  color: getInterpolatedColor(animatedScore),
+                  letterSpacing: '-0.02em',
+                  textShadow: `
+                    0 0 8px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.9)')},
+                    0 0 25px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.6)')},
+                    0 0 50px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.35)')},
+                    0 0 80px ${getInterpolatedColor(animatedScore).replace(')', ' / 0.2)')}
+                  `,
+                  animation: 'score-text-pulse 4s ease-in-out infinite',
+                }}
+              >
+                {displayScore}
+              </span>
+            </div>
           )}
 
           {/* ANALYZING STATE: Loading spinner */}
@@ -942,30 +963,41 @@ export const ScoreGauge = ({
         )}
       </div>
       
-      {/* Credibility label BELOW gauge - only shown when score exists */}
+      {/* Credibility label BELOW gauge - PREMIUM AUTHORITY PRESENTATION */}
       {score !== null && (
         <div 
-          className="relative w-full flex flex-col items-center justify-center animate-fade-in"
-          style={{ marginTop: 'var(--space-3)', minHeight: '40px' }}
+          className="relative w-full flex flex-col items-center justify-center"
+          style={{ 
+            marginTop: 'var(--space-3)', 
+            minHeight: '44px',
+            animation: 'label-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          }}
         >
+          {/* Static authority glow - no animation, reinforces stability */}
           <div 
-            className="absolute rounded-full"
+            className="absolute rounded-full pointer-events-none"
             style={{
-              width: '100%',
+              width: '110%',
               height: '100%',
-              background: `radial-gradient(ellipse at center, ${currentLabelColor.replace(')', ' / 0.2)')} 0%, transparent 70%)`,
-              filter: 'blur(15px)',
-              animation: 'label-glow 2s ease-in-out infinite alternate'
+              background: `radial-gradient(ellipse 100% 80% at center, ${currentLabelColor.replace(')', ' / 0.28)')} 0%, ${currentLabelColor.replace(')', ' / 0.1)')} 50%, transparent 80%)`,
+              filter: 'blur(18px)',
             }}
           />
+          {/* Category label with enhanced brightness and contrast */}
           <span
             className="relative text-center uppercase font-bold"
             style={{
-              fontSize: size * 0.11,
+              fontSize: size * 0.115,
               color: currentLabelColor,
-              letterSpacing: '0.15em',
+              letterSpacing: '0.16em',
               fontFamily: 'var(--font-sans)',
-              textShadow: `0 0 15px ${currentLabelColor.replace(')', ' / 0.7)')}, 0 0 30px ${currentLabelColor.replace(')', ' / 0.4)')}`,
+              filter: 'brightness(1.15) contrast(1.1)',
+              textShadow: `
+                0 0 6px ${currentLabelColor.replace(')', ' / 0.95)')},
+                0 0 18px ${currentLabelColor.replace(')', ' / 0.7)')},
+                0 0 35px ${currentLabelColor.replace(')', ' / 0.45)')},
+                0 1px 2px hsl(0 0% 0% / 0.3)
+              `,
             }}
           >
             {currentLabel}
@@ -975,9 +1007,36 @@ export const ScoreGauge = ({
         
       {/* CSS animations */}
       <style>{`
-        @keyframes label-glow {
-          0% { opacity: 0.5; transform: scale(0.95); }
-          100% { opacity: 0.8; transform: scale(1.05); }
+        /* Premium score breathing glow - very slow, intelligent rhythm */
+        @keyframes score-breathing-glow {
+          0%, 100% { 
+            opacity: 0.7; 
+            transform: scale(0.95);
+          }
+          50% { 
+            opacity: 1; 
+            transform: scale(1.08);
+          }
+        }
+        /* Score text subtle pulse - synchronized with glow */
+        @keyframes score-text-pulse {
+          0%, 100% { 
+            filter: brightness(1);
+          }
+          50% { 
+            filter: brightness(1.08);
+          }
+        }
+        /* Category label reveal animation */
+        @keyframes label-reveal {
+          0% { 
+            opacity: 0; 
+            transform: translateY(6px);
+          }
+          100% { 
+            opacity: 1; 
+            transform: translateY(0);
+          }
         }
         @keyframes idle-glow-pulse {
           0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.98); }

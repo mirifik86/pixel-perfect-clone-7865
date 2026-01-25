@@ -70,11 +70,11 @@
     --container-content: 42rem; /* 672px - for content areas */
 
     /* Custom tokens - Score gauge colors */
-    --score-red: 0 84% 60%;
-    --score-orange: 30 95% 55%;
-    --score-yellow: 45 95% 55%;
-    --score-green: 142 70% 45%;
-    --score-leen: 174 65% 52%;
+    --score-red: 0 65% 42%;
+    --score-orange: 28 75% 46%;
+    --score-yellow: 45 70% 44%;
+    --score-green: 145 50% 38%;
+    --score-leen: 174 78% 48%;  /* INTENSIFIED - deep, clean, premium blue */
     
     --gradient-button: linear-gradient(135deg, 
       hsl(280 60% 75%) 0%, 
