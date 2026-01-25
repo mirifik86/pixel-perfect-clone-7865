@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useLanguage } from '@/i18n/useLanguage';
-import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { InGaugeAnalysisLoader } from '@/components/InGaugeAnalysisLoader';
 
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
@@ -319,10 +319,14 @@ export const ScoreGauge = ({
           transform: 'translate(-50%, -50%)',
           background: score !== null 
             ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
-            : 'radial-gradient(circle, hsl(174 60% 45% / 0.12) 0%, hsl(200 50% 40% / 0.06) 40%, transparent 70%)',
+            : isLoading
+              ? 'radial-gradient(circle, hsl(174 70% 50% / 0.18) 0%, hsl(174 60% 45% / 0.08) 40%, transparent 70%)'
+              : 'radial-gradient(circle, hsl(174 60% 45% / 0.12) 0%, hsl(200 50% 40% / 0.06) 40%, transparent 70%)',
           filter: 'blur(20px)',
           pointerEvents: 'none',
-          animation: score === null ? 'idle-glow-pulse 3.8s ease-in-out infinite' : 'none',
+          animation: score === null 
+            ? (isLoading ? 'analyzing-ambient-glow 3.5s ease-in-out infinite' : 'idle-glow-pulse 3.8s ease-in-out infinite') 
+            : 'none',
         }}
       />
       
@@ -525,8 +529,15 @@ export const ScoreGauge = ({
             const rotation = 135 + i * 270 / 5;
             const opacity = getSegmentOpacity(i);
             const isActive = opacity > 0.5;
-            const isIdle = score === null;
+            const isIdle = score === null && !isLoading;
+            const isAnalyzing = isLoading;
             const idleOpacity = 0.35 + (i * 0.04);
+            
+            // During analyzing, the Leen Blue segment (index 4) gets a breathing glow
+            const isLeenBlueSegment = i === 4;
+            const analyzingAnimation = isAnalyzing && isLeenBlueSegment 
+              ? 'arc-breathing-glow 3.5s ease-in-out infinite' 
+              : 'none';
             
             return (
               <circle
@@ -539,12 +550,15 @@ export const ScoreGauge = ({
                 strokeWidth={strokeWidth}
                 strokeLinecap="butt"
                 strokeDasharray={`${segmentLength} ${circumference}`}
-                filter={isActive ? 'url(#segment-glow)' : isIdle ? 'url(#idle-segment-glow)' : undefined}
+                filter={isActive ? 'url(#segment-glow)' : (isIdle || isAnalyzing) ? 'url(#idle-segment-glow)' : undefined}
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center',
-                  opacity: isIdle ? idleOpacity : opacity,
-                  transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  opacity: isAnalyzing 
+                    ? (isLeenBlueSegment ? 0.7 : 0.25) 
+                    : (isIdle ? idleOpacity : opacity),
+                  transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  animation: analyzingAnimation,
                 }}
               />
             );
@@ -606,29 +620,9 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* ANALYZING STATE: Loading spinner */}
+          {/* ANALYZING STATE: Premium in-gauge loader with evolving steps */}
           {uiState === 'analyzing' && (
-            <div className="flex flex-col items-center animate-fade-in" style={{ gap: 'var(--space-2)' }}>
-              <Loader2 
-                className="animate-spin" 
-                style={{ 
-                  width: size * 0.18, 
-                  height: size * 0.18, 
-                  color: 'hsl(174 65% 55%)',
-                  filter: 'drop-shadow(0 0 10px hsl(174 60% 50% / 0.5))'
-                }} 
-              />
-              <span 
-                className="uppercase font-semibold tracking-widest"
-                style={{ 
-                  fontSize: 'clamp(0.6rem, 2vw, 0.75rem)', 
-                  color: 'hsl(174 60% 60%)',
-                  textShadow: '0 0 10px hsl(174 60% 50% / 0.5)'
-                }}
-              >
-                {t('gauge.analyzing')}
-              </span>
-            </div>
+            <InGaugeAnalysisLoader size={size} />
           )}
 
           {/* IDLE STATE: "READY TO ANALYZE" with premium halo pulse */}
@@ -1018,6 +1012,17 @@ export const ScoreGauge = ({
             transform: scale(1.08);
           }
         }
+        /* Arc breathing glow for analyzing state - very slow, subtle */
+        @keyframes arc-breathing-glow {
+          0%, 100% { 
+            opacity: 0.5;
+            filter: url(#idle-segment-glow) brightness(1);
+          }
+          50% { 
+            opacity: 0.85;
+            filter: url(#idle-segment-glow) brightness(1.2);
+          }
+        }
         /* Score text subtle pulse - synchronized with glow */
         @keyframes score-text-pulse {
           0%, 100% { 
@@ -1041,6 +1046,17 @@ export const ScoreGauge = ({
         @keyframes idle-glow-pulse {
           0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.98); }
           50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+        }
+        /* Analyzing state ambient glow - premium breathing rhythm */
+        @keyframes analyzing-ambient-glow {
+          0%, 100% { 
+            opacity: 0.6; 
+            transform: translate(-50%, -50%) scale(0.96);
+          }
+          50% { 
+            opacity: 1; 
+            transform: translate(-50%, -50%) scale(1.06);
+          }
         }
         @keyframes idle-ring-pulse {
           0%, 100% { box-shadow: 0 0 25px hsl(174 60% 45% / 0.12), 0 0 50px hsl(200 50% 45% / 0.06), inset 0 0 15px hsl(174 50% 40% / 0.06); }
