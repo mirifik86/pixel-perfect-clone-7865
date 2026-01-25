@@ -1,4 +1,5 @@
-import { CheckCircle, XCircle, AlertCircle, Search, Scale, GitBranch, Image, Sparkles, Info } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Search, Scale, GitBranch, Image, Sparkles, Info, Shield } from 'lucide-react';
+import { SignalMiniGauge } from './SignalMiniGauge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AnalysisBreakdown {
@@ -141,6 +142,25 @@ const translations = {
     signalCoherence: 'Coherence',
     signalWeb: 'Web corroboration',
     signalImage: 'Image signals',
+    // Standard micro-diagnostic status badges
+    statusHighConfidence: 'High confidence',
+    statusModerateConfidence: 'Moderate confidence',
+    statusLimitedConfidence: 'Limited confidence',
+    statusNotEvaluated: 'Not evaluated (Standard)',
+    // Standard signal explanations
+    explainSourcesNotEvaluated: 'External multi-source corroboration is available in PRO.',
+    explainFactualHigh: 'Claims appear internally consistent with no obvious contradictions.',
+    explainFactualModerate: 'Some claims could benefit from additional verification.',
+    explainFactualLimited: 'Multiple assertions lack clear supporting context.',
+    explainContextHigh: 'The context is clear and situationally appropriate.',
+    explainContextModerate: 'Context is partially established but some details are vague.',
+    explainContextLimited: 'Key contextual elements are missing or unclear.',
+    explainToneHigh: 'Language is measured, professional, and avoids sensationalism.',
+    explainToneModerate: 'Language is generally appropriate with some emphatic elements.',
+    explainToneLimited: 'Language shows emotional or promotional patterns.',
+    explainVisualHigh: 'Visual elements appear authentic and contextually aligned.',
+    explainVisualModerate: 'Visual elements show partial coherence with the content.',
+    explainVisualLimited: 'Visual signals raise questions about authenticity or context.',
   },
   fr: {
     breakdown: 'Détail du Score',
@@ -200,6 +220,25 @@ const translations = {
     signalCoherence: 'Cohérence',
     signalWeb: 'Corroboration web',
     signalImage: 'Signaux image',
+    // Standard micro-diagnostic status badges
+    statusHighConfidence: 'Confiance élevée',
+    statusModerateConfidence: 'Confiance modérée',
+    statusLimitedConfidence: 'Confiance limitée',
+    statusNotEvaluated: 'Non évalué (Standard)',
+    // Standard signal explanations
+    explainSourcesNotEvaluated: 'La corroboration multi-sources externe est disponible en PRO.',
+    explainFactualHigh: 'Les affirmations semblent cohérentes sans contradictions apparentes.',
+    explainFactualModerate: 'Certaines affirmations bénéficieraient d\'une vérification complémentaire.',
+    explainFactualLimited: 'Plusieurs assertions manquent de contexte de soutien clair.',
+    explainContextHigh: 'Le contexte est clair et approprié à la situation.',
+    explainContextModerate: 'Le contexte est partiellement établi mais certains détails sont vagues.',
+    explainContextLimited: 'Des éléments contextuels clés sont manquants ou peu clairs.',
+    explainToneHigh: 'Le langage est mesuré, professionnel et évite le sensationnalisme.',
+    explainToneModerate: 'Le langage est généralement approprié avec quelques éléments emphatiques.',
+    explainToneLimited: 'Le langage montre des schémas émotionnels ou promotionnels.',
+    explainVisualHigh: 'Les éléments visuels semblent authentiques et contextuellement alignés.',
+    explainVisualModerate: 'Les éléments visuels montrent une cohérence partielle avec le contenu.',
+    explainVisualLimited: 'Les signaux visuels soulèvent des questions sur l\'authenticité ou le contexte.',
   },
 };
 
@@ -341,15 +380,73 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
     constrained: t.constrained,
   };
 
-  // Standard signal badges - exclude visual signal when no image
-  // CRITICAL: Use realSourcesPoints for sources badge to ensure consistency
-  const standardSignalBadges = [
-    { label: t.signalSource, level: getBadgeLevel(realSourcesPoints) },
-    { label: t.signalFactual, level: getBadgeLevel(data.breakdown.factual?.points ?? 0) },
-    { label: t.signalContext, level: getBadgeLevel(data.breakdown.context?.points ?? 0) },
-    { label: t.signalPrudence, level: getBadgeLevel(data.breakdown.prudence?.points ?? data.breakdown.tone?.points ?? 0) },
-    // Only include visual signal badge if an image was provided
-    ...(hasImage ? [{ label: t.signalVisual, level: getBadgeLevel(data.breakdown.visualCoherence?.points ?? 0) }] : []),
+  // Helper function to get confidence status from points
+  const getConfidenceStatus = (points: number, key: string) => {
+    // Sources always show "Not evaluated" in Standard when no corroboration
+    if (key === 'sources' && !hasRealCorroboration) {
+      return { 
+        status: 'notEvaluated', 
+        label: t.statusNotEvaluated, 
+        confidence: 0,
+        explanation: t.explainSourcesNotEvaluated 
+      };
+    }
+    
+    if (points >= 3) {
+      return { 
+        status: 'high', 
+        label: t.statusHighConfidence, 
+        confidence: 85,
+        explanation: key === 'factual' ? t.explainFactualHigh 
+          : key === 'context' ? t.explainContextHigh 
+          : key === 'tone' || key === 'prudence' ? t.explainToneHigh 
+          : key === 'visualCoherence' ? t.explainVisualHigh
+          : key === 'sources' ? t.explainSourcesNotEvaluated
+          : ''
+      };
+    }
+    if (points >= 0) {
+      return { 
+        status: 'moderate', 
+        label: t.statusModerateConfidence, 
+        confidence: 55,
+        explanation: key === 'factual' ? t.explainFactualModerate 
+          : key === 'context' ? t.explainContextModerate 
+          : key === 'tone' || key === 'prudence' ? t.explainToneModerate 
+          : key === 'visualCoherence' ? t.explainVisualModerate
+          : key === 'sources' ? t.explainSourcesNotEvaluated
+          : ''
+      };
+    }
+    return { 
+      status: 'limited', 
+      label: t.statusLimitedConfidence, 
+      confidence: 25,
+      explanation: key === 'factual' ? t.explainFactualLimited 
+        : key === 'context' ? t.explainContextLimited 
+        : key === 'tone' || key === 'prudence' ? t.explainToneLimited 
+        : key === 'visualCoherence' ? t.explainVisualLimited
+        : key === 'sources' ? t.explainSourcesNotEvaluated
+        : ''
+    };
+  };
+
+  // Status badge styles
+  const statusBadgeStyles: Record<string, string> = {
+    high: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    moderate: 'bg-amber-50 text-amber-700 border-amber-200',
+    limited: 'bg-slate-100 text-slate-600 border-slate-200',
+    notEvaluated: 'bg-slate-50 text-slate-400 border-slate-200',
+  };
+
+  // Standard signal data with micro-diagnostics
+  const standardSignalData = [
+    { key: 'sources', label: t.signalSource, points: realSourcesPoints },
+    { key: 'factual', label: t.signalFactual, points: data.breakdown.factual?.points ?? 0 },
+    { key: 'context', label: t.signalContext, points: data.breakdown.context?.points ?? 0 },
+    { key: 'tone', label: t.signalPrudence, points: data.breakdown.prudence?.points ?? data.breakdown.tone?.points ?? 0 },
+    // Only include visual signal if an image was provided
+    ...(hasImage ? [{ key: 'visualCoherence', label: t.signalVisual, points: data.breakdown.visualCoherence?.points ?? 0 }] : []),
   ];
 
   // PRO signal badges with LucideIcon type - exclude image signal when no image
@@ -720,14 +817,16 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* Signal badges */}
+      {/* Signal badges - PRO uses compact badges, Standard uses micro-diagnostics */}
       <div className="analysis-card mb-6">
         <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">
           {isPro ? t.proSignalsTitle : t.signalsTitle}
         </h3>
-        <div className="flex flex-wrap gap-2">
-          {isPro ? (
-            proSignalBadges.map((signal, index) => {
+        
+        {isPro ? (
+          /* PRO: Compact badge row */
+          <div className="flex flex-wrap gap-2">
+            {proSignalBadges.map((signal, index) => {
               const IconComponent = signal.icon;
               return (
                 <div
@@ -738,30 +837,71 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   <span className="text-xs font-semibold text-slate-800">{signal.label}</span>
                 </div>
               );
-            })
-          ) : (
-            standardSignalBadges.map((signal, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${badgeStyles[signal.level]}`}
-              >
-                <span className={`h-2 w-2 rounded-full ${badgeDotStyles[signal.level]}`} />
-                <span className="text-xs font-semibold text-slate-800">{signal.label}</span>
-              </div>
-            ))
-          )}
-        </div>
+            })}
+          </div>
+        ) : (
+          /* Standard: Micro-diagnostic cards with mini gauges */
+          <div className="space-y-3">
+            {standardSignalData.map((signal, index) => {
+              const confidence = getConfidenceStatus(signal.points, signal.key);
+              const isNotEvaluated = confidence.status === 'notEvaluated';
+              
+              return (
+                <div 
+                  key={index} 
+                  className="rounded-lg border p-3 transition-all"
+                  style={{
+                    background: isNotEvaluated 
+                      ? 'hsl(220 15% 97%)' 
+                      : 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(200 15% 98%) 100%)',
+                    borderColor: isNotEvaluated ? 'hsl(220 15% 90%)' : 'hsl(200 30% 90%)',
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Mini Gauge */}
+                    <SignalMiniGauge 
+                      confidence={confidence.confidence} 
+                      notEvaluated={isNotEvaluated}
+                      size={28}
+                    />
+                    
+                    <div className="flex-1 min-w-0">
+                      {/* Signal name + Status badge row */}
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="font-semibold text-slate-800 text-sm">{signal.label}</span>
+                        <span 
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadgeStyles[confidence.status]}`}
+                        >
+                          {confidence.label}
+                        </span>
+                      </div>
+                      
+                      {/* Explanation text */}
+                      <p className={`text-xs leading-relaxed ${isNotEvaluated ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {confidence.explanation}
+                        {isNotEvaluated && signal.key === 'sources' && (
+                          <span className="text-cyan-600 font-medium ml-1">
+                            {language === 'fr' ? 'Disponible en PRO.' : 'Available in PRO.'}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Breakdown - different for PRO vs Standard */}
-      <div className="analysis-card">
-        <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">
-          {isPro ? t.proBreakdown : t.breakdown}
-        </h3>
-        <div className="space-y-4">
-          {isPro ? (
-            // PRO breakdown with weights
-            proKeys.map((key) => {
+      {/* Breakdown - PRO only (Standard uses the micro-diagnostic cards above) */}
+      {isPro && (
+        <div className="analysis-card">
+          <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">
+            {t.proBreakdown}
+          </h3>
+          <div className="space-y-4">
+            {proKeys.map((key) => {
               const item = data.breakdown[key as keyof AnalysisBreakdown] as { points: number; weight?: string; reason: string } | undefined;
               if (!item) return null;
               const Icon = proCriteriaIcons[key];
@@ -786,59 +926,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   <p className="ml-8 text-sm font-medium text-slate-600">{item.reason}</p>
                 </div>
               );
-            })
-          ) : (
-            // Standard breakdown
-            standardKeys.map((key) => {
-              const item = data.breakdown[key as keyof AnalysisBreakdown];
-              if (!item) return null;
-              
-              // For 'sources' key in Standard: show neutral messaging if no real corroboration
-              const isSourcesWithNoCorroboration = key === 'sources' && !hasRealCorroboration;
-              
-              // If sources with no corroboration, show neutral "not evaluated" instead of failed attempt
-              if (isSourcesWithNoCorroboration) {
-                return (
-                  <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Info className="h-4 w-4 text-slate-400" />
-                        <span className="font-semibold text-slate-800">{standardCriteriaLabels[key]}</span>
-                      </div>
-                      {/* No numeric value shown - neutral status instead */}
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">
-                        {language === 'fr' ? 'Non inclus' : 'Not included'}
-                      </span>
-                    </div>
-                    <p className="ml-6 text-sm text-slate-500">
-                      {t.standardSourcesNotEvaluated} <span className="text-cyan-600 font-medium">{t.standardProUnlocks}</span>
-                    </p>
-                  </div>
-                );
-              }
-              
-              // For sources with real corroboration, show positive result
-              const displayPoints = key === 'sources' ? realSourcesPoints : item.points;
-              const displayReason = item.reason;
-              
-              return (
-                <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {getPointsIcon(displayPoints)}
-                      <span className="font-semibold text-slate-800">{standardCriteriaLabels[key]}</span>
-                    </div>
-                    <span className={`font-mono text-sm font-bold ${getPointsColor(displayPoints)}`}>
-                      {displayPoints > 0 ? '+' : ''}{displayPoints}
-                    </span>
-                  </div>
-                  <p className="ml-6 text-sm font-medium text-slate-600">{displayReason}</p>
-                </div>
-              );
-            })
-          )}
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* PRO Image Signals detailed view - only show when an image was actually provided */}
       {isPro && hasImage && data.imageSignals && (() => {
