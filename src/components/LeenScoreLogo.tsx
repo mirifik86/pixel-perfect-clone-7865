@@ -59,18 +59,28 @@ export const LeenScoreLogo = () => {
         />
       </div>
       
-      {/* Value proposition - enhanced for mobile readability */}
-      <p 
-        className="text-center max-w-xs md:max-w-md px-4"
-        style={{ 
-          fontSize: 'clamp(0.85rem, 0.8rem + 0.5vw, 1rem)',
-          lineHeight: 1.6,
-          color: 'hsl(0 0% 82%)',
-          fontWeight: 400,
+      {/* Value proposition - premium framed */}
+      <div 
+        className="relative px-5 py-3 md:px-6 md:py-3.5 max-w-xs md:max-w-md"
+        style={{
+          background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.03) 0%, hsl(174 40% 50% / 0.04) 100%)',
+          borderRadius: '8px',
+          border: '1px solid hsl(0 0% 100% / 0.08)',
+          boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.05), 0 4px 20px hsl(0 0% 0% / 0.15)',
         }}
       >
-        {t('hero.valueProp')}
-      </p>
+        <p 
+          className="text-center"
+          style={{ 
+            fontSize: 'clamp(0.85rem, 0.8rem + 0.5vw, 1rem)',
+            lineHeight: 1.6,
+            color: 'hsl(0 0% 85%)',
+            fontWeight: 400,
+          }}
+        >
+          {t('hero.valueProp')}
+        </p>
+      </div>
     </div>
   );
 };
