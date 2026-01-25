@@ -58,29 +58,59 @@ export const LeenScoreLogo = () => {
           style={{ background: 'linear-gradient(to left, transparent, hsl(0 0% 50% / 0.4))' }}
         />
       </div>
-      
-      {/* Value proposition - premium framed */}
+    </div>
+  );
+};
+
+interface ValuePropositionProps {
+  children?: React.ReactNode;
+}
+
+export const ValueProposition = ({ children }: ValuePropositionProps) => {
+  const { t } = useLanguage();
+  
+  return (
+    <div className="flex flex-col items-center gap-3 md:gap-4 animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+      {/* Value proposition - premium glassmorphic card */}
       <div 
-        className="relative px-5 py-3 md:px-6 md:py-3.5 max-w-xs md:max-w-md"
+        className="relative px-5 py-3.5 md:px-7 md:py-4 max-w-xs md:max-w-md overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.03) 0%, hsl(174 40% 50% / 0.04) 100%)',
-          borderRadius: '8px',
-          border: '1px solid hsl(0 0% 100% / 0.08)',
-          boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.05), 0 4px 20px hsl(0 0% 0% / 0.15)',
+          background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.04) 0%, hsl(174 50% 45% / 0.06) 50%, hsl(0 0% 100% / 0.03) 100%)',
+          borderRadius: '12px',
+          border: '1px solid hsl(174 40% 60% / 0.12)',
+          boxShadow: `
+            inset 0 1px 0 hsl(0 0% 100% / 0.08),
+            inset 0 -1px 0 hsl(0 0% 0% / 0.1),
+            0 4px 24px hsl(0 0% 0% / 0.2),
+            0 0 40px hsl(174 50% 50% / 0.06)
+          `,
+          backdropFilter: 'blur(12px)',
         }}
       >
+        {/* Subtle top highlight */}
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px"
+          style={{
+            background: 'linear-gradient(90deg, transparent, hsl(174 60% 60% / 0.25), transparent)',
+          }}
+        />
+        
         <p 
-          className="text-center"
+          className="text-center relative z-10"
           style={{ 
             fontSize: 'clamp(0.85rem, 0.8rem + 0.5vw, 1rem)',
-            lineHeight: 1.6,
-            color: 'hsl(0 0% 85%)',
+            lineHeight: 1.65,
+            color: 'hsl(0 0% 88%)',
             fontWeight: 400,
+            textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
           }}
         >
           {t('hero.valueProp')}
         </p>
       </div>
+      
+      {/* Language selector slot */}
+      {children}
     </div>
   );
 };

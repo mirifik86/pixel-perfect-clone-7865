@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/i18n/useLanguage';
 import { type SupportedLanguage, type LanguageMode } from '@/i18n/config';
-import { LeenScoreLogo } from '@/components/LeenScoreLogo';
+import { LeenScoreLogo, ValueProposition } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { LanguageSuggestionPrompt } from '@/components/LanguageSuggestionPrompt';
 import { ScoreGauge } from '@/components/ScoreGauge';
@@ -528,21 +528,15 @@ const Index = () => {
             <LeenScoreLogo />
           </div>
 
-          {/* Language toggle - subtle, not dominant */}
-          <div 
-            className="flex w-full justify-center animate-fade-in"
-            style={{ 
-              animationDelay: '200ms', 
-              animationFillMode: 'both',
-              marginTop: 'clamp(0.75rem, 2vh, 1.25rem)',
-              marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)',
-            }}
-          >
-            <LanguageToggle 
-              mode={languageMode} 
-              language={resolvedLanguage} 
-              onLanguageChange={handleLanguageChange} 
-            />
+          {/* Value proposition + Language toggle - inverted order */}
+          <div style={{ marginTop: 'clamp(0.5rem, 1.5vh, 1rem)', marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
+            <ValueProposition>
+              <LanguageToggle 
+                mode={languageMode} 
+                language={resolvedLanguage} 
+                onLanguageChange={handleLanguageChange} 
+              />
+            </ValueProposition>
           </div>
 
           {/* Score gauge - MOBILE: reduced height to keep button above fold */}
