@@ -1,7 +1,132 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useLanguage } from '@/i18n/useLanguage';
-import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Analyzing state explanations
+const ANALYZING_EXPLANATIONS = {
+  en: [
+    'Checking source consistency',
+    'Cross-referencing signals',
+    'Evaluating credibility indicators'
+  ],
+  fr: [
+    'Vérification de la cohérence des sources',
+    'Recoupement des signaux',
+    'Évaluation des indicateurs de crédibilité'
+  ]
+};
+
+// Premium circular loader component for analyzing state
+const AnalyzingStateContent = ({ size }: { size: number }) => {
+  const { language, t } = useLanguage();
+  const [explanationIndex, setExplanationIndex] = useState(0);
+  const explanations = ANALYZING_EXPLANATIONS[language] || ANALYZING_EXPLANATIONS.en;
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setExplanationIndex((prev) => (prev + 1) % explanations.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [explanations.length]);
+  
+  const loaderSize = size * 0.45;
+  const strokeWidth = 3;
+  const radius = (loaderSize - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  
+  return (
+    <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-1)' }}>
+      {/* Circular loader ring */}
+      <div 
+        className="relative"
+        style={{ 
+          width: loaderSize, 
+          height: loaderSize,
+        }}
+      >
+        {/* Background ring */}
+        <svg 
+          width={loaderSize} 
+          height={loaderSize} 
+          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+          className="absolute inset-0"
+        >
+          <circle
+            cx={loaderSize / 2}
+            cy={loaderSize / 2}
+            r={radius}
+            fill="none"
+            stroke="hsl(174 30% 30% / 0.3)"
+            strokeWidth={strokeWidth}
+          />
+        </svg>
+        
+        {/* Animated arc */}
+        <svg 
+          width={loaderSize} 
+          height={loaderSize} 
+          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+          className="absolute inset-0 motion-reduce:animate-none"
+          style={{
+            animation: 'analyzing-spin 1.8s linear infinite',
+          }}
+        >
+          <circle
+            cx={loaderSize / 2}
+            cy={loaderSize / 2}
+            r={radius}
+            fill="none"
+            stroke="hsl(174 55% 52%)"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={`${circumference * 0.3} ${circumference * 0.7}`}
+            style={{
+              filter: 'drop-shadow(0 0 4px hsl(174 60% 55% / 0.5))',
+            }}
+          />
+        </svg>
+        
+        {/* Center text */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <span 
+            className="uppercase font-medium tracking-wide text-center"
+            style={{ 
+              fontSize: 'clamp(0.5rem, 1.8vw, 0.65rem)',
+              lineHeight: 1.2,
+              color: 'hsl(174 45% 65%)',
+              maxWidth: loaderSize * 0.8,
+            }}
+          >
+            {t('gauge.analyzing')}
+          </span>
+        </div>
+      </div>
+      
+      {/* Cycling explanation text */}
+      <div 
+        className="relative overflow-hidden"
+        style={{ 
+          height: '1.2em',
+          minWidth: size * 0.9,
+        }}
+      >
+        <span 
+          key={explanationIndex}
+          className="absolute inset-x-0 text-center font-normal tracking-wide"
+          style={{ 
+            fontSize: 'clamp(0.55rem, 1.6vw, 0.7rem)',
+            color: 'hsl(0 0% 60%)',
+            animation: 'explanation-fade 2s ease-in-out forwards',
+          }}
+        >
+          {explanations[explanationIndex]}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
@@ -652,29 +777,9 @@ export const ScoreGauge = ({
             </div>
           )}
           
-          {/* ANALYZING STATE: Spinner with localized text */}
+          {/* ANALYZING STATE: Premium circular loader with cycling explanations */}
           {uiState === 'analyzing' && (
-            <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-2)' }}>
-              <Loader2 
-                className="motion-reduce:animate-none"
-                style={{ 
-                  width: size * 0.18, 
-                  height: size * 0.18,
-                  color: 'hsl(174 65% 55%)',
-                  animation: 'spin 1.2s linear infinite',
-                }}
-              />
-              <span 
-                className="uppercase font-semibold tracking-widest"
-                style={{ 
-                  fontSize: 'clamp(0.6rem, 2vw, 0.75rem)', 
-                  color: 'hsl(174 60% 60%)',
-                  textShadow: '0 0 10px hsl(174 60% 50% / 0.5)'
-                }}
-              >
-                {t('gauge.analyzing')}
-              </span>
-            </div>
+            <AnalyzingStateContent size={size} />
           )}
 
           {/* IDLE STATE: Luminous "READY TO ANALYZE" with breathing glow */}
@@ -1280,6 +1385,25 @@ export const ScoreGauge = ({
           25% { transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 12deg)) translateY(calc(var(--distance, -28px) - 3px)); }
           50% { transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 20deg)) translateY(calc(var(--distance, -28px) - 1px)); }
           75% { transform: translate(-50%, -50%) rotate(calc(var(--angle, 0deg) + 8deg)) translateY(calc(var(--distance, -28px) - 4px)); }
+        }
+        
+        /* Analyzing state animations - calm, precise, premium */
+        @keyframes analyzing-spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes explanation-fade {
+          0% { opacity: 0; transform: translateY(4px); }
+          15% { opacity: 1; transform: translateY(0); }
+          85% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-4px); }
+        }
+        
+        /* Subtle armed state pulse for gauge (very calm) */
+        @keyframes armed-pulse {
+          0%, 100% { opacity: 0.85; }
+          50% { opacity: 1; }
         }
         
         /* Respect prefers-reduced-motion */
