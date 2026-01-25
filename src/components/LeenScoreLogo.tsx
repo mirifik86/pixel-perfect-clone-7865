@@ -80,19 +80,19 @@ export const ValueProposition = ({ children }: ValuePropositionProps) => {
         style={{
           background: `
             linear-gradient(180deg, 
-              hsl(200 20% 10% / 0.55) 0%, 
-              hsl(210 25% 8% / 0.6) 100%
+              hsl(200 20% 12% / 0.45) 0%, 
+              hsl(210 25% 10% / 0.5) 100%
             )
           `,
           borderRadius: '4px',
-          border: '1px solid hsl(0 0% 100% / 0.08)',
+          border: '1px solid hsl(0 0% 100% / 0.1)',
           boxShadow: `
-            inset 0 1px 0 hsl(0 0% 100% / 0.05),
-            inset 0 0 30px hsl(174 40% 50% / 0.04),
-            0 8px 40px hsl(0 0% 0% / 0.35),
-            0 2px 8px hsl(0 0% 0% / 0.2)
+            inset 0 1px 0 hsl(0 0% 100% / 0.06),
+            inset 0 0 30px hsl(174 40% 50% / 0.05),
+            0 8px 40px hsl(0 0% 0% / 0.3),
+            0 2px 8px hsl(0 0% 0% / 0.15)
           `,
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(6px)',
         }}
       >
         {/* Subtle corner brackets - top left */}
