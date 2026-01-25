@@ -154,13 +154,13 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
 /**
  * Hook to access language context
  */
-export const useLanguage = (): LanguageContextValue => {
+export function useLanguage(): LanguageContextValue {
   const context = useContext(LanguageContext);
   if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
-};
+}
 
 /**
  * Get native name for a language (for display in prompts)
