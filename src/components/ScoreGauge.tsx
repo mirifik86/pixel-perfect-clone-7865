@@ -694,18 +694,21 @@ export const ScoreGauge = ({
             </div>
           )}
           
-          {/* TRANSITIONING STATE: Text fading out */}
+          {/* TRANSITIONING STATE: Text morphing out with scale + blur + glow fade */}
           {uiState === 'ready' && isTransitioning && (
             <div 
-              className="flex flex-col items-center justify-center text-center absolute inset-0 motion-reduce:hidden"
-              style={{ animation: 'idle-text-exit 450ms ease-out forwards' }}
+              className="flex flex-col items-center justify-center text-center absolute inset-0 pointer-events-none motion-reduce:hidden"
+              style={{ 
+                animation: 'text-morph-exit 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
+              }}
             >
               <span
-                className="relative uppercase font-medium tracking-[0.18em] text-center"
+                className="relative uppercase font-semibold tracking-[0.16em] text-center"
                 style={{
-                  fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
+                  fontSize: 'clamp(0.68rem, 2.4vw, 0.88rem)',
                   lineHeight: 1.4,
-                  color: 'hsl(0 0% 60%)',
+                  color: 'hsl(174 45% 72%)',
+                  textShadow: '0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.25)',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
@@ -721,10 +724,10 @@ export const ScoreGauge = ({
                 width: size * 0.68, 
                 maxWidth: '155px',
                 animation: isTransitioning 
-                  ? 'button-ready-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
+                  ? 'button-morph-enter 450ms cubic-bezier(0.34, 1.56, 0.64, 1) 380ms forwards' 
                   : 'none',
                 opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.96) translateY(0)' : 'scale(1) translateY(-2px)',
+                transform: isTransitioning ? 'scale(0.85) translateY(6px)' : 'scale(1) translateY(-2px)',
                 transition: isTransitioning ? 'none' : 'transform 0.25s ease-out, box-shadow 0.25s ease-out',
               }}
             >
