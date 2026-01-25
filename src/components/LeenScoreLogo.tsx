@@ -31,9 +31,9 @@ export const LeenScoreLogo = () => {
         </span>
       </h1>
       
-      {/* Tagline: brighter, more authoritative */}
+      {/* Tagline: brighter, more authoritative - positioned closer */}
       <p 
-        className="tracking-widest uppercase text-center"
+        className="tracking-widest uppercase text-center -mt-1"
         style={{ 
           fontSize: 'clamp(0.7rem, 0.6rem + 0.5vw, 1rem)',
           letterSpacing: '0.25em',
@@ -43,19 +43,22 @@ export const LeenScoreLogo = () => {
         {t('hero.tagline')}
       </p>
       
-      {/* Premium divider with centered dot */}
-      <div className="flex items-center justify-center w-full max-w-[180px] md:max-w-[220px] my-1">
+      {/* Premium divider with glowing Leen teal dot */}
+      <div className="flex items-center justify-center w-full max-w-[180px] md:max-w-[220px] -mt-0.5">
         <div 
           className="flex-1 h-px"
-          style={{ background: 'linear-gradient(to right, transparent, hsl(0 0% 50% / 0.4))' }}
+          style={{ background: 'linear-gradient(to right, transparent, hsl(174 50% 55% / 0.5))' }}
         />
         <div 
-          className="w-1 h-1 rounded-full mx-3"
-          style={{ background: 'hsl(0 0% 60% / 0.6)' }}
+          className="w-1.5 h-1.5 rounded-full mx-3"
+          style={{ 
+            background: 'hsl(174 65% 52%)',
+            boxShadow: '0 0 8px hsl(174 70% 55% / 0.8), 0 0 16px hsl(174 70% 55% / 0.4)',
+          }}
         />
         <div 
           className="flex-1 h-px"
-          style={{ background: 'linear-gradient(to left, transparent, hsl(0 0% 50% / 0.4))' }}
+          style={{ background: 'linear-gradient(to left, transparent, hsl(174 50% 55% / 0.5))' }}
         />
       </div>
     </div>
