@@ -217,18 +217,17 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
       <button
         ref={triggerRef}
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="group relative inline-flex items-center gap-2.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50 hover:scale-[1.02]"
+        className="group relative inline-flex items-center gap-1.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50 hover:scale-[1.02]"
         style={{
-          padding: '10px 16px 10px 14px',
-          background: 'linear-gradient(180deg, hsl(220 18% 16% / 0.95) 0%, hsl(220 18% 11% / 0.98) 100%)',
-          border: '1px solid hsl(174 50% 50% / 0.15)',
-          backdropFilter: 'blur(20px)',
+          padding: '6px 12px 6px 10px',
+          background: 'linear-gradient(180deg, hsl(220 18% 16% / 0.9) 0%, hsl(220 18% 11% / 0.95) 100%)',
+          border: '1px solid hsl(174 50% 50% / 0.12)',
+          backdropFilter: 'blur(16px)',
           boxShadow: `
-            0 0 0 1px hsl(0 0% 0% / 0.25),
-            0 6px 24px hsl(0 0% 0% / 0.35),
-            0 0 30px hsl(174 50% 45% / 0.08),
-            inset 0 1px 0 hsl(0 0% 100% / 0.08),
-            inset 0 -1px 0 hsl(0 0% 0% / 0.1)
+            0 0 0 1px hsl(0 0% 0% / 0.2),
+            0 4px 16px hsl(0 0% 0% / 0.3),
+            0 0 20px hsl(174 50% 45% / 0.06),
+            inset 0 1px 0 hsl(0 0% 100% / 0.06)
           `
         }}
       >
@@ -254,39 +253,37 @@ export const LanguageToggle = ({ mode, language, onLanguageChange }: LanguageTog
           />
         </div>
         
-        {/* Flag with subtle glow */}
+        {/* Flag - compact */}
         <span 
-          className="relative text-lg transition-all duration-200 group-hover:scale-110"
+          className="relative text-sm transition-all duration-200 group-hover:scale-110"
           style={{ 
             lineHeight: 1,
-            filter: 'drop-shadow(0 0 4px hsl(0 0% 100% / 0.2))',
+            filter: 'drop-shadow(0 0 3px hsl(0 0% 100% / 0.15))',
           }}
         >
           {activeConfig?.flag}
         </span>
         
-        {/* Language name with gradient text on hover */}
+        {/* Language name - smaller */}
         <span 
-          className="relative text-sm font-semibold transition-all duration-200"
+          className="relative text-xs font-medium transition-all duration-200"
           style={{ 
             letterSpacing: '0.02em',
-            color: 'hsl(0 0% 95%)',
-            textShadow: '0 1px 2px hsl(0 0% 0% / 0.3)',
+            color: 'hsl(0 0% 90%)',
           }}
         >
           {activeConfig?.nativeName}
         </span>
         
-        {/* Premium chevron with glow */}
+        {/* Compact chevron */}
         <div className="relative flex items-center justify-center">
           <ChevronDown 
             className="relative transition-all duration-300"
             style={{
-              width: '16px',
-              height: '16px',
-              color: 'hsl(174 50% 60%)',
+              width: '12px',
+              height: '12px',
+              color: 'hsl(174 50% 55%)',
               transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              filter: 'drop-shadow(0 0 3px hsl(174 60% 50% / 0.5))',
             }}
           />
         </div>
