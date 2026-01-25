@@ -59,13 +59,14 @@ export const LeenScoreLogo = () => {
         />
       </div>
       
-      {/* Value proposition */}
+      {/* Value proposition - enhanced for mobile readability */}
       <p 
-        className="text-center max-w-xs md:max-w-md"
+        className="text-center max-w-xs md:max-w-md px-4"
         style={{ 
-          fontSize: 'clamp(0.8rem, 0.75rem + 0.3vw, 0.95rem)',
-          lineHeight: 1.5,
-          color: 'hsl(0 0% 70%)',
+          fontSize: 'clamp(0.85rem, 0.8rem + 0.5vw, 1rem)',
+          lineHeight: 1.6,
+          color: 'hsl(0 0% 82%)',
+          fontWeight: 400,
         }}
       >
         {t('hero.valueProp')}
