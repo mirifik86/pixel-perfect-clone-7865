@@ -240,11 +240,12 @@ export const ScoreGauge = ({
   const getGaugeGlowStyle = () => {
     switch (uiState) {
       case 'idle':
+        // Powered & calibrated - visible presence halo
         return {
-          background: 'radial-gradient(circle, hsl(174 40% 40% / 0.04) 0%, transparent 70%)',
-          filter: 'blur(18px)',
-          animation: 'none',
-          opacity: 0.4,
+          background: 'radial-gradient(circle, hsl(174 50% 48% / 0.10) 0%, hsl(174 45% 45% / 0.04) 50%, transparent 75%)',
+          filter: 'blur(32px)',
+          animation: 'idle-halo-breathe 3.2s ease-in-out infinite',
+          opacity: 0.7,
         };
       case 'ready':
         // 50% awake - soft diffused halo, static (no pulse animation yet)
@@ -276,9 +277,10 @@ export const ScoreGauge = ({
   const getRingGlowStyle = () => {
     switch (uiState) {
       case 'idle':
+        // Powered state - subtle ring presence
         return {
-          boxShadow: '0 0 12px hsl(174 40% 40% / 0.06), inset 0 0 8px hsl(174 35% 38% / 0.03)',
-          animation: 'none',
+          boxShadow: '0 0 18px hsl(174 50% 48% / 0.10), 0 0 35px hsl(174 45% 45% / 0.04), inset 0 0 12px hsl(174 45% 48% / 0.05)',
+          animation: 'idle-ring-breathe 3.2s ease-in-out infinite',
         };
       case 'ready':
         // 50% awake - subtle glow, static (no animation)
@@ -304,7 +306,7 @@ export const ScoreGauge = ({
   // Segment brightness based on state - 50% awake in ready state
   const getSegmentBrightness = () => {
     switch (uiState) {
-      case 'idle': return 0.10; // Very muted
+      case 'idle': return 0.28; // Powered & calibrated - clearly readable segments
       case 'ready': return 0.50; // 50% brightness - clearly visible but restrained
       case 'analyzing': return 0.60;
       case 'result': return 1;
@@ -670,19 +672,21 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* IDLE STATE: Muted "READY TO ANALYZE" */}
+          {/* IDLE STATE: Luminous "READY TO ANALYZE" with breathing glow */}
           {uiState === 'idle' && (
             <div 
               className="flex flex-col items-center justify-center text-center relative"
               style={{ padding: 'var(--space-2)' }}
             >
               <span
-                className="relative uppercase font-medium tracking-[0.18em] text-center"
+                className="relative uppercase font-semibold tracking-[0.16em] text-center motion-reduce:!animation-none"
                 style={{
-                  fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
+                  fontSize: 'clamp(0.68rem, 2.4vw, 0.88rem)',
                   lineHeight: 1.4,
-                  color: 'hsl(0 0% 60%)', // Muted in idle
-                  transition: 'color 0.3s ease-out',
+                  color: 'hsl(174 45% 72%)',
+                  textShadow: '0 0 12px hsl(174 55% 55% / 0.5), 0 0 24px hsl(174 50% 50% / 0.25), 0 0 40px hsl(174 45% 48% / 0.12)',
+                  animation: 'idle-text-breathe 3.2s ease-in-out infinite',
+                  transition: 'color 0.3s ease-out, text-shadow 0.3s ease-out',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
