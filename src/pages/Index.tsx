@@ -6,7 +6,7 @@ import { LeenScoreLogo, ValueProposition } from '@/components/LeenScoreLogo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { LanguageSuggestionPrompt } from '@/components/LanguageSuggestionPrompt';
 import { ScoreGauge } from '@/components/ScoreGauge';
-import { AnalysisLoader } from '@/components/AnalysisLoader';
+
 import { UnifiedAnalysisForm, UnifiedAnalysisFormHandle } from '@/components/UnifiedAnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { AnalysisError } from '@/components/AnalysisError';
@@ -544,12 +544,12 @@ const Index = () => {
             className="relative flex justify-center items-center mb-2 md:mb-6"
             style={{ 
               minHeight: isLoading && isImageAnalysis 
-                ? 'clamp(280px, 45vh, 400px)' // MOBILE: smaller container
+                ? 'clamp(280px, 45vh, 400px)' // MOBILE: larger container for image loader
                 : `clamp(${gaugeSize}px, 18vh, ${gaugeSize + 40}px)` // MOBILE: dynamic height
             }}
           >
-            {/* Loader - shows during analysis with smooth exit */}
-            {isLoading && (
+            {/* External Loader - ONLY for image analysis (MissionControlLoader) */}
+            {isLoading && isImageAnalysis && (
               <div 
                 className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out ${
                   isLoaderExiting 
@@ -558,22 +558,21 @@ const Index = () => {
                 }`}
                 style={{
                   // Push Mission Control loader down for clean visual separation
-                  paddingTop: isImageAnalysis ? 'clamp(24px, 6vh, 48px)' : '0'
+                  paddingTop: 'clamp(24px, 6vh, 48px)'
                 }}
               >
-                {isImageAnalysis ? (
-                  <MissionControlLoader />
-                ) : (
-                  <AnalysisLoader size={gaugeSize} />
-                )}
+                <MissionControlLoader />
               </div>
             )}
             
-            {/* Score Gauge - shows when not loading */}
-            {!isLoading && (
-              <div className="relative animate-scale-in" style={{ animationDuration: '500ms' }}>
+            {/* Score Gauge - ALWAYS visible, includes in-gauge loader for text analysis */}
+            {(!isLoading || !isImageAnalysis) && (
+              <div 
+                className={`relative ${!isLoading ? 'animate-scale-in' : ''}`} 
+                style={{ animationDuration: '500ms' }}
+              >
                 {/* Ready state framing halo - subtle teal ring around gauge */}
-                {hasFormContent && !hasAnyAnalysis && (
+                {hasFormContent && !hasAnyAnalysis && !isLoading && (
                   <div 
                     className="absolute pointer-events-none rounded-full animate-fade-in"
                     style={{
@@ -589,7 +588,7 @@ const Index = () => {
                   size={gaugeSize} 
                   hasContent={hasFormContent}
                   onAnalyze={handleGaugeAnalyze}
-                  isLoading={isLoading}
+                  isLoading={isLoading && !isImageAnalysis}
                   onChevronCycleComplete={handleChevronCycleComplete}
                   onTransferStart={handleTransferStart}
                 />
