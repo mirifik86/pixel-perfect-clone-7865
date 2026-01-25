@@ -136,6 +136,18 @@ const MorphingLoaderTransition = ({ size }: { size: number }) => {
   const radius = (loaderSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   
+  // Generate morph particles
+  const morphParticles = useMemo(() => 
+    Array.from({ length: 16 }, (_, i) => ({
+      id: i,
+      angle: (i / 16) * 360,
+      delay: 50 + Math.random() * 150,
+      distance: 25 + Math.random() * 20,
+      size: 2 + Math.random() * 2,
+      duration: 350 + Math.random() * 150,
+    })), []
+  );
+  
   return (
     <div 
       className="relative flex items-center justify-center"
@@ -143,6 +155,49 @@ const MorphingLoaderTransition = ({ size }: { size: number }) => {
         animation: 'pill-to-circle-morph 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
       }}
     >
+      {/* Particle trail effect during morph */}
+      {morphParticles.map((particle) => (
+        <div
+          key={`morph-particle-${particle.id}`}
+          className="absolute pointer-events-none"
+          style={{
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            borderRadius: '50%',
+            background: 'hsl(174 70% 65%)',
+            boxShadow: '0 0 6px hsl(174 65% 60% / 0.8), 0 0 12px hsl(174 55% 55% / 0.4)',
+            opacity: 0,
+            '--particle-angle': `${particle.angle}deg`,
+            '--particle-distance': `${particle.distance}px`,
+            animation: `morph-particle-burst ${particle.duration}ms cubic-bezier(0.25, 1, 0.5, 1) ${particle.delay}ms forwards`,
+          } as React.CSSProperties}
+        />
+      ))}
+      
+      {/* Secondary smaller particles for depth */}
+      {Array.from({ length: 8 }, (_, i) => {
+        const angle = (i / 8) * 360 + 22.5;
+        const delay = 100 + Math.random() * 100;
+        const distance = 15 + Math.random() * 12;
+        return (
+          <div
+            key={`morph-particle-secondary-${i}`}
+            className="absolute pointer-events-none"
+            style={{
+              width: '1.5px',
+              height: '1.5px',
+              borderRadius: '50%',
+              background: 'hsl(180 75% 75%)',
+              boxShadow: '0 0 4px hsl(180 70% 70% / 0.7)',
+              opacity: 0,
+              '--particle-angle': `${angle}deg`,
+              '--particle-distance': `${distance}px`,
+              animation: `morph-particle-burst 280ms cubic-bezier(0.25, 1, 0.5, 1) ${delay}ms forwards`,
+            } as React.CSSProperties}
+          />
+        );
+      })}
+      
       {/* Morphing container */}
       <div 
         className="relative overflow-hidden"
@@ -156,7 +211,7 @@ const MorphingLoaderTransition = ({ size }: { size: number }) => {
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: 'radial-gradient(circle, hsl(174 55% 52% / 0.2) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, hsl(174 55% 52% / 0.25) 0%, transparent 70%)',
             animation: 'morph-glow 600ms ease-out forwards',
           }}
         />
@@ -1579,6 +1634,26 @@ export const ScoreGauge = ({
           100% { 
             opacity: 1; 
             transform: scale(1);
+          }
+        }
+        
+        /* Morph particle burst animation */
+        @keyframes morph-particle-burst {
+          0% { 
+            opacity: 0; 
+            transform: rotate(var(--particle-angle)) translateX(0) scale(0.5);
+          }
+          20% { 
+            opacity: 1; 
+            transform: rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.4)) scale(1.2);
+          }
+          60% { 
+            opacity: 0.7; 
+            transform: rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 0.85)) scale(0.9);
+          }
+          100% { 
+            opacity: 0; 
+            transform: rotate(var(--particle-angle)) translateX(calc(var(--particle-distance) * 1.2)) scale(0.3);
           }
         }
         
