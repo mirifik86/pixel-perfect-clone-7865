@@ -1,6 +1,7 @@
 import { CheckCircle, XCircle, AlertCircle, Search, Scale, GitBranch, Image, Sparkles, Info, Shield } from 'lucide-react';
 import { SignalMiniGauge } from './SignalMiniGauge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { BestSourcesSection } from './BestSourcesSection';
 
 interface AnalysisBreakdown {
   // Core criteria (Standard)
@@ -49,11 +50,26 @@ interface ImageSignals {
   disclaimer?: string;
 }
 
-interface CorroborationSources {
-  corroborated?: string[];
-  neutral?: string[];
-  constrained?: string[];
+interface SourceDetail {
+  name: string;
+  url: string;
+  snippet: string;
 }
+
+interface CorroborationSources {
+  corroborated?: (string | SourceDetail)[];
+  neutral?: (string | SourceDetail)[];
+  constrained?: (string | SourceDetail)[];
+  contradicting?: (string | SourceDetail)[];
+}
+
+// Helper to get source name from either string or SourceDetail
+const getSourceName = (source: string | SourceDetail): string => {
+  if (typeof source === 'object' && source !== null && 'name' in source) {
+    return source.name || '';
+  }
+  return String(source);
+};
 
 interface Corroboration {
   outcome: string;
@@ -571,7 +587,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-700">
-                  {data.corroboration.sources.corroborated[0]}
+                  {getSourceName(data.corroboration.sources.corroborated[0])}
                 </span>
                 <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                   +5 pts
@@ -682,7 +698,8 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   {/* Corroborated Sources - Official/Major Media/Reference */}
                   {data.corroboration.sources.corroborated?.map((source, idx) => {
                     // Comprehensive domain detection patterns
-                    const sourceLower = source.toLowerCase();
+                    const sourceName = getSourceName(source);
+                    const sourceLower = sourceName.toLowerCase();
                     
                     // Official Sources: Government, institutional archives, official bodies
                     const officialPatterns = /\.(gov|gouv|gob|govt)\b|\.gov\.|government|official|ministry|ministère|department|département|senate|sénat|congress|parlement|parliament|white\s*house|élysée|downing|bundesregierung|archives?\s*(national|federal)|national\s*archives|library\s*of\s*congress|europarl|europa\.eu|who\.int|un\.org|unesco|interpol|fbi|cia|nsa|cdc|fda|epa|nasa|esa|nih|state\.gov|justice\.gov|treasury|défense|defense\.gov|bundesamt|préfecture|mairie|city\s*hall|municipal|conseil|court\s*(supreme|constitutional)|tribunal|homeland|immigration/i.test(sourceLower);
@@ -719,7 +736,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                             <CheckCircle className="w-4 h-4 text-emerald-600" />
                           </div>
                           <div>
-                            <div className="text-sm font-semibold text-slate-800">{source}</div>
+                            <div className="text-sm font-semibold text-slate-800">{sourceName}</div>
                             <div className="text-xs text-slate-400">{t.sourceGroupCorroborated}</div>
                           </div>
                         </div>
@@ -732,7 +749,8 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
 
                   {/* Neutral Sources - Reference type */}
                   {data.corroboration.sources.neutral?.map((source, idx) => {
-                    const sourceLower = source.toLowerCase();
+                    const sourceName = getSourceName(source);
+                    const sourceLower = sourceName.toLowerCase();
                     
                     // Reference: Encyclopedias, academic sources, dictionaries, fact-checkers
                     const isReference = /britannica|encyclopedia|encyclopédie|encyclopaedia|wikipedia|wikimedia|wiktionary|oxford|cambridge|merriam|webster|larousse|robert|duden|treccani|scholarpedia|stanford\s*encyclopedia|plato\.stanford|jstor|pubmed|ncbi|nature\.com|science\.org|sciencedirect|springer|wiley|elsevier|academic|scholarly|peer\s*review|arxiv|ssrn|researchgate|google\s*scholar|worldcat|library|bibliothèque|snopes|factcheck|politifact|full\s*fact|les\s*décodeurs|checknews|hoaxbuster/i.test(sourceLower);
@@ -762,7 +780,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                             <AlertCircle className="w-4 h-4 text-amber-600" />
                           </div>
                           <div>
-                            <div className="text-sm font-semibold text-slate-800">{source}</div>
+                            <div className="text-sm font-semibold text-slate-800">{sourceName}</div>
                             <div className="text-xs text-slate-400">{t.sourceGroupNeutral}</div>
                           </div>
                         </div>
@@ -785,7 +803,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                           <XCircle className="w-4 h-4 text-slate-500" />
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-slate-800">{source}</div>
+                          <div className="text-sm font-semibold text-slate-800">{getSourceName(source)}</div>
                           <div className="text-xs text-slate-400">{t.sourceGroupConstrained}</div>
                         </div>
                       </div>
@@ -796,6 +814,15 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                     </div>
                   ))}
                 </div>
+              )}
+              
+              {/* Best Sources Section - Clickable evidence links */}
+              {data.corroboration.sources && (
+                <BestSourcesSection 
+                  sources={data.corroboration.sources}
+                  language={language}
+                  outcome={data.corroboration.outcome}
+                />
               )}
             </div>
           )}

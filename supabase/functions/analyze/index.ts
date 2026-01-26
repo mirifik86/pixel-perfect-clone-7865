@@ -266,12 +266,34 @@ When refuted, explicitly state that sources contradict the claim.
     "sourceTypes": ["<media|agency|institution|other>"],
     "summary": "<brief summary - MUST explicitly state if sources contradict the claim>",
     "sources": {
-      "corroborated": ["<source names that clearly corroborate>"],
-      "neutral": ["<source names with neutral/contextual mentions>"],
-      "constrained": ["<source names with limited coverage or no coverage indicator>"],
-      "contradicting": ["<source names that actively refute/contradict the claim>"]
+      "corroborated": [],
+      "neutral": [],
+      "constrained": [],
+      "contradicting": [
+        {
+          "name": "<Source name - e.g., 'BBC News', 'The White House', 'Britannica'>",
+          "url": "<DIRECT URL to the exact article/page that discusses the claim - NOT homepage, NOT category page>",
+          "snippet": "<1-2 sentence summary of what this specific source says about the claim>"
+        }
+      ]
     }
   },
+
+  CRITICAL SOURCE URL REQUIREMENTS:
+  1. Each source MUST have a direct URL to the EXACT article or page that discusses the claim
+  2. NEVER link to:
+     - Homepages (e.g., https://www.bbc.com)
+     - Category pages (e.g., https://www.bbc.com/news)
+     - Search results pages
+     - Generic "about" pages
+  3. ONLY include sources where you can provide a SPECIFIC article URL
+  4. If you cannot provide a direct article URL, DO NOT include that source
+  5. Prioritize quality over quantity: 3-6 high-quality sources with direct links is better than 10 generic sources
+  6. Source priority order:
+     - Official/institutional sources (government, official bodies) → type: "official"
+     - Reference encyclopedias (Britannica, Wikipedia) → type: "reference"
+     - Major media (BBC, Reuters, NYT, Le Monde) → type: "media"
+  7. The snippet MUST summarize what the specific page says about the claim
   "imageSignals": {
     "origin": {
       "classification": "<real_photo|illustration_composite|probable_ai_generated|undetermined>",
