@@ -50,6 +50,7 @@
     "disclaimer": "LeenScore non dichiara fatti. Ti aiuta a valutare la credibilità delle informazioni.",
     "disclaimerLine1": "non dichiara fatti.",
     "disclaimerLine2": "Ti aiuta a valutare la credibilità delle informazioni.",
+    "validationError": "Contenuto non analizzabile — correggi o inserisci nuovo contenuto.",
     "contentNotAnalyzable": "Contenuto non analizzabile"
   },
   "gauge": {
