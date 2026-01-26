@@ -49,7 +49,8 @@
     "then": "다음",
     "disclaimer": "LeenScore는 사실을 선언하지 않습니다. 정보의 신뢰성을 평가하는 데 도움을 줍니다.",
     "disclaimerLine1": "는 사실을 선언하지 않습니다.",
-    "disclaimerLine2": "정보의 신뢰성을 평가하는 데 도움을 줍니다."
+    "disclaimerLine2": "정보의 신뢰성을 평가하는 데 도움을 줍니다.",
+    "contentNotAnalyzable": "분석 불가 콘텐츠"
   },
   "gauge": {
     "pending": "대기 중",

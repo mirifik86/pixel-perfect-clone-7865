@@ -796,13 +796,13 @@ export const ScoreGauge = ({
             </div>
           )}
 
-          {/* READY STATE: ANALYZE button OR Invalid Input Message */}
+          {/* READY STATE: ANALYZE button - Premium signature control with entrance animation */}
           {uiState === 'ready' && !buttonAbsorbed && (
             <div 
               className="relative group"
               style={{ 
                 width: size * 0.65, 
-                maxWidth: isInputValid ? '150px' : '200px',
+                maxWidth: '150px',
                 animation: isTransitioning 
                   ? 'button-ready-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
                   : 'none',
@@ -810,9 +810,6 @@ export const ScoreGauge = ({
                 transform: isTransitioning ? 'scale(0.96)' : 'scale(1)',
               }}
             >
-              {/* Valid input: Show ANALYZE button */}
-              {isInputValid ? (
-                <>
               {/* Floating particles around button - reduced count for cleaner look */}
               {!isTransitioning && (
                 <>
@@ -893,7 +890,7 @@ export const ScoreGauge = ({
               <Button
                 type="button"
                 onClick={handleAnalyzeClick}
-                disabled={isLoading}
+                disabled={isLoading || !isInputValid}
                 className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
                 style={{
                   background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
@@ -929,45 +926,6 @@ export const ScoreGauge = ({
                 />
                 <span className="relative z-10">{t('gauge.startAnalysis')}</span>
               </Button>
-                </>
-              ) : (
-                /* Invalid input: Show premium amber message */
-                <div 
-                  className="relative w-full flex items-center justify-center animate-fade-in"
-                  style={{
-                    minHeight: '44px',
-                  }}
-                >
-                  {/* Soft amber ambient glow */}
-                  <div 
-                    className="absolute -inset-3 rounded-xl pointer-events-none"
-                    style={{
-                      background: 'radial-gradient(ellipse 100% 80% at center, hsl(38 55% 50% / 0.12) 0%, hsl(35 50% 45% / 0.05) 50%, transparent 80%)',
-                      filter: 'blur(10px)',
-                    }}
-                  />
-                  
-                  {/* Glass container with amber tint */}
-                  <div 
-                    className="relative rounded-xl px-4 py-2.5 text-center"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(38 35% 18% / 0.5) 0%, hsl(35 30% 15% / 0.4) 100%)',
-                      border: '1px solid hsl(38 45% 45% / 0.2)',
-                      boxShadow: '0 0 20px hsl(38 50% 50% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-                    }}
-                  >
-                    <span 
-                      className="text-[11px] font-medium tracking-wide"
-                      style={{
-                        color: 'hsl(38 60% 65%)',
-                        textShadow: '0 0 12px hsl(38 55% 55% / 0.3)',
-                      }}
-                    >
-                      {t('gauge.contentNotAnalyzable')}
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
           )}
           

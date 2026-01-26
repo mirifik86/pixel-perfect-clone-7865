@@ -766,6 +766,7 @@ const Index = () => {
                 captureGlow={inputCaptureGlow}
                 validationMessage={validationMessage}
                 onClearValidation={handleClearValidation}
+                showInvalidBadge={hasFormContent && !formHasImage && !isFormInputValid}
               />
               
               {/* Disclaimer note - single line, branded */}

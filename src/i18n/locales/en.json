@@ -50,7 +50,8 @@
     "disclaimer": "LeenScore does not declare facts. It helps you evaluate information credibility.",
     "disclaimerLine1": "does not declare facts.",
     "disclaimerLine2": "It helps you evaluate information credibility.",
-    "validationError": "The content entered does not appear to contain analyzable information. Please enter a claim, text, or upload an image."
+    "validationError": "The content entered does not appear to contain analyzable information. Please enter a claim, text, or upload an image.",
+    "contentNotAnalyzable": "Content not analyzable"
   },
   "gauge": {
     "pending": "Pending",
