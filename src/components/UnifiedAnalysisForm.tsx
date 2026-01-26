@@ -349,8 +349,27 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
             {/* Text input + Image upload as visually distinct options */}
             <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
               
-              {/* Text input zone */}
+              {/* Text input zone with centered placeholder */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
+                {/* Custom placeholder overlay - centered at top with premium effect */}
+                {!inputText && (
+                  <div 
+                    className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
+                    style={{ paddingTop: 'var(--space-4)' }}
+                  >
+                    <span 
+                      className="text-center font-medium tracking-wide"
+                      style={{
+                        fontSize: 'var(--text-sm)',
+                        color: 'hsl(174 45% 65% / 0.7)',
+                        textShadow: '0 0 20px hsl(174 60% 50% / 0.3), 0 0 40px hsl(174 50% 45% / 0.15)',
+                        animation: 'placeholder-glow 3s ease-in-out infinite',
+                      }}
+                    >
+                      {t('form.placeholder')}
+                    </span>
+                  </div>
+                )}
                 <Textarea
                   ref={textareaRef}
                   value={inputText}
@@ -359,11 +378,11 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                   onKeyDown={handleKeyDown}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
-                  placeholder={t('form.placeholder')}
-                  className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                  placeholder=""
+                  className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                   style={{
                     minHeight: '80px',
-                    padding: 'var(--space-3)',
+                    padding: 'var(--space-4) var(--space-3) var(--space-3)',
                     fontSize: 'var(--text-sm)',
                     boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                   }}
@@ -551,6 +570,17 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           0% { opacity: 0; }
           40% { opacity: 1; }
           100% { opacity: 0; }
+        }
+        /* Premium placeholder glow - subtle breathing effect */
+        @keyframes placeholder-glow {
+          0%, 100% { 
+            opacity: 0.7; 
+            text-shadow: 0 0 18px hsl(174 55% 50% / 0.25), 0 0 35px hsl(174 45% 45% / 0.1);
+          }
+          50% { 
+            opacity: 1; 
+            text-shadow: 0 0 24px hsl(174 60% 55% / 0.4), 0 0 45px hsl(174 50% 50% / 0.2);
+          }
         }
       `}</style>
     </form>
