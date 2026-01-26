@@ -409,12 +409,18 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder=""
-                  className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                  className="w-full resize-none rounded-xl text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                   style={{
                     minHeight: '80px',
                     padding: 'var(--space-4) var(--space-3) var(--space-3)',
                     fontSize: 'var(--text-sm)',
-                    boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                    background: 'linear-gradient(to bottom, hsl(210 20% 14% / 0.85), hsl(215 22% 12% / 0.9))',
+                    border: '1px solid hsl(174 40% 40% / 0.12)',
+                    boxShadow: `
+                      inset 0 1px 0 hsl(0 0% 100% / 0.04),
+                      inset 0 2px 6px hsl(0 0% 0% / 0.15),
+                      0 0 20px hsl(174 50% 45% / 0.04)
+                    `,
                   }}
                 />
               </div>
