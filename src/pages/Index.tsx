@@ -429,6 +429,33 @@ const Index = () => {
     }
   }, [language, runBilingualTextAnalysis]);
 
+  // Input validation - checks if text appears to be meaningful content
+  const isValidInput = useCallback((text: string): boolean => {
+    const trimmed = text.trim();
+    
+    // Minimum length check (at least 10 characters for meaningful content)
+    if (trimmed.length < 10) return false;
+    
+    // Check for random character patterns (no vowels or too many consecutive consonants)
+    const vowelPattern = /[aeiouàâäéèêëïîôùûüœæ]/i;
+    const hasVowels = vowelPattern.test(trimmed);
+    if (!hasVowels) return false;
+    
+    // Check for word-like patterns (at least 2 words with 2+ characters each)
+    const words = trimmed.split(/\s+/).filter(w => w.length >= 2);
+    if (words.length < 2) return false;
+    
+    // Check for excessive special characters or numbers only
+    const alphaRatio = (trimmed.match(/[a-zA-ZàâäéèêëïîôùûüœæçÀÂÄÉÈÊËÏÎÔÙÛÜŒÆÇ]/g) || []).length / trimmed.length;
+    if (alphaRatio < 0.5) return false;
+    
+    // Check for repetitive characters (like "aaaaaaa" or "asdfasdf")
+    const repetitivePattern = /(.)\1{4,}/;
+    if (repetitivePattern.test(trimmed)) return false;
+    
+    return true;
+  }, []);
+
   // Unified analyze handler - supports text only, image only, or both (multimodal)
   const handleUnifiedAnalyze = useCallback(async (
     text: string, 
@@ -438,10 +465,22 @@ const Index = () => {
     if (image) {
       await handleImageAnalysis(image.file, image.preview, 'standard', text);
     } else if (text) {
+      // Validate text input before analysis
+      if (!isValidInput(text)) {
+        toast(i18nT('form.validationError'), {
+          duration: 5000,
+          style: {
+            background: 'hsl(220 20% 14%)',
+            border: '1px solid hsl(174 50% 40% / 0.3)',
+            color: 'hsl(0 0% 90%)',
+          },
+        });
+        return;
+      }
       // Text-only analysis
       await handleAnalyze(text);
     }
-  }, [handleImageAnalysis, handleAnalyze]);
+  }, [handleImageAnalysis, handleAnalyze, isValidInput, i18nT]);
 
   // Re-run analysis with edited text
   const handleRerunAnalysis = async (editedText: string) => {
