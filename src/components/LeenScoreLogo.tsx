@@ -4,7 +4,7 @@ export const LeenScoreLogo = () => {
   const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center gap-2 md:gap-3">
-      {/* Title - clean, editorial, no decorative effects */}
+      {/* Title - premium 3D depth effect */}
       <h1 
         className="font-semibold tracking-tight"
         style={{ 
@@ -17,6 +17,12 @@ export const LeenScoreLogo = () => {
           className="italic"
           style={{
             color: 'hsl(174 65% 52%)',
+            textShadow: `
+              0 0 30px hsl(174 70% 50% / 0.35),
+              0 0 60px hsl(174 65% 45% / 0.2),
+              0 2px 4px hsl(0 0% 0% / 0.3),
+              0 4px 8px hsl(0 0% 0% / 0.15)
+            `,
           }}
         >
           Leen
@@ -25,6 +31,12 @@ export const LeenScoreLogo = () => {
           className="not-italic" 
           style={{
             color: 'hsl(0 0% 98%)',
+            textShadow: `
+              0 1px 2px hsl(0 0% 0% / 0.25),
+              0 3px 6px hsl(0 0% 0% / 0.15),
+              0 -1px 0 hsl(0 0% 100% / 0.08),
+              0 0 20px hsl(0 0% 100% / 0.06)
+            `,
           }}
         >
           Score
