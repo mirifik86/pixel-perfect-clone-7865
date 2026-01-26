@@ -4,7 +4,7 @@ export const LeenScoreLogo = () => {
   const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center gap-2 md:gap-3">
-      {/* Title - premium 3D depth effect */}
+      {/* Title - ultra-premium 3D depth effect with embossed look */}
       <h1 
         className="font-semibold tracking-tight"
         style={{ 
@@ -18,10 +18,21 @@ export const LeenScoreLogo = () => {
           style={{
             color: 'hsl(174 65% 52%)',
             textShadow: `
-              0 0 30px hsl(174 70% 50% / 0.35),
-              0 0 60px hsl(174 65% 45% / 0.2),
-              0 2px 4px hsl(0 0% 0% / 0.3),
-              0 4px 8px hsl(0 0% 0% / 0.15)
+              /* Inner light - top edge highlight */
+              0 -2px 3px hsl(174 80% 75% / 0.4),
+              /* Primary glow - close */
+              0 0 20px hsl(174 75% 55% / 0.5),
+              /* Secondary glow - mid */
+              0 0 40px hsl(174 70% 50% / 0.35),
+              /* Tertiary glow - far */
+              0 0 80px hsl(174 65% 45% / 0.25),
+              /* 3D depth shadows - layered */
+              0 2px 0 hsl(174 60% 35% / 0.8),
+              0 4px 0 hsl(174 55% 28% / 0.6),
+              0 6px 0 hsl(174 50% 22% / 0.4),
+              /* Soft drop shadow */
+              0 8px 16px hsl(0 0% 0% / 0.4),
+              0 12px 32px hsl(0 0% 0% / 0.25)
             `,
           }}
         >
@@ -32,10 +43,18 @@ export const LeenScoreLogo = () => {
           style={{
             color: 'hsl(0 0% 98%)',
             textShadow: `
-              0 1px 2px hsl(0 0% 0% / 0.25),
-              0 3px 6px hsl(0 0% 0% / 0.15),
-              0 -1px 0 hsl(0 0% 100% / 0.08),
-              0 0 20px hsl(0 0% 100% / 0.06)
+              /* Inner light - top edge highlight */
+              0 -1px 2px hsl(0 0% 100% / 0.5),
+              /* Subtle ambient glow */
+              0 0 15px hsl(0 0% 100% / 0.12),
+              0 0 30px hsl(0 0% 100% / 0.06),
+              /* 3D depth shadows - layered */
+              0 2px 0 hsl(220 15% 75% / 0.5),
+              0 4px 0 hsl(220 20% 60% / 0.35),
+              0 6px 0 hsl(220 25% 45% / 0.25),
+              /* Soft drop shadow */
+              0 8px 16px hsl(0 0% 0% / 0.35),
+              0 12px 28px hsl(0 0% 0% / 0.2)
             `,
           }}
         >
@@ -43,7 +62,7 @@ export const LeenScoreLogo = () => {
         </span>
       </h1>
       
-      {/* Tagline: premium depth effect for visual coherence */}
+      {/* Tagline: premium 3D depth effect with subtle emboss */}
       <p 
         className="tracking-widest uppercase text-center -mt-1"
         style={{ 
@@ -51,10 +70,17 @@ export const LeenScoreLogo = () => {
           letterSpacing: '0.25em',
           color: 'hsl(0 0% 94%)',
           textShadow: `
-            0 1px 2px hsl(0 0% 0% / 0.3),
-            0 2px 4px hsl(0 0% 0% / 0.15),
-            0 0 15px hsl(174 50% 50% / 0.12),
-            0 -0.5px 0 hsl(0 0% 100% / 0.06)
+            /* Inner light highlight */
+            0 -1px 1px hsl(0 0% 100% / 0.25),
+            /* Teal accent glow */
+            0 0 12px hsl(174 55% 50% / 0.2),
+            0 0 25px hsl(174 50% 45% / 0.12),
+            /* 3D depth - subtle layers */
+            0 1px 0 hsl(220 15% 70% / 0.3),
+            0 2px 0 hsl(220 20% 55% / 0.2),
+            /* Soft drop shadow */
+            0 3px 8px hsl(0 0% 0% / 0.3),
+            0 5px 16px hsl(0 0% 0% / 0.15)
           `,
         }}
       >
