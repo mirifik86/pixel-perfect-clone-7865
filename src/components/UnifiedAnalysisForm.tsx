@@ -407,50 +407,48 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                 />
               </div>
               
-              {/* Image upload button - full width, distinct option */}
+              {/* Image upload button - secondary, elegant, premium */}
               <button
                 type="button"
                 onClick={handleAddImageClick}
-                className="flex items-center justify-center rounded-xl transition-all hover:scale-[1.01] group/img w-full"
+                className="flex items-center justify-center rounded-lg transition-all duration-300 hover:scale-[1.01] group/img w-full"
                 style={{
-                  padding: 'var(--space-3) var(--space-4)',
-                  gap: 'var(--space-3)',
+                  padding: 'var(--space-2) var(--space-3)',
+                  gap: 'var(--space-2)',
                   background: hasImage 
-                    ? 'linear-gradient(135deg, hsl(174 60% 35% / 0.35), hsl(174 50% 30% / 0.25))'
-                    : 'linear-gradient(135deg, hsl(174 50% 30% / 0.15), hsl(174 40% 25% / 0.1))',
+                    ? 'hsl(174 50% 20% / 0.15)'
+                    : 'transparent',
                   border: hasImage 
-                    ? '1px solid hsl(174 60% 50% / 0.4)'
-                    : '1px dashed hsl(174 50% 50% / 0.3)',
+                    ? '1px solid hsl(174 65% 50% / 0.4)'
+                    : '1px solid hsl(174 45% 45% / 0.2)',
                   boxShadow: hasImage
-                    ? '0 0 20px hsl(174 60% 50% / 0.15), 0 4px 12px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
-                    : '0 4px 12px hsl(0 0% 0% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
+                    ? '0 0 15px hsl(174 60% 50% / 0.12), inset 0 0 8px hsl(174 50% 50% / 0.05)'
+                    : '0 0 12px hsl(174 50% 45% / 0.06), inset 0 0 6px hsl(174 40% 40% / 0.03)',
                 }}
                 title={t('form.addImage')}
               >
-                {/* Icon container with glow */}
-                <div 
-                  className="rounded-lg transition-all group-hover/img:scale-110 shrink-0"
-                  style={{
-                    padding: 'var(--space-2)',
-                    background: hasImage 
-                      ? 'linear-gradient(135deg, hsl(174 70% 45% / 0.5), hsl(174 60% 40% / 0.4))'
-                      : 'linear-gradient(135deg, hsl(174 60% 45% / 0.25), hsl(174 50% 40% / 0.15))',
-                    boxShadow: '0 0 12px hsl(174 60% 50% / 0.1), 0 2px 6px hsl(0 0% 0% / 0.1)',
-                  }}
-                >
-                  {hasImage ? (
-                    <CheckCircle2 className="h-5 w-5" style={{ color: 'hsl(174 80% 65%)' }} />
-                  ) : (
-                    <ImagePlus className="h-5 w-5" style={{ color: 'hsl(174 65% 60%)' }} />
-                  )}
-                </div>
+                {/* Icon - slightly larger, no container background */}
+                {hasImage ? (
+                  <CheckCircle2 
+                    className="h-5 w-5 transition-all group-hover/img:scale-110" 
+                    style={{ color: 'hsl(174 75% 60%)' }} 
+                  />
+                ) : (
+                  <ImagePlus 
+                    className="h-[22px] w-[22px] transition-all group-hover/img:scale-110" 
+                    style={{ 
+                      color: 'hsl(174 55% 55% / 0.7)',
+                      filter: 'drop-shadow(0 0 4px hsl(174 50% 50% / 0.3))',
+                    }} 
+                  />
+                )}
                 
-                {/* Label - longer text now fits */}
+                {/* Label - smaller, more subtle */}
                 <span 
-                  className="font-medium"
+                  className="font-medium tracking-wide"
                   style={{ 
-                    color: hasImage ? 'hsl(174 70% 65%)' : 'hsl(174 55% 60% / 0.9)', 
-                    fontSize: 'var(--text-sm)',
+                    color: hasImage ? 'hsl(174 65% 62%)' : 'hsl(174 45% 55% / 0.65)', 
+                    fontSize: '11px',
                   }}
                 >
                   {hasImage ? t('form.imageReady') : t('form.imageUpload')}
