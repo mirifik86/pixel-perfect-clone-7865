@@ -51,7 +51,7 @@
     "disclaimerLine1": "は事実を宣言しません。",
     "disclaimerLine2": "情報の信頼性を評価するお手伝いをします。",
     "validationError": "分析不可のコンテンツ — 修正するか、新しいコンテンツを入力してください。",
-    "contentNotAnalyzable": "分析不可のコンテンツ"
+    "contentNotAnalyzable": "現時点では分析不可..."
   },
   "gauge": {
     "pending": "保留中",

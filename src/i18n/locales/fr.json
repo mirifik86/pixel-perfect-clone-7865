@@ -51,7 +51,7 @@
     "disclaimerLine1": "ne déclare pas les faits.",
     "disclaimerLine2": "Il vous aide à évaluer la crédibilité des informations.",
     "validationError": "Contenu non analysable — veuillez corriger ou saisir un nouveau contenu.",
-    "contentNotAnalyzable": "Contenu non analysable"
+    "contentNotAnalyzable": "Contenu non analysable pour le moment..."
   },
   "gauge": {
     "pending": "En attente",
