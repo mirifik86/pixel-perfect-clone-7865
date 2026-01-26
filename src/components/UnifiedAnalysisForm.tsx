@@ -185,6 +185,29 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
+      {/* Validation message - positioned above the input card */}
+      {validationMessage && (
+        <div 
+          className="flex items-center justify-center animate-fade-in"
+          style={{ 
+            marginBottom: 'var(--space-3)',
+            padding: 'var(--space-2) var(--space-4)',
+          }}
+        >
+          <p 
+            className="text-center font-medium leading-relaxed"
+            style={{
+              fontSize: '12px',
+              color: 'hsl(35 65% 62% / 0.95)',
+              textShadow: '0 0 12px hsl(35 55% 50% / 0.25)',
+              letterSpacing: '0.01em',
+            }}
+          >
+            {validationMessage}
+          </p>
+        </div>
+      )}
+      
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -358,7 +381,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               {/* Text input zone with centered placeholder */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 {/* Custom placeholder overlay - centered at top with premium effect */}
-                {!inputText && !validationMessage && (
+                {!inputText && (
                   <div 
                     className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
                     style={{ paddingTop: 'var(--space-4)' }}
@@ -377,26 +400,6 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                   </div>
                 )}
                 
-                {/* Validation message overlay - shown when validation fails */}
-                {validationMessage && (
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 animate-fade-in"
-                    style={{ padding: 'var(--space-3)' }}
-                  >
-                    <p 
-                      className="text-center font-medium leading-relaxed"
-                      style={{
-                        fontSize: '12px',
-                        color: 'hsl(35 70% 65% / 0.9)',
-                        textShadow: '0 0 15px hsl(35 60% 50% / 0.2)',
-                        maxWidth: '90%',
-                      }}
-                    >
-                      {validationMessage}
-                    </p>
-                  </div>
-                )}
-                
                 <Textarea
                   ref={textareaRef}
                   value={inputText}
@@ -411,9 +414,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     minHeight: '80px',
                     padding: 'var(--space-4) var(--space-3) var(--space-3)',
                     fontSize: 'var(--text-sm)',
-                    boxShadow: validationMessage 
-                      ? 'inset 0 2px 4px hsl(0 0% 0% / 0.1), inset 0 0 0 1px hsl(35 60% 50% / 0.25)'
-                      : 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                    boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                   }}
                 />
               </div>
