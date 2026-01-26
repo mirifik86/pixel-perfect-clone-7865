@@ -217,50 +217,61 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
         className="hidden"
       />
       
-      {/* Premium Drop Card - HIGH CONTRAST from background */}
+      {/* Premium Drop Card - ULTRA PREMIUM with deep glass morphism */}
       <div 
         className="relative cursor-text"
         onClick={handleCardClick}
       >
-        {/* Outer glow ring - enhanced on hover/drag/capture */}
+        {/* Outer ambient glow - multi-layered for depth */}
         <div 
-          className="absolute -inset-2 rounded-2xl transition-all duration-300"
+          className="absolute -inset-3 rounded-3xl transition-all duration-500"
           style={{
             background: showCaptureGlow
-              ? 'linear-gradient(135deg, hsl(174 75% 55% / 0.6), hsl(174 70% 60% / 0.45), hsl(174 75% 55% / 0.6))'
+              ? 'radial-gradient(ellipse at center, hsl(174 85% 60% / 0.5), hsl(174 75% 55% / 0.3) 50%, transparent 80%)'
               : isActive
-              ? 'linear-gradient(135deg, hsl(174 70% 50% / 0.5), hsl(174 60% 55% / 0.35), hsl(174 70% 50% / 0.5))'
+              ? 'radial-gradient(ellipse at center, hsl(174 80% 55% / 0.4), hsl(174 65% 50% / 0.2) 50%, transparent 80%)'
               : hasContent
-              ? 'linear-gradient(135deg, hsl(174 65% 50% / 0.35), hsl(174 55% 45% / 0.2), hsl(174 65% 50% / 0.35))'
-              : 'linear-gradient(135deg, hsl(174 60% 45% / 0.25), hsl(174 50% 40% / 0.15), hsl(174 60% 45% / 0.25))',
-            animation: showCaptureGlow ? 'capture-glow-pulse 180ms ease-out forwards' : 'card-glow 3s ease-in-out infinite',
-            filter: showCaptureGlow ? 'blur(16px)' : isActive ? 'blur(14px)' : 'blur(10px)',
+              ? 'radial-gradient(ellipse at center, hsl(174 75% 50% / 0.3), hsl(174 60% 45% / 0.15) 50%, transparent 80%)'
+              : 'radial-gradient(ellipse at center, hsl(174 70% 50% / 0.2), hsl(174 55% 45% / 0.1) 50%, transparent 80%)',
+            animation: showCaptureGlow ? 'capture-glow-pulse 180ms ease-out forwards' : 'card-ambient-glow 4s ease-in-out infinite',
+            filter: showCaptureGlow ? 'blur(20px)' : isActive ? 'blur(18px)' : 'blur(14px)',
             opacity: 1,
           }}
         />
         
-        {/* Glass card container - STRONG CONTRAST */}
+        {/* Secondary inner glow ring */}
         <div 
-          className="relative rounded-2xl border-2 transition-all duration-300"
+          className="absolute -inset-1 rounded-2xl transition-all duration-300"
           style={{
-            borderColor: showCaptureGlow
-              ? 'hsl(174 70% 55% / 0.6)'
+            background: hasContent 
+              ? 'linear-gradient(135deg, hsl(174 70% 55% / 0.15), transparent 40%, hsl(174 65% 50% / 0.1))'
+              : 'linear-gradient(135deg, hsl(174 60% 50% / 0.1), transparent 40%, hsl(174 55% 45% / 0.08))',
+            filter: 'blur(4px)',
+          }}
+        />
+        
+        {/* Glass card container - ULTRA PREMIUM with refined borders */}
+        <div 
+          className="relative rounded-2xl transition-all duration-300"
+          style={{
+            border: showCaptureGlow
+              ? '2px solid hsl(174 80% 60% / 0.7)'
               : isActive 
-              ? 'hsl(174 60% 50% / 0.5)' 
+              ? '2px solid hsl(174 70% 55% / 0.55)' 
               : hasContent 
-              ? 'hsl(174 60% 48% / 0.4)'
-              : 'hsl(174 50% 45% / 0.25)',
+              ? '2px solid hsl(174 65% 52% / 0.45)'
+              : '1.5px solid hsl(174 55% 48% / 0.3)',
             background: isActive
-              ? 'linear-gradient(to bottom, hsl(220 25% 12% / 0.95), hsl(220 30% 8% / 0.98))'
-              : 'linear-gradient(to bottom, hsl(220 25% 11% / 0.92), hsl(220 30% 7% / 0.96))',
-            backdropFilter: 'blur(24px)',
+              ? 'linear-gradient(165deg, hsl(220 28% 14% / 0.96), hsl(220 32% 9% / 0.98))'
+              : 'linear-gradient(165deg, hsl(220 28% 12% / 0.94), hsl(220 32% 8% / 0.97))',
+            backdropFilter: 'blur(28px)',
             boxShadow: showCaptureGlow
-              ? '0 0 70px hsl(174 70% 55% / 0.4), 0 16px 48px hsl(0 0% 0% / 0.5), inset 0 0 25px hsl(174 60% 55% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.25)'
+              ? '0 0 80px hsl(174 80% 58% / 0.45), 0 20px 60px hsl(0 0% 0% / 0.55), inset 0 0 30px hsl(174 70% 58% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.28), inset 0 -1px 0 hsl(174 60% 50% / 0.1)'
               : isActive
-              ? '0 0 60px hsl(174 60% 50% / 0.3), 0 16px 48px hsl(0 0% 0% / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.2)'
+              ? '0 0 70px hsl(174 70% 52% / 0.35), 0 18px 55px hsl(0 0% 0% / 0.52), inset 0 0 25px hsl(174 60% 55% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.22), inset 0 -1px 0 hsl(174 55% 48% / 0.08)'
               : hasContent
-              ? '0 0 50px hsl(174 60% 45% / 0.25), 0 12px 40px hsl(0 0% 0% / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
-              : '0 0 40px hsl(174 55% 45% / 0.15), 0 12px 40px hsl(0 0% 0% / 0.45), inset 0 1px 0 hsl(0 0% 100% / 0.12)',
+              ? '0 0 55px hsl(174 65% 48% / 0.28), 0 14px 45px hsl(0 0% 0% / 0.5), inset 0 0 20px hsl(174 55% 50% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.18), inset 0 -1px 0 hsl(174 50% 45% / 0.06)'
+              : '0 0 45px hsl(174 60% 48% / 0.18), 0 14px 42px hsl(0 0% 0% / 0.48), inset 0 0 15px hsl(174 50% 45% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(174 45% 42% / 0.04)',
           }}
         >
           {/* Capture glow inner pulse - triggered during idle→ready transfer */}
@@ -437,53 +448,73 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                 />
               </div>
               
-              {/* Image upload button - secondary, elegant, premium */}
-              <button
-                type="button"
-                onClick={handleAddImageClick}
-                className="flex items-center justify-center rounded-lg transition-all duration-300 hover:scale-[1.01] group/img w-full"
-                style={{
-                  padding: 'var(--space-2) var(--space-3)',
-                  gap: 'var(--space-2)',
-                  background: hasImage 
-                    ? 'hsl(174 50% 20% / 0.15)'
-                    : 'transparent',
-                  border: hasImage 
-                    ? '1px solid hsl(174 65% 50% / 0.4)'
-                    : '1px solid hsl(174 45% 45% / 0.2)',
-                  boxShadow: hasImage
-                    ? '0 0 15px hsl(174 60% 50% / 0.12), inset 0 0 8px hsl(174 50% 50% / 0.05)'
-                    : '0 0 12px hsl(174 50% 45% / 0.06), inset 0 0 6px hsl(174 40% 40% / 0.03)',
-                }}
-                title={t('form.addImage')}
-              >
-                {/* Icon - slightly larger, no container background */}
-                {hasImage ? (
-                  <CheckCircle2 
-                    className="h-5 w-5 transition-all group-hover/img:scale-110" 
-                    style={{ color: 'hsl(174 75% 60%)' }} 
-                  />
-                ) : (
-                  <ImagePlus 
-                    className="h-[22px] w-[22px] transition-all group-hover/img:scale-110" 
-                    style={{ 
-                      color: 'hsl(174 55% 55% / 0.7)',
-                      filter: 'drop-shadow(0 0 4px hsl(174 50% 50% / 0.3))',
-                    }} 
-                  />
-                )}
-                
-                {/* Label - smaller, more subtle */}
-                <span 
-                  className="font-medium tracking-wide"
-                  style={{ 
-                    color: hasImage ? 'hsl(174 65% 62%)' : 'hsl(174 45% 55% / 0.65)', 
-                    fontSize: '11px',
+              {/* Image upload button - ULTRA LUMINOUS premium CTA */}
+              <div className="relative">
+                {/* Ambient glow behind button */}
+                <div 
+                  className="absolute -inset-1 rounded-xl transition-all duration-500"
+                  style={{
+                    background: hasImage 
+                      ? 'radial-gradient(ellipse at center, hsl(174 85% 55% / 0.35), transparent 70%)'
+                      : 'radial-gradient(ellipse at center, hsl(174 80% 55% / 0.25), transparent 70%)',
+                    filter: 'blur(8px)',
+                    animation: hasImage ? 'none' : 'image-btn-glow 2.5s ease-in-out infinite',
                   }}
+                />
+                
+                <button
+                  type="button"
+                  onClick={handleAddImageClick}
+                  className="relative flex items-center justify-center rounded-xl transition-all duration-300 hover:scale-[1.02] group/img w-full"
+                  style={{
+                    padding: 'var(--space-3) var(--space-4)',
+                    gap: 'var(--space-2)',
+                    background: hasImage 
+                      ? 'linear-gradient(135deg, hsl(174 55% 22% / 0.35), hsl(174 50% 18% / 0.25))'
+                      : 'linear-gradient(135deg, hsl(174 60% 28% / 0.25), hsl(174 55% 22% / 0.18))',
+                    border: hasImage 
+                      ? '1.5px solid hsl(174 75% 55% / 0.55)'
+                      : '1.5px solid hsl(174 70% 55% / 0.4)',
+                    boxShadow: hasImage
+                      ? '0 0 35px hsl(174 75% 55% / 0.3), 0 0 15px hsl(174 70% 52% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 0 12px hsl(174 60% 55% / 0.1)'
+                      : '0 0 30px hsl(174 70% 55% / 0.22), 0 0 12px hsl(174 65% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.12), inset 0 0 10px hsl(174 55% 50% / 0.08)',
+                  }}
+                  title={t('form.addImage')}
                 >
-                  {hasImage ? t('form.imageReady') : t('form.imageUpload')}
-                </span>
-              </button>
+                  {/* Icon with enhanced glow */}
+                  {hasImage ? (
+                    <CheckCircle2 
+                      className="h-5 w-5 transition-all group-hover/img:scale-110" 
+                      style={{ 
+                        color: 'hsl(174 85% 65%)',
+                        filter: 'drop-shadow(0 0 8px hsl(174 80% 60% / 0.8))',
+                      }} 
+                    />
+                  ) : (
+                    <ImagePlus 
+                      className="h-6 w-6 transition-all group-hover/img:scale-110" 
+                      style={{ 
+                        color: 'hsl(174 80% 65%)',
+                        filter: 'drop-shadow(0 0 10px hsl(174 75% 60% / 0.7)) drop-shadow(0 0 20px hsl(174 70% 55% / 0.4))',
+                      }} 
+                    />
+                  )}
+                  
+                  {/* Label - brighter and more visible */}
+                  <span 
+                    className="font-semibold tracking-wide"
+                    style={{ 
+                      color: hasImage ? 'hsl(174 80% 70%)' : 'hsl(174 75% 68%)', 
+                      fontSize: '12px',
+                      textShadow: hasImage 
+                        ? '0 0 12px hsl(174 75% 60% / 0.5)'
+                        : '0 0 15px hsl(174 70% 58% / 0.6)',
+                    }}
+                  >
+                    {hasImage ? t('form.imageReady') : t('form.imageUpload')}
+                  </span>
+                </button>
+              </div>
               
               {/* Attached image preview - shown below text input when image is attached */}
               {attachedImage && (
