@@ -9,51 +9,51 @@ interface InGaugeAnalysisLoaderProps {
 const analysisSteps = {
   en: [
     "Structuring input",
-    "Evaluating credibility signals",
-    "Assessing contextual consistency",
-    "Finalizing plausibility score"
+    "Evaluating credibility",
+    "Analyzing context",
+    "Finalizing score"
   ],
   fr: [
-    "Structuration de l'entrée",
-    "Évaluation des signaux de crédibilité",
-    "Analyse de la cohérence contextuelle",
-    "Finalisation du score de plausibilité"
+    "Structuration",
+    "Évaluation crédibilité",
+    "Analyse contextuelle",
+    "Finalisation"
   ],
   es: [
-    "Estructurando entrada",
-    "Evaluando señales de credibilidad",
-    "Analizando consistencia contextual",
-    "Finalizando puntuación de plausibilidad"
+    "Estructurando",
+    "Evaluando credibilidad",
+    "Analizando contexto",
+    "Finalizando"
   ],
   de: [
-    "Eingabe strukturieren",
-    "Glaubwürdigkeitssignale auswerten",
-    "Kontextuelle Konsistenz prüfen",
-    "Plausibilitätswert finalisieren"
+    "Strukturierung",
+    "Glaubwürdigkeit prüfen",
+    "Kontext analysieren",
+    "Finalisierung"
   ],
   pt: [
-    "Estruturando entrada",
-    "Avaliando sinais de credibilidade",
-    "Analisando consistência contextual",
-    "Finalizando pontuação de plausibilidade"
+    "Estruturando",
+    "Avaliando credibilidade",
+    "Analisando contexto",
+    "Finalizando"
   ],
   it: [
-    "Strutturazione dell'input",
-    "Valutazione dei segnali di credibilità",
-    "Analisi della coerenza contestuale",
-    "Finalizzazione del punteggio di plausibilità"
+    "Strutturazione",
+    "Valutazione credibilità",
+    "Analisi contesto",
+    "Finalizzazione"
   ],
   ja: [
-    "入力を構造化中",
-    "信頼性シグナルを評価中",
-    "文脈の一貫性を分析中",
-    "妥当性スコアを最終化中"
+    "構造化中",
+    "信頼性評価",
+    "文脈分析",
+    "最終化"
   ],
   ko: [
-    "입력 구조화 중",
-    "신뢰성 신호 평가 중",
-    "맥락 일관성 분석 중",
-    "타당성 점수 완료 중"
+    "구조화 중",
+    "신뢰성 평가",
+    "맥락 분석",
+    "완료 중"
   ]
 };
 
@@ -66,14 +66,12 @@ export const InGaugeAnalysisLoader = ({ size }: InGaugeAnalysisLoaderProps) => {
   
   // Cycle through steps with smooth fade transitions
   useEffect(() => {
-    const stepDuration = 3200; // Time per step in ms
-    const fadeOutDuration = 400;
+    const stepDuration = 2800;
+    const fadeOutDuration = 300;
     
     const interval = setInterval(() => {
-      // Start fade out
       setIsTransitioning(true);
       
-      // Change step after fade out
       setTimeout(() => {
         setStepIndex((prev) => (prev + 1) % steps.length);
         setIsTransitioning(false);
@@ -84,119 +82,167 @@ export const InGaugeAnalysisLoader = ({ size }: InGaugeAnalysisLoaderProps) => {
     return () => clearInterval(interval);
   }, [steps.length]);
   
-  // Thin ring loader dimensions
-  const loaderSize = size * 0.35;
-  const loaderStrokeWidth = 2;
+  // Premium loader dimensions - compact and centered
+  const loaderSize = size * 0.28;
+  const loaderStrokeWidth = 2.5;
   const loaderRadius = (loaderSize - loaderStrokeWidth) / 2;
   const loaderCircumference = 2 * Math.PI * loaderRadius;
   
+  // Text positioned above the colored gauge arc (which starts at ~-45deg from bottom)
+  const textOffsetTop = size * 0.12;
+  
   return (
     <div 
-      className="flex flex-col items-center justify-center animate-fade-in"
-      style={{ gap: size * 0.06 }}
+      className="absolute inset-0 flex items-center justify-center animate-fade-in"
     >
-      {/* Premium thin ring loader */}
+      {/* Main centered container */}
       <div 
-        className="relative"
-        style={{ width: loaderSize, height: loaderSize }}
-      >
-        {/* Ambient glow behind loader */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, hsl(174 70% 55% / 0.25) 0%, transparent 70%)',
-            filter: 'blur(8px)',
-            animation: 'loader-glow-breathe 3s ease-in-out infinite',
-          }}
-        />
-        
-        {/* Static track ring */}
-        <svg 
-          className="absolute inset-0"
-          width={loaderSize} 
-          height={loaderSize} 
-          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
-        >
-          <circle
-            cx={loaderSize / 2}
-            cy={loaderSize / 2}
-            r={loaderRadius}
-            fill="none"
-            stroke="hsl(200 20% 30% / 0.3)"
-            strokeWidth={loaderStrokeWidth}
-          />
-        </svg>
-        
-        {/* Rotating arc - premium smooth rotation */}
-        <svg 
-          className="absolute inset-0"
-          width={loaderSize} 
-          height={loaderSize} 
-          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
-          style={{
-            animation: 'loader-rotate 2.4s linear infinite',
-          }}
-        >
-          <circle
-            cx={loaderSize / 2}
-            cy={loaderSize / 2}
-            r={loaderRadius}
-            fill="none"
-            stroke="hsl(174 78% 48%)"
-            strokeWidth={loaderStrokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={`${loaderCircumference * 0.25} ${loaderCircumference * 0.75}`}
-            style={{
-              filter: 'drop-shadow(0 0 4px hsl(174 70% 55% / 0.6))',
-            }}
-          />
-        </svg>
-        
-        {/* Secondary slower arc for depth */}
-        <svg 
-          className="absolute inset-0"
-          width={loaderSize} 
-          height={loaderSize} 
-          viewBox={`0 0 ${loaderSize} ${loaderSize}`}
-          style={{
-            animation: 'loader-rotate-reverse 4s linear infinite',
-          }}
-        >
-          <circle
-            cx={loaderSize / 2}
-            cy={loaderSize / 2}
-            r={loaderRadius - 4}
-            fill="none"
-            stroke="hsl(180 60% 50% / 0.4)"
-            strokeWidth={1}
-            strokeLinecap="round"
-            strokeDasharray={`${(loaderCircumference - 8 * Math.PI) * 0.15} ${(loaderCircumference - 8 * Math.PI) * 0.85}`}
-          />
-        </svg>
-      </div>
-      
-      {/* Evolving analysis step text */}
-      <div 
-        className="relative flex items-center justify-center"
+        className="relative flex flex-col items-center justify-center"
         style={{ 
-          minHeight: size * 0.14,
-          width: size * 0.85,
+          width: size * 0.7,
+          height: size * 0.5,
+          marginTop: -textOffsetTop,
         }}
       >
-        <span
-          className="absolute text-center font-medium tracking-wide"
-          style={{
-            fontSize: 'clamp(0.55rem, 1.8vw, 0.7rem)',
-            color: 'hsl(174 50% 65%)',
-            textShadow: '0 0 12px hsl(174 60% 50% / 0.4)',
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateY(4px)' : 'translateY(0)',
-            transition: 'opacity 400ms ease-out, transform 400ms ease-out',
-            lineHeight: 1.3,
+        {/* Premium orbital ring loader */}
+        <div 
+          className="relative"
+          style={{ width: loaderSize, height: loaderSize }}
+        >
+          {/* Ambient glow behind loader */}
+          <div 
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: 'radial-gradient(circle, hsl(174 75% 55% / 0.35) 0%, transparent 65%)',
+              filter: 'blur(6px)',
+              animation: 'loader-glow-breathe 2.5s ease-in-out infinite',
+            }}
+          />
+          
+          {/* Static track ring */}
+          <svg 
+            className="absolute inset-0"
+            width={loaderSize} 
+            height={loaderSize} 
+            viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+          >
+            <circle
+              cx={loaderSize / 2}
+              cy={loaderSize / 2}
+              r={loaderRadius}
+              fill="none"
+              stroke="hsl(200 20% 25% / 0.4)"
+              strokeWidth={loaderStrokeWidth}
+            />
+          </svg>
+          
+          {/* Primary rotating arc */}
+          <svg 
+            className="absolute inset-0"
+            width={loaderSize} 
+            height={loaderSize} 
+            viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+            style={{
+              animation: 'loader-rotate 1.8s linear infinite',
+            }}
+          >
+            <circle
+              cx={loaderSize / 2}
+              cy={loaderSize / 2}
+              r={loaderRadius}
+              fill="none"
+              stroke="hsl(174 80% 50%)"
+              strokeWidth={loaderStrokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={`${loaderCircumference * 0.3} ${loaderCircumference * 0.7}`}
+              style={{
+                filter: 'drop-shadow(0 0 5px hsl(174 75% 55% / 0.7))',
+              }}
+            />
+          </svg>
+          
+          {/* Secondary counter-rotating arc for depth */}
+          <svg 
+            className="absolute inset-0"
+            width={loaderSize} 
+            height={loaderSize} 
+            viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+            style={{
+              animation: 'loader-rotate-reverse 3.2s linear infinite',
+            }}
+          >
+            <circle
+              cx={loaderSize / 2}
+              cy={loaderSize / 2}
+              r={loaderRadius - 5}
+              fill="none"
+              stroke="hsl(180 65% 55% / 0.45)"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeDasharray={`${(loaderCircumference - 10 * Math.PI) * 0.18} ${(loaderCircumference - 10 * Math.PI) * 0.82}`}
+            />
+          </svg>
+          
+          {/* Center dot pulse */}
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              width: 4,
+              height: 4,
+              background: 'hsl(174 85% 60%)',
+              boxShadow: '0 0 8px hsl(174 80% 55% / 0.8)',
+              animation: 'center-dot-pulse 1.5s ease-in-out infinite',
+            }}
+          />
+        </div>
+        
+        {/* Status text - positioned below the loader ring */}
+        <div 
+          className="relative flex items-center justify-center"
+          style={{ 
+            marginTop: size * 0.04,
+            height: size * 0.08,
+            width: '100%',
           }}
         >
-          {steps[stepIndex]}
-        </span>
+          <span
+            className="absolute text-center font-semibold uppercase tracking-widest whitespace-nowrap"
+            style={{
+              fontSize: 'clamp(0.5rem, 1.6vw, 0.65rem)',
+              color: 'hsl(174 55% 70%)',
+              textShadow: '0 0 15px hsl(174 65% 55% / 0.5), 0 0 30px hsl(174 55% 50% / 0.25)',
+              opacity: isTransitioning ? 0 : 1,
+              transform: isTransitioning ? 'translateY(3px) scale(0.98)' : 'translateY(0) scale(1)',
+              transition: 'opacity 300ms ease-out, transform 300ms ease-out',
+              letterSpacing: '0.15em',
+            }}
+          >
+            {steps[stepIndex]}
+          </span>
+        </div>
+        
+        {/* Progress dots indicator */}
+        <div 
+          className="flex items-center justify-center gap-1.5"
+          style={{ marginTop: size * 0.025 }}
+        >
+          {steps.map((_, idx) => (
+            <div
+              key={idx}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: idx === stepIndex ? 6 : 3,
+                height: 3,
+                background: idx === stepIndex 
+                  ? 'hsl(174 80% 55%)' 
+                  : idx < stepIndex 
+                    ? 'hsl(174 60% 45% / 0.6)' 
+                    : 'hsl(200 20% 40% / 0.4)',
+                boxShadow: idx === stepIndex ? '0 0 6px hsl(174 80% 55% / 0.6)' : 'none',
+              }}
+            />
+          ))}
+        </div>
       </div>
       
       {/* CSS animations */}
@@ -211,12 +257,22 @@ export const InGaugeAnalysisLoader = ({ size }: InGaugeAnalysisLoaderProps) => {
         }
         @keyframes loader-glow-breathe {
           0%, 100% { 
-            opacity: 0.6; 
-            transform: scale(0.95);
+            opacity: 0.7; 
+            transform: scale(0.9);
           }
           50% { 
             opacity: 1; 
-            transform: scale(1.1);
+            transform: scale(1.15);
+          }
+        }
+        @keyframes center-dot-pulse {
+          0%, 100% { 
+            opacity: 0.6; 
+            transform: translate(-50%, -50%) scale(0.8);
+          }
+          50% { 
+            opacity: 1; 
+            transform: translate(-50%, -50%) scale(1.2);
           }
         }
       `}</style>
