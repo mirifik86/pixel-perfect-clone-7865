@@ -51,7 +51,7 @@
     "disclaimerLine1": "는 사실을 선언하지 않습니다.",
     "disclaimerLine2": "정보의 신뢰성을 평가하는 데 도움을 줍니다.",
     "validationError": "분석 불가 콘텐츠 — 수정하거나 새 콘텐츠를 입력하세요.",
-    "contentNotAnalyzable": "분석 불가 콘텐츠"
+    "contentNotAnalyzable": "현재 분석 불가..."
   },
   "gauge": {
     "pending": "대기 중",

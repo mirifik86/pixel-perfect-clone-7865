@@ -51,7 +51,7 @@
     "disclaimerLine1": "erklärt keine Fakten.",
     "disclaimerLine2": "Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten.",
     "validationError": "Inhalt nicht analysierbar — bitte korrigieren oder neuen Inhalt eingeben.",
-    "contentNotAnalyzable": "Inhalt nicht analysierbar"
+    "contentNotAnalyzable": "Inhalt derzeit nicht analysierbar..."
   },
   "gauge": {
     "pending": "Ausstehend",

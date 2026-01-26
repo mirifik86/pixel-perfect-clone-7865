@@ -51,7 +51,7 @@
     "disclaimerLine1": "does not declare facts.",
     "disclaimerLine2": "It helps you evaluate information credibility.",
     "validationError": "Content not analyzable — please correct or enter new content.",
-    "contentNotAnalyzable": "Content not analyzable"
+    "contentNotAnalyzable": "Content not analyzable for now..."
   },
   "gauge": {
     "pending": "Pending",
