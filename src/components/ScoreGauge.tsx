@@ -955,42 +955,48 @@ export const ScoreGauge = ({
           {/* Validation Error Message - replaces button in same location */}
           {uiState === 'ready' && showValidationError && (
             <div 
-              className="relative animate-fade-in"
-              style={{ 
-                width: size * 0.85, 
-                maxWidth: '200px',
-                minHeight: '44px',
-              }}
+              className="absolute inset-0 flex items-center justify-center"
             >
-              {/* Soft amber ambient glow */}
               <div 
-                className="absolute -inset-3 rounded-2xl pointer-events-none"
-                style={{
-                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(38 45% 35% / 0.25) 0%, transparent 70%)',
-                  filter: 'blur(12px)',
-                }}
-              />
-              
-              {/* Message container - premium glass style */}
-              <div 
-                className="relative rounded-xl px-4 py-3 text-center"
-                style={{
-                  background: 'linear-gradient(145deg, hsl(35 25% 14% / 0.9) 0%, hsl(38 22% 11% / 0.85) 100%)',
-                  border: '1px solid hsl(38 40% 42% / 0.25)',
-                  boxShadow: '0 0 25px hsl(38 45% 40% / 0.12), 0 4px 16px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+                className="relative animate-fade-in"
+                style={{ 
+                  width: size * 0.75, 
+                  maxWidth: '180px',
                 }}
               >
-                <p 
-                  className="font-medium leading-snug"
+                {/* Breathing ambient glow */}
+                <div 
+                  className="absolute -inset-4 rounded-2xl pointer-events-none"
                   style={{
-                    fontSize: '11px',
-                    color: 'hsl(38 55% 62%)',
-                    textShadow: '0 0 10px hsl(38 50% 50% / 0.3)',
-                    letterSpacing: '0.02em',
+                    background: 'radial-gradient(ellipse 100% 100% at center, hsl(38 50% 40% / 0.35) 0%, hsl(35 45% 35% / 0.15) 50%, transparent 80%)',
+                    filter: 'blur(14px)',
+                    animation: 'validation-breath 3s ease-in-out infinite',
+                  }}
+                />
+                
+                {/* Message container - premium glass style with breathing border */}
+                <div 
+                  className="relative rounded-xl px-4 py-3 text-center"
+                  style={{
+                    background: 'linear-gradient(145deg, hsl(35 28% 13% / 0.92) 0%, hsl(38 25% 10% / 0.88) 100%)',
+                    border: '1px solid hsl(38 45% 45% / 0.3)',
+                    boxShadow: '0 0 30px hsl(38 50% 42% / 0.15), 0 4px 20px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
+                    animation: 'validation-container-breath 3s ease-in-out infinite',
                   }}
                 >
-                  {t('gauge.validationError')}
-                </p>
+                  <p 
+                    className="font-medium leading-snug"
+                    style={{
+                      fontSize: '11px',
+                      color: 'hsl(38 60% 65%)',
+                      textShadow: '0 0 12px hsl(38 55% 50% / 0.4)',
+                      letterSpacing: '0.025em',
+                      animation: 'validation-text-breath 3s ease-in-out infinite',
+                    }}
+                  >
+                    {t('gauge.validationError')}
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -1619,6 +1625,37 @@ export const ScoreGauge = ({
           50% { 
             opacity: 1;
             transform: scale(1.02);
+          }
+        }
+        /* Validation message breathing animations */
+        @keyframes validation-breath {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: scale(0.97);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.03);
+          }
+        }
+        @keyframes validation-container-breath {
+          0%, 100% { 
+            box-shadow: 0 0 25px hsl(38 50% 42% / 0.12), 0 4px 18px hsl(0 0% 0% / 0.32), inset 0 1px 0 hsl(0 0% 100% / 0.05);
+            border-color: hsl(38 45% 45% / 0.25);
+          }
+          50% { 
+            box-shadow: 0 0 35px hsl(38 55% 48% / 0.22), 0 4px 22px hsl(0 0% 0% / 0.38), inset 0 1px 0 hsl(0 0% 100% / 0.08);
+            border-color: hsl(38 50% 50% / 0.35);
+          }
+        }
+        @keyframes validation-text-breath {
+          0%, 100% { 
+            text-shadow: 0 0 10px hsl(38 55% 50% / 0.3);
+            opacity: 0.9;
+          }
+          50% { 
+            text-shadow: 0 0 16px hsl(38 60% 55% / 0.5);
+            opacity: 1;
           }
         }
       `}</style>
