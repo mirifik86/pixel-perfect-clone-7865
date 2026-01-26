@@ -208,9 +208,16 @@ export const ScoreGauge = ({
   useEffect(() => {
     const prevState = prevUiStateRef.current;
     
+    // Reset buttonAbsorbed when transitioning back to idle or ready from any state
+    // This ensures the button reappears after validation failures
+    if (uiState === 'idle' || (prevState !== 'ready' && uiState === 'ready')) {
+      setButtonAbsorbed(false);
+    }
+    
     // Idle → Ready transition: Trigger transfer animation sequence
     if (prevState === 'idle' && uiState === 'ready') {
       setIsTransitioning(true);
+      setButtonAbsorbed(false); // Ensure button is visible
       
       // 1) Input capture phase (notify parent to show input glow)
       onTransferStart?.();
@@ -244,6 +251,14 @@ export const ScoreGauge = ({
       setIsRevealingScore(true);
       // Keep reveal state active during score animation
       setTimeout(() => setIsRevealingScore(false), 800);
+    }
+    
+    // Any state → Idle transition: Reset all animation states
+    if (uiState === 'idle' && prevState !== 'idle') {
+      setButtonAbsorbed(false);
+      setIsTransitioning(false);
+      setShowTransferBeam(false);
+      setButtonCharged(false);
     }
     
     prevUiStateRef.current = uiState;
