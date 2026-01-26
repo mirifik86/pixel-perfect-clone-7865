@@ -9,6 +9,8 @@ interface UnifiedAnalysisFormProps {
   onContentChange?: (hasContent: boolean) => void;
   highlightInput?: boolean; // Triggered when chevrons complete a cycle (idle state)
   captureGlow?: boolean; // Triggered when idle→ready transfer starts
+  validationMessage?: string | null; // Inline validation message to display
+  onClearValidation?: () => void; // Clear validation when user starts typing
 }
 
 export interface UnifiedAnalysisFormHandle {
@@ -19,7 +21,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
-  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow }, ref) => {
+  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, validationMessage, onClearValidation }, ref) => {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [attachedImage, setAttachedImage] = useState<{ file: File; preview: string } | null>(null);
@@ -142,6 +144,10 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
+    // Clear validation message when user starts typing
+    if (validationMessage && e.target.value !== inputText) {
+      onClearValidation?.();
+    }
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -352,7 +358,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               {/* Text input zone with centered placeholder */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 {/* Custom placeholder overlay - centered at top with premium effect */}
-                {!inputText && (
+                {!inputText && !validationMessage && (
                   <div 
                     className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
                     style={{ paddingTop: 'var(--space-4)' }}
@@ -370,6 +376,27 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     </span>
                   </div>
                 )}
+                
+                {/* Validation message overlay - shown when validation fails */}
+                {validationMessage && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 animate-fade-in"
+                    style={{ padding: 'var(--space-3)' }}
+                  >
+                    <p 
+                      className="text-center font-medium leading-relaxed"
+                      style={{
+                        fontSize: '12px',
+                        color: 'hsl(35 70% 65% / 0.9)',
+                        textShadow: '0 0 15px hsl(35 60% 50% / 0.2)',
+                        maxWidth: '90%',
+                      }}
+                    >
+                      {validationMessage}
+                    </p>
+                  </div>
+                )}
+                
                 <Textarea
                   ref={textareaRef}
                   value={inputText}
@@ -384,7 +411,9 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     minHeight: '80px',
                     padding: 'var(--space-4) var(--space-3) var(--space-3)',
                     fontSize: 'var(--text-sm)',
-                    boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                    boxShadow: validationMessage 
+                      ? 'inset 0 2px 4px hsl(0 0% 0% / 0.1), inset 0 0 0 1px hsl(35 60% 50% / 0.25)'
+                      : 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
                   }}
                 />
               </div>

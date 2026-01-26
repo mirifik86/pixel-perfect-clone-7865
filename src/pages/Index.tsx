@@ -137,6 +137,7 @@ const Index = () => {
   const [hasFormContent, setHasFormContent] = useState(false);
   const [inputHighlight, setInputHighlight] = useState(false);
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
   
   // Handle chevron cycle complete - trigger input highlight (idle state beam impact)
   const handleChevronCycleComplete = useCallback(() => {
@@ -461,26 +462,27 @@ const Index = () => {
     text: string, 
     image: { file: File; preview: string } | null
   ) => {
+    // Clear any previous validation message
+    setValidationMessage(null);
+    
     // If we have an image, use image analysis (which includes text context if available)
     if (image) {
       await handleImageAnalysis(image.file, image.preview, 'standard', text);
     } else if (text) {
       // Validate text input before analysis
       if (!isValidInput(text)) {
-        toast(i18nT('form.validationError'), {
-          duration: 5000,
-          style: {
-            background: 'hsl(220 20% 14%)',
-            border: '1px solid hsl(174 50% 40% / 0.3)',
-            color: 'hsl(0 0% 90%)',
-          },
-        });
+        setValidationMessage(i18nT('form.validationError'));
         return;
       }
       // Text-only analysis
       await handleAnalyze(text);
     }
   }, [handleImageAnalysis, handleAnalyze, isValidInput, i18nT]);
+  
+  // Clear validation message when user types
+  const handleClearValidation = useCallback(() => {
+    setValidationMessage(null);
+  }, []);
 
   // Re-run analysis with edited text
   const handleRerunAnalysis = async (editedText: string) => {
@@ -753,6 +755,8 @@ const Index = () => {
                 onContentChange={setHasFormContent}
                 highlightInput={inputHighlight}
                 captureGlow={inputCaptureGlow}
+                validationMessage={validationMessage}
+                onClearValidation={handleClearValidation}
               />
               
               {/* Disclaimer note - single line, branded */}
