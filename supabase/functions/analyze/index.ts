@@ -147,14 +147,32 @@ Perform a high-quality web search:
 - PRIORITIZE: recognized media, press agencies, official institutions
 - EXCLUDE: social media, anonymous blogs, unverified opinion sites
 
-CRITICAL SOURCE URL REQUIREMENT:
-- For EACH source, you MUST provide the EXACT article URL (the specific page/article)
-- NEVER use homepage URLs (e.g., "https://reuters.com" or "https://bbc.com")
-- NEVER use category or section pages
-- If you cannot find a specific article URL for a claim, DO NOT include that source
-- The URL must point directly to the article, study, or page that contains the evidence
-- Example GOOD: "https://www.reuters.com/world/europe/specific-article-title-2024-01-15/"
-- Example BAD: "https://www.reuters.com" or "https://www.reuters.com/world/"
+===== CRITICAL: SOURCE URL VALIDATION (MANDATORY) =====
+
+BEFORE including ANY source, you MUST verify:
+1. The URL points to a SPECIFIC ARTICLE, not a homepage or category page
+2. The article content DIRECTLY discusses the EXACT claim being analyzed
+3. The page clearly supports OR refutes the specific assertion
+
+STRICT URL RULES:
+- ONLY include URLs that are specific article/page paths with clear slugs or IDs
+- URLs MUST have a specific path segment (e.g., /article/title-slug, /news/specific-story, /2024/01/article-name)
+- NEVER include these URL patterns:
+  * Homepage: "https://reuters.com", "https://bbc.com"
+  * Category pages: "https://cnn.com/world", "https://nytimes.com/science"
+  * Search results: any URL with "search?", "results?", "q="
+  * Generic sections: "/about", "/contact", "/category/"
+  * Landing pages without specific article content
+
+URL VALIDATION EXAMPLES:
+✅ VALID: "https://www.reuters.com/world/europe/eiffel-tower-celebrates-anniversary-2024-03-31/"
+✅ VALID: "https://www.nature.com/articles/d41586-024-00001-1"
+✅ VALID: "https://www.bbc.com/news/world-europe-12345678"
+❌ INVALID: "https://www.reuters.com" (homepage)
+❌ INVALID: "https://www.bbc.com/news" (category)
+❌ INVALID: "https://en.wikipedia.org/wiki/Main_Page" (main page, not specific article)
+
+IF UNSURE: If you cannot verify the URL points to content directly relevant to the claim, DO NOT include that source. Quality over quantity.
 
 CORROBORATION OUTCOMES:
 
