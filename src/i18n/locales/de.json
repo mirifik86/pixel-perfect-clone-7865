@@ -60,7 +60,6 @@
     "analyzing": "Analysieren...",
     "methodology": "Dieser Glaubwürdigkeitswert wird durch eine strukturierte Multi-Signal-Analyse generiert, die Inhaltskonsistenz, kontextuelle Verifizierungssignale und Risikoindikatoren kombiniert. Die Werte folgen einer klaren Glaubwürdigkeitsskala von niedrigem bis hohem Vertrauen und werden von einer erklärbaren Aufschlüsselung begleitet, die die wichtigsten Einflussfaktoren hervorhebt.",
     "contentNotAnalyzable": "Inhalt scheint nicht analysierbar.",
-    "validationError": "Eingabe nicht analysierbar. Bitte geben Sie gültigen Inhalt ein.",
     "credibilityLevels": {
       "veryLow": "Sehr niedrig",
       "low": "Niedrig",

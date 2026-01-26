@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Image, X, ImagePlus } from 'lucide-react';
+import { CheckCircle2, Image, X, ImagePlus, Info } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/i18n/useLanguage';
 
@@ -9,7 +9,9 @@ interface UnifiedAnalysisFormProps {
   onContentChange?: (hasContent: boolean, textContent?: string, hasImage?: boolean) => void;
   highlightInput?: boolean; // Triggered when chevrons complete a cycle (idle state)
   captureGlow?: boolean; // Triggered when idle→ready transfer starts
+  validationMessage?: string | null; // Inline validation message to display
   onClearValidation?: () => void; // Clear validation when user starts typing
+  showInvalidBadge?: boolean; // Show "not analyzable" badge near input
 }
 
 export interface UnifiedAnalysisFormHandle {
@@ -20,7 +22,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
-  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, onClearValidation }, ref) => {
+  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, validationMessage, onClearValidation, showInvalidBadge }, ref) => {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [attachedImage, setAttachedImage] = useState<{ file: File; preview: string } | null>(null);
@@ -142,10 +144,9 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setInputText(newValue);
-    // Clear validation error in parent when user starts typing
-    if (newValue !== inputText) {
+    setInputText(e.target.value);
+    // Clear validation message when user starts typing
+    if (validationMessage && e.target.value !== inputText) {
       onClearValidation?.();
     }
   };
@@ -185,6 +186,29 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
+      {/* Validation message - positioned above the input card */}
+      {validationMessage && (
+        <div 
+          className="flex items-center justify-center animate-fade-in"
+          style={{ 
+            marginBottom: 'var(--space-3)',
+            padding: 'var(--space-2) var(--space-4)',
+          }}
+        >
+          <p 
+            className="text-center font-medium leading-relaxed"
+            style={{
+              fontSize: '12px',
+              color: 'hsl(35 65% 62% / 0.95)',
+              textShadow: '0 0 12px hsl(35 55% 50% / 0.25)',
+              letterSpacing: '0.01em',
+            }}
+          >
+            {validationMessage}
+          </p>
+        </div>
+      )}
+      
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -403,6 +427,39 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     }}
                   />
                 </div>
+                
+                {/* Invalid input badge - desktop: right side, mobile: below */}
+                {showInvalidBadge && (
+                  <div 
+                    className="flex items-center justify-center md:justify-start animate-fade-in md:self-center"
+                    style={{ 
+                      minWidth: 'fit-content',
+                    }}
+                  >
+                    <div 
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(35 30% 12% / 0.8) 0%, hsl(38 25% 10% / 0.7) 100%)',
+                        border: '1px solid hsl(38 40% 40% / 0.2)',
+                        boxShadow: '0 2px 8px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
+                      }}
+                    >
+                      <Info 
+                        className="h-3 w-3 shrink-0" 
+                        style={{ color: 'hsl(38 50% 55% / 0.8)' }}
+                      />
+                      <span 
+                        className="text-[10px] font-medium tracking-wide whitespace-nowrap"
+                        style={{
+                          color: 'hsl(38 55% 60%)',
+                          textShadow: '0 0 8px hsl(38 50% 50% / 0.25)',
+                        }}
+                      >
+                        {t('form.contentNotAnalyzable')}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Visual separator with "or" */}

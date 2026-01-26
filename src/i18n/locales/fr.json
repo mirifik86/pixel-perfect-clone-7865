@@ -61,7 +61,6 @@
     "analyzing": "Analyse en cours...",
     "methodology": "Ce score de crédibilité est généré à l'aide d'une analyse multi-signaux structurée combinant cohérence du contenu, signaux de vérification contextuelle et indicateurs de risque. Les scores suivent une échelle de crédibilité claire, de faible à haute confiance, et sont accompagnés d'une explication détaillée des facteurs clés influençant le résultat.",
     "contentNotAnalyzable": "Le contenu ne semble pas analysable.",
-    "validationError": "Saisie non analysable. Veuillez entrer un contenu valide.",
     "credibilityLevels": {
       "veryLow": "Très faible",
       "low": "Faible",

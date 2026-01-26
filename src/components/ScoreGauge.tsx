@@ -12,7 +12,7 @@ interface ScoreGaugeProps {
   isLoading?: boolean; // Loading state for the button
   onChevronCycleComplete?: () => void; // Callback when chevron cascade completes (for input highlight)
   onTransferStart?: () => void; // Callback when idle→ready transfer animation starts (for input capture effect)
-  showValidationError?: boolean; // When true after failed validation, show message instead of button
+  isInputValid?: boolean; // When hasContent but input is not analyzable, show message instead of button
 }
 
 // Generate sparkle particles configuration
@@ -37,7 +37,7 @@ export const ScoreGauge = ({
   isLoading = false,
   onChevronCycleComplete,
   onTransferStart,
-  showValidationError = false
+  isInputValid = true
 }: ScoreGaugeProps) => {
   const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -797,8 +797,7 @@ export const ScoreGauge = ({
           )}
 
           {/* READY STATE: ANALYZE button - Premium signature control with entrance animation */}
-          {/* Button OR Validation Message - same location */}
-          {uiState === 'ready' && !buttonAbsorbed && !showValidationError && (
+          {uiState === 'ready' && !buttonAbsorbed && (
             <div 
               className="relative group"
               style={{ 
@@ -891,7 +890,7 @@ export const ScoreGauge = ({
               <Button
                 type="button"
                 onClick={handleAnalyzeClick}
-                disabled={isLoading}
+                disabled={isLoading || !isInputValid}
                 className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
                 style={{
                   background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
@@ -948,59 +947,6 @@ export const ScoreGauge = ({
                 }}
               >
                 <span>{t('gauge.startAnalysis')}</span>
-              </div>
-            </div>
-          )}
-          
-          {/* Validation Error Message - centered in gauge with pulsing halo */}
-          {uiState === 'ready' && showValidationError && (
-            <div 
-              className="absolute animate-fade-in pointer-events-none"
-              style={{ 
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: size * 0.85, 
-                maxWidth: '200px',
-                zIndex: 20,
-              }}
-            >
-              {/* Pulsing halo glow behind - respects reduced motion */}
-              <div 
-                className="absolute rounded-2xl pointer-events-none"
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '140%',
-                  height: '160%',
-                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(38 50% 40% / 0.22) 0%, hsl(38 45% 35% / 0.12) 40%, transparent 70%)',
-                  filter: 'blur(16px)',
-                  animation: 'validation-halo-pulse 3s ease-in-out infinite',
-                }}
-              />
-              
-              {/* Message container - premium dark glass style */}
-              <div 
-                className="relative rounded-xl px-4 py-3 text-center"
-                style={{
-                  background: 'linear-gradient(145deg, hsl(35 25% 14% / 0.92) 0%, hsl(38 22% 11% / 0.88) 100%)',
-                  border: '1px solid hsl(38 40% 42% / 0.28)',
-                  boxShadow: '0 0 30px hsl(38 50% 42% / 0.15), 0 6px 20px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                <p 
-                  className="font-medium leading-snug"
-                  style={{
-                    fontSize: '11px',
-                    color: 'hsl(38 55% 62%)',
-                    textShadow: '0 0 12px hsl(38 50% 50% / 0.35)',
-                    letterSpacing: '0.025em',
-                  }}
-                >
-                  {t('gauge.validationError')}
-                </p>
               </div>
             </div>
           )}
@@ -1629,24 +1575,6 @@ export const ScoreGauge = ({
           50% { 
             opacity: 1;
             transform: scale(1.02);
-          }
-        }
-        /* Validation error halo pulse - soft amber breathing */
-        @keyframes validation-halo-pulse {
-          0%, 100% { 
-            opacity: 0.6;
-            transform: translate(-50%, -50%) scale(1);
-          }
-          50% { 
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.08);
-          }
-        }
-        /* Respect reduced motion preferences */
-        @media (prefers-reduced-motion: reduce) {
-          .absolute[style*="validation-halo-pulse"] {
-            animation: none !important;
-            opacity: 0.8;
           }
         }
       `}</style>

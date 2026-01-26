@@ -60,7 +60,6 @@
     "analyzing": "Analisando...",
     "methodology": "Esta pontuação de credibilidade é gerada usando uma análise estruturada de múltiplos sinais, combinando consistência de conteúdo, sinais de verificação contextual e indicadores de risco. As pontuações seguem uma escala de credibilidade clara, de baixa a alta confiança, e são acompanhadas de uma explicação detalhada destacando os principais fatores que influenciam o resultado.",
     "contentNotAnalyzable": "O conteúdo não parece analisável.",
-    "validationError": "Entrada não analisável. Por favor, insira conteúdo válido.",
     "credibilityLevels": {
       "veryLow": "Muito baixa",
       "low": "Baixa",
