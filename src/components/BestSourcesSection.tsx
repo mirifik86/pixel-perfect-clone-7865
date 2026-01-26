@@ -85,6 +85,26 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
+// Extract root domain from URL for deduplication
+const getRootDomain = (url: string): string => {
+  try {
+    const hostname = new URL(url).hostname;
+    // Remove www. prefix and get root domain
+    const parts = hostname.replace(/^www\./, '').split('.');
+    // Handle domains like bbc.co.uk, gov.uk
+    if (parts.length >= 2) {
+      const tld = parts.slice(-2).join('.');
+      if (['co.uk', 'com.au', 'org.uk', 'gov.uk', 'ac.uk', 'net.au'].includes(tld)) {
+        return parts.slice(-3).join('.');
+      }
+      return parts.slice(-2).join('.');
+    }
+    return hostname;
+  } catch {
+    return '';
+  }
+};
+
 export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSectionProps) => {
   const t = {
     title: language === 'fr' ? 'Meilleures preuves (PRO)' : 'Best evidence (PRO)',
@@ -137,8 +157,19 @@ export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSe
     }
   });
   
+  // Deduplicate by root domain - keep only the first (most relevant) source per domain
+  const seenDomains = new Set<string>();
+  const deduplicatedSources = validSources.filter(({ source }) => {
+    const domain = getRootDomain(source.url);
+    if (!domain || seenDomains.has(domain)) {
+      return false;
+    }
+    seenDomains.add(domain);
+    return true;
+  });
+  
   // Take top 6 sources
-  const topSources = validSources.slice(0, 6);
+  const topSources = deduplicatedSources.slice(0, 6);
   
   if (topSources.length === 0) {
     return null;

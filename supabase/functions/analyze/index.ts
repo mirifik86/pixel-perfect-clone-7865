@@ -294,6 +294,13 @@ When refuted, explicitly state that sources contradict the claim.
      - Reference encyclopedias (Britannica, Wikipedia) → type: "reference"
      - Major media (BBC, Reuters, NYT, Le Monde) → type: "media"
   7. The snippet MUST summarize what the specific page says about the claim
+  
+  CRITICAL: NO DUPLICATE DOMAINS
+  8. Group sources by ROOT DOMAIN (e.g., nasa.gov, britannica.com, bbc.com)
+  9. Display ONLY ONE source per domain - select the SINGLE most relevant article from each domain
+  10. Do NOT count multiple articles from the same domain as separate corroborations
+  11. Each displayed source MUST represent a DISTINCT authority
+  12. If you find multiple articles from nasa.gov, pick the ONE most directly relevant to the claim
   "imageSignals": {
     "origin": {
       "classification": "<real_photo|illustration_composite|probable_ai_generated|undetermined>",
