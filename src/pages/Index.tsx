@@ -135,12 +135,9 @@ const Index = () => {
   const [screenshotData, setScreenshotData] = useState<ScreenshotAnalysisData | null>(null);
   const [isRerunning, setIsRerunning] = useState(false);
   const [hasFormContent, setHasFormContent] = useState(false);
-  const [formTextContent, setFormTextContent] = useState('');
-  const [formHasImage, setFormHasImage] = useState(false);
   const [inputHighlight, setInputHighlight] = useState(false);
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
-  const [showValidationError, setShowValidationError] = useState(false); // Triggered on submit attempt with invalid input
   
   // Handle chevron cycle complete - trigger input highlight (idle state beam impact)
   const handleChevronCycleComplete = useCallback(() => {
@@ -183,7 +180,7 @@ const Index = () => {
   const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score 
     ?? screenshotData?.analysis?.score 
     ?? null;
-
+  
   // INSTANT SUMMARY ACCESS: Pure synchronous lookup, no async operations
   const currentSummaries = summariesByLanguage[language];
   const displayArticleSummary = currentSummaries?.articleSummary || null;
@@ -460,9 +457,7 @@ const Index = () => {
     return true;
   }, []);
 
-  // Compute if current form input is valid (text is analyzable OR has image)
-  const isFormInputValid = formHasImage || (formTextContent.trim().length > 0 && isValidInput(formTextContent));
-
+  // Unified analyze handler - supports text only, image only, or both (multimodal)
   const handleUnifiedAnalyze = useCallback(async (
     text: string, 
     image: { file: File; preview: string } | null
@@ -472,15 +467,13 @@ const Index = () => {
     
     // If we have an image, use image analysis (which includes text context if available)
     if (image) {
-      setShowValidationError(false); // Clear validation error on valid submission
       await handleImageAnalysis(image.file, image.preview, 'standard', text);
     } else if (text) {
       // Validate text input before analysis
       if (!isValidInput(text)) {
-        setShowValidationError(true); // Show inline error
+        setValidationMessage(i18nT('form.validationError'));
         return;
       }
-      setShowValidationError(false); // Clear validation error on valid submission
       // Text-only analysis
       await handleAnalyze(text);
     }
@@ -639,7 +632,6 @@ const Index = () => {
                   isLoading={isLoading && !isImageAnalysis}
                   onChevronCycleComplete={handleChevronCycleComplete}
                   onTransferStart={handleTransferStart}
-                  isInputValid={isFormInputValid}
                 />
               </div>
             )}
@@ -760,18 +752,11 @@ const Index = () => {
                 ref={formRef}
                 onAnalyze={handleUnifiedAnalyze}
                 isLoading={isLoading} 
-                onContentChange={(hasContent, textContent, hasImage) => {
-                  setHasFormContent(hasContent);
-                  setFormTextContent(textContent || '');
-                  setFormHasImage(hasImage || false);
-                }}
+                onContentChange={setHasFormContent}
                 highlightInput={inputHighlight}
                 captureGlow={inputCaptureGlow}
                 validationMessage={validationMessage}
                 onClearValidation={handleClearValidation}
-                showInvalidBadge={hasFormContent && !formHasImage && !isFormInputValid}
-                showValidationError={showValidationError}
-                isInputValid={isFormInputValid}
               />
               
               {/* Disclaimer note - single line, branded */}

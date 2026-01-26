@@ -49,9 +49,7 @@
     "then": "Luego",
     "disclaimer": "LeenScore no declara hechos. Le ayuda a evaluar la credibilidad de la información.",
     "disclaimerLine1": "no declara hechos.",
-    "disclaimerLine2": "Le ayuda a evaluar la credibilidad de la información.",
-    "validationError": "Contenido no analizable — por favor corrija o ingrese nuevo contenido.",
-    "contentNotAnalyzable": "Contenido no analizable por ahora..."
+    "disclaimerLine2": "Le ayuda a evaluar la credibilidad de la información."
   },
   "gauge": {
     "pending": "Pendiente",
@@ -60,7 +58,6 @@
     "startAnalysis": "INICIAR ANÁLISIS",
     "analyzing": "Analizando...",
     "methodology": "Esta puntuación de credibilidad se genera mediante un análisis estructurado de múltiples señales que combina consistencia del contenido, señales de verificación contextual e indicadores de riesgo. Las puntuaciones siguen una escala de credibilidad clara, de baja a alta confianza, y van acompañadas de un desglose explicativo que destaca los factores clave que influyen en el resultado.",
-    "contentNotAnalyzable": "El contenido no parece analizable.",
     "credibilityLevels": {
       "veryLow": "Muy baja",
       "low": "Baja",

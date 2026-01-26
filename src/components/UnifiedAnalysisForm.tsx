@@ -1,19 +1,16 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Image, X, ImagePlus, Info } from 'lucide-react';
+import { CheckCircle2, Image, X, ImagePlus } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/i18n/useLanguage';
 
 interface UnifiedAnalysisFormProps {
   onAnalyze: (input: string, image: { file: File; preview: string } | null) => void;
   isLoading: boolean;
-  onContentChange?: (hasContent: boolean, textContent?: string, hasImage?: boolean) => void;
+  onContentChange?: (hasContent: boolean) => void;
   highlightInput?: boolean; // Triggered when chevrons complete a cycle (idle state)
   captureGlow?: boolean; // Triggered when idle→ready transfer starts
   validationMessage?: string | null; // Inline validation message to display
   onClearValidation?: () => void; // Clear validation when user starts typing
-  showInvalidBadge?: boolean; // Show "not analyzable" badge near input
-  showValidationError?: boolean; // Show inline validation error with breathing glow (triggered on submit)
-  isInputValid?: boolean; // Whether current input is valid (for auto-dismissing error)
 }
 
 export interface UnifiedAnalysisFormHandle {
@@ -24,7 +21,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
-  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, validationMessage, onClearValidation, showInvalidBadge, showValidationError, isInputValid }, ref) => {
+  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, validationMessage, onClearValidation }, ref) => {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [attachedImage, setAttachedImage] = useState<{ file: File; preview: string } | null>(null);
@@ -69,10 +66,10 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
     submit: triggerSubmit
   }), [triggerSubmit]);
 
-  // Notify parent when content state changes - include text content for validation
+  // Notify parent when content state changes
   useEffect(() => {
-    onContentChange?.(hasContent, inputText, hasImage);
-  }, [hasContent, inputText, hasImage, onContentChange]);
+    onContentChange?.(hasContent);
+  }, [hasContent, onContentChange]);
 
   const validateFile = (file: File): boolean => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
@@ -382,123 +379,52 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
             <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
               
               {/* Text input zone with centered placeholder */}
-              <div className="relative flex flex-col md:flex-row md:items-start gap-2" onClick={(e) => e.stopPropagation()}>
-                {/* Text input container */}
-                <div className="relative flex-1">
-                  {/* Custom placeholder overlay - centered at top with premium effect */}
-                  {!inputText && (
-                    <div 
-                      className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
-                      style={{ paddingTop: 'var(--space-4)' }}
-                    >
-                      <span 
-                        className="text-center font-medium tracking-wide"
-                        style={{
-                          fontSize: 'var(--text-sm)',
-                          color: 'hsl(174 45% 65% / 0.7)',
-                          textShadow: '0 0 20px hsl(174 60% 50% / 0.3), 0 0 40px hsl(174 50% 45% / 0.15)',
-                          animation: 'placeholder-glow 3s ease-in-out infinite',
-                        }}
-                      >
-                        {t('form.placeholder')}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <Textarea
-                    ref={textareaRef}
-                    value={inputText}
-                    onChange={handleInputChange}
-                    onPaste={handlePaste}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    placeholder=""
-                    className="w-full resize-none rounded-xl text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
-                    style={{
-                      minHeight: '80px',
-                      padding: 'var(--space-4) var(--space-3) var(--space-3)',
-                      fontSize: 'var(--text-sm)',
-                      background: 'linear-gradient(to bottom, hsl(210 20% 14% / 0.85), hsl(215 22% 12% / 0.9))',
-                      border: '1px solid hsl(174 40% 40% / 0.12)',
-                      boxShadow: `
-                        inset 0 1px 0 hsl(0 0% 100% / 0.04),
-                        inset 0 2px 6px hsl(0 0% 0% / 0.15),
-                        0 0 20px hsl(174 50% 45% / 0.04)
-                      `,
-                    }}
-                  />
-                </div>
-                
-                {/* Invalid input badge - desktop: right side, mobile: below */}
-                {showInvalidBadge && (
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                {/* Custom placeholder overlay - centered at top with premium effect */}
+                {!inputText && (
                   <div 
-                    className="flex items-center justify-center md:justify-start animate-fade-in md:self-center"
-                    style={{ 
-                      minWidth: 'fit-content',
-                    }}
+                    className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
+                    style={{ paddingTop: 'var(--space-4)' }}
                   >
-                    <div 
-                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
-                      style={{
-                        background: 'linear-gradient(135deg, hsl(35 30% 12% / 0.8) 0%, hsl(38 25% 10% / 0.7) 100%)',
-                        border: '1px solid hsl(38 40% 40% / 0.2)',
-                        boxShadow: '0 2px 8px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
-                      }}
-                    >
-                      <Info 
-                        className="h-3 w-3 shrink-0" 
-                        style={{ color: 'hsl(38 50% 55% / 0.8)' }}
-                      />
-                      <span 
-                        className="text-[10px] font-medium tracking-wide whitespace-nowrap"
-                        style={{
-                          color: 'hsl(38 55% 60%)',
-                          textShadow: '0 0 8px hsl(38 50% 50% / 0.25)',
-                        }}
-                      >
-                        {t('form.contentNotAnalyzable')}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Inline validation error - between text input and image upload */}
-              {showValidationError && !isInputValid && (
-                <div 
-                  className="flex items-center justify-center animate-fade-in"
-                  style={{ 
-                    marginTop: 'var(--space-1)',
-                    marginBottom: 'var(--space-1)',
-                  }}
-                >
-                  <div 
-                    className="flex items-center gap-2 rounded-xl px-4 py-2.5"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(35 25% 10% / 0.85) 0%, hsl(38 20% 8% / 0.8) 100%)',
-                      border: '1px solid hsl(38 45% 40% / 0.35)',
-                      boxShadow: '0 4px 16px hsl(0 0% 0% / 0.3), 0 0 20px hsl(38 50% 45% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
-                      animation: 'validation-breathe 2.5s ease-in-out infinite',
-                    }}
-                  >
-                    <Info 
-                      className="h-3.5 w-3.5 shrink-0" 
-                      style={{ color: 'hsl(38 55% 55% / 0.9)' }}
-                    />
                     <span 
-                      className="text-xs font-medium tracking-wide"
+                      className="text-center font-medium tracking-wide"
                       style={{
-                        color: 'hsl(38 60% 65%)',
-                        textShadow: '0 0 10px hsl(38 50% 50% / 0.3)',
+                        fontSize: 'var(--text-sm)',
+                        color: 'hsl(174 45% 65% / 0.7)',
+                        textShadow: '0 0 20px hsl(174 60% 50% / 0.3), 0 0 40px hsl(174 50% 45% / 0.15)',
+                        animation: 'placeholder-glow 3s ease-in-out infinite',
                       }}
                     >
-                      {t('form.validationError')}
+                      {t('form.placeholder')}
                     </span>
                   </div>
-                </div>
-              )}
-
+                )}
+                
+                <Textarea
+                  ref={textareaRef}
+                  value={inputText}
+                  onChange={handleInputChange}
+                  onPaste={handlePaste}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder=""
+                  className="w-full resize-none rounded-xl text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                  style={{
+                    minHeight: '80px',
+                    padding: 'var(--space-4) var(--space-3) var(--space-3)',
+                    fontSize: 'var(--text-sm)',
+                    background: 'linear-gradient(to bottom, hsl(210 20% 14% / 0.85), hsl(215 22% 12% / 0.9))',
+                    border: '1px solid hsl(174 40% 40% / 0.12)',
+                    boxShadow: `
+                      inset 0 1px 0 hsl(0 0% 100% / 0.04),
+                      inset 0 2px 6px hsl(0 0% 0% / 0.15),
+                      0 0 20px hsl(174 50% 45% / 0.04)
+                    `,
+                  }}
+                />
+              </div>
+              
               {/* Visual separator with "or" */}
               <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
                 <div 
@@ -688,17 +614,6 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           50% { 
             opacity: 1; 
             text-shadow: 0 0 24px hsl(174 60% 55% / 0.4), 0 0 45px hsl(174 50% 50% / 0.2);
-          }
-        }
-        /* Validation error breathing glow - soft amber pulse */
-        @keyframes validation-breathe {
-          0%, 100% { 
-            box-shadow: 0 4px 16px hsl(0 0% 0% / 0.3), 0 0 18px hsl(38 50% 45% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.04);
-            border-color: hsl(38 45% 40% / 0.3);
-          }
-          50% { 
-            box-shadow: 0 4px 16px hsl(0 0% 0% / 0.3), 0 0 28px hsl(38 55% 50% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.04);
-            border-color: hsl(38 50% 45% / 0.45);
           }
         }
       `}</style>

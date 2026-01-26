@@ -50,8 +50,7 @@
     "disclaimer": "LeenScore ne déclare pas les faits. Il vous aide à évaluer la crédibilité des informations.",
     "disclaimerLine1": "ne déclare pas les faits.",
     "disclaimerLine2": "Il vous aide à évaluer la crédibilité des informations.",
-    "validationError": "Contenu non analysable — veuillez corriger ou saisir un nouveau contenu.",
-    "contentNotAnalyzable": "Contenu non analysable pour le moment..."
+    "validationError": "Le contenu saisi ne semble pas contenir d'information analysable. Veuillez entrer une affirmation, un texte ou importer une image."
   },
   "gauge": {
     "pending": "En attente",
@@ -60,7 +59,6 @@
     "startAnalysis": "LANCER L'ANALYSE",
     "analyzing": "Analyse en cours...",
     "methodology": "Ce score de crédibilité est généré à l'aide d'une analyse multi-signaux structurée combinant cohérence du contenu, signaux de vérification contextuelle et indicateurs de risque. Les scores suivent une échelle de crédibilité claire, de faible à haute confiance, et sont accompagnés d'une explication détaillée des facteurs clés influençant le résultat.",
-    "contentNotAnalyzable": "Le contenu ne semble pas analysable.",
     "credibilityLevels": {
       "veryLow": "Très faible",
       "low": "Faible",

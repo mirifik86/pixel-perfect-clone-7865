@@ -12,7 +12,6 @@ interface ScoreGaugeProps {
   isLoading?: boolean; // Loading state for the button
   onChevronCycleComplete?: () => void; // Callback when chevron cascade completes (for input highlight)
   onTransferStart?: () => void; // Callback when idle→ready transfer animation starts (for input capture effect)
-  isInputValid?: boolean; // When hasContent but input is not analyzable, show message instead of button
 }
 
 // Generate sparkle particles configuration
@@ -36,8 +35,7 @@ export const ScoreGauge = ({
   onAnalyze,
   isLoading = false,
   onChevronCycleComplete,
-  onTransferStart,
-  isInputValid = true
+  onTransferStart
 }: ScoreGaugeProps) => {
   const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -890,7 +888,7 @@ export const ScoreGauge = ({
               <Button
                 type="button"
                 onClick={handleAnalyzeClick}
-                disabled={isLoading || !isInputValid}
+                disabled={isLoading}
                 className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
                 style={{
                   background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
