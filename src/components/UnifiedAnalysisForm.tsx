@@ -6,7 +6,7 @@ import { useLanguage } from '@/i18n/useLanguage';
 interface UnifiedAnalysisFormProps {
   onAnalyze: (input: string, image: { file: File; preview: string } | null) => void;
   isLoading: boolean;
-  onContentChange?: (hasContent: boolean) => void;
+  onContentChange?: (hasContent: boolean, textContent?: string, hasImage?: boolean) => void;
   highlightInput?: boolean; // Triggered when chevrons complete a cycle (idle state)
   captureGlow?: boolean; // Triggered when idle→ready transfer starts
   validationMessage?: string | null; // Inline validation message to display
@@ -66,10 +66,10 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
     submit: triggerSubmit
   }), [triggerSubmit]);
 
-  // Notify parent when content state changes
+  // Notify parent when content state changes - include text content for validation
   useEffect(() => {
-    onContentChange?.(hasContent);
-  }, [hasContent, onContentChange]);
+    onContentChange?.(hasContent, inputText, hasImage);
+  }, [hasContent, inputText, hasImage, onContentChange]);
 
   const validateFile = (file: File): boolean => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
