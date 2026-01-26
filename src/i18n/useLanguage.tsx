@@ -153,12 +153,27 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
 
 /**
  * Hook to access language context
+ * Returns a fallback during Vite HMR desync to prevent crashes
  */
 export const useLanguage = (): LanguageContextValue => {
   const context = useContext(LanguageContext);
+  
+  // Fallback for Vite HMR desync - prevents crash during hot reload
   if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    const fallbackLanguage: SupportedLanguage = 'en';
+    return {
+      language: fallbackLanguage,
+      mode: 'auto',
+      setLanguage: () => {},
+      t: (key: string) => key,
+      tArray: () => [],
+      shouldShowPrompt: false,
+      detectedLanguage: null,
+      handlePromptResponse: () => {},
+      dismissPrompt: () => {},
+    };
   }
+  
   return context;
 };
 
