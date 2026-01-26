@@ -1,9 +1,36 @@
 import { useLanguage } from '@/i18n/useLanguage';
+import { useEffect, useState, useRef } from 'react';
 
 export const LeenScoreLogo = () => {
   const { t } = useLanguage();
+  const [scrollY, setScrollY] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Subtle parallax values - title moves slower than scroll (creates depth)
+  const parallaxOffset = scrollY * 0.15;
+  const opacityFade = Math.max(0, 1 - scrollY * 0.002);
+  const scaleEffect = Math.max(0.95, 1 - scrollY * 0.0003);
+
   return (
-    <div className="flex flex-col items-center gap-2 md:gap-3">
+    <div 
+      ref={containerRef}
+      className="flex flex-col items-center gap-2 md:gap-3"
+      style={{
+        transform: `translateY(${parallaxOffset}px) scale(${scaleEffect})`,
+        opacity: opacityFade,
+        transition: 'transform 0.1s ease-out, opacity 0.1s ease-out',
+        willChange: 'transform, opacity',
+      }}
+    >
       {/* Title - ultra-premium 3D depth effect with embossed look */}
       <h1 
         className="font-semibold tracking-tight"
