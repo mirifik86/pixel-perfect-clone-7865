@@ -91,7 +91,7 @@ EVALUATION FACTORS (internal only, do not expose):
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
-// PRO ANALYSIS PROMPT - Simplified High-Credibility Model with Image Signals
+// PRO ANALYSIS PROMPT - Simplified High-Credibility Model with Image Signals and Active Refutation Detection
 const getProSystemPrompt = (language: string) => {
   const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
@@ -130,6 +130,7 @@ Assess whether the claim aligns with known contextual patterns:
 - Political processes and institutional behavior
 - Typical event progression and timelines
 - Known factual context (without making truth claims)
+- CRITICAL: Scientific, biological, physical, and medical consensus
 
 COHERENCE SCORING:
 - Highly coherent with known patterns: +10 to +15
@@ -137,6 +138,7 @@ COHERENCE SCORING:
 - Mixed signals, unclear coherence: -5 to +5
 - Low coherence, unusual patterns: -10 to -5
 - Incoherent with known context: -15 to -10
+- CONTRADICTS ESTABLISHED SCIENTIFIC/FACTUAL CONSENSUS: -20 to -25
 
 ===== SIGNAL 3 – WEB RESEARCH & CORROBORATION (40%) =====
 
@@ -155,6 +157,27 @@ CORROBORATION OUTCOMES:
 
 "constrained": Little or no reliable coverage of the claim
   → Scoring impact: -15 to -10
+
+===== CRITICAL: ACTIVE REFUTATION DETECTION =====
+
+If credible sources ACTIVELY CONTRADICT the claim (not just "no coverage"), use:
+
+"refuted": Multiple reliable sources explicitly contradict or disprove the claim. 
+This applies when:
+- The claim contradicts well-established scientific consensus (taxonomy, physics, medicine, biology)
+- The claim contradicts universally accepted factual knowledge
+- Authoritative sources provide evidence that directly refutes the assertion
+- The claim is scientifically/physically impossible
+
+REFUTATION SCORING IMPACT:
+- Moderate refutation (contradicts minor consensus): -25 points
+- Strong refutation (contradicts major scientific/factual consensus): -30 to -35 points
+- Complete refutation (scientifically impossible, universally disproven): -35 to -40 points
+
+IMPORTANT: When refuted, the corroboration summary MUST explicitly state:
+- "Credible sources actively contradict this claim" (not just "no corroboration found")
+- Cite which consensus or established facts are being contradicted
+- PRO must NEVER increase score for clearly false or refuted claims
 
 ===== PRO: IMAGE SIGNALS MODULE =====
 
@@ -196,12 +219,14 @@ SAFEGUARDS:
 
 Aggregate all components:
 - Claim Gravity (30%): -10 to +10
-- Contextual Coherence (30%): -15 to +15
-- Web Corroboration (40%): -15 to +20
+- Contextual Coherence (30%): -25 to +15 (extended for refutation)
+- Web Corroboration (40%): -40 to +20 (extended for active refutation)
 - Image Signals: -10 to 0 (capped)
 
 BASE: 50 points
 FINAL RANGE: 5 to 98 (NEVER return 0 or 100)
+
+CRITICAL RULE: If Standard analysis scored X, and PRO finds active refutation by credible sources, PRO score MUST be lower than Standard. PRO must confirm OR reduce credibility, never inflate it for false claims.
 
 Avoid absolute certainty. The score represents PLAUSIBILITY, not truth.
 
@@ -214,6 +239,7 @@ CRITICAL - Summary length requirements:
 
 Provide a clear, human-readable explanation justifying the score.
 Distinguish plausibility from factual certainty.
+When refuted, explicitly state that sources contradict the claim.
 
 ===== PRODUCT RULES =====
 
@@ -221,6 +247,7 @@ Distinguish plausibility from factual certainty.
 - NEVER state "true" or "false"
 - NEVER claim absolute verification
 - Present findings as plausibility assessment
+- EXPLICITLY state when sources actively contradict claims (vs. just "not found")
 
 ===== RESPONSE FORMAT =====
 
@@ -230,18 +257,19 @@ Distinguish plausibility from factual certainty.
   "breakdown": {
     "claimGravity": {"points": <number>, "weight": "30%", "reason": "<gravity assessment>"},
     "contextualCoherence": {"points": <number>, "weight": "30%", "reason": "<coherence assessment>"},
-    "webCorroboration": {"points": <number>, "weight": "40%", "reason": "<corroboration summary>"},
+    "webCorroboration": {"points": <number -40 to +20>, "weight": "40%", "reason": "<corroboration summary - MUST state if sources contradict>"},
     "imageCoherence": {"points": <-10 to 0>, "reason": "<image scoring explanation>"}
   },
   "corroboration": {
-    "outcome": "<corroborated|neutral|constrained>",
+    "outcome": "<corroborated|neutral|constrained|refuted>",
     "sourcesConsulted": <number 1-10>,
     "sourceTypes": ["<media|agency|institution|other>"],
-    "summary": "<brief summary of web findings>",
+    "summary": "<brief summary - MUST explicitly state if sources contradict the claim>",
     "sources": {
       "corroborated": ["<source names that clearly corroborate>"],
       "neutral": ["<source names with neutral/contextual mentions>"],
-      "constrained": ["<source names with limited coverage or no coverage indicator>"]
+      "constrained": ["<source names with limited coverage or no coverage indicator>"],
+      "contradicting": ["<source names that actively refute/contradict the claim>"]
     }
   },
   "imageSignals": {
@@ -269,7 +297,7 @@ Distinguish plausibility from factual certainty.
     },
     "disclaimer": "${isFr ? 'Ces signaux sont des indicateurs contextuels. Ils ne déterminent pas la véracité.' : 'These signals are contextual indicators. They do not determine truthfulness.'}"
   },
-  "summary": "<90-180 words, ideal 120-150 words, justifying the plausibility score with web-backed context>",
+  "summary": "<90-180 words, ideal 120-150 words, justifying the plausibility score with web-backed context. MUST state when sources actively contradict claims>",
   "articleSummary": "<factual summary of submitted content>",
   "confidence": "<low|medium|high>",
   "proDisclaimer": "${isFr ? "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue." : 'PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.'}"
