@@ -49,11 +49,26 @@ interface ImageSignals {
   disclaimer?: string;
 }
 
+// Source can be either a string (legacy) or structured object with URL
+interface SourceEntry {
+  name: string;
+  url: string | null;
+  snippet?: string;
+}
+
+// Helper to normalize source entries (handles both string and object formats)
+const normalizeSource = (source: string | SourceEntry): SourceEntry => {
+  if (typeof source === 'string') {
+    return { name: source, url: null, snippet: undefined };
+  }
+  return source;
+};
+
 interface CorroborationSources {
-  corroborated?: string[];
-  neutral?: string[];
-  constrained?: string[];
-  contradicting?: string[];
+  corroborated?: (string | SourceEntry)[];
+  neutral?: (string | SourceEntry)[];
+  constrained?: (string | SourceEntry)[];
+  contradicting?: (string | SourceEntry)[];
 }
 
 interface Corroboration {
@@ -700,7 +715,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-700">
-                  {data.corroboration.sources.corroborated[0]}
+                  {typeof data.corroboration.sources.corroborated[0] === 'string' 
+                    ? data.corroboration.sources.corroborated[0] 
+                    : (data.corroboration.sources.corroborated[0] as SourceEntry).name}
                 </span>
                 <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                   +5 pts
@@ -800,9 +817,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               {data.corroboration.sources && (
                 <div className="space-y-2">
                   {/* Corroborated Sources */}
-                  {data.corroboration.sources.corroborated?.map((source, idx) => {
-                    const domain = extractDomain(source);
-                    const sourceLower = source.toLowerCase();
+                  {data.corroboration.sources.corroborated?.map((rawSource, idx) => {
+                    const source = normalizeSource(rawSource);
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
+                    const sourceLower = source.name.toLowerCase();
                     
                     const officialPatterns = /\.(gov|gouv|gob|govt)\b|\.gov\.|government|official|ministry|ministère/i.test(sourceLower);
                     const majorMediaPatterns = /reuters|associated\s*press|afp|bloomberg|bbc|cnn|new\s*york\s*times|washington\s*post|guardian|le\s*monde|al\s*jazeera/i.test(sourceLower);
@@ -821,6 +839,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
                       badgeStyle = 'bg-indigo-100 text-indigo-700 border-indigo-200';
                     }
+
+                    // Only render if we have a valid URL (skip sources without direct links)
+                    const hasValidUrl = source.url && source.url.length > 0;
+                    if (!hasValidUrl && !domain) return null;
                     
                     return (
                       <div
@@ -844,18 +866,23 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source.name}</span>
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap ${badgeStyle}`}>
                                 {badgeLabel}
                               </span>
                             </div>
-                            <p className="text-xs text-emerald-600 font-medium">{t.sourceGroupCorroborated}</p>
+                            {/* Snippet if available */}
+                            {source.snippet ? (
+                              <p className="text-xs text-slate-600 line-clamp-1">{source.snippet}</p>
+                            ) : (
+                              <p className="text-xs text-emerald-600 font-medium">{t.sourceGroupCorroborated}</p>
+                            )}
                           </div>
                           
-                          {/* Open link button */}
-                          {domain && (
+                          {/* Open link button - uses exact article URL */}
+                          {(source.url || domain) && (
                             <a 
-                              href={`https://${domain}`}
+                              href={source.url || `https://${domain}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
@@ -869,9 +896,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   })}
 
                   {/* Neutral Sources */}
-                  {data.corroboration.sources.neutral?.map((source, idx) => {
-                    const domain = extractDomain(source);
-                    const sourceLower = source.toLowerCase();
+                  {data.corroboration.sources.neutral?.map((rawSource, idx) => {
+                    const source = normalizeSource(rawSource);
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
+                    const sourceLower = source.name.toLowerCase();
                     const isReference = /britannica|encyclopedia|wikipedia|oxford|pubmed|nature\.com|snopes|factcheck/i.test(sourceLower);
                     const isMajorMedia = /reuters|bbc|cnn|guardian|le\s*monde|al\s*jazeera/i.test(sourceLower);
                     
@@ -885,6 +913,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
                       badgeStyle = 'bg-indigo-100 text-indigo-700 border-indigo-200';
                     }
+
+                    const hasValidUrl = source.url && source.url.length > 0;
+                    if (!hasValidUrl && !domain) return null;
                     
                     return (
                       <div
@@ -907,17 +938,21 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source.name}</span>
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap ${badgeStyle}`}>
                                 {badgeLabel}
                               </span>
                             </div>
-                            <p className="text-xs text-amber-600 font-medium">{t.sourceGroupNeutral}</p>
+                            {source.snippet ? (
+                              <p className="text-xs text-slate-600 line-clamp-1">{source.snippet}</p>
+                            ) : (
+                              <p className="text-xs text-amber-600 font-medium">{t.sourceGroupNeutral}</p>
+                            )}
                           </div>
                           
-                          {domain && (
+                          {(source.url || domain) && (
                             <a 
-                              href={`https://${domain}`}
+                              href={source.url || `https://${domain}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
@@ -930,9 +965,13 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                     );
                   })}
 
-                  {/* Contradicting Sources - NEW for refuted claims */}
-                  {data.corroboration.sources.contradicting?.map((source, idx) => {
-                    const domain = extractDomain(source);
+                  {/* Contradicting Sources - for refuted claims */}
+                  {data.corroboration.sources.contradicting?.map((rawSource, idx) => {
+                    const source = normalizeSource(rawSource);
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
+                    
+                    const hasValidUrl = source.url && source.url.length > 0;
+                    if (!hasValidUrl && !domain) return null;
                     
                     return (
                       <div
@@ -955,17 +994,21 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source.name}</span>
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap bg-red-100 text-red-700 border-red-200">
                                 {language === 'fr' ? 'Contredit' : 'Contradicts'}
                               </span>
                             </div>
-                            <p className="text-xs text-red-600 font-medium">{t.sourceGroupContradicting}</p>
+                            {source.snippet ? (
+                              <p className="text-xs text-red-600 line-clamp-1">{source.snippet}</p>
+                            ) : (
+                              <p className="text-xs text-red-600 font-medium">{t.sourceGroupContradicting}</p>
+                            )}
                           </div>
                           
-                          {domain && (
+                          {(source.url || domain) && (
                             <a 
-                              href={`https://${domain}`}
+                              href={source.url || `https://${domain}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
@@ -979,8 +1022,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   })}
 
                   {/* Constrained Sources */}
-                  {data.corroboration.sources.constrained?.map((source, idx) => {
-                    const domain = extractDomain(source);
+                  {data.corroboration.sources.constrained?.map((rawSource, idx) => {
+                    const source = normalizeSource(rawSource);
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
                     
                     return (
                       <div
@@ -1003,13 +1047,28 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source.name}</span>
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap bg-slate-100 text-slate-600 border-slate-200">
                                 {language === 'fr' ? 'Contexte' : 'Context'}
                               </span>
                             </div>
-                            <p className="text-xs text-slate-500">{t.sourceGroupConstrained}</p>
+                            {source.snippet ? (
+                              <p className="text-xs text-slate-600 line-clamp-1">{source.snippet}</p>
+                            ) : (
+                              <p className="text-xs text-slate-500">{t.sourceGroupConstrained}</p>
+                            )}
                           </div>
+                          
+                          {(source.url || domain) && (
+                            <a 
+                              href={source.url || `https://${domain}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
+                            >
+                              {t.openSource}
+                            </a>
+                          )}
                         </div>
                       </div>
                     );
