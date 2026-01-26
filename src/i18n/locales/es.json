@@ -58,6 +58,7 @@
     "startAnalysis": "INICIAR ANÁLISIS",
     "analyzing": "Analizando...",
     "methodology": "Esta puntuación de credibilidad se genera mediante un análisis estructurado de múltiples señales que combina consistencia del contenido, señales de verificación contextual e indicadores de riesgo. Las puntuaciones siguen una escala de credibilidad clara, de baja a alta confianza, y van acompañadas de un desglose explicativo que destaca los factores clave que influyen en el resultado.",
+    "contentNotAnalyzable": "El contenido no parece analizable.",
     "credibilityLevels": {
       "veryLow": "Muy baja",
       "low": "Baja",

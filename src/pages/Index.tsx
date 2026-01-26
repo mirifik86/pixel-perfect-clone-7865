@@ -135,6 +135,8 @@ const Index = () => {
   const [screenshotData, setScreenshotData] = useState<ScreenshotAnalysisData | null>(null);
   const [isRerunning, setIsRerunning] = useState(false);
   const [hasFormContent, setHasFormContent] = useState(false);
+  const [formTextContent, setFormTextContent] = useState('');
+  const [formHasImage, setFormHasImage] = useState(false);
   const [inputHighlight, setInputHighlight] = useState(false);
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
@@ -180,7 +182,7 @@ const Index = () => {
   const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score 
     ?? screenshotData?.analysis?.score 
     ?? null;
-  
+
   // INSTANT SUMMARY ACCESS: Pure synchronous lookup, no async operations
   const currentSummaries = summariesByLanguage[language];
   const displayArticleSummary = currentSummaries?.articleSummary || null;
@@ -457,7 +459,9 @@ const Index = () => {
     return true;
   }, []);
 
-  // Unified analyze handler - supports text only, image only, or both (multimodal)
+  // Compute if current form input is valid (text is analyzable OR has image)
+  const isFormInputValid = formHasImage || (formTextContent.trim().length > 0 && isValidInput(formTextContent));
+
   const handleUnifiedAnalyze = useCallback(async (
     text: string, 
     image: { file: File; preview: string } | null
@@ -632,6 +636,7 @@ const Index = () => {
                   isLoading={isLoading && !isImageAnalysis}
                   onChevronCycleComplete={handleChevronCycleComplete}
                   onTransferStart={handleTransferStart}
+                  isInputValid={isFormInputValid}
                 />
               </div>
             )}
@@ -752,7 +757,11 @@ const Index = () => {
                 ref={formRef}
                 onAnalyze={handleUnifiedAnalyze}
                 isLoading={isLoading} 
-                onContentChange={setHasFormContent}
+                onContentChange={(hasContent, textContent, hasImage) => {
+                  setHasFormContent(hasContent);
+                  setFormTextContent(textContent || '');
+                  setFormHasImage(hasImage || false);
+                }}
                 highlightInput={inputHighlight}
                 captureGlow={inputCaptureGlow}
                 validationMessage={validationMessage}
