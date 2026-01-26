@@ -115,13 +115,26 @@ export const ScoreGauge = ({
 
   // Premium gradient colors with smooth transitions
   // Leen Blue is the signature color - intensified saturation for premium feel
-  const colorPairs = [
-    { base: 'hsl(0 65% 42%)', light: 'hsl(0 70% 52%)' },        // Red - Very Low (muted to not compete)
-    { base: 'hsl(28 75% 46%)', light: 'hsl(32 80% 55%)' },      // Orange - Low (slightly muted)
-    { base: 'hsl(45 70% 44%)', light: 'hsl(50 75% 54%)' },      // Yellow - Moderate (balanced)
-    { base: 'hsl(145 50% 38%)', light: 'hsl(150 55% 48%)' },    // Green - Good (secondary)
-    { base: 'hsl(174 78% 44%)', light: 'hsl(174 85% 52%)' }     // Leen Blue - High (INTENSIFIED - deep, clean, premium)
+  // Muted colors when idle (no content), activated (+40% saturation) when typing starts
+  const colorPairsMuted = [
+    { base: 'hsl(0 40% 38%)', light: 'hsl(0 45% 45%)' },        // Red - Very Low (muted)
+    { base: 'hsl(28 45% 42%)', light: 'hsl(32 50% 48%)' },      // Orange - Low (muted)
+    { base: 'hsl(45 42% 40%)', light: 'hsl(50 48% 46%)' },      // Yellow - Moderate (muted)
+    { base: 'hsl(145 32% 35%)', light: 'hsl(150 38% 42%)' },    // Green - Good (muted)
+    { base: 'hsl(174 48% 38%)', light: 'hsl(174 55% 45%)' }     // Leen Blue - High (muted)
   ];
+  
+  const colorPairsActive = [
+    { base: 'hsl(0 65% 42%)', light: 'hsl(0 70% 52%)' },        // Red - Very Low (activated)
+    { base: 'hsl(28 75% 46%)', light: 'hsl(32 80% 55%)' },      // Orange - Low (activated)
+    { base: 'hsl(45 70% 44%)', light: 'hsl(50 75% 54%)' },      // Yellow - Moderate (activated)
+    { base: 'hsl(145 50% 38%)', light: 'hsl(150 55% 48%)' },    // Green - Good (activated)
+    { base: 'hsl(174 78% 44%)', light: 'hsl(174 85% 52%)' }     // Leen Blue - High (activated)
+  ];
+  
+  // Use activated colors when content is detected or score is shown
+  const isActivated = hasContent || score !== null || isLoading;
+  const colorPairs = isActivated ? colorPairsActive : colorPairsMuted;
   
   const colors = colorPairs.map(c => c.base);
 
