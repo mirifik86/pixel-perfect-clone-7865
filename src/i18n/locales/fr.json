@@ -23,9 +23,9 @@
     "keep": "Garder le français"
   },
   "hero": {
-    "tagline": "La crédibilité, mesurée.",
+    "tagline": "La crédibilité de l'information, mesurée.",
     "byLine": "PAR SOL&AIR",
-    "valueProp": "Analysez la crédibilité d'un texte, image ou information en quelques secondes."
+    "valueProp": "Analysez la crédibilité d'un texte, d'une image ou d'une information en quelques secondes."
   },
   "index": {
     "scoreLabel": "Indice LeenScore",
