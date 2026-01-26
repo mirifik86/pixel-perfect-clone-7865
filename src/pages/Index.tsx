@@ -139,7 +139,7 @@ const Index = () => {
   const [formHasImage, setFormHasImage] = useState(false);
   const [inputHighlight, setInputHighlight] = useState(false);
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [showValidationError, setShowValidationError] = useState(false); // Only shows after button click
   
   // Handle chevron cycle complete - trigger input highlight (idle state beam impact)
   const handleChevronCycleComplete = useCallback(() => {
@@ -459,34 +459,32 @@ const Index = () => {
     return true;
   }, []);
 
-  // Compute if current form input is valid (text is analyzable OR has image)
-  const isFormInputValid = formHasImage || (formTextContent.trim().length > 0 && isValidInput(formTextContent));
+  // Clear validation error when user edits text
+  const handleClearValidation = useCallback(() => {
+    setShowValidationError(false);
+  }, []);
 
   const handleUnifiedAnalyze = useCallback(async (
     text: string, 
     image: { file: File; preview: string } | null
   ) => {
-    // Clear any previous validation message
-    setValidationMessage(null);
+    // Clear any previous validation error
+    setShowValidationError(false);
     
     // If we have an image, use image analysis (which includes text context if available)
     if (image) {
       await handleImageAnalysis(image.file, image.preview, 'standard', text);
     } else if (text) {
-      // Validate text input before analysis
+      // Validate text input ONLY on button click
       if (!isValidInput(text)) {
-        setValidationMessage(i18nT('form.validationError'));
+        setShowValidationError(true);
         return;
       }
       // Text-only analysis
       await handleAnalyze(text);
     }
-  }, [handleImageAnalysis, handleAnalyze, isValidInput, i18nT]);
+  }, [handleImageAnalysis, handleAnalyze, isValidInput]);
   
-  // Clear validation message when user types
-  const handleClearValidation = useCallback(() => {
-    setValidationMessage(null);
-  }, []);
 
   // Re-run analysis with edited text
   const handleRerunAnalysis = async (editedText: string) => {
@@ -636,7 +634,7 @@ const Index = () => {
                   isLoading={isLoading && !isImageAnalysis}
                   onChevronCycleComplete={handleChevronCycleComplete}
                   onTransferStart={handleTransferStart}
-                  isInputValid={isFormInputValid}
+                  showValidationError={showValidationError}
                 />
               </div>
             )}
@@ -764,9 +762,7 @@ const Index = () => {
                 }}
                 highlightInput={inputHighlight}
                 captureGlow={inputCaptureGlow}
-                validationMessage={validationMessage}
                 onClearValidation={handleClearValidation}
-                showInvalidBadge={hasFormContent && !formHasImage && !isFormInputValid}
               />
               
               {/* Disclaimer note - single line, branded */}

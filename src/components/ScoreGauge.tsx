@@ -12,7 +12,7 @@ interface ScoreGaugeProps {
   isLoading?: boolean; // Loading state for the button
   onChevronCycleComplete?: () => void; // Callback when chevron cascade completes (for input highlight)
   onTransferStart?: () => void; // Callback when idle→ready transfer animation starts (for input capture effect)
-  isInputValid?: boolean; // When hasContent but input is not analyzable, show message instead of button
+  showValidationError?: boolean; // When true after failed validation, show message instead of button
 }
 
 // Generate sparkle particles configuration
@@ -37,7 +37,7 @@ export const ScoreGauge = ({
   isLoading = false,
   onChevronCycleComplete,
   onTransferStart,
-  isInputValid = true
+  showValidationError = false
 }: ScoreGaugeProps) => {
   const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -797,7 +797,8 @@ export const ScoreGauge = ({
           )}
 
           {/* READY STATE: ANALYZE button - Premium signature control with entrance animation */}
-          {uiState === 'ready' && !buttonAbsorbed && (
+          {/* Button OR Validation Message - same location */}
+          {uiState === 'ready' && !buttonAbsorbed && !showValidationError && (
             <div 
               className="relative group"
               style={{ 
@@ -890,7 +891,7 @@ export const ScoreGauge = ({
               <Button
                 type="button"
                 onClick={handleAnalyzeClick}
-                disabled={isLoading || !isInputValid}
+                disabled={isLoading}
                 className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
                 style={{
                   background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
@@ -947,6 +948,49 @@ export const ScoreGauge = ({
                 }}
               >
                 <span>{t('gauge.startAnalysis')}</span>
+              </div>
+            </div>
+          )}
+          
+          {/* Validation Error Message - replaces button in same location */}
+          {uiState === 'ready' && showValidationError && (
+            <div 
+              className="relative animate-fade-in"
+              style={{ 
+                width: size * 0.85, 
+                maxWidth: '200px',
+                minHeight: '44px',
+              }}
+            >
+              {/* Soft amber ambient glow */}
+              <div 
+                className="absolute -inset-3 rounded-2xl pointer-events-none"
+                style={{
+                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(38 45% 35% / 0.25) 0%, transparent 70%)',
+                  filter: 'blur(12px)',
+                }}
+              />
+              
+              {/* Message container - premium glass style */}
+              <div 
+                className="relative rounded-xl px-4 py-3 text-center"
+                style={{
+                  background: 'linear-gradient(145deg, hsl(35 25% 14% / 0.9) 0%, hsl(38 22% 11% / 0.85) 100%)',
+                  border: '1px solid hsl(38 40% 42% / 0.25)',
+                  boxShadow: '0 0 25px hsl(38 45% 40% / 0.12), 0 4px 16px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+                }}
+              >
+                <p 
+                  className="font-medium leading-snug"
+                  style={{
+                    fontSize: '11px',
+                    color: 'hsl(38 55% 62%)',
+                    textShadow: '0 0 10px hsl(38 50% 50% / 0.3)',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {t('gauge.validationError')}
+                </p>
               </div>
             </div>
           )}
