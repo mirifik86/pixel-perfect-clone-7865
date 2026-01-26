@@ -763,7 +763,7 @@ const Index = () => {
               <p 
                 className="text-center animate-fade-in px-4"
                 style={{ 
-                  marginTop: 'var(--space-3)',
+                  marginTop: 'var(--space-8)',
                   fontSize: 'clamp(0.55rem, 0.5rem + 0.5vw, 0.8rem)',
                   color: 'hsl(0 0% 100% / 0.65)',
                   lineHeight: 1.4,
