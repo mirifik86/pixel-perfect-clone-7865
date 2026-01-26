@@ -64,6 +64,57 @@ const normalizeSource = (source: string | SourceEntry): SourceEntry => {
   return source;
 };
 
+// Helper to validate if a URL is a specific article (not homepage/category)
+const isValidArticleUrl = (url: string | null): boolean => {
+  if (!url) return false;
+  
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname;
+    
+    // Reject homepages (just "/" or empty path)
+    if (path === '/' || path === '') return false;
+    
+    // Reject generic category pages (single segment without specifics)
+    const segments = path.split('/').filter(s => s.length > 0);
+    if (segments.length < 2) return false;
+    
+    // Reject common non-article patterns
+    const invalidPatterns = [
+      /^\/search/i,
+      /^\/category/i,
+      /^\/tag/i,
+      /^\/about/i,
+      /^\/contact/i,
+      /^\/terms/i,
+      /^\/privacy/i,
+      /^\/help/i,
+      /^\/faq/i,
+      /\?q=/i,
+      /\?search=/i,
+      /\/results\?/i,
+    ];
+    
+    for (const pattern of invalidPatterns) {
+      if (pattern.test(path) || pattern.test(url)) return false;
+    }
+    
+    // Must have some specific identifier (slug, ID, date pattern)
+    const hasSlug = segments.some(s => s.length > 10 || /\d{4}/.test(s) || /-/.test(s));
+    return hasSlug;
+  } catch {
+    return false;
+  }
+};
+
+// Filter sources to only include those with valid article URLs
+const filterValidSources = (sources: (string | SourceEntry)[] | undefined): SourceEntry[] => {
+  if (!sources) return [];
+  return sources
+    .map(normalizeSource)
+    .filter(source => isValidArticleUrl(source.url));
+};
+
 interface CorroborationSources {
   corroborated?: (string | SourceEntry)[];
   neutral?: (string | SourceEntry)[];
@@ -816,10 +867,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               {/* Source Cards Grid - Enhanced with favicons */}
               {data.corroboration.sources && (
                 <div className="space-y-2">
-                  {/* Corroborated Sources */}
-                  {data.corroboration.sources.corroborated?.map((rawSource, idx) => {
-                    const source = normalizeSource(rawSource);
-                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
+                  {/* Corroborated Sources - Only show sources with verified article URLs */}
+                  {filterValidSources(data.corroboration.sources.corroborated).map((source, idx) => {
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : null;
                     const sourceLower = source.name.toLowerCase();
                     
                     const officialPatterns = /\.(gov|gouv|gob|govt)\b|\.gov\.|government|official|ministry|ministère/i.test(sourceLower);
@@ -839,10 +889,6 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
                       badgeStyle = 'bg-indigo-100 text-indigo-700 border-indigo-200';
                     }
-
-                    // Only render if we have a valid URL (skip sources without direct links)
-                    const hasValidUrl = source.url && source.url.length > 0;
-                    if (!hasValidUrl && !domain) return null;
                     
                     return (
                       <div
@@ -879,10 +925,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                             )}
                           </div>
                           
-                          {/* Open link button - uses exact article URL */}
-                          {(source.url || domain) && (
+                          {/* Open link button - only shows if source.url is valid (guaranteed by filterValidSources) */}
+                          {source.url && (
                             <a 
-                              href={source.url || `https://${domain}`}
+                              href={source.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
@@ -895,10 +941,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                     );
                   })}
 
-                  {/* Neutral Sources */}
-                  {data.corroboration.sources.neutral?.map((rawSource, idx) => {
-                    const source = normalizeSource(rawSource);
-                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
+                  {/* Neutral Sources - Only show sources with verified article URLs */}
+                  {filterValidSources(data.corroboration.sources.neutral).map((source, idx) => {
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : null;
                     const sourceLower = source.name.toLowerCase();
                     const isReference = /britannica|encyclopedia|wikipedia|oxford|pubmed|nature\.com|snopes|factcheck/i.test(sourceLower);
                     const isMajorMedia = /reuters|bbc|cnn|guardian|le\s*monde|al\s*jazeera/i.test(sourceLower);
@@ -913,9 +958,6 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
                       badgeStyle = 'bg-indigo-100 text-indigo-700 border-indigo-200';
                     }
-
-                    const hasValidUrl = source.url && source.url.length > 0;
-                    if (!hasValidUrl && !domain) return null;
                     
                     return (
                       <div
@@ -950,9 +992,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                             )}
                           </div>
                           
-                          {(source.url || domain) && (
+                          {source.url && (
                             <a 
-                              href={source.url || `https://${domain}`}
+                              href={source.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
@@ -965,13 +1007,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                     );
                   })}
 
-                  {/* Contradicting Sources - for refuted claims */}
-                  {data.corroboration.sources.contradicting?.map((rawSource, idx) => {
-                    const source = normalizeSource(rawSource);
-                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
-                    
-                    const hasValidUrl = source.url && source.url.length > 0;
-                    if (!hasValidUrl && !domain) return null;
+                  {/* Contradicting Sources - Only show sources with verified article URLs */}
+                  {filterValidSources(data.corroboration.sources.contradicting).map((source, idx) => {
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : null;
                     
                     return (
                       <div
@@ -1006,9 +1044,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                             )}
                           </div>
                           
-                          {(source.url || domain) && (
+                          {source.url && (
                             <a 
-                              href={source.url || `https://${domain}`}
+                              href={source.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
@@ -1021,10 +1059,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                     );
                   })}
 
-                  {/* Constrained Sources */}
-                  {data.corroboration.sources.constrained?.map((rawSource, idx) => {
-                    const source = normalizeSource(rawSource);
-                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : extractDomain(source.name);
+                  {/* Constrained Sources - Only show sources with verified article URLs */}
+                  {filterValidSources(data.corroboration.sources.constrained).map((source, idx) => {
+                    const domain = source.url ? (() => { try { return new URL(source.url).hostname.replace('www.', ''); } catch { return null; } })() : null;
                     
                     return (
                       <div
@@ -1059,9 +1096,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                             )}
                           </div>
                           
-                          {(source.url || domain) && (
+                          {source.url && (
                             <a 
-                              href={source.url || `https://${domain}`}
+                              href={source.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
