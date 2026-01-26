@@ -140,6 +140,7 @@ const Index = () => {
   const [inputHighlight, setInputHighlight] = useState(false);
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [showValidationError, setShowValidationError] = useState(false); // Triggered on submit attempt with invalid input
   
   // Handle chevron cycle complete - trigger input highlight (idle state beam impact)
   const handleChevronCycleComplete = useCallback(() => {
@@ -471,13 +472,15 @@ const Index = () => {
     
     // If we have an image, use image analysis (which includes text context if available)
     if (image) {
+      setShowValidationError(false); // Clear validation error on valid submission
       await handleImageAnalysis(image.file, image.preview, 'standard', text);
     } else if (text) {
       // Validate text input before analysis
       if (!isValidInput(text)) {
-        setValidationMessage(i18nT('form.validationError'));
+        setShowValidationError(true); // Show inline error
         return;
       }
+      setShowValidationError(false); // Clear validation error on valid submission
       // Text-only analysis
       await handleAnalyze(text);
     }
@@ -767,6 +770,8 @@ const Index = () => {
                 validationMessage={validationMessage}
                 onClearValidation={handleClearValidation}
                 showInvalidBadge={hasFormContent && !formHasImage && !isFormInputValid}
+                showValidationError={showValidationError}
+                isInputValid={isFormInputValid}
               />
               
               {/* Disclaimer note - single line, branded */}

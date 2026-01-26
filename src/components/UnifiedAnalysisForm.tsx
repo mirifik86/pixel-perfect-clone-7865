@@ -12,6 +12,8 @@ interface UnifiedAnalysisFormProps {
   validationMessage?: string | null; // Inline validation message to display
   onClearValidation?: () => void; // Clear validation when user starts typing
   showInvalidBadge?: boolean; // Show "not analyzable" badge near input
+  showValidationError?: boolean; // Show inline validation error with breathing glow (triggered on submit)
+  isInputValid?: boolean; // Whether current input is valid (for auto-dismissing error)
 }
 
 export interface UnifiedAnalysisFormHandle {
@@ -22,7 +24,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
-  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, validationMessage, onClearValidation, showInvalidBadge }, ref) => {
+  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, validationMessage, onClearValidation, showInvalidBadge, showValidationError, isInputValid }, ref) => {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [attachedImage, setAttachedImage] = useState<{ file: File; preview: string } | null>(null);
@@ -462,6 +464,41 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                 )}
               </div>
               
+              {/* Inline validation error - between text input and image upload */}
+              {showValidationError && !isInputValid && (
+                <div 
+                  className="flex items-center justify-center animate-fade-in"
+                  style={{ 
+                    marginTop: 'var(--space-1)',
+                    marginBottom: 'var(--space-1)',
+                  }}
+                >
+                  <div 
+                    className="flex items-center gap-2 rounded-xl px-4 py-2.5"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(35 25% 10% / 0.85) 0%, hsl(38 20% 8% / 0.8) 100%)',
+                      border: '1px solid hsl(38 45% 40% / 0.35)',
+                      boxShadow: '0 4px 16px hsl(0 0% 0% / 0.3), 0 0 20px hsl(38 50% 45% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
+                      animation: 'validation-breathe 2.5s ease-in-out infinite',
+                    }}
+                  >
+                    <Info 
+                      className="h-3.5 w-3.5 shrink-0" 
+                      style={{ color: 'hsl(38 55% 55% / 0.9)' }}
+                    />
+                    <span 
+                      className="text-xs font-medium tracking-wide"
+                      style={{
+                        color: 'hsl(38 60% 65%)',
+                        textShadow: '0 0 10px hsl(38 50% 50% / 0.3)',
+                      }}
+                    >
+                      {t('form.validationError')}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Visual separator with "or" */}
               <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
                 <div 
@@ -651,6 +688,17 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           50% { 
             opacity: 1; 
             text-shadow: 0 0 24px hsl(174 60% 55% / 0.4), 0 0 45px hsl(174 50% 50% / 0.2);
+          }
+        }
+        /* Validation error breathing glow - soft amber pulse */
+        @keyframes validation-breathe {
+          0%, 100% { 
+            box-shadow: 0 4px 16px hsl(0 0% 0% / 0.3), 0 0 18px hsl(38 50% 45% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.04);
+            border-color: hsl(38 45% 40% / 0.3);
+          }
+          50% { 
+            box-shadow: 0 4px 16px hsl(0 0% 0% / 0.3), 0 0 28px hsl(38 55% 50% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.04);
+            border-color: hsl(38 50% 45% / 0.45);
           }
         }
       `}</style>
