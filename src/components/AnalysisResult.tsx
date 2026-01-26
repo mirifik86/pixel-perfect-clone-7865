@@ -53,6 +53,7 @@ interface CorroborationSources {
   corroborated?: string[];
   neutral?: string[];
   constrained?: string[];
+  contradicting?: string[];
 }
 
 interface Corroboration {
@@ -115,6 +116,7 @@ const translations = {
     corroborated: 'Clear Corroboration',
     neutral: 'Neutral Mentions',
     constrained: 'Limited Coverage',
+    refuted: 'Actively Refuted',
     sourcesConsulted: 'sources consulted',
     corroborationBonus: 'Corroboration Bonus',
     maxBonus: 'max +20 pts',
@@ -122,6 +124,24 @@ const translations = {
     sourceGroupCorroborated: 'Clear corroboration',
     sourceGroupNeutral: 'Neutral or contextual mentions',
     sourceGroupConstrained: 'Limited or constrained coverage',
+    sourceGroupContradicting: 'Actively contradicts claim',
+    openSource: 'Open',
+    // PRO intensity labels (replace numeric points)
+    intensityOverwhelming: 'Overwhelming',
+    intensityStrong: 'Strong',
+    intensityModerate: 'Moderate',
+    intensityWeak: 'Weak',
+    intensityNone: 'None',
+    // PRO assessment badges
+    badgeStrongEvidence: 'Strong Evidence',
+    badgeModerateEvidence: 'Moderate Evidence',
+    badgeLimitedEvidence: 'Limited Evidence',
+    badgeNoSupport: 'No Credible Support',
+    badgeContradicted: 'Contradicted by Consensus',
+    badgeRefuted: 'Refuted',
+    badgeCoherent: 'Coherent',
+    badgeIncoherent: 'Incoherent',
+    badgeNeutral: 'Neutral',
     // UI
     confidence: 'Confidence',
     confidenceLow: 'Low',
@@ -193,6 +213,7 @@ const translations = {
     corroborated: 'Corroboration claire',
     neutral: 'Mentions neutres',
     constrained: 'Couverture limitée',
+    refuted: 'Activement réfuté',
     sourcesConsulted: 'sources consultées',
     corroborationBonus: 'Bonus Corroboration',
     maxBonus: 'max +20 pts',
@@ -200,6 +221,24 @@ const translations = {
     sourceGroupCorroborated: 'Corroboration claire',
     sourceGroupNeutral: 'Mentions neutres ou contextuelles',
     sourceGroupConstrained: 'Couverture limitée ou contrainte',
+    sourceGroupContradicting: 'Contredit activement l\'affirmation',
+    openSource: 'Ouvrir',
+    // PRO intensity labels (replace numeric points)
+    intensityOverwhelming: 'Accablant',
+    intensityStrong: 'Fort',
+    intensityModerate: 'Modéré',
+    intensityWeak: 'Faible',
+    intensityNone: 'Aucun',
+    // PRO assessment badges
+    badgeStrongEvidence: 'Preuves solides',
+    badgeModerateEvidence: 'Preuves modérées',
+    badgeLimitedEvidence: 'Preuves limitées',
+    badgeNoSupport: 'Aucun soutien crédible',
+    badgeContradicted: 'Contredit par consensus',
+    badgeRefuted: 'Réfuté',
+    badgeCoherent: 'Cohérent',
+    badgeIncoherent: 'Incohérent',
+    badgeNeutral: 'Neutre',
     // UI
     confidence: 'Niveau de confiance',
     confidenceLow: 'Faible',
@@ -296,7 +335,97 @@ const badgeDotStyles: Record<number, string> = {
 const corroborationStyles: Record<string, { bg: string; text: string; dot: string }> = {
   corroborated: { bg: 'bg-emerald-100 border-emerald-300', text: 'text-emerald-800', dot: 'bg-emerald-500' },
   neutral: { bg: 'bg-amber-100 border-amber-300', text: 'text-amber-800', dot: 'bg-amber-500' },
-  constrained: { bg: 'bg-red-100 border-red-300', text: 'text-red-800', dot: 'bg-red-500' },
+  constrained: { bg: 'bg-slate-100 border-slate-300', text: 'text-slate-700', dot: 'bg-slate-400' },
+  refuted: { bg: 'bg-red-100 border-red-300', text: 'text-red-800', dot: 'bg-red-500' },
+};
+
+// PRO: Convert points to intensity level
+const getProIntensity = (points: number, t: typeof translations['en']): { label: string; level: 'overwhelming' | 'strong' | 'moderate' | 'weak' | 'none'; color: string } => {
+  if (points >= 15) return { label: t.intensityOverwhelming, level: 'overwhelming', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' };
+  if (points >= 8) return { label: t.intensityStrong, level: 'strong', color: 'bg-teal-100 text-teal-700 border-teal-300' };
+  if (points >= 0) return { label: t.intensityModerate, level: 'moderate', color: 'bg-amber-100 text-amber-700 border-amber-300' };
+  if (points >= -10) return { label: t.intensityWeak, level: 'weak', color: 'bg-orange-100 text-orange-700 border-orange-300' };
+  return { label: t.intensityNone, level: 'none', color: 'bg-red-100 text-red-700 border-red-300' };
+};
+
+// PRO: Get assessment badge based on points and key
+const getProBadge = (points: number, key: string, t: typeof translations['en'], outcome?: string): { label: string; color: string; icon: 'check' | 'alert' | 'x' | 'info' } => {
+  // Special handling for web corroboration with refuted outcome
+  if (key === 'webCorroboration') {
+    if (outcome === 'refuted') {
+      return { label: t.badgeRefuted, color: 'bg-red-100 text-red-700 border-red-300', icon: 'x' };
+    }
+    if (points <= -25) return { label: t.badgeContradicted, color: 'bg-red-100 text-red-700 border-red-300', icon: 'x' };
+    if (points <= -10) return { label: t.badgeNoSupport, color: 'bg-orange-100 text-orange-700 border-orange-300', icon: 'alert' };
+    if (points <= 5) return { label: t.badgeLimitedEvidence, color: 'bg-amber-100 text-amber-700 border-amber-300', icon: 'info' };
+    if (points <= 12) return { label: t.badgeModerateEvidence, color: 'bg-teal-100 text-teal-700 border-teal-300', icon: 'check' };
+    return { label: t.badgeStrongEvidence, color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: 'check' };
+  }
+  
+  // Contextual coherence
+  if (key === 'contextualCoherence') {
+    if (points <= -15) return { label: t.badgeContradicted, color: 'bg-red-100 text-red-700 border-red-300', icon: 'x' };
+    if (points <= -5) return { label: t.badgeIncoherent, color: 'bg-orange-100 text-orange-700 border-orange-300', icon: 'alert' };
+    if (points <= 5) return { label: t.badgeNeutral, color: 'bg-amber-100 text-amber-700 border-amber-300', icon: 'info' };
+    return { label: t.badgeCoherent, color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: 'check' };
+  }
+  
+  // Claim gravity (inverted: low gravity = good)
+  if (key === 'claimGravity') {
+    if (points >= 8) return { label: t.intensityWeak, color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: 'check' };
+    if (points >= 3) return { label: t.intensityModerate, color: 'bg-amber-100 text-amber-700 border-amber-300', icon: 'info' };
+    if (points >= -3) return { label: t.intensityStrong, color: 'bg-orange-100 text-orange-700 border-orange-300', icon: 'alert' };
+    return { label: t.intensityOverwhelming, color: 'bg-red-100 text-red-700 border-red-300', icon: 'x' };
+  }
+  
+  // Image coherence
+  if (key === 'imageCoherence') {
+    if (points >= 1) return { label: t.badgeCoherent, color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: 'check' };
+    if (points >= -3) return { label: t.badgeNeutral, color: 'bg-slate-100 text-slate-600 border-slate-300', icon: 'info' };
+    return { label: t.badgeIncoherent, color: 'bg-red-100 text-red-700 border-red-300', icon: 'x' };
+  }
+  
+  // Default
+  return { label: t.badgeNeutral, color: 'bg-slate-100 text-slate-600 border-slate-300', icon: 'info' };
+};
+
+// Extract domain from source name for favicon
+const extractDomain = (source: string): string | null => {
+  // Common patterns: "The New York Times", "nytimes.com", "Reuters", etc.
+  const domainPatterns: Record<string, string> = {
+    'new york times': 'nytimes.com',
+    'nytimes': 'nytimes.com',
+    'washington post': 'washingtonpost.com',
+    'reuters': 'reuters.com',
+    'associated press': 'apnews.com',
+    'ap news': 'apnews.com',
+    'bbc': 'bbc.com',
+    'cnn': 'cnn.com',
+    'guardian': 'theguardian.com',
+    'le monde': 'lemonde.fr',
+    'al jazeera': 'aljazeera.com',
+    'bloomberg': 'bloomberg.com',
+    'wikipedia': 'wikipedia.org',
+    'britannica': 'britannica.com',
+    'snopes': 'snopes.com',
+    'politifact': 'politifact.com',
+    'nature': 'nature.com',
+    'science': 'science.org',
+    'pubmed': 'pubmed.gov',
+  };
+  
+  const lowerSource = source.toLowerCase();
+  for (const [pattern, domain] of Object.entries(domainPatterns)) {
+    if (lowerSource.includes(pattern)) {
+      return domain;
+    }
+  }
+  
+  // Try to extract domain if it looks like a URL or domain
+  const domainMatch = source.match(/([a-z0-9-]+\.[a-z]{2,})/i);
+  if (domainMatch) return domainMatch[1].toLowerCase();
+  
+  return null;
 };
 
 // Calculate progressive corroboration bonus for PRO analysis
@@ -637,164 +766,254 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
           {/* Corroboration Web Section - Extended Verification (PRO) */}
           {data.corroboration && (
             <div className="pt-1">
-              {/* Header */}
+              {/* Header with outcome badge instead of points */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-cyan-600" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2l7 4v6c0 5-3.5 9.7-7 10-3.5-.3-7-5-7-10V6l7-4z" stroke="currentColor" strokeWidth="1.5"/>
                   </svg>
                   <h3 className="font-serif text-lg font-semibold text-slate-900">{t.extendedVerificationTitle}</h3>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button className="text-slate-400 hover:text-slate-600 transition-colors">
-                          <Info className="w-4 h-4" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[240px] text-center">
-                        <p className="text-xs">{language === 'fr' 
-                          ? 'PRO vérifie jusqu\'à 10 sources avec scoring progressif : +5, +4, +3, +2, puis +1 par source (max +20 pts).' 
-                          : 'PRO checks up to 10 sources with progressive scoring: +5, +4, +3, +2, then +1 per source (max +20 pts).'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </div>
-                {/* Corroboration Bonus Badge */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">{t.corroborationBonus}:</span>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-700 border border-cyan-500/30">
-                    +{calculateCorroborationBonus(data.corroboration)} pts
-                  </span>
-                </div>
+                {/* PRO Outcome Badge - replaces point display */}
+                {(() => {
+                  const outcome = data.corroboration.outcome;
+                  const outcomeStyles = corroborationStyles[outcome] || corroborationStyles.constrained;
+                  const outcomeLabel = outcome === 'refuted' ? t.refuted 
+                    : outcome === 'corroborated' ? t.corroborated 
+                    : outcome === 'neutral' ? t.neutral 
+                    : t.constrained;
+                  return (
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${outcomeStyles.bg} ${outcomeStyles.text}`}>
+                      <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${outcomeStyles.dot}`} />
+                      {outcomeLabel}
+                    </span>
+                  );
+                })()}
               </div>
 
-              {/* Microcopy */}
-              <div className="mb-4 flex items-center justify-between text-sm">
-                <span className="text-slate-500">
-                  <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span> {t.sourcesConsulted}
-                </span>
-                <span className="text-xs text-slate-400">({t.maxBonus})</span>
+              {/* Source count - secondary label */}
+              <div className="mb-4 text-sm text-slate-500">
+                <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span> {t.sourcesConsulted}
               </div>
 
-              {/* Source Cards Grid */}
+              {/* Source Cards Grid - Enhanced with favicons */}
               {data.corroboration.sources && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Corroborated Sources - Official/Major Media/Reference */}
+                <div className="space-y-2">
+                  {/* Corroborated Sources */}
                   {data.corroboration.sources.corroborated?.map((source, idx) => {
-                    // Comprehensive domain detection patterns
+                    const domain = extractDomain(source);
                     const sourceLower = source.toLowerCase();
                     
-                    // Official Sources: Government, institutional archives, official bodies
-                    const officialPatterns = /\.(gov|gouv|gob|govt)\b|\.gov\.|government|official|ministry|ministère|department|département|senate|sénat|congress|parlement|parliament|white\s*house|élysée|downing|bundesregierung|archives?\s*(national|federal)|national\s*archives|library\s*of\s*congress|europarl|europa\.eu|who\.int|un\.org|unesco|interpol|fbi|cia|nsa|cdc|fda|epa|nasa|esa|nih|state\.gov|justice\.gov|treasury|défense|defense\.gov|bundesamt|préfecture|mairie|city\s*hall|municipal|conseil|court\s*(supreme|constitutional)|tribunal|homeland|immigration/i.test(sourceLower);
-                    
-                    // Major Media: International news agencies, major newspapers, broadcast networks
-                    const majorMediaPatterns = /reuters|associated\s*press|\bap\s*news|agence\s*france|afp|bloomberg|bbc|cnn|nbc|abc\s*news|cbs\s*news|fox\s*news|msnbc|npr|pbs|c-span|new\s*york\s*times|nyt|washington\s*post|wall\s*street\s*journal|wsj|los\s*angeles\s*times|usa\s*today|chicago\s*tribune|boston\s*globe|the\s*guardian|daily\s*telegraph|the\s*times|independent|financial\s*times|economist|le\s*monde|le\s*figaro|libération|l'express|la\s*croix|der\s*spiegel|zeit|süddeutsche|faz|frankfurter|bild|el\s*país|la\s*vanguardia|corriere|la\s*repubblica|stampa|asahi|yomiuri|mainichi|nikkei|al\s*jazeera|haaretz|times\s*of\s*india|hindu|straits\s*times|south\s*china|globe\s*and\s*mail|toronto\s*star|sydney\s*morning|abc\s*australia|sky\s*news|euronews|france24|dw\.com|radio\s*france|france\s*info|rtbf|politico|axios|vox|huffpost|huffington|buzzfeed\s*news|vice\s*news|propublica|intercept|atlantic|newyorker|new\s*yorker|time\s*magazine|\btime\.com/i.test(sourceLower);
-                    
-                    // Reference: Encyclopedias, academic sources, dictionaries
-                    const referencePatterns = /britannica|encyclopedia|encyclopédie|encyclopaedia|wikipedia|wikimedia|wiktionary|oxford|cambridge|merriam|webster|larousse|robert|duden|treccani|scholarpedia|stanford\s*encyclopedia|plato\.stanford|jstor|pubmed|ncbi|nature\.com|science\.org|sciencedirect|springer|wiley|elsevier|academic|scholarly|peer\s*review|arxiv|ssrn|researchgate|google\s*scholar|worldcat|library|bibliothèque|snopes|factcheck|politifact|full\s*fact|les\s*décodeurs|checknews|hoaxbuster/i.test(sourceLower);
+                    const officialPatterns = /\.(gov|gouv|gob|govt)\b|\.gov\.|government|official|ministry|ministère/i.test(sourceLower);
+                    const majorMediaPatterns = /reuters|associated\s*press|afp|bloomberg|bbc|cnn|new\s*york\s*times|washington\s*post|guardian|le\s*monde|al\s*jazeera/i.test(sourceLower);
+                    const referencePatterns = /britannica|encyclopedia|wikipedia|oxford|pubmed|nature\.com|snopes|factcheck/i.test(sourceLower);
                     
                     let badgeLabel = language === 'fr' ? 'Source officielle' : 'Official Source';
-                    let badgeStyle = 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+                    let badgeStyle = 'bg-blue-100 text-blue-700 border-blue-200';
                     
                     if (majorMediaPatterns) {
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
-                      badgeStyle = 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+                      badgeStyle = 'bg-indigo-100 text-indigo-700 border-indigo-200';
                     } else if (referencePatterns) {
                       badgeLabel = language === 'fr' ? 'Référence' : 'Reference';
-                      badgeStyle = 'bg-violet-500/10 text-violet-600 border-violet-500/20';
+                      badgeStyle = 'bg-violet-100 text-violet-700 border-violet-200';
                     } else if (!officialPatterns) {
-                      // Default to Major Media for unrecognized corroborated sources
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
-                      badgeStyle = 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+                      badgeStyle = 'bg-indigo-100 text-indigo-700 border-indigo-200';
                     }
                     
                     return (
                       <div
                         key={`corr-${idx}`}
-                        className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 
-                                   p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
+                        className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50/50 to-white p-3 shadow-sm"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                            <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        <div className="flex items-start gap-3">
+                          {/* Favicon */}
+                          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {domain ? (
+                              <img 
+                                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                                alt=""
+                                className="w-5 h-5"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <CheckCircle className="w-4 h-4 text-emerald-600" />
+                            )}
                           </div>
-                          <div>
-                            <div className="text-sm font-semibold text-slate-800">{source}</div>
-                            <div className="text-xs text-slate-400">{t.sourceGroupCorroborated}</div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap ${badgeStyle}`}>
+                                {badgeLabel}
+                              </span>
+                            </div>
+                            <p className="text-xs text-emerald-600 font-medium">{t.sourceGroupCorroborated}</p>
                           </div>
+                          
+                          {/* Open link button */}
+                          {domain && (
+                            <a 
+                              href={`https://${domain}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
+                            >
+                              {t.openSource}
+                            </a>
+                          )}
                         </div>
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium tracking-wide border whitespace-nowrap ${badgeStyle}`}>
-                          {badgeLabel}
-                        </span>
                       </div>
                     );
                   })}
 
-                  {/* Neutral Sources - Reference type */}
+                  {/* Neutral Sources */}
                   {data.corroboration.sources.neutral?.map((source, idx) => {
+                    const domain = extractDomain(source);
                     const sourceLower = source.toLowerCase();
-                    
-                    // Reference: Encyclopedias, academic sources, dictionaries, fact-checkers
-                    const isReference = /britannica|encyclopedia|encyclopédie|encyclopaedia|wikipedia|wikimedia|wiktionary|oxford|cambridge|merriam|webster|larousse|robert|duden|treccani|scholarpedia|stanford\s*encyclopedia|plato\.stanford|jstor|pubmed|ncbi|nature\.com|science\.org|sciencedirect|springer|wiley|elsevier|academic|scholarly|peer\s*review|arxiv|ssrn|researchgate|google\s*scholar|worldcat|library|bibliothèque|snopes|factcheck|politifact|full\s*fact|les\s*décodeurs|checknews|hoaxbuster/i.test(sourceLower);
-                    
-                    // Major Media patterns for neutral sources
-                    const isMajorMedia = /reuters|associated\s*press|\bap\s*news|afp|bloomberg|bbc|cnn|nbc|abc\s*news|cbs|fox\s*news|msnbc|npr|pbs|new\s*york\s*times|nyt|washington\s*post|wsj|guardian|telegraph|times|independent|financial\s*times|economist|le\s*monde|figaro|spiegel|al\s*jazeera|politico|axios|vox|huffpost|atlantic|newyorker|time\.com/i.test(sourceLower);
+                    const isReference = /britannica|encyclopedia|wikipedia|oxford|pubmed|nature\.com|snopes|factcheck/i.test(sourceLower);
+                    const isMajorMedia = /reuters|bbc|cnn|guardian|le\s*monde|al\s*jazeera/i.test(sourceLower);
                     
                     let badgeLabel = language === 'fr' ? 'Contexte' : 'Context';
-                    let badgeStyle = 'bg-slate-500/10 text-slate-600 border-slate-500/20';
+                    let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200';
                     
                     if (isReference) {
                       badgeLabel = language === 'fr' ? 'Référence' : 'Reference';
-                      badgeStyle = 'bg-violet-500/10 text-violet-600 border-violet-500/20';
+                      badgeStyle = 'bg-violet-100 text-violet-700 border-violet-200';
                     } else if (isMajorMedia) {
                       badgeLabel = language === 'fr' ? 'Média majeur' : 'Major Media';
-                      badgeStyle = 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+                      badgeStyle = 'bg-indigo-100 text-indigo-700 border-indigo-200';
                     }
                     
                     return (
                       <div
                         key={`neut-${idx}`}
-                        className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 
-                                   p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
+                        className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50/50 to-white p-3 shadow-sm"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                            <AlertCircle className="w-4 h-4 text-amber-600" />
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {domain ? (
+                              <img 
+                                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                                alt=""
+                                className="w-5 h-5"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-amber-600" />
+                            )}
                           </div>
-                          <div>
-                            <div className="text-sm font-semibold text-slate-800">{source}</div>
-                            <div className="text-xs text-slate-400">{t.sourceGroupNeutral}</div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap ${badgeStyle}`}>
+                                {badgeLabel}
+                              </span>
+                            </div>
+                            <p className="text-xs text-amber-600 font-medium">{t.sourceGroupNeutral}</p>
                           </div>
+                          
+                          {domain && (
+                            <a 
+                              href={`https://${domain}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
+                            >
+                              {t.openSource}
+                            </a>
+                          )}
                         </div>
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium tracking-wide border whitespace-nowrap ${badgeStyle}`}>
-                          {badgeLabel}
-                        </span>
                       </div>
                     );
                   })}
 
-                  {/* Constrained Sources - Context type */}
-                  {data.corroboration.sources.constrained?.map((source, idx) => (
-                    <div
-                      key={`const-${idx}`}
-                      className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 
-                                 p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                          <XCircle className="w-4 h-4 text-slate-500" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-slate-800">{source}</div>
-                          <div className="text-xs text-slate-400">{t.sourceGroupConstrained}</div>
+                  {/* Contradicting Sources - NEW for refuted claims */}
+                  {data.corroboration.sources.contradicting?.map((source, idx) => {
+                    const domain = extractDomain(source);
+                    
+                    return (
+                      <div
+                        key={`contra-${idx}`}
+                        className="rounded-xl border border-red-200 bg-gradient-to-r from-red-50/50 to-white p-3 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white border border-red-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {domain ? (
+                              <img 
+                                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                                alt=""
+                                className="w-5 h-5"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-red-600" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap bg-red-100 text-red-700 border-red-200">
+                                {language === 'fr' ? 'Contredit' : 'Contradicts'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-red-600 font-medium">{t.sourceGroupContradicting}</p>
+                          </div>
+                          
+                          {domain && (
+                            <a 
+                              href={`https://${domain}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0"
+                            >
+                              {t.openSource}
+                            </a>
+                          )}
                         </div>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium tracking-wide border whitespace-nowrap
-                                       bg-slate-500/10 text-slate-600 border-slate-500/20">
-                        {language === 'fr' ? 'Contexte' : 'Context'}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
+
+                  {/* Constrained Sources */}
+                  {data.corroboration.sources.constrained?.map((source, idx) => {
+                    const domain = extractDomain(source);
+                    
+                    return (
+                      <div
+                        key={`const-${idx}`}
+                        className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50/50 to-white p-3 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {domain ? (
+                              <img 
+                                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                                alt=""
+                                className="w-5 h-5"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <Info className="w-4 h-4 text-slate-400" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-semibold text-slate-800 truncate">{source}</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap bg-slate-100 text-slate-600 border-slate-200">
+                                {language === 'fr' ? 'Contexte' : 'Context'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500">{t.sourceGroupConstrained}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -894,7 +1113,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         )}
       </div>
 
-      {/* Breakdown - PRO only (Standard uses the micro-diagnostic cards above) */}
+      {/* Breakdown - PRO only with badges instead of points */}
       {isPro && (
         <div className="analysis-card">
           <h3 className="mb-4 font-serif text-lg font-semibold text-slate-900">
@@ -905,6 +1124,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               const item = data.breakdown[key as keyof AnalysisBreakdown] as { points: number; weight?: string; reason: string } | undefined;
               if (!item) return null;
               const Icon = proCriteriaIcons[key];
+              const badge = getProBadge(item.points, key, t, data.corroboration?.outcome);
+              const intensity = getProIntensity(item.points, t);
+              const BadgeIcon = badge.icon === 'check' ? CheckCircle : badge.icon === 'x' ? XCircle : badge.icon === 'alert' ? AlertCircle : Info;
+              
               return (
                 <div key={key} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
                   <div className="mb-2 flex items-center justify-between">
@@ -913,15 +1136,14 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                         {Icon}
                       </span>
                       <span className="font-semibold text-slate-800">{proCriteriaLabels[key]}</span>
-                      {item.weight && (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
-                          {item.weight}
-                        </span>
-                      )}
                     </div>
-                    <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
-                      {item.points > 0 ? '+' : ''}{item.points}
-                    </span>
+                    {/* PRO Badge instead of points */}
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border flex items-center gap-1.5 ${badge.color}`}>
+                        <BadgeIcon className="w-3 h-3" />
+                        {badge.label}
+                      </span>
+                    </div>
                   </div>
                   <p className="ml-8 text-sm font-medium text-slate-600">{item.reason}</p>
                 </div>
