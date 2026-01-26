@@ -346,82 +346,97 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
 
           {/* Main content area */}
           <div style={{ padding: 'var(--space-4)' }}>
-            {/* Text input + optional attached image preview */}
-            <div className="flex flex-col" style={{ gap: 'var(--space-3)' }}>
-              {/* Textarea row with image button */}
-              <div className="flex items-start w-full" style={{ gap: 'var(--space-3)' }}>
-                {/* Text input zone - always visible */}
-                <div className="relative flex-1" onClick={(e) => e.stopPropagation()}>
-                  <Textarea
-                    ref={textareaRef}
-                    value={inputText}
-                    onChange={handleInputChange}
-                    onPaste={handlePaste}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    placeholder={t('form.placeholder')}
-                    className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
-                    style={{
-                      minHeight: '80px',
-                      padding: 'var(--space-3)',
-                      fontSize: 'var(--text-sm)',
-                      boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
-                    }}
-                  />
+            {/* Text input + Image upload as visually distinct options */}
+            <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
+              
+              {/* Text input zone */}
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <Textarea
+                  ref={textareaRef}
+                  value={inputText}
+                  onChange={handleInputChange}
+                  onPaste={handlePaste}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder={t('form.placeholder')}
+                  className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-left text-white placeholder:text-white/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                  style={{
+                    minHeight: '80px',
+                    padding: 'var(--space-3)',
+                    fontSize: 'var(--text-sm)',
+                    boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                  }}
+                />
+              </div>
+              
+              {/* Visual separator with "or" */}
+              <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
+                <div 
+                  className="flex-1 h-px"
+                  style={{ background: 'linear-gradient(to right, transparent, hsl(174 50% 50% / 0.25), transparent)' }}
+                />
+                <span 
+                  className="text-xs font-medium uppercase tracking-widest"
+                  style={{ color: 'hsl(174 50% 55% / 0.6)' }}
+                >
+                  {t('screenshotUpload.or')}
+                </span>
+                <div 
+                  className="flex-1 h-px"
+                  style={{ background: 'linear-gradient(to right, transparent, hsl(174 50% 50% / 0.25), transparent)' }}
+                />
+              </div>
+              
+              {/* Image upload button - full width, distinct option */}
+              <button
+                type="button"
+                onClick={handleAddImageClick}
+                className="flex items-center justify-center rounded-xl transition-all hover:scale-[1.01] group/img w-full"
+                style={{
+                  padding: 'var(--space-3) var(--space-4)',
+                  gap: 'var(--space-3)',
+                  background: hasImage 
+                    ? 'linear-gradient(135deg, hsl(174 60% 35% / 0.35), hsl(174 50% 30% / 0.25))'
+                    : 'linear-gradient(135deg, hsl(174 50% 30% / 0.15), hsl(174 40% 25% / 0.1))',
+                  border: hasImage 
+                    ? '1px solid hsl(174 60% 50% / 0.4)'
+                    : '1px dashed hsl(174 50% 50% / 0.3)',
+                  boxShadow: hasImage
+                    ? '0 0 20px hsl(174 60% 50% / 0.15), 0 4px 12px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.08)'
+                    : '0 4px 12px hsl(0 0% 0% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
+                }}
+                title={t('form.addImage')}
+              >
+                {/* Icon container with glow */}
+                <div 
+                  className="rounded-lg transition-all group-hover/img:scale-110 shrink-0"
+                  style={{
+                    padding: 'var(--space-2)',
+                    background: hasImage 
+                      ? 'linear-gradient(135deg, hsl(174 70% 45% / 0.5), hsl(174 60% 40% / 0.4))'
+                      : 'linear-gradient(135deg, hsl(174 60% 45% / 0.25), hsl(174 50% 40% / 0.15))',
+                    boxShadow: '0 0 12px hsl(174 60% 50% / 0.1), 0 2px 6px hsl(0 0% 0% / 0.1)',
+                  }}
+                >
+                  {hasImage ? (
+                    <CheckCircle2 className="h-5 w-5" style={{ color: 'hsl(174 80% 65%)' }} />
+                  ) : (
+                    <ImagePlus className="h-5 w-5" style={{ color: 'hsl(174 65% 60%)' }} />
+                  )}
                 </div>
                 
-                {/* Image button - ALWAYS visible */}
-                <button
-                  type="button"
-                  onClick={handleAddImageClick}
-                  className="flex flex-col items-center justify-center rounded-xl transition-all hover:scale-105 group/img shrink-0"
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    gap: 'var(--space-1)',
-                    background: hasImage 
-                      ? 'linear-gradient(135deg, hsl(174 60% 35% / 0.4), hsl(174 50% 30% / 0.3))'
-                      : 'linear-gradient(135deg, hsl(174 50% 30% / 0.25), hsl(174 40% 25% / 0.15))',
-                    border: hasImage 
-                      ? '1px solid hsl(174 60% 50% / 0.5)'
-                      : '1px dashed hsl(174 50% 50% / 0.35)',
-                    boxShadow: hasImage
-                      ? '0 0 20px hsl(174 60% 50% / 0.2), 0 4px 16px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.1)'
-                      : '0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+                {/* Label - longer text now fits */}
+                <span 
+                  className="font-medium"
+                  style={{ 
+                    color: hasImage ? 'hsl(174 70% 65%)' : 'hsl(174 55% 60% / 0.9)', 
+                    fontSize: 'var(--text-sm)',
                   }}
-                  title={t('form.addImage')}
                 >
-                  {/* Icon container with glow */}
-                  <div 
-                    className="rounded-lg transition-all group-hover/img:scale-110"
-                    style={{
-                      padding: 'var(--space-2)',
-                      background: hasImage 
-                        ? 'linear-gradient(135deg, hsl(174 70% 45% / 0.5), hsl(174 60% 40% / 0.4))'
-                        : 'linear-gradient(135deg, hsl(174 60% 45% / 0.3), hsl(174 50% 40% / 0.2))',
-                      boxShadow: '0 0 15px hsl(174 60% 50% / 0.15), 0 2px 8px hsl(0 0% 0% / 0.15)',
-                    }}
-                  >
-                    {hasImage ? (
-                      <CheckCircle2 className="h-5 w-5" style={{ color: 'hsl(174 80% 65%)' }} />
-                    ) : (
-                      <ImagePlus className="h-5 w-5" style={{ color: 'hsl(174 65% 60%)' }} />
-                    )}
-                  </div>
-                  
-                  {/* Label */}
-                  <span 
-                    className="font-medium tracking-wide uppercase"
-                    style={{ 
-                      color: hasImage ? 'hsl(174 70% 65%)' : 'hsl(174 60% 55% / 0.8)', 
-                      fontSize: '9px' 
-                    }}
-                  >
-                    {hasImage ? t('form.imageReady') : t('form.imageUpload')}
-                  </span>
-                </button>
-              </div>
+                  {hasImage ? t('form.imageReady') : t('form.imageUpload')}
+                </span>
+              </button>
               
               {/* Attached image preview - shown below text input when image is attached */}
               {attachedImage && (
