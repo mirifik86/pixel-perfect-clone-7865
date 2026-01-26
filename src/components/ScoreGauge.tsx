@@ -453,6 +453,59 @@ export const ScoreGauge = ({
           />
         )}
         
+        {/* Subtle internal light sweep - premium "alive" effect */}
+        <div 
+          className="absolute rounded-full pointer-events-none overflow-hidden"
+          style={{
+            inset: strokeWidth / 2 + 2,
+          }}
+        >
+          {/* Slow rotating light sweep */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: `conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                transparent 160deg,
+                hsl(174 55% 50% / 0.04) 170deg,
+                hsl(174 60% 55% / 0.08) 180deg,
+                hsl(174 55% 50% / 0.04) 190deg,
+                transparent 200deg,
+                transparent 360deg
+              )`,
+              animation: 'gauge-light-sweep 12s linear infinite',
+            }}
+          />
+          {/* Secondary counter-rotating subtle sweep */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: `conic-gradient(
+                from 180deg,
+                transparent 0deg,
+                transparent 170deg,
+                hsl(180 50% 55% / 0.03) 175deg,
+                hsl(180 55% 60% / 0.05) 180deg,
+                hsl(180 50% 55% / 0.03) 185deg,
+                transparent 190deg,
+                transparent 360deg
+              )`,
+              animation: 'gauge-light-sweep-reverse 18s linear infinite',
+            }}
+          />
+        </div>
+        
+        {/* Soft ambient inner glow pulse */}
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            inset: strokeWidth / 2 + 4,
+            background: 'radial-gradient(circle at center, hsl(174 50% 50% / 0.03) 0%, transparent 70%)',
+            animation: 'gauge-ambient-pulse 6s ease-in-out infinite',
+          }}
+        />
+        
         {/* SVG - static (no rotation) */}
         <svg 
           width={size} 
@@ -1501,6 +1554,25 @@ export const ScoreGauge = ({
           50% { 
             opacity: 1;
             transform: scale(1.2);
+          }
+        }
+        /* Subtle alive effects for gauge */
+        @keyframes gauge-light-sweep {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes gauge-light-sweep-reverse {
+          0% { transform: rotate(360deg); }
+          100% { transform: rotate(0deg); }
+        }
+        @keyframes gauge-ambient-pulse {
+          0%, 100% { 
+            opacity: 0.5;
+            transform: scale(1);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.02);
           }
         }
       `}</style>
