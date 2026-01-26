@@ -147,6 +147,15 @@ Perform a high-quality web search:
 - PRIORITIZE: recognized media, press agencies, official institutions
 - EXCLUDE: social media, anonymous blogs, unverified opinion sites
 
+CRITICAL SOURCE URL REQUIREMENT:
+- For EACH source, you MUST provide the EXACT article URL (the specific page/article)
+- NEVER use homepage URLs (e.g., "https://reuters.com" or "https://bbc.com")
+- NEVER use category or section pages
+- If you cannot find a specific article URL for a claim, DO NOT include that source
+- The URL must point directly to the article, study, or page that contains the evidence
+- Example GOOD: "https://www.reuters.com/world/europe/specific-article-title-2024-01-15/"
+- Example BAD: "https://www.reuters.com" or "https://www.reuters.com/world/"
+
 CORROBORATION OUTCOMES:
 
 "corroborated": Multiple reliable sources clearly reference the claim
@@ -266,10 +275,10 @@ When refuted, explicitly state that sources contradict the claim.
     "sourceTypes": ["<media|agency|institution|other>"],
     "summary": "<brief summary - MUST explicitly state if sources contradict the claim>",
     "sources": {
-      "corroborated": ["<source names that clearly corroborate>"],
-      "neutral": ["<source names with neutral/contextual mentions>"],
-      "constrained": ["<source names with limited coverage or no coverage indicator>"],
-      "contradicting": ["<source names that actively refute/contradict the claim>"]
+      "corroborated": [{"name": "<source name>", "url": "<EXACT article URL - must be the specific page/article, NOT homepage>", "snippet": "<1-line summary of what this source says>"}],
+      "neutral": [{"name": "<source name>", "url": "<EXACT article URL>", "snippet": "<1-line summary>"}],
+      "constrained": [{"name": "<source name>", "url": "<EXACT article URL if available, or null>", "snippet": "<1-line summary>"}],
+      "contradicting": [{"name": "<source name>", "url": "<EXACT article URL proving refutation>", "snippet": "<1-line summary of contradiction>"}]
     }
   },
   "imageSignals": {
