@@ -49,7 +49,8 @@
     "then": "Dann",
     "disclaimer": "LeenScore erklärt keine Fakten. Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten.",
     "disclaimerLine1": "erklärt keine Fakten.",
-    "disclaimerLine2": "Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten."
+    "disclaimerLine2": "Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten.",
+    "contentNotAnalyzable": "Inhalt nicht analysierbar"
   },
   "gauge": {
     "pending": "Ausstehend",
