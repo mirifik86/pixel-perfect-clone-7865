@@ -43,13 +43,19 @@ export const LeenScoreLogo = () => {
         </span>
       </h1>
       
-      {/* Tagline: brighter, more authoritative - positioned closer */}
+      {/* Tagline: premium depth effect for visual coherence */}
       <p 
         className="tracking-widest uppercase text-center -mt-1"
         style={{ 
           fontSize: 'clamp(0.7rem, 0.6rem + 0.5vw, 1rem)',
           letterSpacing: '0.25em',
           color: 'hsl(0 0% 94%)',
+          textShadow: `
+            0 1px 2px hsl(0 0% 0% / 0.3),
+            0 2px 4px hsl(0 0% 0% / 0.15),
+            0 0 15px hsl(174 50% 50% / 0.12),
+            0 -0.5px 0 hsl(0 0% 100% / 0.06)
+          `,
         }}
       >
         {t('hero.tagline')}
