@@ -164,6 +164,11 @@ export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSe
     title: language === 'fr' ? 'Meilleures preuves (PRO)' : 'Best evidence (PRO)',
     open: language === 'fr' ? 'Ouvrir' : 'Open',
     refutedTitle: language === 'fr' ? 'Sources réfutantes (PRO)' : 'Refuting sources (PRO)',
+    // Source Quality Gate fallback
+    insufficientTitle: language === 'fr' ? 'Qualité des preuves insuffisante' : 'Evidence quality insufficient',
+    insufficientSubtitle: language === 'fr' 
+      ? "Nous n'avons pas trouvé assez de liens d'articles directs pour cette affirmation. Reformule, ajoute des détails (qui/où/quand) ou relance l'analyse PRO."
+      : "We couldn't find enough direct article pages for this claim. Try rephrasing, adding specifics (who/where/when), or rerun PRO.",
   };
   
   // Collect all detailed sources from all categories
@@ -220,12 +225,32 @@ export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSe
   // Take top 6 sources
   const topSources = deduplicatedSources.slice(0, 6);
   
-  if (topSources.length === 0) {
-    return null;
-  }
-  
   const isRefuted = outcome === 'refuted';
   const sectionTitle = isRefuted ? t.refutedTitle : t.title;
+  
+  // Source Quality Gate: Show fallback if fewer than 2 high-quality sources
+  if (topSources.length < 2) {
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-200/80">
+        {/* Section Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-amber-600" />
+          </div>
+          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+            {t.insufficientTitle}
+          </h4>
+        </div>
+        
+        {/* Fallback Card */}
+        <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {t.insufficientSubtitle}
+          </p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="mt-6 pt-5 border-t border-slate-200/80">
