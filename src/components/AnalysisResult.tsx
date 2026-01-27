@@ -132,8 +132,10 @@ const translations = {
     neutral: 'Neutral Mentions',
     constrained: 'Limited Coverage',
     sourcesConsulted: 'sources consulted',
-    corroborationBonus: 'Corroboration Bonus',
-    maxBonus: 'max +20 pts',
+    corroborationBonus: 'Corroboration',
+    corroborationStrong: 'Strong',
+    corroborationModerate: 'Moderate',
+    corroborationLimited: 'Limited',
     // Source group labels
     sourceGroupCorroborated: 'Clear corroboration',
     sourceGroupNeutral: 'Neutral or contextual mentions',
@@ -210,8 +212,10 @@ const translations = {
     neutral: 'Mentions neutres',
     constrained: 'Couverture limitée',
     sourcesConsulted: 'sources consultées',
-    corroborationBonus: 'Bonus Corroboration',
-    maxBonus: 'max +20 pts',
+    corroborationBonus: 'Corroboration',
+    corroborationStrong: 'Forte',
+    corroborationModerate: 'Modérée',
+    corroborationLimited: 'Limitée',
     // Source group labels
     sourceGroupCorroborated: 'Corroboration claire',
     sourceGroupNeutral: 'Mentions neutres ou contextuelles',
@@ -590,7 +594,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   {getSourceName(data.corroboration.sources.corroborated[0])}
                 </span>
                 <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
-                  +5 pts
+                  {language === 'fr' ? 'Corroboré' : 'Corroborated'}
                 </span>
               </div>
             </div>
@@ -669,27 +673,40 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-[240px] text-center">
                         <p className="text-xs">{language === 'fr' 
-                          ? 'PRO vérifie jusqu\'à 10 sources avec scoring progressif : +5, +4, +3, +2, puis +1 par source (max +20 pts).' 
-                          : 'PRO checks up to 10 sources with progressive scoring: +5, +4, +3, +2, then +1 per source (max +20 pts).'}</p>
+                          ? 'PRO vérifie jusqu\'à 10 sources provenant de médias majeurs, références et sources officielles.' 
+                          : 'PRO checks up to 10 sources from major media, references, and official sources.'}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                {/* Corroboration Bonus Badge */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">{t.corroborationBonus}:</span>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-700 border border-cyan-500/30">
-                    +{calculateCorroborationBonus(data.corroboration)} pts
-                  </span>
-                </div>
+                {/* Corroboration Strength Badge */}
+                {(() => {
+                  const bonus = calculateCorroborationBonus(data.corroboration);
+                  const strength = bonus >= 10 ? 'strong' : bonus >= 5 ? 'moderate' : 'limited';
+                  const strengthLabel = strength === 'strong' ? t.corroborationStrong 
+                    : strength === 'moderate' ? t.corroborationModerate 
+                    : t.corroborationLimited;
+                  const strengthStyle = strength === 'strong' 
+                    ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30'
+                    : strength === 'moderate'
+                      ? 'bg-amber-500/15 text-amber-700 border-amber-500/30'
+                      : 'bg-slate-100 text-slate-600 border-slate-300';
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">{t.corroborationBonus}:</span>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${strengthStyle}`}>
+                        {strengthLabel}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Microcopy */}
-              <div className="mb-4 flex items-center justify-between text-sm">
+              <div className="mb-4 flex items-center text-sm">
                 <span className="text-slate-500">
                   <span className="font-semibold text-slate-700">{data.corroboration.sourcesConsulted}</span> {t.sourcesConsulted}
                 </span>
-                <span className="text-xs text-slate-400">({t.maxBonus})</span>
               </div>
 
               {/* Source Cards Grid */}
@@ -946,9 +963,24 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                         </span>
                       )}
                     </div>
-                    <span className={`font-mono text-sm font-bold ${getPointsColor(item.points)}`}>
-                      {item.points > 0 ? '+' : ''}{item.points}
-                    </span>
+                    {(() => {
+                      const level = item.points >= 3 ? 'high' : item.points >= 0 ? 'moderate' : 'limited';
+                      const levelLabel = level === 'high' 
+                        ? (language === 'fr' ? 'Élevé' : 'Strong')
+                        : level === 'moderate'
+                          ? (language === 'fr' ? 'Modéré' : 'Moderate')
+                          : (language === 'fr' ? 'Limité' : 'Limited');
+                      const levelStyle = level === 'high' 
+                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                        : level === 'moderate'
+                          ? 'bg-amber-100 text-amber-700 border-amber-200'
+                          : 'bg-red-100 text-red-700 border-red-200';
+                      return (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${levelStyle}`}>
+                          {levelLabel}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <p className="ml-8 text-sm font-medium text-slate-600">{item.reason}</p>
                 </div>
@@ -992,12 +1024,12 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
             ? (language === 'fr' ? 'Cohérence confirmée' : 'Coherence confirmed')
             : (language === 'fr' ? 'Neutre' : 'Neutral');
         
-        // Impact display text
+        // Impact display text - use qualitative labels instead of points
         const impactDisplayText = isNeutral
-          ? (language === 'fr' ? 'Neutre (0 points)' : 'Neutral (0 points)')
+          ? (language === 'fr' ? 'Neutre' : 'Neutral')
           : isPositive
-            ? (language === 'fr' ? `+${cappedImpact} pts (renforcement mineur)` : `+${cappedImpact} pts (minor reinforcement)`)
-            : `${cappedImpact} pts`;
+            ? (language === 'fr' ? 'Renforcement mineur' : 'Minor reinforcement')
+            : (language === 'fr' ? 'Impact négatif' : 'Negative impact');
         
         // Generate expert visual summary based on coherence explanation
         const getExpertSummary = () => {
@@ -1237,15 +1269,15 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                 {isPositive && (
                   <p className="text-[10px] text-emerald-600/70 mt-1.5 italic">
                     {language === 'fr' 
-                      ? 'Impact plafonné à +3 pts maximum. Les signaux image ne peuvent pas surpasser la corroboration web.'
-                      : 'Impact capped at +3 pts maximum. Image signals cannot outweigh web corroboration.'}
+                      ? 'L\'image fournit un renforcement mineur. Les signaux visuels ne peuvent pas surpasser la corroboration web.'
+                      : 'The image provides minor reinforcement. Visual signals cannot outweigh web corroboration.'}
                   </p>
                 )}
                 {isNegative && (
                   <p className="text-[10px] text-red-600/70 mt-1.5 italic">
                     {language === 'fr' 
-                      ? 'Impact négatif limité à -3 pts maximum. L\'image ne peut pas à elle seule invalider une affirmation.'
-                      : 'Negative impact capped at -3 pts maximum. Image alone cannot invalidate a claim.'}
+                      ? 'Impact négatif détecté. Cependant, l\'image seule ne peut pas invalider une affirmation.'
+                      : 'Negative impact detected. However, the image alone cannot invalidate a claim.'}
                   </p>
                 )}
               </div>
