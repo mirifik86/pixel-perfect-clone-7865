@@ -277,9 +277,7 @@ const getTrustPriority = (source: SourceDetail): number => {
   return 3; // media
 };
 
-// Note: We now use standard anchor tags instead of window.open() for Safari COOP compatibility
-
-// Source card component (extracted to avoid duplication)
+// Source card component using anchor-based navigation for Safari COOP compatibility
 const SourceCard = ({ 
   source, 
   idx, 
@@ -298,7 +296,8 @@ const SourceCard = ({
   const faviconUrl = getFaviconUrl(source.url);
   
   const handleCopyLink = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
+    e.preventDefault();
+    e.stopPropagation();
     navigator.clipboard.writeText(source.url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
@@ -312,7 +311,7 @@ const SourceCard = ({
       key={`${isCounterClaim ? 'counter' : 'best'}-source-${idx}`}
       href={source.url}
       target="_blank"
-      rel="noreferrer"
+      rel="noopener noreferrer"
       className={`group block rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer
                  ${isCounterClaim 
                    ? 'border-red-200 bg-gradient-to-br from-white to-red-50/50 hover:border-red-300 hover:to-red-50/80' 
@@ -404,7 +403,7 @@ const SourceCard = ({
             )}
           </button>
           
-          {/* Open button */}
+          {/* Open button - styled as span since parent is anchor */}
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
                            shadow-sm transition-all duration-200
                            ${isCounterClaim 
@@ -420,38 +419,57 @@ const SourceCard = ({
   );
 };
 
-// Helper: Check if source passes trusted-domain fallback (relaxed filters)
-const passesTrustedFallback = (source: SourceDetail, claimKeyTerms: string[]): boolean => {
-  try {
-    const hostname = new URL(source.url).hostname;
-    const pathname = new URL(source.url).pathname;
+// ===== FILTERING HELPERS =====
+
+interface FilteredSource {
+  source: SourceDetail;
+  category?: 'corroborated' | 'neutral';
+}
+
+// Pass A (strict): article URL + snippet + dedupe + topical relevance
+const filterStrictPass = (
+  sources: FilteredSource[],
+  claimKeyTerms: string[],
+  seenUrls: Set<string>
+): FilteredSource[] => {
+  return sources.filter(({ source }) => {
+    if (!source.snippet || source.snippet.length < 10) return false;
+    if (!isArticleUrl(source.url)) return false;
+    if (!isTopicallyRelevant(source, claimKeyTerms)) return false;
     
-    // Must be trusted domain
-    if (!isTrustedDomain(hostname)) return false;
+    const urlKey = getNormalizedUrlKey(source.url);
+    if (!urlKey || seenUrls.has(urlKey)) return false;
+    seenUrls.add(urlKey);
+    return true;
+  });
+};
+
+// Pass B (relaxed): article URL + snippet + dedupe, NO topical relevance
+const filterRelaxedPass = (
+  sources: FilteredSource[],
+  seenUrls: Set<string>
+): FilteredSource[] => {
+  return sources.filter(({ source }) => {
+    if (!source.snippet || source.snippet.length < 10) return false;
+    if (!isArticleUrl(source.url)) return false;
     
-    // Still reject pure homepages
-    if (pathname === '/' || pathname === '') return false;
-    
-    // Relaxed topical relevance: trusted domains only need 1 keyword OR none required
-    // (trusted sources are authoritative enough to display even with weak keyword match)
-    if (claimKeyTerms.length === 0) return true;
-    
-    // For trusted domains, accept with just 1 keyword match OR accept anyway
-    const nameLower = source.name.toLowerCase();
-    const snippetLower = source.snippet.toLowerCase();
-    const combined = `${nameLower} ${snippetLower}`;
-    const hasAnyMatch = claimKeyTerms.some(term => combined.includes(term));
-    
-    // Accept trusted domains even without perfect topical match
-    return hasAnyMatch || isTrustedDomain(hostname);
-  } catch {
-    return false;
-  }
+    const urlKey = getNormalizedUrlKey(source.url);
+    if (!urlKey || seenUrls.has(urlKey)) return false;
+    seenUrls.add(urlKey);
+    return true;
+  });
+};
+
+// Sort by trust level and cap
+const sortAndCap = (sources: FilteredSource[], max: number): FilteredSource[] => {
+  return [...sources]
+    .sort((a, b) => getTrustPriority(a.source) - getTrustPriority(b.source))
+    .slice(0, max);
 };
 
 export const BestSourcesSection = ({ sources, language, outcome, claim, mode = 'all' }: BestSourcesSectionProps) => {
-  // State to bypass article URL validation when user clicks "Reveal anyway"
-  const [revealAnyway, setRevealAnyway] = useState(false);
+  // State for 2-pass filtering: when true, use relaxed Pass B
+  const [showUnfiltered, setShowUnfiltered] = useState(false);
   
   // Extract key terms from claim for relevance filtering
   const claimKeyTerms = extractKeyTerms(claim || '');
@@ -467,17 +485,17 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     counterClaimExplanation: language === 'fr'
       ? 'Plusieurs sources faisant autorité affirment clairement l\'inverse de cette affirmation, indiquant un consensus scientifique ou factuel fort en opposition.'
       : 'Multiple authoritative sources clearly state the opposite of this claim, indicating strong scientific or factual consensus against it.',
-    // Source Quality Gate fallback
+    // Source Quality Gate fallback (when both passes fail)
     insufficientTitle: language === 'fr' ? 'Qualité des preuves insuffisante' : 'Evidence quality insufficient',
     insufficientSubtitle: language === 'fr' 
       ? "Nous n'avons pas trouvé assez de liens d'articles directs pour cette affirmation. Reformule, ajoute des détails (qui/où/quand) ou relance l'analyse PRO."
       : "We couldn't find enough direct article pages for this claim. Try rephrasing, adding specifics (who/where/when), or rerun PRO.",
-    // Sources found but filtered fallback
+    // Sources found but filtered fallback (Pass A failed, Pass B has sources)
     sourcesFilteredTitle: language === 'fr' ? 'Sources trouvées, mais non affichées' : 'Sources found, but hidden',
     sourcesFilteredSubtitle: language === 'fr'
-      ? "Des sources ont été consultées, mais elles n'ont pas passé nos filtres de pertinence ou de lien direct. Vous pouvez reformuler… ou afficher les sources quand même."
-      : "Sources were consulted, but they didn't pass our relevance or direct-article filters. You can rephrase… or reveal them anyway.",
-    revealAnyway: language === 'fr' ? 'Afficher quand même' : 'Reveal anyway',
+      ? "Des sources ont été consultées, mais elles n'ont pas passé nos filtres de pertinence. Vous pouvez reformuler ou afficher les sources quand même."
+      : "Sources were consulted, but they didn't pass our relevance filters. You can rephrase or show them anyway.",
+    showAnyway: language === 'fr' ? 'Afficher quand même' : 'Show anyway',
   };
   
   // ===== COUNT ALL CONSULTED SOURCES =====
@@ -486,53 +504,128 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     (sources.neutral?.length ?? 0) + 
     (sources.contradicting?.length ?? 0);
   
-  // ===== CONTRADICTING SOURCES (for mode === 'contradictingOnly' or 'all') =====
-  let topContradictingSources: { source: SourceDetail }[] = [];
-  let hasCounterClaims = false;
+  // ===== PREPARE RAW SOURCE ARRAYS =====
   
-  if (mode === 'contradictingOnly' || mode === 'all') {
-    const contradictingSources: { source: SourceDetail }[] = [];
-    sources.contradicting?.forEach(s => {
-      const details = getSourceDetails(s);
-      if (details && details.snippet && details.snippet.length >= 10) {
-        // Apply article URL filter only if NOT in reveal mode
-        if (revealAnyway || isArticleUrl(details.url)) {
-          if (isTopicallyRelevant(details, claimKeyTerms)) {
-            contradictingSources.push({ source: details });
-          }
-        }
-      }
-    });
-    
-    // Deduplicate contradicting sources by URL
-    const seenContradictingUrls = new Set<string>();
-    const deduplicatedContradicting = contradictingSources.filter(({ source }) => {
-      const urlKey = getNormalizedUrlKey(source.url);
-      if (!urlKey || seenContradictingUrls.has(urlKey)) {
-        return false;
-      }
-      seenContradictingUrls.add(urlKey);
-      return true;
-    });
-    
-    // Sort contradicting by trust level and take top sources
-    const sortedContradicting = [...deduplicatedContradicting].sort((a, b) => {
-      return getTrustPriority(a.source) - getTrustPriority(b.source);
-    });
-    const maxContradicting = mode === 'contradictingOnly' ? 6 : 3;
-    topContradictingSources = sortedContradicting.slice(0, maxContradicting);
-    hasCounterClaims = topContradictingSources.length > 0;
+  // Supporting sources (corroborated + neutral)
+  const allSupportingSources: FilteredSource[] = [];
+  sources.corroborated?.forEach(s => {
+    const details = getSourceDetails(s);
+    if (details) {
+      allSupportingSources.push({ source: details, category: 'corroborated' });
+    }
+  });
+  sources.neutral?.forEach(s => {
+    const details = getSourceDetails(s);
+    if (details) {
+      allSupportingSources.push({ source: details, category: 'neutral' });
+    }
+  });
+  
+  // Contradicting sources
+  const allContradictingSources: FilteredSource[] = [];
+  sources.contradicting?.forEach(s => {
+    const details = getSourceDetails(s);
+    if (details) {
+      allContradictingSources.push({ source: details });
+    }
+  });
+  
+  // ===== 2-PASS FILTERING =====
+  
+  // --- SUPPORTING SOURCES ---
+  const supportingSeenUrlsStrict = new Set<string>();
+  const strictSupportingSources = filterStrictPass(allSupportingSources, claimKeyTerms, supportingSeenUrlsStrict);
+  const sortedStrictSupporting = sortAndCap(strictSupportingSources, 6);
+  
+  // Pass B for supporting (if needed)
+  const supportingSeenUrlsRelaxed = new Set<string>();
+  const relaxedSupportingSources = filterRelaxedPass(allSupportingSources, supportingSeenUrlsRelaxed);
+  const sortedRelaxedSupporting = sortAndCap(relaxedSupportingSources, 6);
+  
+  // Decide which supporting sources to use
+  const passASupporting = sortedStrictSupporting;
+  const passBSupporting = sortedRelaxedSupporting;
+  const supportingNeedsRelaxed = passASupporting.length < 2 && passBSupporting.length >= 1;
+  
+  // Final supporting sources
+  let finalSupportingSources: FilteredSource[];
+  if (showUnfiltered) {
+    // User clicked "Show anyway" - use relaxed pass, cap at 6
+    finalSupportingSources = passBSupporting;
+  } else {
+    // Use strict pass
+    finalSupportingSources = passASupporting;
   }
   
-  // If mode is contradictingOnly, only show contradicting sources
+  // --- CONTRADICTING SOURCES ---
+  const contradictingSeenUrlsStrict = new Set<string>();
+  const strictContradictingSources = filterStrictPass(allContradictingSources, claimKeyTerms, contradictingSeenUrlsStrict);
+  const sortedStrictContradicting = sortAndCap(strictContradictingSources, 6);
+  
+  // Pass B for contradicting (if needed)
+  const contradictingSeenUrlsRelaxed = new Set<string>();
+  const relaxedContradictingSources = filterRelaxedPass(allContradictingSources, contradictingSeenUrlsRelaxed);
+  const sortedRelaxedContradicting = sortAndCap(relaxedContradictingSources, 6);
+  
+  // Decide which contradicting sources to use
+  const passAContradicting = sortedStrictContradicting;
+  const passBContradicting = sortedRelaxedContradicting;
+  const contradictingNeedsRelaxed = passAContradicting.length === 0 && passBContradicting.length >= 1;
+  
+  // Final contradicting sources
+  let finalContradictingSources: FilteredSource[];
+  if (showUnfiltered) {
+    // User clicked "Show anyway" - use relaxed pass, cap at 6
+    finalContradictingSources = passBContradicting;
+  } else {
+    // Use strict pass
+    finalContradictingSources = passAContradicting;
+  }
+  
+  const hasCounterClaims = finalContradictingSources.length > 0;
+  const isRefuted = outcome === 'refuted';
+  const sectionTitle = isRefuted ? t.refutedTitle : t.title;
+  
+  // ===== MODE: contradictingOnly =====
   if (mode === 'contradictingOnly') {
-    // If no contradicting sources, render nothing
-    if (!hasCounterClaims) {
+    // Check if Pass A found nothing but Pass B has sources
+    const showContradictingFallback = !showUnfiltered && contradictingNeedsRelaxed;
+    
+    // If no contradicting sources at all (even relaxed), render nothing
+    if (!hasCounterClaims && !showContradictingFallback) {
       return null;
     }
     
-    const isRefuted = outcome === 'refuted';
-    const sectionTitle = isRefuted ? t.refutedTitle : t.counterClaimTitle;
+    // Show fallback card if strict failed but relaxed has sources
+    if (showContradictingFallback) {
+      return (
+        <div className="mt-6 pt-5 border-t border-slate-200/80">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-amber-600" />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {t.sourcesFilteredTitle}
+            </h4>
+          </div>
+          
+          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {t.sourcesFilteredSubtitle}
+            </p>
+            <button
+              onClick={() => setShowUnfiltered(true)}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                         bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
+            >
+              {t.showAnyway}
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    const displayTitle = isRefuted ? t.refutedTitle : t.counterClaimTitle;
     
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
@@ -542,7 +635,7 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
             <Shield className="w-4 h-4 text-red-600" />
           </div>
           <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-            {sectionTitle}
+            {displayTitle}
           </h4>
         </div>
         
@@ -553,7 +646,7 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
         
         {/* Contradicting Source Cards */}
         <div className="space-y-3">
-          {topContradictingSources.map(({ source }, idx) => (
+          {finalContradictingSources.map(({ source }, idx) => (
             <SourceCard 
               key={`contra-${idx}`}
               source={source} 
@@ -568,139 +661,69 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     );
   }
   
-  // ===== SUPPORTING SOURCES (for mode === 'supportingOnly' or 'all') =====
-  const allDetailedSources: { source: SourceDetail; category: 'corroborated' | 'neutral' }[] = [];
-  
-  // Add corroborated sources
-  sources.corroborated?.forEach(s => {
-    const details = getSourceDetails(s);
-    if (details) {
-      allDetailedSources.push({ source: details, category: 'corroborated' });
-    }
-  });
-  
-  // Add neutral sources (lower priority)
-  sources.neutral?.forEach(s => {
-    const details = getSourceDetails(s);
-    if (details) {
-      allDetailedSources.push({ source: details, category: 'neutral' });
-    }
-  });
-  
-  // Filter to only sources with valid snippets and (article URLs OR reveal mode)
-  const validSources = allDetailedSources.filter(({ source }) => {
-    if (!source.snippet || source.snippet.length < 10) return false;
-    if (!isTopicallyRelevant(source, claimKeyTerms)) return false;
-    // Apply article URL filter only if NOT in reveal mode
-    if (!revealAnyway && !isArticleUrl(source.url)) return false;
-    return true;
-  });
-  
-  // Deduplicate by normalized URL (hostname + pathname)
-  const seenUrls = new Set<string>();
-  const deduplicatedSources = validSources.filter(({ source }) => {
-    const urlKey = getNormalizedUrlKey(source.url);
-    if (!urlKey || seenUrls.has(urlKey)) {
-      return false;
-    }
-    seenUrls.add(urlKey);
-    return true;
-  });
-  
-  // Sort by trust level: official (1) > reference (2) > media (3)
-  const sortedSources = [...deduplicatedSources].sort((a, b) => {
-    return getTrustPriority(a.source) - getTrustPriority(b.source);
-  });
-  
-  // Take top sources (3 in reveal mode, 6 normally)
-  const maxSources = revealAnyway ? 3 : 6;
-  let topSources = sortedSources.slice(0, maxSources);
-  
-  // ===== TRUSTED FALLBACK: Auto-recover when strict filters hide everything =====
-  // If we have consulted sources but displayed nothing, run a fallback pass for trusted domains
-  const primaryDisplayedCount = topSources.length + topContradictingSources.length;
-  let usedTrustedFallback = false;
-  
-  if (consultedCount > 0 && primaryDisplayedCount === 0 && !revealAnyway) {
-    // Fallback pass: allow trusted domains with relaxed filters
-    const trustedFallbackSources: { source: SourceDetail; category: 'corroborated' | 'neutral' }[] = [];
-    
-    allDetailedSources.forEach(({ source, category }) => {
-      if (!source.snippet || source.snippet.length < 10) return;
-      if (passesTrustedFallback(source, claimKeyTerms)) {
-        trustedFallbackSources.push({ source, category });
-      }
-    });
-    
-    // Deduplicate trusted fallback sources
-    const seenTrustedUrls = new Set<string>();
-    const deduplicatedTrusted = trustedFallbackSources.filter(({ source }) => {
-      const urlKey = getNormalizedUrlKey(source.url);
-      if (!urlKey || seenTrustedUrls.has(urlKey)) return false;
-      seenTrustedUrls.add(urlKey);
-      return true;
-    });
-    
-    // Sort by trust level and take up to 3
-    const sortedTrusted = [...deduplicatedTrusted].sort((a, b) => {
-      return getTrustPriority(a.source) - getTrustPriority(b.source);
-    });
-    
-    if (sortedTrusted.length > 0) {
-      topSources = sortedTrusted.slice(0, 3);
-      usedTrustedFallback = true;
-    }
-  }
-  
-  const isRefuted = outcome === 'refuted';
-  const sectionTitle = isRefuted ? t.refutedTitle : t.title;
-  
-  // Count displayed sources
-  const displayedCount = topSources.length + topContradictingSources.length;
-  
-  // For supportingOnly mode, show fallback if not enough sources
+  // ===== MODE: supportingOnly =====
   if (mode === 'supportingOnly') {
-    // If trusted fallback found sources, show them even if < 2
-    if (topSources.length < 2 && !usedTrustedFallback) {
-      // Check if sources were consulted but filtered out (and trusted fallback also failed)
-      const showFilteredFallback = consultedCount > 0 && displayedCount === 0 && !revealAnyway;
-      
+    // Check if Pass A found < 2 but Pass B has sources
+    const showSupportingFallback = !showUnfiltered && supportingNeedsRelaxed;
+    
+    // Both passes failed completely
+    const bothPassesFailed = passASupporting.length < 2 && passBSupporting.length === 0;
+    
+    if (bothPassesFailed && consultedCount > 0) {
+      // Show "Evidence quality insufficient" - true fallback
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
-          {/* Section Header */}
           <div className="flex items-center gap-2.5 mb-4">
             <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
               <Shield className="w-4 h-4 text-amber-600" />
             </div>
             <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {showFilteredFallback ? t.sourcesFilteredTitle : t.insufficientTitle}
+              {t.insufficientTitle}
             </h4>
           </div>
           
-          {/* Fallback Card */}
           <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
             <p className="text-sm text-slate-600 leading-relaxed">
-              {showFilteredFallback ? t.sourcesFilteredSubtitle : t.insufficientSubtitle}
+              {t.insufficientSubtitle}
             </p>
-            {showFilteredFallback && (
-              <button
-                onClick={() => setRevealAnyway(true)}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                           bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
-              >
-                {t.revealAnyway}
-              </button>
-            )}
           </div>
         </div>
       );
     }
     
-    // Show sources if we have any (including trusted fallback results)
-    if (topSources.length > 0) {
+    // Strict pass found < 2, but relaxed has sources - show "Sources found but hidden"
+    if (showSupportingFallback) {
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
-          {/* Section Header */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-amber-600" />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {t.sourcesFilteredTitle}
+            </h4>
+          </div>
+          
+          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {t.sourcesFilteredSubtitle}
+            </p>
+            <button
+              onClick={() => setShowUnfiltered(true)}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                         bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
+            >
+              {t.showAnyway}
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    // Show sources if we have any
+    if (finalSupportingSources.length > 0) {
+      return (
+        <div className="mt-6 pt-5 border-t border-slate-200/80">
           <div className="flex items-center gap-2.5 mb-4">
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
               <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
@@ -710,9 +733,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
             </h4>
           </div>
           
-          {/* Source Cards */}
           <div className="space-y-3">
-            {topSources.map(({ source }, idx) => (
+            {finalSupportingSources.map(({ source }, idx) => (
               <SourceCard 
                 key={`support-${idx}`}
                 source={source} 
@@ -730,44 +752,68 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     return null;
   }
   
-  // ===== MODE === 'all' (default behavior) =====
-  // Check if sources were consulted but filtered out (and trusted fallback also failed)
-  const showFilteredFallback = consultedCount > 0 && displayedCount === 0 && !revealAnyway && !usedTrustedFallback;
+  // ===== MODE: all (default) =====
   
-  // Source Quality Gate: Show fallback if fewer than 2 high-quality sources (and no counter-claims)
-  // Skip fallback if trusted fallback succeeded (we have trusted sources to show)
-  if (topSources.length < 2 && !hasCounterClaims && !usedTrustedFallback) {
+  // Check if we need to show fallback for either category
+  const needsSupportingFallback = !showUnfiltered && supportingNeedsRelaxed;
+  const needsContradictingFallback = !showUnfiltered && contradictingNeedsRelaxed;
+  const needsAnyFallback = needsSupportingFallback || needsContradictingFallback;
+  
+  // Both passes failed completely for supporting (and no counter-claims)
+  const bothPassesFailed = passASupporting.length < 2 && passBSupporting.length === 0 && !hasCounterClaims;
+  
+  // Show "Evidence quality insufficient" only if BOTH passes completely fail
+  if (bothPassesFailed && consultedCount > 0 && !needsContradictingFallback) {
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
-        {/* Section Header */}
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
             <Shield className="w-4 h-4 text-amber-600" />
           </div>
           <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-            {showFilteredFallback ? t.sourcesFilteredTitle : t.insufficientTitle}
+            {t.insufficientTitle}
           </h4>
         </div>
         
-        {/* Fallback Card */}
         <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
           <p className="text-sm text-slate-600 leading-relaxed">
-            {showFilteredFallback ? t.sourcesFilteredSubtitle : t.insufficientSubtitle}
+            {t.insufficientSubtitle}
           </p>
-          {showFilteredFallback && (
-            <button
-              onClick={() => setRevealAnyway(true)}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                         bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
-            >
-              {t.revealAnyway}
-            </button>
-          )}
         </div>
       </div>
     );
   }
   
+  // Show "Sources found but hidden" if strict pass failed but relaxed has sources
+  if (needsAnyFallback && !hasCounterClaims && finalSupportingSources.length < 2) {
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-200/80">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-amber-600" />
+          </div>
+          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+            {t.sourcesFilteredTitle}
+          </h4>
+        </div>
+        
+        <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {t.sourcesFilteredSubtitle}
+          </p>
+          <button
+            onClick={() => setShowUnfiltered(true)}
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                       bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
+          >
+            {t.showAnyway}
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Normal rendering with sources
   return (
     <div className="mt-6 pt-5 border-t border-slate-200/80">
       {/* Counter-Claim Detection Section - shown ABOVE regular evidence */}
@@ -790,7 +836,7 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
           
           {/* Counter-Claim Source Cards */}
           <div className="space-y-3">
-            {topContradictingSources.map(({ source }, idx) => (
+            {finalContradictingSources.map(({ source }, idx) => (
               <SourceCard 
                 key={`counter-${idx}`}
                 source={source} 
@@ -804,10 +850,9 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
         </div>
       )}
       
-      {/* Regular Evidence Section - show if we have >= 2 sources OR trusted fallback found any */}
-      {(topSources.length >= 2 || (usedTrustedFallback && topSources.length > 0)) && (
+      {/* Regular Evidence Section */}
+      {finalSupportingSources.length >= 2 && (
         <>
-          {/* Section Header */}
           <div className="flex items-center gap-2.5 mb-4">
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
               <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
@@ -817,11 +862,37 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
             </h4>
           </div>
           
-          {/* Source Cards */}
           <div className="space-y-3">
-            {topSources.map(({ source }, idx) => (
+            {finalSupportingSources.map(({ source }, idx) => (
               <SourceCard 
                 key={`best-${idx}`}
+                source={source} 
+                idx={idx} 
+                isCounterClaim={false} 
+                language={language} 
+                openLabel={t.open} 
+              />
+            ))}
+          </div>
+        </>
+      )}
+      
+      {/* Show relaxed supporting sources if user clicked "Show anyway" but we have < 2 strict */}
+      {showUnfiltered && finalSupportingSources.length > 0 && finalSupportingSources.length < 2 && (
+        <>
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
+              <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {sectionTitle}
+            </h4>
+          </div>
+          
+          <div className="space-y-3">
+            {finalSupportingSources.map(({ source }, idx) => (
+              <SourceCard 
+                key={`relaxed-${idx}`}
                 source={source} 
                 idx={idx} 
                 isCounterClaim={false} 
