@@ -843,6 +843,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                       language={language}
                       outcome="refuted"
                       mode="contradictingOnly"
+                      claim={articleSummary ?? data.summary ?? ""}
                     />
                   )}
                   
@@ -852,6 +853,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                     language={language}
                     outcome={data.corroboration.outcome}
                     mode={isPro ? "supportingOnly" : "all"}
+                    claim={articleSummary ?? data.summary ?? ""}
                   />
                 </>
               )}
