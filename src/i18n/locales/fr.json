@@ -133,7 +133,9 @@
     "officialSource": "Source officielle",
     "majorMedia": "Média majeur",
     "reference": "Référence",
-    "contextLabel": "Contexte"
+    "contextLabel": "Contexte",
+    "counterClaimTitle": "Sources crédibles affirmant l'inverse",
+    "counterClaimExplanation": "Plusieurs sources faisant autorité affirment clairement l'inverse de cette affirmation, indiquant un consensus scientifique ou factuel fort en opposition."
   },
   "loader": {
     "primary": "Scan de l'espace informationnel",
