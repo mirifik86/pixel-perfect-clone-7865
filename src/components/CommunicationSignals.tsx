@@ -1,4 +1,4 @@
-import { MessageSquare, AlertTriangle, Target, Users, Link2 } from 'lucide-react';
+import { MessageSquare, AlertTriangle, Target, Users, Link2, Shield, Zap, Eye, FileQuestion, Scale } from 'lucide-react';
 
 interface CommunicationSignalsProps {
   language: 'en' | 'fr';
@@ -11,49 +11,82 @@ interface CommunicationSignalsProps {
   };
 }
 
+// Signal definitions with dynamic detection
+interface SignalDefinition {
+  key: string;
+  icon: React.ComponentType<{ className?: string }>;
+  condition: (breakdown: CommunicationSignalsProps['breakdown']) => boolean;
+  getLevel: (breakdown: CommunicationSignalsProps['breakdown']) => 'high' | 'moderate' | 'low';
+}
+
 const translations = {
   en: {
     title: 'Detected Communication Signals',
     intro: 'Here are key signals identified from the structure and formulation of the text.',
+    
     signals: {
-      tone: {
-        label: 'Message Tone',
+      neutralTone: {
+        label: 'Neutral Informational Tone',
         levels: {
-          high: 'Neutral',
-          moderate: 'Emphatic',
-          low: 'Emotional/Alarmist',
+          high: 'Clearly neutral',
+          moderate: 'Mostly neutral',
+          low: 'Not applicable',
         },
       },
-      factual: {
-        label: 'Factual Claims',
+      emotionalTone: {
+        label: 'Emotionally Charged Wording',
         levels: {
-          high: 'Present & Consistent',
-          moderate: 'Present',
-          low: 'Vague/Absent',
+          high: 'Not detected',
+          moderate: 'Some emphasis',
+          low: 'Strongly present',
         },
       },
-      precision: {
-        label: 'Level of Precision',
+      assertiveClaims: {
+        label: 'Assertive or Absolute Claims',
         levels: {
-          high: 'High',
-          moderate: 'Moderate',
-          low: 'Vague',
+          high: 'Hedged appropriately',
+          moderate: 'Some strong assertions',
+          low: 'Definitive statements',
         },
       },
-      sources: {
+      sourceMentions: {
         label: 'Source Attribution',
         levels: {
-          high: 'Named Sources',
-          moderate: 'Partial Attribution',
-          low: 'Generalizations',
+          high: 'Named sources',
+          moderate: 'Partial attribution',
+          low: 'Unattributed claims',
         },
       },
-      coherence: {
+      generalizations: {
+        label: 'Use of Generalizations',
+        levels: {
+          high: 'Minimal generalizing',
+          moderate: 'Some generalizations',
+          low: 'Heavy reliance on generalities',
+        },
+      },
+      precisionDetails: {
+        label: 'Precision of Details',
+        levels: {
+          high: 'Specific and precise',
+          moderate: 'Moderately detailed',
+          low: 'Vague or imprecise',
+        },
+      },
+      persuasivePhrasing: {
+        label: 'Persuasive or Opinion-Driven',
+        levels: {
+          high: 'Factual framing',
+          moderate: 'Some persuasive elements',
+          low: 'Clearly persuasive',
+        },
+      },
+      internalCoherence: {
         label: 'Internal Coherence',
         levels: {
-          high: 'High',
-          moderate: 'Moderate',
-          low: 'Low',
+          high: 'Logically consistent',
+          moderate: 'Generally coherent',
+          low: 'Some inconsistencies',
         },
       },
     },
@@ -61,55 +94,186 @@ const translations = {
   fr: {
     title: 'Signaux de Communication Détectés',
     intro: 'Voici les signaux clés identifiés à partir de la structure et de la formulation du texte.',
+    
     signals: {
-      tone: {
-        label: 'Ton du message',
+      neutralTone: {
+        label: 'Ton Informatif Neutre',
         levels: {
-          high: 'Neutre',
-          moderate: 'Emphatique',
-          low: 'Émotionnel/Alarmiste',
+          high: 'Clairement neutre',
+          moderate: 'Principalement neutre',
+          low: 'Non applicable',
         },
       },
-      factual: {
-        label: 'Affirmations factuelles',
+      emotionalTone: {
+        label: 'Formulation Émotionnellement Chargée',
         levels: {
-          high: 'Présentes & Cohérentes',
-          moderate: 'Présentes',
-          low: 'Vagues/Absentes',
+          high: 'Non détectée',
+          moderate: 'Quelques emphases',
+          low: 'Fortement présente',
         },
       },
-      precision: {
-        label: 'Niveau de précision',
+      assertiveClaims: {
+        label: 'Affirmations Assertives ou Absolues',
         levels: {
-          high: 'Élevé',
-          moderate: 'Modéré',
-          low: 'Vague',
+          high: 'Nuances appropriées',
+          moderate: 'Quelques assertions fortes',
+          low: 'Déclarations définitives',
         },
       },
-      sources: {
-        label: 'Attribution des sources',
+      sourceMentions: {
+        label: 'Attribution des Sources',
         levels: {
           high: 'Sources nommées',
           moderate: 'Attribution partielle',
-          low: 'Généralisations',
+          low: 'Affirmations non attribuées',
         },
       },
-      coherence: {
-        label: 'Cohérence interne',
+      generalizations: {
+        label: 'Utilisation de Généralisations',
         levels: {
-          high: 'Élevée',
-          moderate: 'Modérée',
-          low: 'Faible',
+          high: 'Généralisations minimales',
+          moderate: 'Quelques généralisations',
+          low: 'Forte dépendance aux généralités',
+        },
+      },
+      precisionDetails: {
+        label: 'Précision des Détails',
+        levels: {
+          high: 'Spécifique et précis',
+          moderate: 'Modérément détaillé',
+          low: 'Vague ou imprécis',
+        },
+      },
+      persuasivePhrasing: {
+        label: 'Persuasif ou Orienté Opinion',
+        levels: {
+          high: 'Cadrage factuel',
+          moderate: 'Quelques éléments persuasifs',
+          low: 'Clairement persuasif',
+        },
+      },
+      internalCoherence: {
+        label: 'Cohérence Interne',
+        levels: {
+          high: 'Logiquement cohérent',
+          moderate: 'Généralement cohérent',
+          low: 'Quelques incohérences',
         },
       },
     },
   },
 };
 
-const getLevel = (points: number): 'high' | 'moderate' | 'low' => {
-  if (points >= 3) return 'high';
-  if (points >= 0) return 'moderate';
-  return 'low';
+// Signal icons mapping
+const signalIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  neutralTone: Shield,
+  emotionalTone: Zap,
+  assertiveClaims: Target,
+  sourceMentions: Users,
+  generalizations: FileQuestion,
+  precisionDetails: Eye,
+  persuasivePhrasing: MessageSquare,
+  internalCoherence: Link2,
+};
+
+// Dynamic signal detection logic
+const detectSignals = (breakdown: CommunicationSignalsProps['breakdown']) => {
+  const tonePoints = breakdown.prudence?.points ?? breakdown.tone?.points ?? 0;
+  const factualPoints = breakdown.factual?.points ?? 0;
+  const contextPoints = breakdown.context?.points ?? 0;
+  const transparencyPoints = breakdown.transparency?.points ?? 0;
+
+  const signals: Array<{
+    key: string;
+    level: 'high' | 'moderate' | 'low';
+    relevance: number; // Higher = more relevant to show
+  }> = [];
+
+  // Neutral tone - show if tone is positive
+  if (tonePoints >= 2) {
+    signals.push({
+      key: 'neutralTone',
+      level: tonePoints >= 4 ? 'high' : 'moderate',
+      relevance: tonePoints >= 3 ? 8 : 5,
+    });
+  }
+
+  // Emotional tone - show if tone is negative or emphatic
+  if (tonePoints < 2) {
+    signals.push({
+      key: 'emotionalTone',
+      level: tonePoints < 0 ? 'low' : 'moderate',
+      relevance: tonePoints < 0 ? 9 : 6,
+    });
+  }
+
+  // Assertive claims - based on factual + tone combination
+  const isAssertive = factualPoints >= 2 && tonePoints < 3;
+  if (isAssertive || factualPoints >= 3) {
+    signals.push({
+      key: 'assertiveClaims',
+      level: isAssertive && tonePoints < 1 ? 'low' : factualPoints >= 3 ? 'high' : 'moderate',
+      relevance: 7,
+    });
+  }
+
+  // Source mentions - based on transparency
+  signals.push({
+    key: 'sourceMentions',
+    level: transparencyPoints >= 3 ? 'high' : transparencyPoints >= 0 ? 'moderate' : 'low',
+    relevance: Math.abs(transparencyPoints) >= 2 ? 8 : 4,
+  });
+
+  // Generalizations - inverse of context clarity
+  if (contextPoints < 2) {
+    signals.push({
+      key: 'generalizations',
+      level: contextPoints < 0 ? 'low' : 'moderate',
+      relevance: contextPoints < 0 ? 8 : 5,
+    });
+  }
+
+  // Precision of details - based on context
+  if (contextPoints >= 1) {
+    signals.push({
+      key: 'precisionDetails',
+      level: contextPoints >= 4 ? 'high' : contextPoints >= 2 ? 'moderate' : 'low',
+      relevance: contextPoints >= 3 ? 7 : 4,
+    });
+  }
+
+  // Persuasive phrasing - combination of low tone and low transparency
+  const isPersuasive = tonePoints < 1 && transparencyPoints < 2;
+  if (isPersuasive) {
+    signals.push({
+      key: 'persuasivePhrasing',
+      level: tonePoints < 0 && transparencyPoints < 0 ? 'low' : 'moderate',
+      relevance: 8,
+    });
+  } else if (tonePoints >= 3 && transparencyPoints >= 2) {
+    signals.push({
+      key: 'persuasivePhrasing',
+      level: 'high',
+      relevance: 5,
+    });
+  }
+
+  // Internal coherence - average of factual and context
+  const coherenceScore = (factualPoints + contextPoints) / 2;
+  signals.push({
+    key: 'internalCoherence',
+    level: coherenceScore >= 2.5 ? 'high' : coherenceScore >= 0 ? 'moderate' : 'low',
+    relevance: Math.abs(coherenceScore) >= 2 ? 6 : 3,
+  });
+
+  // Sort by relevance and take top 3-5
+  signals.sort((a, b) => b.relevance - a.relevance);
+  
+  // Determine how many to show: 3 for simple, 5 for complex texts
+  const complexity = Math.abs(tonePoints) + Math.abs(factualPoints) + Math.abs(contextPoints) + Math.abs(transparencyPoints);
+  const signalCount = complexity > 8 ? 5 : complexity > 4 ? 4 : 3;
+  
+  return signals.slice(0, signalCount);
 };
 
 const getLevelStyle = (level: 'high' | 'moderate' | 'low') => {
@@ -138,50 +302,11 @@ const getLevelStyle = (level: 'high' | 'moderate' | 'low') => {
   }
 };
 
-const SignalIcon = ({ type }: { type: string }) => {
-  const iconClass = "w-4 h-4";
-  switch (type) {
-    case 'tone':
-      return <MessageSquare className={iconClass} />;
-    case 'factual':
-      return <Target className={iconClass} />;
-    case 'precision':
-      return <AlertTriangle className={iconClass} />;
-    case 'sources':
-      return <Users className={iconClass} />;
-    case 'coherence':
-      return <Link2 className={iconClass} />;
-    default:
-      return <MessageSquare className={iconClass} />;
-  }
-};
-
 export const CommunicationSignals = ({ language, breakdown }: CommunicationSignalsProps) => {
   const t = translations[language];
-
-  // Build signal data from breakdown
-  const signals = [
-    {
-      key: 'tone',
-      points: breakdown.prudence?.points ?? breakdown.tone?.points ?? 0,
-    },
-    {
-      key: 'factual',
-      points: breakdown.factual?.points ?? 0,
-    },
-    {
-      key: 'precision',
-      points: breakdown.context?.points ?? 0,
-    },
-    {
-      key: 'sources',
-      points: breakdown.transparency?.points ?? 0,
-    },
-    {
-      key: 'coherence',
-      points: Math.round(((breakdown.factual?.points ?? 0) + (breakdown.context?.points ?? 0)) / 2),
-    },
-  ];
+  
+  // Dynamically detect which signals to show
+  const detectedSignals = detectSignals(breakdown);
 
   return (
     <div className="analysis-card mb-6">
@@ -195,10 +320,10 @@ export const CommunicationSignals = ({ language, breakdown }: CommunicationSigna
       </div>
 
       <div className="space-y-2.5">
-        {signals.map((signal) => {
-          const level = getLevel(signal.points);
-          const style = getLevelStyle(level);
+        {detectedSignals.map((signal) => {
+          const style = getLevelStyle(signal.level);
           const signalConfig = t.signals[signal.key as keyof typeof t.signals];
+          const IconComponent = signalIcons[signal.key] || MessageSquare;
 
           return (
             <div
@@ -207,7 +332,7 @@ export const CommunicationSignals = ({ language, breakdown }: CommunicationSigna
             >
               <div className="flex items-center gap-3">
                 <div className={`${style.text}`}>
-                  <SignalIcon type={signal.key} />
+                  <IconComponent className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium text-slate-700">
                   {signalConfig.label}
@@ -216,7 +341,7 @@ export const CommunicationSignals = ({ language, breakdown }: CommunicationSigna
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${style.dot}`} />
                 <span className={`text-sm font-semibold ${style.text}`}>
-                  {signalConfig.levels[level]}
+                  {signalConfig.levels[signal.level]}
                 </span>
               </div>
             </div>

@@ -1,22 +1,115 @@
-import { Sparkles } from 'lucide-react';
+import { Sparkles, FileText } from 'lucide-react';
+
+interface AnalysisBreakdown {
+  tone?: { points: number; reason: string };
+  factual?: { points: number; reason: string };
+  context?: { points: number; reason: string };
+  transparency?: { points: number; reason: string };
+  prudence?: { points: number; reason: string };
+}
 
 interface StandardAnalysisIntroProps {
   language: 'en' | 'fr';
+  breakdown?: AnalysisBreakdown;
+  summary?: string;
 }
+
+// Text characteristics detection
+const detectTextCharacteristics = (breakdown: AnalysisBreakdown) => {
+  const tonePoints = breakdown.prudence?.points ?? breakdown.tone?.points ?? 0;
+  const factualPoints = breakdown.factual?.points ?? 0;
+  const contextPoints = breakdown.context?.points ?? 0;
+  const transparencyPoints = breakdown.transparency?.points ?? 0;
+
+  return {
+    isNeutralTone: tonePoints >= 3,
+    isEmotionalTone: tonePoints < 0,
+    hasStrongClaims: factualPoints >= 2,
+    isVague: contextPoints < 0,
+    hasPrecision: contextPoints >= 3,
+    lacksTransparency: transparencyPoints < 0,
+    isBalanced: tonePoints >= 2 && contextPoints >= 2,
+    overallStrength: (tonePoints + factualPoints + contextPoints + transparencyPoints) / 4,
+  };
+};
 
 const translations = {
   en: {
     title: 'Linguistic Credibility Analysis',
-    subtitle: 'This first-level analysis examines how the content is written to detect signals commonly associated with reliable or misleading information.',
+    baseSubtitle: 'This first-level analysis examines how the content is written to detect signals commonly associated with reliable or misleading information.',
+    
+    // Dynamic summaries based on characteristics
+    summaries: {
+      neutralBalanced: 'The text displays a measured, informational tone with clear contextual framing. The writing style suggests a structured approach to presenting information.',
+      neutralWithClaims: 'The content presents factual-style statements in a largely neutral manner. The language structure indicates an attempt to convey specific information.',
+      emotionalAlarmist: 'The writing exhibits emotionally charged language patterns that may influence reader perception. Such stylistic choices are common in persuasive or sensationalized content.',
+      vagueGeneralized: 'The text relies heavily on generalizations and lacks specific supporting details. This vagueness makes independent verification more challenging.',
+      preciseDetailed: 'The content includes precise-looking details and specific references. While this suggests thoroughness, details alone do not guarantee accuracy.',
+      assertiveAbsolute: 'The writing uses assertive, definitive language to present claims. Strong declarations without hedging can indicate confidence or oversimplification.',
+      persuasiveOpinion: 'The text shows patterns typical of opinion-driven or persuasive writing. The framing appears designed to guide the reader toward a particular conclusion.',
+      mixed: 'The text shows a mix of informational and emphatic elements. Some portions appear balanced while others employ more persuasive techniques.',
+    },
+    
+    dynamicIntro: 'Based on linguistic patterns detected:',
   },
   fr: {
     title: 'Analyse de Crédibilité Linguistique',
-    subtitle: 'Cette analyse de premier niveau examine la façon dont le contenu est rédigé pour détecter les signaux communément associés à une information fiable ou trompeuse.',
+    baseSubtitle: 'Cette analyse de premier niveau examine la façon dont le contenu est rédigé pour détecter les signaux communément associés à une information fiable ou trompeuse.',
+    
+    summaries: {
+      neutralBalanced: 'Le texte présente un ton mesuré et informatif avec un cadrage contextuel clair. Le style d\'écriture suggère une approche structurée de présentation de l\'information.',
+      neutralWithClaims: 'Le contenu présente des affirmations de style factuel de manière largement neutre. La structure du langage indique une tentative de transmettre des informations spécifiques.',
+      emotionalAlarmist: 'L\'écriture présente des modèles de langage émotionnellement chargés qui peuvent influencer la perception du lecteur. Ces choix stylistiques sont courants dans les contenus persuasifs ou sensationnalistes.',
+      vagueGeneralized: 'Le texte s\'appuie fortement sur des généralisations et manque de détails de soutien spécifiques. Ce flou rend la vérification indépendante plus difficile.',
+      preciseDetailed: 'Le contenu inclut des détails d\'apparence précise et des références spécifiques. Bien que cela suggère de la rigueur, les détails seuls ne garantissent pas l\'exactitude.',
+      assertiveAbsolute: 'L\'écriture utilise un langage affirmatif et définitif pour présenter ses affirmations. Des déclarations fortes sans nuance peuvent indiquer de la confiance ou une simplification excessive.',
+      persuasiveOpinion: 'Le texte montre des schémas typiques d\'une écriture d\'opinion ou persuasive. Le cadrage semble conçu pour guider le lecteur vers une conclusion particulière.',
+      mixed: 'Le texte présente un mélange d\'éléments informatifs et emphatiques. Certaines parties semblent équilibrées tandis que d\'autres emploient des techniques plus persuasives.',
+    },
+    
+    dynamicIntro: 'Selon les modèles linguistiques détectés :',
   },
 };
 
-export const StandardAnalysisIntro = ({ language }: StandardAnalysisIntroProps) => {
+const selectDynamicSummary = (
+  characteristics: ReturnType<typeof detectTextCharacteristics>,
+  lang: 'en' | 'fr'
+): string => {
+  const summaries = translations[lang].summaries;
+  
+  // Priority-based selection
+  if (characteristics.isEmotionalTone) {
+    return summaries.emotionalAlarmist;
+  }
+  if (characteristics.isVague && characteristics.lacksTransparency) {
+    return summaries.vagueGeneralized;
+  }
+  if (characteristics.lacksTransparency && !characteristics.isNeutralTone) {
+    return summaries.persuasiveOpinion;
+  }
+  if (characteristics.hasStrongClaims && !characteristics.hasPrecision) {
+    return summaries.assertiveAbsolute;
+  }
+  if (characteristics.isNeutralTone && characteristics.isBalanced) {
+    return summaries.neutralBalanced;
+  }
+  if (characteristics.hasPrecision) {
+    return summaries.preciseDetailed;
+  }
+  if (characteristics.isNeutralTone && characteristics.hasStrongClaims) {
+    return summaries.neutralWithClaims;
+  }
+  
+  return summaries.mixed;
+};
+
+export const StandardAnalysisIntro = ({ language, breakdown }: StandardAnalysisIntroProps) => {
   const t = translations[language];
+  
+  // If no breakdown provided, show the base subtitle
+  const hasBreakdown = breakdown && Object.keys(breakdown).length > 0;
+  const characteristics = hasBreakdown ? detectTextCharacteristics(breakdown) : null;
+  const dynamicSummary = characteristics ? selectDynamicSummary(characteristics, language) : null;
 
   return (
     <div 
@@ -51,9 +144,33 @@ export const StandardAnalysisIntro = ({ language }: StandardAnalysisIntroProps) 
           </h2>
         </div>
         
-        <p className="text-sm leading-relaxed text-slate-600 pl-10">
-          {t.subtitle}
+        {/* Base explanation */}
+        <p className="text-sm leading-relaxed text-slate-500 pl-10 mb-3">
+          {t.baseSubtitle}
         </p>
+        
+        {/* Dynamic personalized summary */}
+        {dynamicSummary && (
+          <div 
+            className="ml-10 p-3 rounded-lg"
+            style={{
+              background: 'linear-gradient(135deg, hsl(200 40% 97%) 0%, hsl(180 30% 96%) 100%)',
+              border: '1px solid hsl(200 30% 85%)',
+            }}
+          >
+            <div className="flex items-start gap-2">
+              <FileText className="w-4 h-4 text-cyan-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  {t.dynamicIntro}
+                </span>
+                <p className="text-sm leading-relaxed text-slate-700 mt-1">
+                  {dynamicSummary}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
