@@ -16,6 +16,13 @@ interface BestSourcesSectionProps {
   language: 'en' | 'fr';
   outcome?: string;
   claim?: string;
+  /** 
+   * Mode controls which sources to display:
+   * - "contradictingOnly": Only show contradicting sources
+   * - "supportingOnly": Only show corroborated + neutral sources
+   * - "all": Show all sources (default behavior)
+   */
+  mode?: 'contradictingOnly' | 'supportingOnly' | 'all';
 }
 
 // Extract key terms from claim (words longer than 4 letters)
@@ -180,7 +187,102 @@ const getTrustPriority = (source: SourceDetail): number => {
   return 3; // media
 };
 
-export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSourcesSectionProps) => {
+// Source card component (extracted to avoid duplication)
+const SourceCard = ({ 
+  source, 
+  idx, 
+  isCounterClaim, 
+  language, 
+  openLabel 
+}: { 
+  source: SourceDetail; 
+  idx: number; 
+  isCounterClaim: boolean; 
+  language: 'en' | 'fr'; 
+  openLabel: string;
+}) => {
+  const classification = classifySourceType(source);
+  const faviconUrl = getFaviconUrl(source.url);
+  
+  return (
+    <a
+      key={`${isCounterClaim ? 'counter' : 'best'}-source-${idx}`}
+      href={source.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`group block rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-200
+                 ${isCounterClaim 
+                   ? 'border-red-200 bg-gradient-to-br from-white to-red-50/50 hover:border-red-300 hover:to-red-50/80' 
+                   : 'border-slate-200 bg-gradient-to-br from-white to-slate-50/80 hover:border-slate-300 hover:from-white hover:to-cyan-50/30'
+                 }`}
+    >
+      <div className="flex items-start gap-3">
+        {/* Favicon */}
+        <div className={`flex-shrink-0 w-9 h-9 rounded-lg bg-white border flex items-center justify-center shadow-sm overflow-hidden
+                        ${isCounterClaim ? 'border-red-200/80' : 'border-slate-200/80'}`}>
+          {faviconUrl ? (
+            <img 
+              src={faviconUrl} 
+              alt="" 
+              className="w-5 h-5 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          ) : (
+            <ExternalLink className="w-4 h-4 text-slate-400" />
+          )}
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1.5">
+            {/* Source Name */}
+            <span className={`font-semibold text-sm transition-colors
+                            ${isCounterClaim ? 'text-slate-800 group-hover:text-red-700' : 'text-slate-800 group-hover:text-cyan-700'}`}>
+              {source.name}
+            </span>
+            
+            {/* Type Badge */}
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                             border ${classification.style}`}>
+              {classification.icon}
+              {language === 'fr' ? classification.labelFr : classification.label}
+            </span>
+            
+            {/* Counter-claim indicator badge */}
+            {isCounterClaim && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                               bg-red-500/15 text-red-700 border border-red-500/30">
+                {language === 'fr' ? 'Contredit' : 'Contradicts'}
+              </span>
+            )}
+          </div>
+          
+          {/* Snippet */}
+          <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+            {source.snippet}
+          </p>
+        </div>
+        
+        {/* Open button */}
+        <div className="flex-shrink-0 self-center">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                           shadow-sm transition-all duration-200
+                           ${isCounterClaim 
+                             ? 'bg-slate-100 text-slate-600 group-hover:bg-red-600 group-hover:text-white' 
+                             : 'bg-slate-100 text-slate-600 group-hover:bg-cyan-600 group-hover:text-white'
+                           }`}>
+            {openLabel}
+            <ExternalLink className="w-3.5 h-3.5" />
+          </span>
+        </div>
+      </div>
+    </a>
+  );
+};
+
+export const BestSourcesSection = ({ sources, language, outcome, claim, mode = 'all' }: BestSourcesSectionProps) => {
   // Extract key terms from claim for relevance filtering
   const claimKeyTerms = extractKeyTerms(claim || '');
   
@@ -202,34 +304,84 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
       : "We couldn't find enough direct article pages for this claim. Try rephrasing, adding specifics (who/where/when), or rerun PRO.",
   };
   
-  // Process contradicting sources separately for Counter-Claim section
-  const contradictingSources: { source: SourceDetail; category: 'contradicting' }[] = [];
-  sources.contradicting?.forEach(s => {
-    const details = getSourceDetails(s);
-    if (details && isArticleUrl(details.url) && details.snippet && details.snippet.length >= 10 && isTopicallyRelevant(details, claimKeyTerms)) {
-      contradictingSources.push({ source: details, category: 'contradicting' });
+  // ===== CONTRADICTING SOURCES (for mode === 'contradictingOnly' or 'all') =====
+  let topContradictingSources: { source: SourceDetail }[] = [];
+  let hasCounterClaims = false;
+  
+  if (mode === 'contradictingOnly' || mode === 'all') {
+    const contradictingSources: { source: SourceDetail }[] = [];
+    sources.contradicting?.forEach(s => {
+      const details = getSourceDetails(s);
+      if (details && isArticleUrl(details.url) && details.snippet && details.snippet.length >= 10 && isTopicallyRelevant(details, claimKeyTerms)) {
+        contradictingSources.push({ source: details });
+      }
+    });
+    
+    // Deduplicate contradicting sources by URL
+    const seenContradictingUrls = new Set<string>();
+    const deduplicatedContradicting = contradictingSources.filter(({ source }) => {
+      const urlKey = getNormalizedUrlKey(source.url);
+      if (!urlKey || seenContradictingUrls.has(urlKey)) {
+        return false;
+      }
+      seenContradictingUrls.add(urlKey);
+      return true;
+    });
+    
+    // Sort contradicting by trust level and take top sources
+    const sortedContradicting = [...deduplicatedContradicting].sort((a, b) => {
+      return getTrustPriority(a.source) - getTrustPriority(b.source);
+    });
+    const maxContradicting = mode === 'contradictingOnly' ? 6 : 3;
+    topContradictingSources = sortedContradicting.slice(0, maxContradicting);
+    hasCounterClaims = topContradictingSources.length > 0;
+  }
+  
+  // If mode is contradictingOnly, only show contradicting sources
+  if (mode === 'contradictingOnly') {
+    // If no contradicting sources, render nothing
+    if (!hasCounterClaims) {
+      return null;
     }
-  });
+    
+    const isRefuted = outcome === 'refuted';
+    const sectionTitle = isRefuted ? t.refutedTitle : t.counterClaimTitle;
+    
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-200/80">
+        {/* Section Header */}
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-red-600" />
+          </div>
+          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+            {sectionTitle}
+          </h4>
+        </div>
+        
+        {/* Explanation text */}
+        <p className="text-sm text-slate-600 leading-relaxed mb-4 pl-10">
+          {t.counterClaimExplanation}
+        </p>
+        
+        {/* Contradicting Source Cards */}
+        <div className="space-y-3">
+          {topContradictingSources.map(({ source }, idx) => (
+            <SourceCard 
+              key={`contra-${idx}`}
+              source={source} 
+              idx={idx} 
+              isCounterClaim={true} 
+              language={language} 
+              openLabel={t.open} 
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
   
-  // Deduplicate contradicting sources by URL
-  const seenContradictingUrls = new Set<string>();
-  const deduplicatedContradicting = contradictingSources.filter(({ source }) => {
-    const urlKey = getNormalizedUrlKey(source.url);
-    if (!urlKey || seenContradictingUrls.has(urlKey)) {
-      return false;
-    }
-    seenContradictingUrls.add(urlKey);
-    return true;
-  });
-  
-  // Sort contradicting by trust level and take top 3
-  const sortedContradicting = [...deduplicatedContradicting].sort((a, b) => {
-    return getTrustPriority(a.source) - getTrustPriority(b.source);
-  });
-  const topContradictingSources = sortedContradicting.slice(0, 3);
-  const hasCounterClaims = topContradictingSources.length > 0;
-  
-  // Collect corroborated and neutral sources (not contradicting - those are handled separately)
+  // ===== SUPPORTING SOURCES (for mode === 'supportingOnly' or 'all') =====
   const allDetailedSources: { source: SourceDetail; category: 'corroborated' | 'neutral' }[] = [];
   
   // Add corroborated sources
@@ -278,93 +430,61 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
   const isRefuted = outcome === 'refuted';
   const sectionTitle = isRefuted ? t.refutedTitle : t.title;
   
-  // Helper to render a source card
-  const renderSourceCard = (
-    source: SourceDetail, 
-    idx: number, 
-    isCounterClaim: boolean = false
-  ) => {
-    const classification = classifySourceType(source);
-    const faviconUrl = getFaviconUrl(source.url);
-    
-    return (
-      <a
-        key={`${isCounterClaim ? 'counter' : 'best'}-source-${idx}`}
-        href={source.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`group block rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-200
-                   ${isCounterClaim 
-                     ? 'border-red-200 bg-gradient-to-br from-white to-red-50/50 hover:border-red-300 hover:to-red-50/80' 
-                     : 'border-slate-200 bg-gradient-to-br from-white to-slate-50/80 hover:border-slate-300 hover:from-white hover:to-cyan-50/30'
-                   }`}
-      >
-        <div className="flex items-start gap-3">
-          {/* Favicon */}
-          <div className={`flex-shrink-0 w-9 h-9 rounded-lg bg-white border flex items-center justify-center shadow-sm overflow-hidden
-                          ${isCounterClaim ? 'border-red-200/80' : 'border-slate-200/80'}`}>
-            {faviconUrl ? (
-              <img 
-                src={faviconUrl} 
-                alt="" 
-                className="w-5 h-5 object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            ) : (
-              <ExternalLink className="w-4 h-4 text-slate-400" />
-            )}
+  // For supportingOnly mode, show fallback if not enough sources
+  if (mode === 'supportingOnly') {
+    if (topSources.length < 2) {
+      return (
+        <div className="mt-6 pt-5 border-t border-slate-200/80">
+          {/* Section Header */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-amber-600" />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {t.insufficientTitle}
+            </h4>
           </div>
           
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1.5">
-              {/* Source Name */}
-              <span className={`font-semibold text-sm transition-colors
-                              ${isCounterClaim ? 'text-slate-800 group-hover:text-red-700' : 'text-slate-800 group-hover:text-cyan-700'}`}>
-                {source.name}
-              </span>
-              
-              {/* Type Badge */}
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
-                               border ${classification.style}`}>
-                {classification.icon}
-                {language === 'fr' ? classification.labelFr : classification.label}
-              </span>
-              
-              {/* Counter-claim indicator badge */}
-              {isCounterClaim && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
-                                 bg-red-500/15 text-red-700 border border-red-500/30">
-                  {language === 'fr' ? 'Contredit' : 'Contradicts'}
-                </span>
-              )}
-            </div>
-            
-            {/* Snippet */}
-            <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
-              {source.snippet}
+          {/* Fallback Card */}
+          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {t.insufficientSubtitle}
             </p>
           </div>
-          
-          {/* Open button */}
-          <div className="flex-shrink-0 self-center">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                             shadow-sm transition-all duration-200
-                             ${isCounterClaim 
-                               ? 'bg-slate-100 text-slate-600 group-hover:bg-red-600 group-hover:text-white' 
-                               : 'bg-slate-100 text-slate-600 group-hover:bg-cyan-600 group-hover:text-white'
-                             }`}>
-              {t.open}
-              <ExternalLink className="w-3.5 h-3.5" />
-            </span>
-          </div>
         </div>
-      </a>
+      );
+    }
+    
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-200/80">
+        {/* Section Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
+            <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+          </div>
+          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+            {sectionTitle}
+          </h4>
+        </div>
+        
+        {/* Source Cards */}
+        <div className="space-y-3">
+          {topSources.map(({ source }, idx) => (
+            <SourceCard 
+              key={`support-${idx}`}
+              source={source} 
+              idx={idx} 
+              isCounterClaim={false} 
+              language={language} 
+              openLabel={t.open} 
+            />
+          ))}
+        </div>
+      </div>
     );
-  };
+  }
   
+  // ===== MODE === 'all' (default behavior) =====
   // Source Quality Gate: Show fallback if fewer than 2 high-quality sources (and no counter-claims)
   if (topSources.length < 2 && !hasCounterClaims) {
     return (
@@ -411,9 +531,16 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
           
           {/* Counter-Claim Source Cards */}
           <div className="space-y-3">
-            {topContradictingSources.map(({ source }, idx) => 
-              renderSourceCard(source, idx, true)
-            )}
+            {topContradictingSources.map(({ source }, idx) => (
+              <SourceCard 
+                key={`counter-${idx}`}
+                source={source} 
+                idx={idx} 
+                isCounterClaim={true} 
+                language={language} 
+                openLabel={t.open} 
+              />
+            ))}
           </div>
         </div>
       )}
@@ -433,9 +560,16 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
           
           {/* Source Cards */}
           <div className="space-y-3">
-            {topSources.map(({ source }, idx) => 
-              renderSourceCard(source, idx, false)
-            )}
+            {topSources.map(({ source }, idx) => (
+              <SourceCard 
+                key={`best-${idx}`}
+                source={source} 
+                idx={idx} 
+                isCounterClaim={false} 
+                language={language} 
+                openLabel={t.open} 
+              />
+            ))}
           </div>
         </>
       )}
