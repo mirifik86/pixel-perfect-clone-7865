@@ -211,19 +211,7 @@ const getTrustPriority = (source: SourceDetail): number => {
   return 3; // media
 };
 
-// Open source URL with Safari COOP fallback
-const openSource = (url: string) => {
-  try {
-    const w = window.open(url, "_blank", "noopener,noreferrer");
-    // If popup was blocked or returned null, fallback to direct navigation
-    if (!w) {
-      window.location.assign(url);
-    }
-  } catch {
-    // If window.open throws, fallback to direct navigation
-    window.location.assign(url);
-  }
-};
+// Note: We now use standard anchor tags instead of window.open() for Safari COOP compatibility
 
 // Source card component (extracted to avoid duplication)
 const SourceCard = ({ 
@@ -252,18 +240,13 @@ const SourceCard = ({
       // Fallback: do nothing if clipboard fails
     });
   };
-
-  const handleCardClick = () => {
-    openSource(source.url);
-  };
   
   return (
-    <div
+    <a
       key={`${isCounterClaim ? 'counter' : 'best'}-source-${idx}`}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
+      href={source.url}
+      target="_blank"
+      rel="noreferrer"
       className={`group block rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer
                  ${isCounterClaim 
                    ? 'border-red-200 bg-gradient-to-br from-white to-red-50/50 hover:border-red-300 hover:to-red-50/80' 
@@ -367,7 +350,7 @@ const SourceCard = ({
           </span>
         </div>
       </div>
-    </div>
+    </a>
   );
 };
 
