@@ -138,11 +138,77 @@ const HUB_PATHS = new Set([
   '/hub', '/section', '/sections'
 ]);
 
+// Trusted domains that bypass strict article URL validation
+// These are authoritative sources that may use non-standard URL structures
+const TRUSTED_DOMAINS = new Set([
+  // Government & Museums
+  'nps.gov',
+  'si.edu',
+  'nationalzoo.si.edu',
+  'australian.museum',
+  // Reference & Encyclopedias
+  'britannica.com',
+  'wikipedia.org',
+  'en.wikipedia.org',
+  'fr.wikipedia.org',
+  'de.wikipedia.org',
+  'es.wikipedia.org',
+  // Pet & Animal authorities
+  'aspca.org',
+  'petmd.com',
+  'vcahospitals.com',
+  // Science & Health
+  'cdc.gov',
+  'nih.gov',
+  'nasa.gov',
+  'who.int',
+  'nature.com',
+  'sciencedirect.com',
+  'pubmed.ncbi.nlm.nih.gov',
+]);
+
+// Check if hostname is a trusted domain (exact match or ends with .gov/.edu)
+const isTrustedDomain = (hostname: string): boolean => {
+  const normalizedHost = hostname.replace(/^www\./, '').toLowerCase();
+  
+  // Check exact match in trusted domains set
+  if (TRUSTED_DOMAINS.has(normalizedHost)) {
+    return true;
+  }
+  
+  // Check if it's a subdomain of a trusted domain
+  for (const trusted of TRUSTED_DOMAINS) {
+    if (normalizedHost.endsWith(`.${trusted}`)) {
+      return true;
+    }
+  }
+  
+  // Accept all .gov and .edu domains
+  if (normalizedHost.endsWith('.gov') || normalizedHost.endsWith('.edu')) {
+    return true;
+  }
+  
+  return false;
+};
+
 // Check if URL points to an actual article page (not a hub/homepage)
+// Returns true for article-like URLs OR trusted domains (which bypass strict checks)
 const isArticleUrl = (url: string): boolean => {
   try {
     const parsed = new URL(url);
+    const hostname = parsed.hostname;
     const pathname = parsed.pathname.toLowerCase();
+    
+    // Trusted domains bypass the strict article URL check
+    // (but still reject pure homepages)
+    if (isTrustedDomain(hostname)) {
+      // Still reject pure homepage
+      if (pathname === '/' || pathname === '') {
+        return false;
+      }
+      // Accept any path from trusted domains
+      return true;
+    }
     
     // Reject homepage or empty path
     if (pathname === '/' || pathname === '') {
