@@ -96,6 +96,29 @@ const classifySourceType = (source: SourceDetail): { type: 'official' | 'referen
   };
 };
 
+// Detect contextual badge for contradicting sources based on snippet keywords
+const getContradictingContextBadge = (snippet: string, language: 'en' | 'fr'): { label: string; icon?: React.ReactNode } | null => {
+  const snippetLower = snippet.toLowerCase();
+  
+  // Scientific classification keywords
+  const classificationKeywords = ['mammal', 'mammalia', 'vertebrate', 'invertebrate', 'chordata', 'animalia', 'plantae'];
+  if (classificationKeywords.some(kw => snippetLower.includes(kw))) {
+    return {
+      label: language === 'fr' ? 'Classification scientifique' : 'Scientific classification'
+    };
+  }
+  
+  // Taxonomic evidence keywords
+  const taxonomyKeywords = ['species', 'genus', 'family', 'class', 'order', 'phylum', 'kingdom', 'taxonomy', 'taxonomic', 'espèce', 'genre', 'famille', 'classe', 'ordre', 'phylum', 'taxonomie'];
+  if (taxonomyKeywords.some(kw => snippetLower.includes(kw))) {
+    return {
+      label: language === 'fr' ? 'Preuve taxonomique' : 'Taxonomic evidence'
+    };
+  }
+  
+  return null;
+};
+
 // Get favicon URL for a domain
 const getFaviconUrl = (url: string): string => {
   try {
@@ -288,6 +311,19 @@ const SourceCard = ({
                 {language === 'fr' ? 'Contredit' : 'Contradicts'}
               </span>
             )}
+            
+            {/* Contextual academic badge for contradicting sources */}
+            {isCounterClaim && (() => {
+              const contextBadge = getContradictingContextBadge(source.snippet, language);
+              if (!contextBadge) return null;
+              return (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                                 bg-slate-100 text-slate-600 border border-slate-200">
+                  <BookOpen className="w-3 h-3" />
+                  {contextBadge.label}
+                </span>
+              );
+            })()}
           </div>
           
           {/* Snippet */}
