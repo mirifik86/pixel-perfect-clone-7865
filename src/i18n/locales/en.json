@@ -133,7 +133,9 @@
     "officialSource": "Official Source",
     "majorMedia": "Major Media",
     "reference": "Reference",
-    "contextLabel": "Context"
+    "contextLabel": "Context",
+    "counterClaimTitle": "Credible sources stating the opposite",
+    "counterClaimExplanation": "Multiple authoritative sources clearly state the opposite of this claim, indicating strong scientific or factual consensus against it."
   },
   "loader": {
     "primary": "Scanning information space",

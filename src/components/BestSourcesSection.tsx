@@ -46,14 +46,6 @@ const getSourceDetails = (source: string | SourceDetail): SourceDetail | null =>
   return null;
 };
 
-// Helper to get source name (supports both string and object formats)
-const getSourceName = (source: string | SourceDetail): string => {
-  if (typeof source === 'object') {
-    return source.name;
-  }
-  return source;
-};
-
 // Classify source type based on name/url patterns
 const classifySourceType = (source: SourceDetail): { type: 'official' | 'reference' | 'media'; label: string; labelFr: string; icon: React.ReactNode; style: string } => {
   const nameLower = source.name.toLowerCase();
@@ -180,13 +172,29 @@ const getNormalizedUrlKey = (url: string): string => {
   }
 };
 
+// Helper function for trust level priority
+const getTrustPriority = (source: SourceDetail): number => {
+  const { type } = classifySourceType(source);
+  if (type === 'official') return 1;
+  if (type === 'reference') return 2;
+  return 3; // media
+};
+
 export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSourcesSectionProps) => {
   // Extract key terms from claim for relevance filtering
   const claimKeyTerms = extractKeyTerms(claim || '');
+  
   const t = {
     title: language === 'fr' ? 'Meilleures preuves (PRO)' : 'Best evidence (PRO)',
     open: language === 'fr' ? 'Ouvrir' : 'Open',
     refutedTitle: language === 'fr' ? 'Sources réfutantes (PRO)' : 'Refuting sources (PRO)',
+    // Counter-claim detection section
+    counterClaimTitle: language === 'fr' 
+      ? 'Sources crédibles affirmant l\'inverse' 
+      : 'Credible sources stating the opposite',
+    counterClaimExplanation: language === 'fr'
+      ? 'Plusieurs sources faisant autorité affirment clairement l\'inverse de cette affirmation, indiquant un consensus scientifique ou factuel fort en opposition.'
+      : 'Multiple authoritative sources clearly state the opposite of this claim, indicating strong scientific or factual consensus against it.',
     // Source Quality Gate fallback
     insufficientTitle: language === 'fr' ? 'Qualité des preuves insuffisante' : 'Evidence quality insufficient',
     insufficientSubtitle: language === 'fr' 
@@ -194,16 +202,35 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
       : "We couldn't find enough direct article pages for this claim. Try rephrasing, adding specifics (who/where/when), or rerun PRO.",
   };
   
-  // Collect all detailed sources from all categories
-  const allDetailedSources: { source: SourceDetail; category: 'corroborated' | 'neutral' | 'contradicting' }[] = [];
-  
-  // Add contradicting sources first (for refuted claims)
+  // Process contradicting sources separately for Counter-Claim section
+  const contradictingSources: { source: SourceDetail; category: 'contradicting' }[] = [];
   sources.contradicting?.forEach(s => {
     const details = getSourceDetails(s);
-    if (details) {
-      allDetailedSources.push({ source: details, category: 'contradicting' });
+    if (details && isArticleUrl(details.url) && details.snippet && details.snippet.length >= 10 && isTopicallyRelevant(details, claimKeyTerms)) {
+      contradictingSources.push({ source: details, category: 'contradicting' });
     }
   });
+  
+  // Deduplicate contradicting sources by URL
+  const seenContradictingUrls = new Set<string>();
+  const deduplicatedContradicting = contradictingSources.filter(({ source }) => {
+    const urlKey = getNormalizedUrlKey(source.url);
+    if (!urlKey || seenContradictingUrls.has(urlKey)) {
+      return false;
+    }
+    seenContradictingUrls.add(urlKey);
+    return true;
+  });
+  
+  // Sort contradicting by trust level and take top 3
+  const sortedContradicting = [...deduplicatedContradicting].sort((a, b) => {
+    return getTrustPriority(a.source) - getTrustPriority(b.source);
+  });
+  const topContradictingSources = sortedContradicting.slice(0, 3);
+  const hasCounterClaims = topContradictingSources.length > 0;
+  
+  // Collect corroborated and neutral sources (not contradicting - those are handled separately)
+  const allDetailedSources: { source: SourceDetail; category: 'corroborated' | 'neutral' }[] = [];
   
   // Add corroborated sources
   sources.corroborated?.forEach(s => {
@@ -223,22 +250,13 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
   
   // Filter to only sources with valid article URLs (not homepages, not hub pages)
   const validSources = allDetailedSources.filter(({ source }) => {
-    // Must pass article URL validation
-    if (!isArticleUrl(source.url)) {
-      return false;
-    }
-    // Must have snippet
-    if (!source.snippet || source.snippet.length < 10) {
-      return false;
-    }
-    // Must be topically relevant to the claim
-    if (!isTopicallyRelevant(source, claimKeyTerms)) {
-      return false;
-    }
+    if (!isArticleUrl(source.url)) return false;
+    if (!source.snippet || source.snippet.length < 10) return false;
+    if (!isTopicallyRelevant(source, claimKeyTerms)) return false;
     return true;
   });
   
-  // Deduplicate by normalized URL (hostname + pathname) - keep only first occurrence
+  // Deduplicate by normalized URL (hostname + pathname)
   const seenUrls = new Set<string>();
   const deduplicatedSources = validSources.filter(({ source }) => {
     const urlKey = getNormalizedUrlKey(source.url);
@@ -250,14 +268,6 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
   });
   
   // Sort by trust level: official (1) > reference (2) > media (3)
-  // Use stable sort to preserve original order within same type
-  const getTrustPriority = (source: SourceDetail): number => {
-    const { type } = classifySourceType(source);
-    if (type === 'official') return 1;
-    if (type === 'reference') return 2;
-    return 3; // media
-  };
-  
   const sortedSources = [...deduplicatedSources].sort((a, b) => {
     return getTrustPriority(a.source) - getTrustPriority(b.source);
   });
@@ -268,8 +278,95 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
   const isRefuted = outcome === 'refuted';
   const sectionTitle = isRefuted ? t.refutedTitle : t.title;
   
-  // Source Quality Gate: Show fallback if fewer than 2 high-quality sources
-  if (topSources.length < 2) {
+  // Helper to render a source card
+  const renderSourceCard = (
+    source: SourceDetail, 
+    idx: number, 
+    isCounterClaim: boolean = false
+  ) => {
+    const classification = classifySourceType(source);
+    const faviconUrl = getFaviconUrl(source.url);
+    
+    return (
+      <a
+        key={`${isCounterClaim ? 'counter' : 'best'}-source-${idx}`}
+        href={source.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`group block rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-200
+                   ${isCounterClaim 
+                     ? 'border-red-200 bg-gradient-to-br from-white to-red-50/50 hover:border-red-300 hover:to-red-50/80' 
+                     : 'border-slate-200 bg-gradient-to-br from-white to-slate-50/80 hover:border-slate-300 hover:from-white hover:to-cyan-50/30'
+                   }`}
+      >
+        <div className="flex items-start gap-3">
+          {/* Favicon */}
+          <div className={`flex-shrink-0 w-9 h-9 rounded-lg bg-white border flex items-center justify-center shadow-sm overflow-hidden
+                          ${isCounterClaim ? 'border-red-200/80' : 'border-slate-200/80'}`}>
+            {faviconUrl ? (
+              <img 
+                src={faviconUrl} 
+                alt="" 
+                className="w-5 h-5 object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <ExternalLink className="w-4 h-4 text-slate-400" />
+            )}
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1.5">
+              {/* Source Name */}
+              <span className={`font-semibold text-sm transition-colors
+                              ${isCounterClaim ? 'text-slate-800 group-hover:text-red-700' : 'text-slate-800 group-hover:text-cyan-700'}`}>
+                {source.name}
+              </span>
+              
+              {/* Type Badge */}
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                               border ${classification.style}`}>
+                {classification.icon}
+                {language === 'fr' ? classification.labelFr : classification.label}
+              </span>
+              
+              {/* Counter-claim indicator badge */}
+              {isCounterClaim && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                                 bg-red-500/15 text-red-700 border border-red-500/30">
+                  {language === 'fr' ? 'Contredit' : 'Contradicts'}
+                </span>
+              )}
+            </div>
+            
+            {/* Snippet */}
+            <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+              {source.snippet}
+            </p>
+          </div>
+          
+          {/* Open button */}
+          <div className="flex-shrink-0 self-center">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                             shadow-sm transition-all duration-200
+                             ${isCounterClaim 
+                               ? 'bg-slate-100 text-slate-600 group-hover:bg-red-600 group-hover:text-white' 
+                               : 'bg-slate-100 text-slate-600 group-hover:bg-cyan-600 group-hover:text-white'
+                             }`}>
+              {t.open}
+              <ExternalLink className="w-3.5 h-3.5" />
+            </span>
+          </div>
+        </div>
+      </a>
+    );
+  };
+  
+  // Source Quality Gate: Show fallback if fewer than 2 high-quality sources (and no counter-claims)
+  if (topSources.length < 2 && !hasCounterClaims) {
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
         {/* Section Header */}
@@ -294,94 +391,54 @@ export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSo
   
   return (
     <div className="mt-6 pt-5 border-t border-slate-200/80">
-      {/* Section Header */}
-      <div className="flex items-center gap-2.5 mb-4">
-        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
-          <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
-        </div>
-        <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-          {sectionTitle}
-        </h4>
-      </div>
-      
-      {/* Source Cards */}
-      <div className="space-y-3">
-        {topSources.map(({ source, category }, idx) => {
-          const classification = classifySourceType(source);
-          const faviconUrl = getFaviconUrl(source.url);
+      {/* Counter-Claim Detection Section - shown ABOVE regular evidence */}
+      {hasCounterClaims && (
+        <div className="mb-6">
+          {/* Counter-Claim Header */}
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-red-600" />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {t.counterClaimTitle}
+            </h4>
+          </div>
           
-          return (
-            <a
-              key={`best-source-${idx}`}
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50/80 
-                         p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200
-                         hover:from-white hover:to-cyan-50/30"
-            >
-              <div className="flex items-start gap-3">
-                {/* Favicon */}
-                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white border border-slate-200/80 
-                                flex items-center justify-center shadow-sm overflow-hidden">
-                  {faviconUrl ? (
-                    <img 
-                      src={faviconUrl} 
-                      alt="" 
-                      className="w-5 h-5 object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <ExternalLink className="w-4 h-4 text-slate-400" />
-                  )}
-                </div>
-                
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                    {/* Source Name */}
-                    <span className="font-semibold text-sm text-slate-800 group-hover:text-cyan-700 transition-colors">
-                      {source.name}
-                    </span>
-                    
-                    {/* Type Badge */}
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
-                                     border ${classification.style}`}>
-                      {classification.icon}
-                      {language === 'fr' ? classification.labelFr : classification.label}
-                    </span>
-                    
-                    {/* Category Badge for refuted */}
-                    {category === 'contradicting' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
-                                       bg-red-500/10 text-red-700 border border-red-500/25">
-                        {language === 'fr' ? 'Réfute' : 'Refutes'}
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Snippet */}
-                  <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
-                    {source.snippet}
-                  </p>
-                </div>
-                
-                {/* Open button */}
-                <div className="flex-shrink-0 self-center">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                                   bg-slate-100 text-slate-600 group-hover:bg-cyan-600 group-hover:text-white
-                                   transition-all duration-200 shadow-sm">
-                    {t.open}
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </span>
-                </div>
-              </div>
-            </a>
-          );
-        })}
-      </div>
+          {/* Explanation text */}
+          <p className="text-sm text-slate-600 leading-relaxed mb-4 pl-10">
+            {t.counterClaimExplanation}
+          </p>
+          
+          {/* Counter-Claim Source Cards */}
+          <div className="space-y-3">
+            {topContradictingSources.map(({ source }, idx) => 
+              renderSourceCard(source, idx, true)
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Regular Evidence Section - only if we have sources */}
+      {topSources.length >= 2 && (
+        <>
+          {/* Section Header */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
+              <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {sectionTitle}
+            </h4>
+          </div>
+          
+          {/* Source Cards */}
+          <div className="space-y-3">
+            {topSources.map(({ source }, idx) => 
+              renderSourceCard(source, idx, false)
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
