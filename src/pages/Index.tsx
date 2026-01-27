@@ -381,9 +381,22 @@ const Index = () => {
       // Store the extracted text for potential re-runs
       setLastAnalyzedContent(data.ocr.cleaned_text);
 
-      // If OCR extracted text, run a single master analysis (EN) then translate (FR).
-      // This keeps ALL sections (Explication PRO, détails, corroboration, etc.) coherent across the FR/EN toggle.
-      if (data?.ocr?.cleaned_text) {
+      // If the image endpoint already returned a full PRO analysis, skip the second text analysis call
+      // and just use the provided analysis directly (avoids double analysis).
+      if (data.analysis && data.analysis.analysisType === 'pro') {
+        // PRO analysis already complete - store bilingual summaries from this analysis
+        // Note: image endpoint returns analysis in the requested language, so we store it accordingly
+        setSummariesByLanguage({
+          en: language === 'en' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+          fr: language === 'fr' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+        });
+        setAnalysisByLanguage({
+          en: language === 'en' ? data.analysis : null,
+          fr: language === 'fr' ? data.analysis : null,
+        });
+      } else if (data?.ocr?.cleaned_text) {
+        // If OCR extracted text, run a single master analysis (EN) then translate (FR).
+        // This keeps ALL sections (Explication PRO, détails, corroboration, etc.) coherent across the FR/EN toggle.
         try {
           const { en, fr } = await runBilingualTextAnalysis({
             content: data.ocr.cleaned_text,
