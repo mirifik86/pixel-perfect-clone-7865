@@ -2,6 +2,10 @@ import { CheckCircle, XCircle, AlertCircle, Search, Scale, GitBranch, Image, Spa
 import { SignalMiniGauge } from './SignalMiniGauge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BestSourcesSection } from './BestSourcesSection';
+import { StandardAnalysisBadge } from './StandardAnalysisBadge';
+import { StandardAnalysisIntro } from './StandardAnalysisIntro';
+import { CommunicationSignals } from './CommunicationSignals';
+import { UpgradeBridge } from './UpgradeBridge';
 
 interface AnalysisBreakdown {
   // Core criteria (Standard)
@@ -559,7 +563,19 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* Standard: Summary card */}
+      {/* STANDARD: Badge near the score gauge */}
+      {!isPro && (
+        <div className="mb-6 flex justify-center">
+          <StandardAnalysisBadge language={language} />
+        </div>
+      )}
+
+      {/* STANDARD: New warm intro section */}
+      {!isPro && (
+        <StandardAnalysisIntro language={language} />
+      )}
+
+      {/* Standard: Summary card with confidence badge */}
       {!isPro && (
         <div className="analysis-card mb-6">
           <div className="mb-4 flex items-center justify-between">
@@ -574,41 +590,35 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* Standard: Limited Verification Section */}
+      {/* STANDARD: Detected Communication Signals */}
+      {!isPro && (
+        <CommunicationSignals language={language} breakdown={data.breakdown} />
+      )}
+
+      {/* Standard: Updated Verification Section - Neutral messaging */}
       {!isPro && (
         <div className="analysis-card mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Search className="h-5 w-5 text-slate-500" />
-            <h3 className="font-serif text-lg font-semibold text-slate-900">{t.limitedVerificationTitle}</h3>
+            <h3 className="font-serif text-lg font-semibold text-slate-900">
+              {language === 'fr' ? 'Vérification des Sources' : 'Source Verification'}
+            </h3>
           </div>
           
-          {/* Only show positive corroboration result if a real source was found */}
-          {hasRealCorroboration && data.corroboration?.sources?.corroborated?.[0] ? (
-            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="h-4 w-4 text-emerald-600" />
-                <span className="text-sm font-semibold text-emerald-800">{t.oneSourceFound}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-700">
-                  {getSourceName(data.corroboration.sources.corroborated[0])}
-                </span>
-                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
-                  {language === 'fr' ? 'Corroboré' : 'Corroborated'}
-                </span>
-              </div>
-            </div>
-          ) : (
-            /* Neutral messaging: Never show "no source found" or "0 pts" */
-            <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Info className="h-4 w-4 text-slate-400" />
-                <span className="text-sm font-medium text-slate-600">{t.standardCorroborationNotIncluded}</span>
-              </div>
-              <p className="text-sm text-cyan-600 font-medium">{t.standardUpgradeToPro}</p>
-            </div>
-          )}
+          {/* Always show neutral messaging for Standard - no "failed" or negative indicators */}
+          <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {language === 'fr' 
+                ? 'L\'analyse Standard se concentre sur les signaux linguistiques et structurels du texte lui-même. La vérification externe des sources et le recoupement sont inclus dans l\'analyse PRO.'
+                : 'Standard analysis focuses on linguistic and structural signals within the text itself. External source verification and cross-checking are included in PRO analysis.'}
+            </p>
+          </div>
         </div>
+      )}
+
+      {/* STANDARD: Upgrade Bridge - soft upsell */}
+      {!isPro && (
+        <UpgradeBridge language={language} />
       )}
 
       {/* PRO: Unified Explanation + Corroboration Card */}
