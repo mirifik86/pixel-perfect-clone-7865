@@ -257,6 +257,54 @@ const isArticleUrl = (url: string): boolean => {
   }
 };
 
+// Check if URL contains dead-link patterns
+const isBadUrl = (url: string): boolean => {
+  if (!url || url.trim() === '') return true;
+  
+  const lowered = url.toLowerCase();
+  const badPatterns = [
+    '404', 'not-found', 'page-not-found', 'notfound',
+    '/error', 'redirect=0', 'webcache', 'amp/s'
+  ];
+  
+  return badPatterns.some(pattern => lowered.includes(pattern));
+};
+
+// Too-general Wikipedia pages (overly broad, not useful)
+const TOO_GENERAL_WIKI_PATHS = new Set([
+  '/wiki/animal',
+  '/wiki/animals',
+  '/wiki/insect',
+  '/wiki/insects',
+  '/wiki/mammal',
+  '/wiki/mammals',
+  '/wiki/reptile',
+  '/wiki/reptiles',
+  '/wiki/bird',
+  '/wiki/birds',
+  '/wiki/fish',
+  '/wiki/plant',
+  '/wiki/plants',
+  '/wiki/human',
+  '/wiki/humans',
+]);
+
+// Check if URL is a too-general Wikipedia page
+const isTooGeneralWikipedia = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+    
+    // Only check Wikipedia domains
+    if (!hostname.includes('wikipedia.org')) return false;
+    
+    const pathname = parsed.pathname.toLowerCase().replace(/\/$/, '');
+    return TOO_GENERAL_WIKI_PATHS.has(pathname);
+  } catch {
+    return false;
+  }
+};
+
 // Get normalized URL key for deduplication (hostname + pathname, no query/hash)
 const getNormalizedUrlKey = (url: string): string => {
   try {
@@ -426,7 +474,7 @@ interface FilteredSource {
   category?: 'corroborated' | 'neutral';
 }
 
-// Pass A (strict): article URL + snippet + dedupe + topical relevance
+// Pass A (strict): article URL + snippet + dedupe + topical relevance + quality filters
 const filterStrictPass = (
   sources: FilteredSource[],
   claimKeyTerms: string[],
@@ -434,6 +482,8 @@ const filterStrictPass = (
 ): FilteredSource[] => {
   return sources.filter(({ source }) => {
     if (!source.snippet || source.snippet.length < 10) return false;
+    if (isBadUrl(source.url)) return false;
+    if (isTooGeneralWikipedia(source.url)) return false;
     if (!isArticleUrl(source.url)) return false;
     if (!isTopicallyRelevant(source, claimKeyTerms)) return false;
     
@@ -444,13 +494,15 @@ const filterStrictPass = (
   });
 };
 
-// Pass B (relaxed): article URL + snippet + dedupe, NO topical relevance
+// Pass B (relaxed): article URL + snippet + dedupe + quality filters, NO topical relevance
 const filterRelaxedPass = (
   sources: FilteredSource[],
   seenUrls: Set<string>
 ): FilteredSource[] => {
   return sources.filter(({ source }) => {
     if (!source.snippet || source.snippet.length < 10) return false;
+    if (isBadUrl(source.url)) return false;
+    if (isTooGeneralWikipedia(source.url)) return false;
     if (!isArticleUrl(source.url)) return false;
     
     const urlKey = getNormalizedUrlKey(source.url);
@@ -460,7 +512,7 @@ const filterRelaxedPass = (
   });
 };
 
-// Pass C (ultra-relaxed): ONLY valid URL + snippet + dedupe
+// Pass C (ultra-relaxed): valid URL + snippet + dedupe + quality filters
 // No article URL check, no topical relevance - maximum recovery
 const filterUltraRelaxedPass = (
   sources: FilteredSource[],
@@ -469,6 +521,10 @@ const filterUltraRelaxedPass = (
   return sources.filter(({ source }) => {
     // Must have snippet of minimum length
     if (!source.snippet || source.snippet.length < 10) return false;
+    
+    // Quality filters still apply
+    if (isBadUrl(source.url)) return false;
+    if (isTooGeneralWikipedia(source.url)) return false;
     
     // Must have valid URL (just check it parses)
     try {
@@ -521,8 +577,9 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     // Ultra fallback when even relaxed pass fails but sources were consulted
     sourcesUnusableTitle: language === 'fr' ? 'Sources consultées mais non affichables' : 'Sources consulted but not displayable',
     sourcesUnusableSubtitle: language === 'fr'
-      ? "Des sources ont été consultées mais aucune ne contient de lien ou d'extrait exploitable."
-      : "Sources were consulted but none contain usable links or snippets.",
+      ? "Des sources ont été consultées mais les liens étaient inutilisables (morts ou trop généraux)."
+      : "Sources were consulted but links were not usable (dead or too general).",
+    retryLabel: language === 'fr' ? 'Relancer la recherche PRO' : 'Retry PRO search',
   };
   
   // ===== COUNT ALL CONSULTED SOURCES =====
@@ -726,9 +783,16 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
           </div>
           
           <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">
               {t.sourcesUnusableSubtitle}
             </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                         bg-cyan-100 text-cyan-700 hover:bg-cyan-200 transition-colors duration-200"
+            >
+              {t.retryLabel}
+            </button>
           </div>
         </div>
       );
@@ -819,11 +883,18 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
           </h4>
         </div>
         
-        <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
-          <p className="text-sm text-slate-600 leading-relaxed">
-            {t.sourcesUnusableSubtitle}
-          </p>
-        </div>
+          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">
+              {t.sourcesUnusableSubtitle}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                         bg-cyan-100 text-cyan-700 hover:bg-cyan-200 transition-colors duration-200"
+            >
+              {t.retryLabel}
+            </button>
+          </div>
       </div>
     );
   }
