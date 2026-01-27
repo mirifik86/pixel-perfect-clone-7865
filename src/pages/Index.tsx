@@ -175,6 +175,13 @@ const Index = () => {
   const analysisData = analysisByLanguage[language];
   const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr || screenshotData?.analysis);
 
+  // Sync screenshotData.analysis with the current UI language (no API calls)
+  useEffect(() => {
+    if (screenshotData && analysisByLanguage[language]) {
+      setScreenshotData(prev => prev ? { ...prev, analysis: analysisByLanguage[language] } : null);
+    }
+  }, [language, analysisByLanguage]);
+
   // Score is consistent across both languages (same analysis, different text)
   // Also fallback to screenshotData.analysis.score for image analysis results
   const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score 
