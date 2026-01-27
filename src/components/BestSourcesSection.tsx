@@ -420,6 +420,35 @@ const SourceCard = ({
   );
 };
 
+// Helper: Check if source passes trusted-domain fallback (relaxed filters)
+const passesTrustedFallback = (source: SourceDetail, claimKeyTerms: string[]): boolean => {
+  try {
+    const hostname = new URL(source.url).hostname;
+    const pathname = new URL(source.url).pathname;
+    
+    // Must be trusted domain
+    if (!isTrustedDomain(hostname)) return false;
+    
+    // Still reject pure homepages
+    if (pathname === '/' || pathname === '') return false;
+    
+    // Relaxed topical relevance: trusted domains only need 1 keyword OR none required
+    // (trusted sources are authoritative enough to display even with weak keyword match)
+    if (claimKeyTerms.length === 0) return true;
+    
+    // For trusted domains, accept with just 1 keyword match OR accept anyway
+    const nameLower = source.name.toLowerCase();
+    const snippetLower = source.snippet.toLowerCase();
+    const combined = `${nameLower} ${snippetLower}`;
+    const hasAnyMatch = claimKeyTerms.some(term => combined.includes(term));
+    
+    // Accept trusted domains even without perfect topical match
+    return hasAnyMatch || isTrustedDomain(hostname);
+  } catch {
+    return false;
+  }
+};
+
 export const BestSourcesSection = ({ sources, language, outcome, claim, mode = 'all' }: BestSourcesSectionProps) => {
   // State to bypass article URL validation when user clicks "Reveal anyway"
   const [revealAnyway, setRevealAnyway] = useState(false);
@@ -585,7 +614,43 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   
   // Take top sources (3 in reveal mode, 6 normally)
   const maxSources = revealAnyway ? 3 : 6;
-  const topSources = sortedSources.slice(0, maxSources);
+  let topSources = sortedSources.slice(0, maxSources);
+  
+  // ===== TRUSTED FALLBACK: Auto-recover when strict filters hide everything =====
+  // If we have consulted sources but displayed nothing, run a fallback pass for trusted domains
+  const primaryDisplayedCount = topSources.length + topContradictingSources.length;
+  let usedTrustedFallback = false;
+  
+  if (consultedCount > 0 && primaryDisplayedCount === 0 && !revealAnyway) {
+    // Fallback pass: allow trusted domains with relaxed filters
+    const trustedFallbackSources: { source: SourceDetail; category: 'corroborated' | 'neutral' }[] = [];
+    
+    allDetailedSources.forEach(({ source, category }) => {
+      if (!source.snippet || source.snippet.length < 10) return;
+      if (passesTrustedFallback(source, claimKeyTerms)) {
+        trustedFallbackSources.push({ source, category });
+      }
+    });
+    
+    // Deduplicate trusted fallback sources
+    const seenTrustedUrls = new Set<string>();
+    const deduplicatedTrusted = trustedFallbackSources.filter(({ source }) => {
+      const urlKey = getNormalizedUrlKey(source.url);
+      if (!urlKey || seenTrustedUrls.has(urlKey)) return false;
+      seenTrustedUrls.add(urlKey);
+      return true;
+    });
+    
+    // Sort by trust level and take up to 3
+    const sortedTrusted = [...deduplicatedTrusted].sort((a, b) => {
+      return getTrustPriority(a.source) - getTrustPriority(b.source);
+    });
+    
+    if (sortedTrusted.length > 0) {
+      topSources = sortedTrusted.slice(0, 3);
+      usedTrustedFallback = true;
+    }
+  }
   
   const isRefuted = outcome === 'refuted';
   const sectionTitle = isRefuted ? t.refutedTitle : t.title;
@@ -595,8 +660,9 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   
   // For supportingOnly mode, show fallback if not enough sources
   if (mode === 'supportingOnly') {
-    if (topSources.length < 2) {
-      // Check if sources were consulted but filtered out
+    // If trusted fallback found sources, show them even if < 2
+    if (topSources.length < 2 && !usedTrustedFallback) {
+      // Check if sources were consulted but filtered out (and trusted fallback also failed)
       const showFilteredFallback = consultedCount > 0 && displayedCount === 0 && !revealAnyway;
       
       return (
@@ -630,41 +696,47 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       );
     }
     
-    return (
-      <div className="mt-6 pt-5 border-t border-slate-200/80">
-        {/* Section Header */}
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
-            <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+    // Show sources if we have any (including trusted fallback results)
+    if (topSources.length > 0) {
+      return (
+        <div className="mt-6 pt-5 border-t border-slate-200/80">
+          {/* Section Header */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
+              <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {sectionTitle}
+            </h4>
           </div>
-          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-            {sectionTitle}
-          </h4>
+          
+          {/* Source Cards */}
+          <div className="space-y-3">
+            {topSources.map(({ source }, idx) => (
+              <SourceCard 
+                key={`support-${idx}`}
+                source={source} 
+                idx={idx} 
+                isCounterClaim={false} 
+                language={language} 
+                openLabel={t.open} 
+              />
+            ))}
+          </div>
         </div>
-        
-        {/* Source Cards */}
-        <div className="space-y-3">
-          {topSources.map(({ source }, idx) => (
-            <SourceCard 
-              key={`support-${idx}`}
-              source={source} 
-              idx={idx} 
-              isCounterClaim={false} 
-              language={language} 
-              openLabel={t.open} 
-            />
-          ))}
-        </div>
-      </div>
-    );
+      );
+    }
+    
+    return null;
   }
   
   // ===== MODE === 'all' (default behavior) =====
-  // Check if sources were consulted but filtered out
-  const showFilteredFallback = consultedCount > 0 && displayedCount === 0 && !revealAnyway;
+  // Check if sources were consulted but filtered out (and trusted fallback also failed)
+  const showFilteredFallback = consultedCount > 0 && displayedCount === 0 && !revealAnyway && !usedTrustedFallback;
   
   // Source Quality Gate: Show fallback if fewer than 2 high-quality sources (and no counter-claims)
-  if (topSources.length < 2 && !hasCounterClaims) {
+  // Skip fallback if trusted fallback succeeded (we have trusted sources to show)
+  if (topSources.length < 2 && !hasCounterClaims && !usedTrustedFallback) {
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
         {/* Section Header */}
@@ -732,8 +804,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
         </div>
       )}
       
-      {/* Regular Evidence Section - only if we have sources */}
-      {topSources.length >= 2 && (
+      {/* Regular Evidence Section - show if we have >= 2 sources OR trusted fallback found any */}
+      {(topSources.length >= 2 || (usedTrustedFallback && topSources.length > 0)) && (
         <>
           {/* Section Header */}
           <div className="flex items-center gap-2.5 mb-4">
