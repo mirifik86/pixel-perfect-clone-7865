@@ -236,6 +236,7 @@ const Index = () => {
     setScreenshotLoaderStep(0);
     setIsImageAnalysis(false);
     setAnalysisError(null);
+    setHasFormContent(false);
     lastInputRef.current = null;
   }, []);
   
