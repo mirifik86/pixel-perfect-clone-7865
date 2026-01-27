@@ -460,6 +460,33 @@ const filterRelaxedPass = (
   });
 };
 
+// Pass C (ultra-relaxed): ONLY valid URL + snippet + dedupe
+// No article URL check, no topical relevance - maximum recovery
+const filterUltraRelaxedPass = (
+  sources: FilteredSource[],
+  seenUrls: Set<string>
+): FilteredSource[] => {
+  return sources.filter(({ source }) => {
+    // Must have snippet of minimum length
+    if (!source.snippet || source.snippet.length < 10) return false;
+    
+    // Must have valid URL (just check it parses)
+    try {
+      const parsed = new URL(source.url);
+      // Reject only pure homepages
+      if (parsed.pathname === '/' || parsed.pathname === '') return false;
+    } catch {
+      return false;
+    }
+    
+    // Dedupe
+    const urlKey = getNormalizedUrlKey(source.url);
+    if (!urlKey || seenUrls.has(urlKey)) return false;
+    seenUrls.add(urlKey);
+    return true;
+  });
+};
+
 // Sort by trust level and cap
 const sortAndCap = (sources: FilteredSource[], max: number): FilteredSource[] => {
   return [...sources]
@@ -485,17 +512,17 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     counterClaimExplanation: language === 'fr'
       ? 'Plusieurs sources faisant autorité affirment clairement l\'inverse de cette affirmation, indiquant un consensus scientifique ou factuel fort en opposition.'
       : 'Multiple authoritative sources clearly state the opposite of this claim, indicating strong scientific or factual consensus against it.',
-    // Source Quality Gate fallback (when both passes fail)
-    insufficientTitle: language === 'fr' ? 'Qualité des preuves insuffisante' : 'Evidence quality insufficient',
-    insufficientSubtitle: language === 'fr' 
-      ? "Nous n'avons pas trouvé assez de liens d'articles directs pour cette affirmation. Reformule, ajoute des détails (qui/où/quand) ou relance l'analyse PRO."
-      : "We couldn't find enough direct article pages for this claim. Try rephrasing, adding specifics (who/where/when), or rerun PRO.",
-    // Sources found but filtered fallback (Pass A failed, Pass B has sources)
+    // Sources found but filtered fallback (Pass A failed, Pass B/C have sources)
     sourcesFilteredTitle: language === 'fr' ? 'Sources trouvées, mais non affichées' : 'Sources found, but hidden',
     sourcesFilteredSubtitle: language === 'fr'
       ? "Des sources ont été consultées, mais elles n'ont pas passé nos filtres de pertinence. Vous pouvez reformuler ou afficher les sources quand même."
       : "Sources were consulted, but they didn't pass our relevance filters. You can rephrase or show them anyway.",
     showAnyway: language === 'fr' ? 'Afficher quand même' : 'Show anyway',
+    // Ultra fallback when even relaxed pass fails but sources were consulted
+    sourcesUnusableTitle: language === 'fr' ? 'Sources consultées mais non affichables' : 'Sources consulted but not displayable',
+    sourcesUnusableSubtitle: language === 'fr'
+      ? "Des sources ont été consultées mais aucune ne contient de lien ou d'extrait exploitable."
+      : "Sources were consulted but none contain usable links or snippets.",
   };
   
   // ===== COUNT ALL CONSULTED SOURCES =====
@@ -530,57 +557,76 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     }
   });
   
-  // ===== 2-PASS FILTERING =====
+  // ===== 3-PASS FILTERING =====
   
   // --- SUPPORTING SOURCES ---
+  // Pass A: Strict (article URL + snippet + dedupe + topical relevance)
   const supportingSeenUrlsStrict = new Set<string>();
   const strictSupportingSources = filterStrictPass(allSupportingSources, claimKeyTerms, supportingSeenUrlsStrict);
   const sortedStrictSupporting = sortAndCap(strictSupportingSources, 6);
   
-  // Pass B for supporting (if needed)
+  // Pass B: Relaxed (article URL + snippet + dedupe, NO topical relevance)
   const supportingSeenUrlsRelaxed = new Set<string>();
   const relaxedSupportingSources = filterRelaxedPass(allSupportingSources, supportingSeenUrlsRelaxed);
   const sortedRelaxedSupporting = sortAndCap(relaxedSupportingSources, 6);
   
-  // Decide which supporting sources to use
+  // Pass C: Ultra-relaxed (valid URL + snippet + dedupe only)
+  const supportingSeenUrlsUltra = new Set<string>();
+  const ultraSupportingSources = filterUltraRelaxedPass(allSupportingSources, supportingSeenUrlsUltra);
+  const sortedUltraSupporting = sortAndCap(ultraSupportingSources, 6);
+  
+  // Determine which pass to use for supporting sources
   const passASupporting = sortedStrictSupporting;
   const passBSupporting = sortedRelaxedSupporting;
-  const supportingNeedsRelaxed = passASupporting.length < 2 && passBSupporting.length >= 1;
+  const passCSupporting = sortedUltraSupporting;
   
-  // Final supporting sources
+  // Final supporting sources based on state
   let finalSupportingSources: FilteredSource[];
   if (showUnfiltered) {
-    // User clicked "Show anyway" - use relaxed pass, cap at 6
-    finalSupportingSources = passBSupporting;
+    // User clicked "Show anyway" - use best available: prefer B, fallback to C
+    finalSupportingSources = passBSupporting.length > 0 ? passBSupporting : passCSupporting;
   } else {
     // Use strict pass
     finalSupportingSources = passASupporting;
   }
   
+  // Check if we need fallback UI
+  const supportingStrictFailed = passASupporting.length < 2;
+  const supportingHasRelaxed = passBSupporting.length >= 1 || passCSupporting.length >= 1;
+  const supportingNeedsFallback = supportingStrictFailed && supportingHasRelaxed;
+  const supportingAllPassesFailed = passASupporting.length === 0 && passBSupporting.length === 0 && passCSupporting.length === 0;
+  
   // --- CONTRADICTING SOURCES ---
+  // Pass A: Strict
   const contradictingSeenUrlsStrict = new Set<string>();
   const strictContradictingSources = filterStrictPass(allContradictingSources, claimKeyTerms, contradictingSeenUrlsStrict);
   const sortedStrictContradicting = sortAndCap(strictContradictingSources, 6);
   
-  // Pass B for contradicting (if needed)
+  // Pass B: Relaxed
   const contradictingSeenUrlsRelaxed = new Set<string>();
   const relaxedContradictingSources = filterRelaxedPass(allContradictingSources, contradictingSeenUrlsRelaxed);
   const sortedRelaxedContradicting = sortAndCap(relaxedContradictingSources, 6);
   
-  // Decide which contradicting sources to use
+  // Pass C: Ultra-relaxed
+  const contradictingSeenUrlsUltra = new Set<string>();
+  const ultraContradictingSources = filterUltraRelaxedPass(allContradictingSources, contradictingSeenUrlsUltra);
+  const sortedUltraContradicting = sortAndCap(ultraContradictingSources, 6);
+  
   const passAContradicting = sortedStrictContradicting;
   const passBContradicting = sortedRelaxedContradicting;
-  const contradictingNeedsRelaxed = passAContradicting.length === 0 && passBContradicting.length >= 1;
+  const passCContradicting = sortedUltraContradicting;
   
-  // Final contradicting sources
+  // Final contradicting sources based on state
   let finalContradictingSources: FilteredSource[];
   if (showUnfiltered) {
-    // User clicked "Show anyway" - use relaxed pass, cap at 6
-    finalContradictingSources = passBContradicting;
+    finalContradictingSources = passBContradicting.length > 0 ? passBContradicting : passCContradicting;
   } else {
-    // Use strict pass
     finalContradictingSources = passAContradicting;
   }
+  
+  const contradictingStrictFailed = passAContradicting.length === 0;
+  const contradictingHasRelaxed = passBContradicting.length >= 1 || passCContradicting.length >= 1;
+  const contradictingNeedsFallback = contradictingStrictFailed && contradictingHasRelaxed;
   
   const hasCounterClaims = finalContradictingSources.length > 0;
   const isRefuted = outcome === 'refuted';
@@ -588,15 +634,15 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   
   // ===== MODE: contradictingOnly =====
   if (mode === 'contradictingOnly') {
-    // Check if Pass A found nothing but Pass B has sources
-    const showContradictingFallback = !showUnfiltered && contradictingNeedsRelaxed;
+    // Show fallback if strict failed but relaxed has sources
+    const showContradictingFallback = !showUnfiltered && contradictingNeedsFallback;
     
-    // If no contradicting sources at all (even relaxed), render nothing
+    // If no contradicting sources at all (even ultra-relaxed), render nothing
     if (!hasCounterClaims && !showContradictingFallback) {
       return null;
     }
     
-    // Show fallback card if strict failed but relaxed has sources
+    // Show fallback card if strict failed but relaxed/ultra has sources
     if (showContradictingFallback) {
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
@@ -663,35 +709,32 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   
   // ===== MODE: supportingOnly =====
   if (mode === 'supportingOnly') {
-    // Check if Pass A found < 2 but Pass B has sources
-    const showSupportingFallback = !showUnfiltered && supportingNeedsRelaxed;
+    // Check if we need fallback
+    const showSupportingFallback = !showUnfiltered && supportingNeedsFallback;
     
-    // Both passes failed completely
-    const bothPassesFailed = passASupporting.length < 2 && passBSupporting.length === 0;
-    
-    if (bothPassesFailed && consultedCount > 0) {
-      // Show "Evidence quality insufficient" - true fallback
+    // ALL passes failed completely AND sources were consulted = show unusable message
+    if (supportingAllPassesFailed && consultedCount > 0) {
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
           <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-amber-600" />
+            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-slate-500" />
             </div>
             <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {t.insufficientTitle}
+              {t.sourcesUnusableTitle}
             </h4>
           </div>
           
-          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
             <p className="text-sm text-slate-600 leading-relaxed">
-              {t.insufficientSubtitle}
+              {t.sourcesUnusableSubtitle}
             </p>
           </div>
         </div>
       );
     }
     
-    // Strict pass found < 2, but relaxed has sources - show "Sources found but hidden"
+    // Strict pass found < 2, but relaxed/ultra has sources - show "Sources found but hidden"
     if (showSupportingFallback) {
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
@@ -720,7 +763,7 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       );
     }
     
-    // Show sources if we have any
+    // Show sources if we have any (from strict pass or after clicking "Show anyway")
     if (finalSupportingSources.length > 0) {
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
@@ -749,42 +792,43 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       );
     }
     
+    // No sources to display and consultedCount === 0
     return null;
   }
   
   // ===== MODE: all (default) =====
   
   // Check if we need to show fallback for either category
-  const needsSupportingFallback = !showUnfiltered && supportingNeedsRelaxed;
-  const needsContradictingFallback = !showUnfiltered && contradictingNeedsRelaxed;
+  const needsSupportingFallback = !showUnfiltered && supportingNeedsFallback;
+  const needsContradictingFallback = !showUnfiltered && contradictingNeedsFallback;
   const needsAnyFallback = needsSupportingFallback || needsContradictingFallback;
   
-  // Both passes failed completely for supporting (and no counter-claims)
-  const bothPassesFailed = passASupporting.length < 2 && passBSupporting.length === 0 && !hasCounterClaims;
+  // All passes failed completely for supporting (and no counter-claims)
+  const allPassesFailed = supportingAllPassesFailed && !hasCounterClaims;
   
-  // Show "Evidence quality insufficient" only if BOTH passes completely fail
-  if (bothPassesFailed && consultedCount > 0 && !needsContradictingFallback) {
+  // Show "Sources consulted but not displayable" only if ALL passes completely fail AND sources were consulted
+  if (allPassesFailed && consultedCount > 0 && !needsContradictingFallback) {
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-            <Shield className="w-4 h-4 text-amber-600" />
+          <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-slate-500" />
           </div>
           <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-            {t.insufficientTitle}
+            {t.sourcesUnusableTitle}
           </h4>
         </div>
         
-        <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
           <p className="text-sm text-slate-600 leading-relaxed">
-            {t.insufficientSubtitle}
+            {t.sourcesUnusableSubtitle}
           </p>
         </div>
       </div>
     );
   }
   
-  // Show "Sources found but hidden" if strict pass failed but relaxed has sources
+  // Show "Sources found but hidden" if strict pass failed but relaxed/ultra has sources
   if (needsAnyFallback && !hasCounterClaims && finalSupportingSources.length < 2) {
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
