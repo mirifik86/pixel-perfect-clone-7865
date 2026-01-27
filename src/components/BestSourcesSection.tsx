@@ -355,6 +355,9 @@ const SourceCard = ({
 };
 
 export const BestSourcesSection = ({ sources, language, outcome, claim, mode = 'all' }: BestSourcesSectionProps) => {
+  // State to bypass article URL validation when user clicks "Reveal anyway"
+  const [revealAnyway, setRevealAnyway] = useState(false);
+  
   // Extract key terms from claim for relevance filtering
   const claimKeyTerms = extractKeyTerms(claim || '');
   
@@ -374,7 +377,19 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     insufficientSubtitle: language === 'fr' 
       ? "Nous n'avons pas trouvé assez de liens d'articles directs pour cette affirmation. Reformule, ajoute des détails (qui/où/quand) ou relance l'analyse PRO."
       : "We couldn't find enough direct article pages for this claim. Try rephrasing, adding specifics (who/where/when), or rerun PRO.",
+    // Sources found but filtered fallback
+    sourcesFilteredTitle: language === 'fr' ? 'Sources trouvées, mais non affichées' : 'Sources found, but hidden',
+    sourcesFilteredSubtitle: language === 'fr'
+      ? "Des sources ont été consultées, mais elles n'ont pas passé nos filtres de pertinence ou de lien direct. Vous pouvez reformuler… ou afficher les sources quand même."
+      : "Sources were consulted, but they didn't pass our relevance or direct-article filters. You can rephrase… or reveal them anyway.",
+    revealAnyway: language === 'fr' ? 'Afficher quand même' : 'Reveal anyway',
   };
+  
+  // ===== COUNT ALL CONSULTED SOURCES =====
+  const consultedCount = 
+    (sources.corroborated?.length ?? 0) + 
+    (sources.neutral?.length ?? 0) + 
+    (sources.contradicting?.length ?? 0);
   
   // ===== CONTRADICTING SOURCES (for mode === 'contradictingOnly' or 'all') =====
   let topContradictingSources: { source: SourceDetail }[] = [];
@@ -384,8 +399,13 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     const contradictingSources: { source: SourceDetail }[] = [];
     sources.contradicting?.forEach(s => {
       const details = getSourceDetails(s);
-      if (details && isArticleUrl(details.url) && details.snippet && details.snippet.length >= 10 && isTopicallyRelevant(details, claimKeyTerms)) {
-        contradictingSources.push({ source: details });
+      if (details && details.snippet && details.snippet.length >= 10) {
+        // Apply article URL filter only if NOT in reveal mode
+        if (revealAnyway || isArticleUrl(details.url)) {
+          if (isTopicallyRelevant(details, claimKeyTerms)) {
+            contradictingSources.push({ source: details });
+          }
+        }
       }
     });
     
@@ -472,11 +492,12 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     }
   });
   
-  // Filter to only sources with valid article URLs (not homepages, not hub pages)
+  // Filter to only sources with valid snippets and (article URLs OR reveal mode)
   const validSources = allDetailedSources.filter(({ source }) => {
-    if (!isArticleUrl(source.url)) return false;
     if (!source.snippet || source.snippet.length < 10) return false;
     if (!isTopicallyRelevant(source, claimKeyTerms)) return false;
+    // Apply article URL filter only if NOT in reveal mode
+    if (!revealAnyway && !isArticleUrl(source.url)) return false;
     return true;
   });
   
@@ -496,15 +517,22 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     return getTrustPriority(a.source) - getTrustPriority(b.source);
   });
   
-  // Take top 6 sources
-  const topSources = sortedSources.slice(0, 6);
+  // Take top sources (3 in reveal mode, 6 normally)
+  const maxSources = revealAnyway ? 3 : 6;
+  const topSources = sortedSources.slice(0, maxSources);
   
   const isRefuted = outcome === 'refuted';
   const sectionTitle = isRefuted ? t.refutedTitle : t.title;
   
+  // Count displayed sources
+  const displayedCount = topSources.length + topContradictingSources.length;
+  
   // For supportingOnly mode, show fallback if not enough sources
   if (mode === 'supportingOnly') {
     if (topSources.length < 2) {
+      // Check if sources were consulted but filtered out
+      const showFilteredFallback = consultedCount > 0 && displayedCount === 0 && !revealAnyway;
+      
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
           {/* Section Header */}
@@ -513,15 +541,24 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
               <Shield className="w-4 h-4 text-amber-600" />
             </div>
             <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {t.insufficientTitle}
+              {showFilteredFallback ? t.sourcesFilteredTitle : t.insufficientTitle}
             </h4>
           </div>
           
           {/* Fallback Card */}
           <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
             <p className="text-sm text-slate-600 leading-relaxed">
-              {t.insufficientSubtitle}
+              {showFilteredFallback ? t.sourcesFilteredSubtitle : t.insufficientSubtitle}
             </p>
+            {showFilteredFallback && (
+              <button
+                onClick={() => setRevealAnyway(true)}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                           bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
+              >
+                {t.revealAnyway}
+              </button>
+            )}
           </div>
         </div>
       );
@@ -557,6 +594,9 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   }
   
   // ===== MODE === 'all' (default behavior) =====
+  // Check if sources were consulted but filtered out
+  const showFilteredFallback = consultedCount > 0 && displayedCount === 0 && !revealAnyway;
+  
   // Source Quality Gate: Show fallback if fewer than 2 high-quality sources (and no counter-claims)
   if (topSources.length < 2 && !hasCounterClaims) {
     return (
@@ -567,15 +607,24 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
             <Shield className="w-4 h-4 text-amber-600" />
           </div>
           <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-            {t.insufficientTitle}
+            {showFilteredFallback ? t.sourcesFilteredTitle : t.insufficientTitle}
           </h4>
         </div>
         
         {/* Fallback Card */}
         <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
           <p className="text-sm text-slate-600 leading-relaxed">
-            {t.insufficientSubtitle}
+            {showFilteredFallback ? t.sourcesFilteredSubtitle : t.insufficientSubtitle}
           </p>
+          {showFilteredFallback && (
+            <button
+              onClick={() => setRevealAnyway(true)}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                         bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
+            >
+              {t.revealAnyway}
+            </button>
+          )}
         </div>
       </div>
     );
