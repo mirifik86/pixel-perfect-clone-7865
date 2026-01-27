@@ -85,21 +85,75 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
-// Extract root domain from URL for deduplication
-const getRootDomain = (url: string): string => {
+// Hub/section paths to reject (too generic, not article pages)
+const HUB_PATHS = new Set([
+  '/news', '/world', '/politics', '/business', '/sport', '/sports',
+  '/entertainment', '/health', '/science', '/tech', '/technology',
+  '/video', '/videos', '/live', '/latest', '/breaking', '/search',
+  '/tag', '/tags', '/topic', '/topics', '/category', '/categories',
+  '/hub', '/section', '/sections'
+]);
+
+// Check if URL points to an actual article page (not a hub/homepage)
+const isArticleUrl = (url: string): boolean => {
   try {
-    const hostname = new URL(url).hostname;
-    // Remove www. prefix and get root domain
-    const parts = hostname.replace(/^www\./, '').split('.');
-    // Handle domains like bbc.co.uk, gov.uk
-    if (parts.length >= 2) {
-      const tld = parts.slice(-2).join('.');
-      if (['co.uk', 'com.au', 'org.uk', 'gov.uk', 'ac.uk', 'net.au'].includes(tld)) {
-        return parts.slice(-3).join('.');
-      }
-      return parts.slice(-2).join('.');
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.toLowerCase();
+    
+    // Reject homepage or empty path
+    if (pathname === '/' || pathname === '') {
+      return false;
     }
-    return hostname;
+    
+    // Reject known hub/section paths
+    const normalizedPath = pathname.replace(/\/$/, ''); // remove trailing slash
+    if (HUB_PATHS.has(normalizedPath)) {
+      return false;
+    }
+    
+    // Get path segments (filter out empty strings)
+    const segments = pathname.split('/').filter(s => s.length > 0);
+    
+    // Reject if too shallow (only 1 segment like /news or /world)
+    if (segments.length <= 1) {
+      return false;
+    }
+    
+    // Accept if contains /article or /articles
+    if (pathname.includes('/article') || pathname.includes('/articles')) {
+      return true;
+    }
+    
+    // Accept if contains date pattern (e.g., /2024/01/27 or -2024- or 2024-01-27)
+    const datePattern = /\/\d{4}\/\d{1,2}\/\d{1,2}|-\d{4}-|\d{4}-\d{2}-\d{2}/;
+    if (datePattern.test(pathname)) {
+      return true;
+    }
+    
+    // Accept if >= 3 segments OR has a long slug segment (>= 20 chars or contains hyphen)
+    if (segments.length >= 3) {
+      return true;
+    }
+    
+    // Check for long slug segment (indicates specific article)
+    const hasLongSlug = segments.some(seg => seg.length >= 20 || seg.includes('-'));
+    if (hasLongSlug) {
+      return true;
+    }
+    
+    return false;
+  } catch {
+    return false;
+  }
+};
+
+// Get normalized URL key for deduplication (hostname + pathname, no query/hash)
+const getNormalizedUrlKey = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    const pathname = parsed.pathname.toLowerCase().replace(/\/$/, ''); // normalize trailing slash
+    return `${hostname}${pathname}`;
   } catch {
     return '';
   }
@@ -139,32 +193,27 @@ export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSe
     }
   });
   
-  // Filter to only sources with valid URLs (not homepages, not category pages)
+  // Filter to only sources with valid article URLs (not homepages, not hub pages)
   const validSources = allDetailedSources.filter(({ source }) => {
-    try {
-      const url = new URL(source.url);
-      // Reject if it's just a homepage (path is / or empty)
-      if (url.pathname === '/' || url.pathname === '') {
-        return false;
-      }
-      // Must have snippet
-      if (!source.snippet || source.snippet.length < 10) {
-        return false;
-      }
-      return true;
-    } catch {
+    // Must pass article URL validation
+    if (!isArticleUrl(source.url)) {
       return false;
     }
+    // Must have snippet
+    if (!source.snippet || source.snippet.length < 10) {
+      return false;
+    }
+    return true;
   });
   
-  // Deduplicate by root domain - keep only the first (most relevant) source per domain
-  const seenDomains = new Set<string>();
+  // Deduplicate by normalized URL (hostname + pathname) - keep only first occurrence
+  const seenUrls = new Set<string>();
   const deduplicatedSources = validSources.filter(({ source }) => {
-    const domain = getRootDomain(source.url);
-    if (!domain || seenDomains.has(domain)) {
+    const urlKey = getNormalizedUrlKey(source.url);
+    if (!urlKey || seenUrls.has(urlKey)) {
       return false;
     }
-    seenDomains.add(domain);
+    seenUrls.add(urlKey);
     return true;
   });
   
