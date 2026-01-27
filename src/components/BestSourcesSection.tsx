@@ -222,8 +222,21 @@ export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSe
     return true;
   });
   
+  // Sort by trust level: official (1) > reference (2) > media (3)
+  // Use stable sort to preserve original order within same type
+  const getTrustPriority = (source: SourceDetail): number => {
+    const { type } = classifySourceType(source);
+    if (type === 'official') return 1;
+    if (type === 'reference') return 2;
+    return 3; // media
+  };
+  
+  const sortedSources = [...deduplicatedSources].sort((a, b) => {
+    return getTrustPriority(a.source) - getTrustPriority(b.source);
+  });
+  
   // Take top 6 sources
-  const topSources = deduplicatedSources.slice(0, 6);
+  const topSources = sortedSources.slice(0, 6);
   
   const isRefuted = outcome === 'refuted';
   const sectionTitle = isRefuted ? t.refutedTitle : t.title;
