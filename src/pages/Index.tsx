@@ -104,8 +104,7 @@ const Index = () => {
     t: i18nT,
     shouldShowPrompt,
     detectedLanguage,
-    handlePromptResponse,
-    dismissPrompt
+    handlePromptResponse
   } = useLanguage();
   
   // Map resolved language to 'en' | 'fr' for backward compatibility with analysis
@@ -170,18 +169,19 @@ const Index = () => {
     en: null,
     fr: null,
   });
-  // Use i18n for UI text
-  const getT = (key: string) => i18nT(key);
   const analysisData = analysisByLanguage[language];
   const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr || screenshotData?.analysis);
 
   // Sync screenshotData.analysis with the current UI language (no API calls)
   useEffect(() => {
     const targetAnalysis = analysisByLanguage[language];
-    if (screenshotData && targetAnalysis && screenshotData.analysis !== targetAnalysis) {
-      setScreenshotData(prev => prev ? { ...prev, analysis: targetAnalysis } : null);
-    }
-  }, [language, analysisByLanguage, screenshotData]);
+    if (!targetAnalysis) return;
+    setScreenshotData(prev => {
+      if (!prev) return prev;
+      if (prev.analysis === targetAnalysis) return prev;
+      return { ...prev, analysis: targetAnalysis };
+    });
+  }, [language, analysisByLanguage]);
 
   // Score is consistent across both languages (same analysis, different text)
   // Also fallback to screenshotData.analysis.score for image analysis results
@@ -484,27 +484,24 @@ const Index = () => {
     text: string, 
     image: { file: File; preview: string } | null
   ) => {
-    // Clear any previous validation message
-    setValidationMessage(null);
-    
-    // If we have an image, use image analysis (which includes text context if available)
     if (image) {
+      setValidationMessage(null);
       await handleImageAnalysis(image.file, image.preview, 'standard', text);
-    } else if (text) {
-      // Validate text input before analysis
+      return;
+    }
+    
+    if (text) {
       if (!isValidInput(text)) {
         setValidationMessage(i18nT('form.validationError'));
         return;
       }
-      // Text-only analysis
+      setValidationMessage(null);
       await handleAnalyze(text);
     }
   }, [handleImageAnalysis, handleAnalyze, isValidInput, i18nT]);
   
-  // Clear validation message when user types
-  const handleClearValidation = useCallback(() => {
-    setValidationMessage(null);
-  }, []);
+  // Validation message persists until valid analysis starts (no-op callback)
+  const handleClearValidation = useCallback(() => {}, []);
 
   // Re-run analysis with edited text
   const handleRerunAnalysis = async (editedText: string) => {
