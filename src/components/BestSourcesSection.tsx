@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check } from 'lucide-react';
+import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter } from 'lucide-react';
 
 interface SourceDetail {
   name: string;
@@ -550,6 +550,32 @@ const sortAndCap = (sources: FilteredSource[], max: number): FilteredSource[] =>
     .slice(0, max);
 };
 
+// Filter stats indicator component
+const FilterStatsIndicator = ({ 
+  displayed, 
+  total, 
+  language 
+}: { 
+  displayed: number; 
+  total: number; 
+  language: 'en' | 'fr'; 
+}) => {
+  if (total === 0 || displayed === total) return null;
+  
+  const filtered = total - displayed;
+  const label = language === 'fr' 
+    ? `${displayed} affichée${displayed > 1 ? 's' : ''} sur ${total} (${filtered} filtrée${filtered > 1 ? 's' : ''})`
+    : `${displayed} of ${total} shown (${filtered} filtered)`;
+  
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium
+                     bg-slate-100 text-slate-500 border border-slate-200/80">
+      <Filter className="w-3 h-3" />
+      {label}
+    </span>
+  );
+};
+
 export const BestSourcesSection = ({ sources, language, outcome, claim, mode = 'all' }: BestSourcesSectionProps) => {
   // State for 2-pass filtering: when true, use relaxed Pass B
   const [showUnfiltered, setShowUnfiltered] = useState(false);
@@ -729,17 +755,25 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     }
     
     const displayTitle = isRefuted ? t.refutedTitle : t.counterClaimTitle;
+    const contradictingTotal = allContradictingSources.length;
     
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
         {/* Section Header */}
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
-            <Shield className="w-4 h-4 text-red-600" />
+        <div className="flex items-center justify-between gap-2.5 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-red-600" />
+            </div>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+              {displayTitle}
+            </h4>
           </div>
-          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-            {displayTitle}
-          </h4>
+          <FilterStatsIndicator 
+            displayed={finalContradictingSources.length} 
+            total={contradictingTotal} 
+            language={language} 
+          />
         </div>
         
         {/* Explanation text */}
@@ -829,15 +863,24 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     
     // Show sources if we have any (from strict pass or after clicking "Show anyway")
     if (finalSupportingSources.length > 0) {
+      const supportingTotal = allSupportingSources.length;
+      
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
-              <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+          <div className="flex items-center justify-between gap-2.5 mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
+                <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+              </div>
+              <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+                {sectionTitle}
+              </h4>
             </div>
-            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {sectionTitle}
-            </h4>
+            <FilterStatsIndicator 
+              displayed={finalSupportingSources.length} 
+              total={supportingTotal} 
+              language={language} 
+            />
           </div>
           
           <div className="space-y-3">
@@ -968,13 +1011,20 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       {/* Regular Evidence Section */}
       {finalSupportingSources.length >= 2 && (
         <>
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
-              <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+          <div className="flex items-center justify-between gap-2.5 mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
+                <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
+              </div>
+              <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
+                {sectionTitle}
+              </h4>
             </div>
-            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {sectionTitle}
-            </h4>
+            <FilterStatsIndicator 
+              displayed={finalSupportingSources.length} 
+              total={allSupportingSources.length} 
+              language={language} 
+            />
           </div>
           
           <div className="space-y-3">
