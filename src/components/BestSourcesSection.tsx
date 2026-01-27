@@ -1,4 +1,5 @@
-import { ExternalLink, Shield, BookOpen, Newspaper, Building2 } from 'lucide-react';
+import { useState } from 'react';
+import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check } from 'lucide-react';
 
 interface SourceDetail {
   name: string;
@@ -187,6 +188,20 @@ const getTrustPriority = (source: SourceDetail): number => {
   return 3; // media
 };
 
+// Open source URL with Safari COOP fallback
+const openSource = (url: string) => {
+  try {
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    // If popup was blocked or returned null, fallback to direct navigation
+    if (!w) {
+      window.location.assign(url);
+    }
+  } catch {
+    // If window.open throws, fallback to direct navigation
+    window.location.assign(url);
+  }
+};
+
 // Source card component (extracted to avoid duplication)
 const SourceCard = ({ 
   source, 
@@ -201,16 +216,32 @@ const SourceCard = ({
   language: 'en' | 'fr'; 
   openLabel: string;
 }) => {
+  const [copied, setCopied] = useState(false);
   const classification = classifySourceType(source);
   const faviconUrl = getFaviconUrl(source.url);
   
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    navigator.clipboard.writeText(source.url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }).catch(() => {
+      // Fallback: do nothing if clipboard fails
+    });
+  };
+
+  const handleCardClick = () => {
+    openSource(source.url);
+  };
+  
   return (
-    <a
+    <div
       key={`${isCounterClaim ? 'counter' : 'best'}-source-${idx}`}
-      href={source.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`group block rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-200
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
+      className={`group block rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer
                  ${isCounterClaim 
                    ? 'border-red-200 bg-gradient-to-br from-white to-red-50/50 hover:border-red-300 hover:to-red-50/80' 
                    : 'border-slate-200 bg-gradient-to-br from-white to-slate-50/80 hover:border-slate-300 hover:from-white hover:to-cyan-50/30'
@@ -265,8 +296,30 @@ const SourceCard = ({
           </p>
         </div>
         
-        {/* Open button */}
-        <div className="flex-shrink-0 self-center">
+        {/* Action buttons */}
+        <div className="flex-shrink-0 self-center flex items-center gap-2">
+          {/* Copy link button */}
+          <button
+            onClick={handleCopyLink}
+            className={`inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium
+                       transition-all duration-200
+                       ${copied 
+                         ? 'bg-emerald-100 text-emerald-700' 
+                         : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                       }`}
+            title={language === 'fr' ? 'Copier le lien' : 'Copy link'}
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{language === 'fr' ? 'Copié' : 'Copied'}</span>
+              </>
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+          </button>
+          
+          {/* Open button */}
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
                            shadow-sm transition-all duration-200
                            ${isCounterClaim 
@@ -278,7 +331,7 @@ const SourceCard = ({
           </span>
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 
