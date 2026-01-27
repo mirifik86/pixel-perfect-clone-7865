@@ -70,6 +70,10 @@
   "analysis": {
     "title": "Analysis Result",
     "summary": "Summary",
+    "linguisticTitle": "Linguistic Credibility Analysis",
+    "linguisticSubtitle": "This first-level analysis examines how the content is written to detect signals commonly associated with reliable or misleading information.",
+    "dynamicIntro": "Based on linguistic patterns detected:",
+    "linguisticDisclaimer": "These observations are based on writing patterns and internal structure only. Verifying the accuracy of the claims requires external source analysis included in PRO.",
     "confidence": "Confidence",
     "confidenceLow": "Low",
     "confidenceMedium": "Medium",

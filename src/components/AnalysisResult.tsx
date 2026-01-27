@@ -6,6 +6,7 @@ import { StandardAnalysisBadge } from './StandardAnalysisBadge';
 import { StandardAnalysisIntro } from './StandardAnalysisIntro';
 import { CommunicationSignals } from './CommunicationSignals';
 import { UpgradeBridge } from './UpgradeBridge';
+import { LinguisticDisclaimer } from './LinguisticDisclaimer';
 
 interface AnalysisBreakdown {
   // Core criteria (Standard)
@@ -570,9 +571,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* STANDARD: New warm intro section */}
+      {/* STANDARD: New warm intro section with dynamic summary */}
       {!isPro && (
-        <StandardAnalysisIntro language={language} />
+        <StandardAnalysisIntro language={language} breakdown={data.breakdown} />
       )}
 
       {/* Standard: Summary card with confidence badge */}
@@ -614,6 +615,11 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
             </p>
           </div>
         </div>
+      )}
+
+      {/* STANDARD: Linguistic Disclaimer before upgrade */}
+      {!isPro && (
+        <LinguisticDisclaimer language={language} />
       )}
 
       {/* STANDARD: Upgrade Bridge - soft upsell */}
