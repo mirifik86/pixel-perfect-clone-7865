@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter, CheckCircle2, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SourceDetail {
   name: string;
@@ -331,13 +332,15 @@ const SourceCard = ({
   idx, 
   isCounterClaim, 
   language, 
-  openLabel 
+  openLabel,
+  isVerified = false
 }: { 
   source: SourceDetail; 
   idx: number; 
   isCounterClaim: boolean; 
   language: 'en' | 'fr'; 
   openLabel: string;
+  isVerified?: boolean;
 }) => {
   const [copied, setCopied] = useState(false);
   const classification = classifySourceType(source);
@@ -420,6 +423,15 @@ const SourceCard = ({
                 </span>
               );
             })()}
+            
+            {/* Verified link badge */}
+            {isVerified && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                               bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                <CheckCircle2 className="w-3 h-3" />
+                {language === 'fr' ? 'Lien vérifié' : 'Verified link'}
+              </span>
+            )}
           </div>
           
           {/* Snippet */}
@@ -580,6 +592,12 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   // State for 2-pass filtering: when true, use relaxed Pass B
   const [showUnfiltered, setShowUnfiltered] = useState(false);
   
+  // State for URL verification
+  const [verifiedUrls, setVerifiedUrls] = useState<Set<string>>(new Set());
+  const [invalidUrls, setInvalidUrls] = useState<Set<string>>(new Set());
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationComplete, setVerificationComplete] = useState(false);
+  
   // Extract key terms from claim for relevance filtering
   const claimKeyTerms = extractKeyTerms(claim || '');
   
@@ -606,6 +624,7 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       ? "Des sources ont été consultées mais les liens étaient inutilisables (morts ou trop généraux)."
       : "Sources were consulted but links were not usable (dead or too general).",
     retryLabel: language === 'fr' ? 'Relancer la recherche PRO' : 'Retry PRO search',
+    verifyingLinks: language === 'fr' ? 'Vérification des liens…' : 'Verifying links…',
   };
   
   // ===== COUNT ALL CONSULTED SOURCES =====
@@ -640,23 +659,84 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     }
   });
   
+  // Collect all URLs for verification
+  const allSourceUrls = useMemo(() => {
+    const urls: { url: string; name: string; snippet: string }[] = [];
+    allSupportingSources.forEach(({ source }) => {
+      urls.push({ url: source.url, name: source.name, snippet: source.snippet });
+    });
+    allContradictingSources.forEach(({ source }) => {
+      urls.push({ url: source.url, name: source.name, snippet: source.snippet });
+    });
+    return urls;
+  }, [allSupportingSources, allContradictingSources]);
+  
+  // URL verification effect
+  const verifyUrls = useCallback(async () => {
+    if (allSourceUrls.length === 0 || verificationComplete) return;
+    
+    setIsVerifying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-urls', {
+        body: { urls: allSourceUrls }
+      });
+      
+      if (error) {
+        console.error('URL verification failed:', error);
+        // On error, assume all URLs are valid (graceful degradation)
+        setVerifiedUrls(new Set(allSourceUrls.map(u => u.url)));
+      } else if (data?.results) {
+        const valid = new Set<string>();
+        const invalid = new Set<string>();
+        
+        data.results.forEach((r: { originalUrl: string; isValid: boolean }) => {
+          if (r.isValid) {
+            valid.add(r.originalUrl);
+          } else {
+            invalid.add(r.originalUrl);
+          }
+        });
+        
+        setVerifiedUrls(valid);
+        setInvalidUrls(invalid);
+      }
+    } catch (err) {
+      console.error('URL verification error:', err);
+      // Graceful degradation: treat all as valid
+      setVerifiedUrls(new Set(allSourceUrls.map(u => u.url)));
+    } finally {
+      setIsVerifying(false);
+      setVerificationComplete(true);
+    }
+  }, [allSourceUrls, verificationComplete]);
+  
+  useEffect(() => {
+    verifyUrls();
+  }, [verifyUrls]);
+  
+  // Filter helper that removes invalid URLs
+  const filterVerified = useCallback((sources: FilteredSource[]): FilteredSource[] => {
+    if (!verificationComplete) return sources; // Show all while verifying
+    return sources.filter(({ source }) => !invalidUrls.has(source.url));
+  }, [invalidUrls, verificationComplete]);
+  
   // ===== 3-PASS FILTERING =====
   
   // --- SUPPORTING SOURCES ---
   // Pass A: Strict (article URL + snippet + dedupe + topical relevance)
   const supportingSeenUrlsStrict = new Set<string>();
   const strictSupportingSources = filterStrictPass(allSupportingSources, claimKeyTerms, supportingSeenUrlsStrict);
-  const sortedStrictSupporting = sortAndCap(strictSupportingSources, 6);
+  const sortedStrictSupporting = sortAndCap(filterVerified(strictSupportingSources), 6);
   
   // Pass B: Relaxed (article URL + snippet + dedupe, NO topical relevance)
   const supportingSeenUrlsRelaxed = new Set<string>();
   const relaxedSupportingSources = filterRelaxedPass(allSupportingSources, supportingSeenUrlsRelaxed);
-  const sortedRelaxedSupporting = sortAndCap(relaxedSupportingSources, 6);
+  const sortedRelaxedSupporting = sortAndCap(filterVerified(relaxedSupportingSources), 6);
   
   // Pass C: Ultra-relaxed (valid URL + snippet + dedupe only)
   const supportingSeenUrlsUltra = new Set<string>();
   const ultraSupportingSources = filterUltraRelaxedPass(allSupportingSources, supportingSeenUrlsUltra);
-  const sortedUltraSupporting = sortAndCap(ultraSupportingSources, 6);
+  const sortedUltraSupporting = sortAndCap(filterVerified(ultraSupportingSources), 6);
   
   // Determine which pass to use for supporting sources
   const passASupporting = sortedStrictSupporting;
@@ -683,17 +763,17 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   // Pass A: Strict
   const contradictingSeenUrlsStrict = new Set<string>();
   const strictContradictingSources = filterStrictPass(allContradictingSources, claimKeyTerms, contradictingSeenUrlsStrict);
-  const sortedStrictContradicting = sortAndCap(strictContradictingSources, 6);
+  const sortedStrictContradicting = sortAndCap(filterVerified(strictContradictingSources), 6);
   
   // Pass B: Relaxed
   const contradictingSeenUrlsRelaxed = new Set<string>();
   const relaxedContradictingSources = filterRelaxedPass(allContradictingSources, contradictingSeenUrlsRelaxed);
-  const sortedRelaxedContradicting = sortAndCap(relaxedContradictingSources, 6);
+  const sortedRelaxedContradicting = sortAndCap(filterVerified(relaxedContradictingSources), 6);
   
   // Pass C: Ultra-relaxed
   const contradictingSeenUrlsUltra = new Set<string>();
   const ultraContradictingSources = filterUltraRelaxedPass(allContradictingSources, contradictingSeenUrlsUltra);
-  const sortedUltraContradicting = sortAndCap(ultraContradictingSources, 6);
+  const sortedUltraContradicting = sortAndCap(filterVerified(ultraContradictingSources), 6);
   
   const passAContradicting = sortedStrictContradicting;
   const passBContradicting = sortedRelaxedContradicting;
@@ -717,6 +797,18 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   
   // ===== MODE: contradictingOnly =====
   if (mode === 'contradictingOnly') {
+    // Show loading state while verifying
+    if (isVerifying) {
+      return (
+        <div className="mt-6 pt-5 border-t border-slate-200/80">
+          <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
+            <span className="text-sm text-slate-600">{t.verifyingLinks}</span>
+          </div>
+        </div>
+      );
+    }
+    
     // Show fallback if strict failed but relaxed has sources
     const showContradictingFallback = !showUnfiltered && contradictingNeedsFallback;
     
@@ -790,7 +882,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
               idx={idx} 
               isCounterClaim={true} 
               language={language} 
-              openLabel={t.open} 
+              openLabel={t.open}
+              isVerified={verifiedUrls.has(source.url)}
             />
           ))}
         </div>
@@ -800,6 +893,18 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   
   // ===== MODE: supportingOnly =====
   if (mode === 'supportingOnly') {
+    // Show loading state while verifying
+    if (isVerifying) {
+      return (
+        <div className="mt-6 pt-5 border-t border-slate-200/80">
+          <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
+            <span className="text-sm text-slate-600">{t.verifyingLinks}</span>
+          </div>
+        </div>
+      );
+    }
+    
     // Check if we need fallback
     const showSupportingFallback = !showUnfiltered && supportingNeedsFallback;
     
@@ -891,7 +996,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
                 idx={idx} 
                 isCounterClaim={false} 
                 language={language} 
-                openLabel={t.open} 
+                openLabel={t.open}
+                isVerified={verifiedUrls.has(source.url)}
               />
             ))}
           </div>
@@ -904,6 +1010,18 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
   }
   
   // ===== MODE: all (default) =====
+  
+  // Show loading state while verifying
+  if (isVerifying) {
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-200/80">
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+          <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
+          <span className="text-sm text-slate-600">{t.verifyingLinks}</span>
+        </div>
+      </div>
+    );
+  }
   
   // Check if we need to show fallback for either category
   const needsSupportingFallback = !showUnfiltered && supportingNeedsFallback;
@@ -1001,7 +1119,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
                 idx={idx} 
                 isCounterClaim={true} 
                 language={language} 
-                openLabel={t.open} 
+                openLabel={t.open}
+                isVerified={verifiedUrls.has(source.url)}
               />
             ))}
           </div>
@@ -1035,7 +1154,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
                 idx={idx} 
                 isCounterClaim={false} 
                 language={language} 
-                openLabel={t.open} 
+                openLabel={t.open}
+                isVerified={verifiedUrls.has(source.url)}
               />
             ))}
           </div>
@@ -1062,7 +1182,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
                 idx={idx} 
                 isCounterClaim={false} 
                 language={language} 
-                openLabel={t.open} 
+                openLabel={t.open}
+                isVerified={verifiedUrls.has(source.url)}
               />
             ))}
           </div>
