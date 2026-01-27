@@ -835,11 +835,25 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
               
               {/* Best Sources Section - Clickable evidence links */}
               {data.corroboration.sources && (
-                <BestSourcesSection 
-                  sources={data.corroboration.sources}
-                  language={language}
-                  outcome={data.corroboration.outcome}
-                />
+                <>
+                  {/* PRO: Show contradicting sources FIRST in dedicated section */}
+                  {isPro && data.corroboration.sources.contradicting && data.corroboration.sources.contradicting.length > 0 && (
+                    <BestSourcesSection 
+                      sources={data.corroboration.sources}
+                      language={language}
+                      outcome="refuted"
+                      mode="contradictingOnly"
+                    />
+                  )}
+                  
+                  {/* Show corroborating/neutral sources (or all for Standard) */}
+                  <BestSourcesSection 
+                    sources={data.corroboration.sources}
+                    language={language}
+                    outcome={data.corroboration.outcome}
+                    mode={isPro ? "supportingOnly" : "all"}
+                  />
+                </>
               )}
             </div>
           )}
