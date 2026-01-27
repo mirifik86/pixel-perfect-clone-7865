@@ -15,7 +15,28 @@ interface BestSourcesSectionProps {
   };
   language: 'en' | 'fr';
   outcome?: string;
+  claim?: string;
 }
+
+// Extract key terms from claim (words longer than 4 letters)
+const extractKeyTerms = (text: string): string[] => {
+  if (!text) return [];
+  const words = text.toLowerCase().split(/\s+/);
+  return words
+    .map(word => word.replace(/[^a-zA-ZÀ-ÿ0-9]/g, '')) // Remove punctuation
+    .filter(word => word.length > 4);
+};
+
+// Check if source is topically relevant to the claim
+const isTopicallyRelevant = (source: SourceDetail, keyTerms: string[]): boolean => {
+  if (keyTerms.length === 0) return true; // No key terms = no filter
+  
+  const nameLower = source.name.toLowerCase();
+  const snippetLower = source.snippet.toLowerCase();
+  const combined = `${nameLower} ${snippetLower}`;
+  
+  return keyTerms.some(term => combined.includes(term));
+};
 
 // Helper to extract source details from either string or SourceDetail
 const getSourceDetails = (source: string | SourceDetail): SourceDetail | null => {
@@ -159,7 +180,9 @@ const getNormalizedUrlKey = (url: string): string => {
   }
 };
 
-export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSectionProps) => {
+export const BestSourcesSection = ({ sources, language, outcome, claim }: BestSourcesSectionProps) => {
+  // Extract key terms from claim for relevance filtering
+  const claimKeyTerms = extractKeyTerms(claim || '');
   const t = {
     title: language === 'fr' ? 'Meilleures preuves (PRO)' : 'Best evidence (PRO)',
     open: language === 'fr' ? 'Ouvrir' : 'Open',
@@ -206,6 +229,10 @@ export const BestSourcesSection = ({ sources, language, outcome }: BestSourcesSe
     }
     // Must have snippet
     if (!source.snippet || source.snippet.length < 10) {
+      return false;
+    }
+    // Must be topically relevant to the claim
+    if (!isTopicallyRelevant(source, claimKeyTerms)) {
       return false;
     }
     return true;
