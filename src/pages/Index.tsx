@@ -273,8 +273,9 @@ const Index = () => {
   const currentSummaries = summariesByLanguage[language];
   const displayArticleSummary = currentSummaries?.articleSummary || null;
 
-  // Always run the actual analysis once (master), then translate for the other language.
-  // This guarantees identical scoring + web corroboration across the EN/FR toggle.
+  // Run bilingual analysis: master in UI language, then translate to the other primary language.
+  // This ensures the UI always shows content in the user's selected language first.
+  // For non-EN/FR languages (ja, ko, etc.), we generate in that language directly.
   const runBilingualTextAnalysis = useCallback(async ({
     content,
     analysisType,
@@ -282,11 +283,13 @@ const Index = () => {
     content: string;
     analysisType?: 'standard' | 'pro';
   }): Promise<{ en: AnalysisData; fr: AnalysisData }> => {
-    // Master analysis is always in English for determinism.
+    // Generate master analysis in the current UI language for best output fidelity
+    const masterLang = language; // 'en' or 'fr' (already mapped from resolvedLanguage)
+    
     const master = await supabase.functions.invoke('analyze', {
       body: {
         content,
-        language: 'en',
+        language: masterLang,
         ...(analysisType ? { analysisType } : {}),
       },
     });
@@ -295,23 +298,29 @@ const Index = () => {
     if (master.data?.error) throw new Error(master.data.error);
 
     // Normalize the response to handle both legacy and new PRO formats
-    const enData = normalizeAnalysisData(master.data);
+    const masterData = normalizeAnalysisData(master.data);
 
-    // Translate: pass normalized data but preserve raw result (URLs must not be translated)
-    const fr = await supabase.functions.invoke('translate-analysis', {
+    // Translate to the OTHER primary language for bilingual toggle support
+    const otherLang = masterLang === 'en' ? 'fr' : 'en';
+    const translated = await supabase.functions.invoke('translate-analysis', {
       body: {
-        analysisData: enData,
-        targetLanguage: 'fr',
+        analysisData: masterData,
+        targetLanguage: otherLang,
       },
     });
 
-    // Normalize the French translation as well
-    const frData = (!fr.error && fr.data && !fr.data.error 
-      ? normalizeAnalysisData(fr.data) 
-      : enData);
+    // Normalize the translated version as well
+    const translatedData = (!translated.error && translated.data && !translated.data.error 
+      ? normalizeAnalysisData(translated.data) 
+      : masterData);
 
-    return { en: enData, fr: frData };
-  }, []);
+    // Return in the correct positions based on master language
+    if (masterLang === 'en') {
+      return { en: masterData, fr: translatedData };
+    } else {
+      return { en: translatedData, fr: masterData };
+    }
+  }, [language]);
 
   const handleReset = useCallback(() => {
     setAnalysisByLanguage({ en: null, fr: null });

@@ -181,6 +181,43 @@ const mergeTranslatedText = (original: any, translated: any) => {
   return out;
 };
 
+// Simple heuristic to detect if text is likely already in target language
+const detectLanguage = (text: string): 'en' | 'fr' | 'unknown' => {
+  if (!text || text.length < 10) return 'unknown';
+  const textLower = text.toLowerCase();
+  
+  // French-specific patterns
+  const frenchPatterns = [
+    /\b(le|la|les|un|une|des|du|de|et|est|sont|dans|pour|avec|sur|qui|que|cette|cet|ce)\b/g,
+    /[àâäéèêëïîôùûüœæç]/g,
+    /\b(analyse|signaux|risque|crédibilité|élevé|modéré|faible)\b/gi
+  ];
+  
+  // English-specific patterns  
+  const englishPatterns = [
+    /\b(the|a|an|is|are|was|were|have|has|with|for|this|that|from)\b/g,
+    /\b(analysis|signals|risk|credibility|high|moderate|low)\b/gi
+  ];
+  
+  let frenchScore = 0;
+  let englishScore = 0;
+  
+  for (const pattern of frenchPatterns) {
+    const matches = textLower.match(pattern);
+    frenchScore += matches ? matches.length : 0;
+  }
+  
+  for (const pattern of englishPatterns) {
+    const matches = textLower.match(pattern);
+    englishScore += matches ? matches.length : 0;
+  }
+  
+  // Require significant difference to make a determination
+  if (frenchScore > englishScore * 1.5 && frenchScore > 3) return 'fr';
+  if (englishScore > frenchScore * 1.5 && englishScore > 3) return 'en';
+  return 'unknown';
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -201,7 +238,19 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Translating analysis to:", targetLanguage);
+    // Check if content is already in target language (skip unnecessary translation)
+    const summaryText = analysisData.summary || analysisData.result?.summary || '';
+    const detectedLang = detectLanguage(summaryText);
+    
+    if (detectedLang === targetLanguage) {
+      console.log(`Content already in ${targetLanguage}, skipping translation`);
+      return new Response(
+        JSON.stringify(analysisData),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Translating analysis from ${detectedLang} to: ${targetLanguage}`);
 
     // Retry logic with exponential backoff for rate limits
     const maxRetries = 3;
