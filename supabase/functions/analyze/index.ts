@@ -33,28 +33,64 @@ CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 ===== RULES =====
 
 1. Deliver a single Trust Score (0–100)
-2. Classify risk level as: Low Risk, Moderate Risk, or High Risk
+2. Classify risk level as: Low, Moderate, or High
 3. Provide exactly 3 short, high-level reasons explaining the score
 4. Use simple, neutral language
 5. Do NOT cite external sources
 6. Do NOT perform deep corroboration
 7. Do NOT analyze metadata, history, or advanced signals
-8. Do NOT mention internal scoring logic
+8. Do NOT mention internal scoring logic or sub-scores to the user
 
-===== SCORING GUIDELINES =====
+===== INTERNAL SCORING MODEL (INVISIBLE TO USER) =====
 
 BASE: 50 points
+
+CRITICAL: Scoring must NOT depend on text length. A 10-word claim and a 500-word article should be evaluated equally based on their linguistic signals.
+
+WEIGHTED EVALUATION CRITERIA (internal only, never expose):
+
+1. INTERNAL LOGICAL CONSISTENCY (25% weight)
+   - Does the text contradict itself?
+   - Are claims coherent with each other?
+   - Adjustment: -15 to +10 points
+
+2. FACTUAL CLAIMS vs OPINIONS (25% weight)
+   - Distinguish verifiable assertions from subjective opinions
+   - Heavy opinion content: neutral (0)
+   - Clear factual claims requiring verification: variable (-5 to +5)
+   - Mixed or unclear: slight negative (-3)
+   - Adjustment: -10 to +10 points
+
+3. REAL-WORLD PLAUSIBILITY (25% weight)
+   - Do stated facts align with known real-world patterns?
+   - Highly plausible, common knowledge: +10
+   - Plausible but unverified: +3 to +7
+   - Unusual but possible: -3 to +3
+   - Implausible or extraordinary: -10 to -5
+   - Adjustment: -15 to +10 points
+
+4. TONE CERTAINTY & ASSERTIVENESS (25% weight)
+   - Measured, hedged language: +5 to +10
+   - Neutral informational tone: +3 to +5
+   - Assertive but balanced: 0 to +3
+   - Overly certain, absolute claims: -5 to -3
+   - Alarmist, manipulative, or emotionally charged: -10 to -5
+   - Adjustment: -15 to +10 points
+
+AGGREGATE SCORING:
+- Sum all weighted adjustments to BASE (50)
+- Apply bounds: minimum 5, maximum 98
+- NEVER return 0 or 100
+
+CONFIDENCE CALCULATION (internal, output as decimal):
+- High confidence (0.80-1.00): Clear signals, consistent text, unambiguous characteristics
+- Medium confidence (0.50-0.79): Mixed signals, some ambiguity
+- Low confidence (0.00-0.49): Unclear text, conflicting signals, insufficient data
 
 RISK CLASSIFICATION:
 - 70-100: Low Risk (${isFr ? 'Risque Faible' : 'Low Risk'})
 - 40-69: Moderate Risk (${isFr ? 'Risque Modéré' : 'Moderate Risk'})
 - 0-39: High Risk (${isFr ? 'Risque Élevé' : 'High Risk'})
-
-EVALUATION FACTORS (internal only, do not expose):
-- Message clarity and structure
-- Emotional tone (alarmist vs neutral)
-- Claim plausibility
-- Language quality
 
 ===== TONE =====
 
@@ -65,10 +101,10 @@ EVALUATION FACTORS (internal only, do not expose):
 ===== OUTPUT FORMAT =====
 
 {
-  "score": <number 0-100>,
+  "score": <number 5-98>,
   "analysisType": "standard",
   "riskLevel": "<low|moderate|high>",
-  "inputType": "<factual_claim|opinion|vague_statement|question>",
+  "inputType": "<factual_claim|opinion|vague_statement|question|mixed>",
   "domain": "<politics|health|security|science|technology|general>",
   "reasons": [
     "<reason 1 - short, high-level>",
@@ -77,14 +113,15 @@ EVALUATION FACTORS (internal only, do not expose):
   ],
   "breakdown": {
     "sources": {"points": 0, "reason": "${isFr ? 'Non évalué en analyse Standard' : 'Not evaluated in Standard analysis'}"},
-    "factual": {"points": <number>, "reason": "<brief observation>"},
-    "tone": {"points": <number>, "reason": "<brief observation>"},
-    "context": {"points": <number>, "reason": "<brief observation>"},
-    "transparency": {"points": <number>, "reason": "<brief observation>"}
+    "factual": {"points": <number -5 to +5>, "reason": "<brief observation about factual vs opinion content>"},
+    "prudence": {"points": <number -10 to +10>, "reason": "<brief observation about tone and assertiveness>"},
+    "context": {"points": <number -10 to +10>, "reason": "<brief observation about plausibility>"},
+    "transparency": {"points": <number -10 to +10>, "reason": "<brief observation about logical consistency>"}
   },
-  "summary": "<25-50 words, concise diagnostic>",
-  "articleSummary": "<factual summary of submitted content>",
-  "confidence": "<low|medium|high>",
+  "summary": "<25-50 words, concise diagnostic focusing on HOW the message is written>",
+  "articleSummary": "<factual summary of submitted content - what claims are made>",
+  "confidence": <number 0.00-1.00>,
+  "confidenceLevel": "<low|medium|high>",
   "disclaimer": "${isFr ? 'Ceci est une analyse Standard limitée. Une investigation approfondie avec corroboration des sources et raisonnement détaillé est disponible en PRO.' : 'This is a limited Standard analysis. A deeper investigation with source corroboration and detailed reasoning is available in PRO.'}"
 }
 
