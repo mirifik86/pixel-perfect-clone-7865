@@ -1,5 +1,6 @@
 import { MessageSquare, AlertTriangle, Target, Users, Link2, Shield, Zap, Eye, FileQuestion, Scale } from 'lucide-react';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface CommunicationSignalsProps {
   language: SupportedLanguage;
@@ -304,7 +305,7 @@ const getLevelStyle = (level: 'high' | 'moderate' | 'low') => {
 };
 
 export const CommunicationSignals = ({ language, breakdown }: CommunicationSignalsProps) => {
-  const t = translations[language];
+  const t = getTranslationWithFallback(translations, language);
   
   // Dynamically detect which signals to show
   const detectedSignals = detectSignals(breakdown);

@@ -1,5 +1,6 @@
 import { CheckCircle, HelpCircle, XCircle } from 'lucide-react';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface ProSource {
   stance?: 'corroborating' | 'neutral' | 'contradicting';
@@ -34,7 +35,7 @@ const translations = {
 };
 
 export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
-  const t = translations[language];
+  const t = getTranslationWithFallback(translations, language);
   
   // Extract sources by stance
   const corroborating = sources.filter(s => s.stance === 'corroborating');

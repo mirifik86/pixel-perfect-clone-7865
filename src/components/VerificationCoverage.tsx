@@ -1,5 +1,6 @@
 import { Globe, Building2, AlertTriangle } from 'lucide-react';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface ProSource {
   stance?: 'corroborating' | 'neutral' | 'contradicting';
@@ -57,7 +58,7 @@ const getDomainFromUrl = (url: string): string => {
 };
 
 export const VerificationCoverage = ({ language, sources, sourcesConsulted = 0 }: VerificationCoverageProps) => {
-  const t = translations[language];
+  const t = getTranslationWithFallback(translations, language);
   
   // Calculate web coverage based on sources found
   const totalSources = Math.max(sources.length, sourcesConsulted);
