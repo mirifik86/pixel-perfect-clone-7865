@@ -174,6 +174,10 @@ const translations = {
     openSource: 'Open',
     showAllSources: 'Show all sources',
     hideAllSources: 'Hide additional sources',
+    sourceVerificationTitle: 'Source Verification',
+    sourceVerificationBody: 'Standard analysis focuses on linguistic and structural signals within the text itself. External source verification and cross-checking are included in PRO analysis.',
+    proEvidenceTooltip: 'Direct sources verified by PRO analysis. Each link leads to the specific page containing the evidence.',
+    availableInPro: 'Available in PRO.',
     // Image signals
     expertVisualAnalysis: 'Expert Visual Analysis',
     imageProvided: 'Image provided and analyzed',
@@ -264,6 +268,10 @@ const translations = {
     openSource: 'Ouvrir',
     showAllSources: 'Voir toutes les sources',
     hideAllSources: 'Masquer les sources supplémentaires',
+    sourceVerificationTitle: 'Vérification des Sources',
+    sourceVerificationBody: 'L\'analyse Standard se concentre sur les signaux linguistiques et structurels du texte lui-même. La vérification externe des sources et le recoupement sont inclus dans l\'analyse PRO.',
+    proEvidenceTooltip: 'Sources directes vérifiées par l\'analyse PRO. Chaque lien mène à la page spécifique contenant les preuves.',
+    availableInPro: 'Disponible en PRO.',
     // Image signals
     expertVisualAnalysis: 'Analyse Visuelle Expert',
     imageProvided: 'Image fournie et analysée',
@@ -752,15 +760,13 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
           <div className="flex items-center gap-2 mb-4">
             <Shield className="h-5 w-5 text-slate-500" />
             <h3 className="font-serif text-lg font-semibold text-slate-900">
-              {language === 'fr' ? 'Vérification des Sources' : 'Source Verification'}
+              {t.sourceVerificationTitle}
             </h3>
           </div>
           
           <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
             <p className="text-sm text-slate-600 leading-relaxed">
-              {language === 'fr' 
-                ? 'L\'analyse Standard se concentre sur les signaux linguistiques et structurels du texte lui-même. La vérification externe des sources et le recoupement sont inclus dans l\'analyse PRO.'
-                : 'Standard analysis focuses on linguistic and structural signals within the text itself. External source verification and cross-checking are included in PRO analysis.'}
+              {t.sourceVerificationBody}
             </p>
           </div>
         </div>
@@ -832,9 +838,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[240px] text-center">
-                  <p className="text-xs">{language === 'fr' 
-                    ? 'Sources directes vérifiées par l\'analyse PRO. Chaque lien mène à la page spécifique contenant les preuves.' 
-                    : 'Direct sources verified by PRO analysis. Each link leads to the specific page containing the evidence.'}</p>
+                  <p className="text-xs">{t.proEvidenceTooltip}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1055,7 +1059,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                         {confidence.explanation}
                         {isNotEvaluated && signal.key === 'sources' && (
                           <span className="text-cyan-600 font-medium ml-1">
-                            {language === 'fr' ? 'Disponible en PRO.' : 'Available in PRO.'}
+                            {t.availableInPro}
                           </span>
                         )}
                       </p>
