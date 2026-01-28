@@ -420,6 +420,130 @@ const sanitizeProSources = (sources: any[], limit: number = 10): ProSource[] => 
     .slice(0, limit);
 };
 
+// ===== LIVE URL VALIDATION =====
+
+// Check if a URL is live (responds with 200-399)
+const isLiveUrl = async (url: string): Promise<boolean> => {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1200);
+    
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (compatible; LeenScoreBot/1.0)',
+      'Accept': 'text/html,*/*',
+    };
+    
+    // Try HEAD first (lighter)
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'HEAD',
+        signal: controller.signal,
+        headers,
+        redirect: 'follow',
+      });
+      
+      // If HEAD returns 403/405, some servers block HEAD - fallback to GET
+      if (response.status === 403 || response.status === 405) {
+        response = await fetch(url, {
+          method: 'GET',
+          signal: controller.signal,
+          headers,
+          redirect: 'follow',
+        });
+      }
+    } catch {
+      // HEAD failed, try GET
+      response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+        headers,
+        redirect: 'follow',
+      });
+    }
+    
+    clearTimeout(timeout);
+    
+    // Accept 2xx and 3xx as valid (also accept 403 for trusted domains that block bots)
+    const status = response.status;
+    if (status >= 200 && status < 400) {
+      return true;
+    }
+    
+    // Allow 403 for known trusted domains that block bots
+    if (status === 403) {
+      const domain = getDomainFromUrl(url);
+      const TRUSTED_ALLOW_403 = ['britannica.com', 'wikipedia.org', 'nature.com', 'nytimes.com', 'bbc.com'];
+      if (TRUSTED_ALLOW_403.some(d => domain.includes(d)) || domain.endsWith('.gov') || domain.endsWith('.edu')) {
+        return true;
+      }
+    }
+    
+    return false;
+  } catch {
+    // Network error, timeout, or abort
+    return false;
+  }
+};
+
+// Validate bestLinks and replace invalid ones with live candidates from sources
+const validateAndReplaceBestLinks = async (
+  bestLinks: ProSource[],
+  allSources: ProSource[]
+): Promise<ProSource[]> => {
+  if (bestLinks.length === 0) {
+    return [];
+  }
+  
+  // Track domains already used
+  const usedDomains = new Set<string>();
+  const validatedBest: ProSource[] = [];
+  let totalChecks = 0;
+  const MAX_CHECKS = 8; // Performance cap
+  
+  // First, validate the original bestLinks
+  for (const link of bestLinks) {
+    if (totalChecks >= MAX_CHECKS) break;
+    
+    totalChecks++;
+    const isLive = await isLiveUrl(link.url);
+    
+    if (isLive) {
+      const domain = getDomainFromUrl(link.url);
+      usedDomains.add(domain);
+      validatedBest.push(link);
+    }
+  }
+  
+  // If we have 4 valid links, we're done
+  if (validatedBest.length >= 4) {
+    return validatedBest.slice(0, 4);
+  }
+  
+  // Find replacement candidates from sources (not in usedDomains)
+  const replacementCandidates = allSources.filter(src => {
+    const domain = getDomainFromUrl(src.url);
+    // Not already used and not already in bestLinks
+    return !usedDomains.has(domain) && !bestLinks.some(b => b.url === src.url);
+  });
+  
+  // Try replacements until we have 4 or run out
+  for (const candidate of replacementCandidates) {
+    if (validatedBest.length >= 4 || totalChecks >= MAX_CHECKS) break;
+    
+    totalChecks++;
+    const isLive = await isLiveUrl(candidate.url);
+    
+    if (isLive) {
+      const domain = getDomainFromUrl(candidate.url);
+      usedDomains.add(domain);
+      validatedBest.push(candidate);
+    }
+  }
+  
+  return validatedBest;
+};
+
 // Convert numeric confidence to legacy tier
 const confidenceToTier = (confidence: number): 'high' | 'medium' | 'low' => {
   if (confidence >= 0.75) return 'high';
@@ -427,8 +551,8 @@ const confidenceToTier = (confidence: number): 'high' | 'medium' | 'low' => {
   return 'low';
 };
 
-// Normalize PRO response to legacy-compatible format
-const normalizeProResponse = (analysisResult: any): any => {
+// Normalize PRO response to legacy-compatible format (async for live URL validation)
+const normalizeProResponse = async (analysisResult: any): Promise<any> => {
   // If no nested result object, already in legacy format
   if (!analysisResult.result) {
     return analysisResult;
@@ -447,21 +571,41 @@ const normalizeProResponse = (analysisResult: any): any => {
     analysisResult.confidenceLevel = analysisResult.confidence;
   }
   
-  // Sanitize bestLinks (limit to 4) and sources (limit to 10)
-  if (Array.isArray(result.bestLinks)) {
-    result.bestLinks = sanitizeProSources(result.bestLinks, 4);
+  // First, sanitize sources (limit to 10) - we need this pool for replacement
+  let sanitizedSources: ProSource[] = [];
+  if (Array.isArray(result.sources)) {
+    sanitizedSources = sanitizeProSources(result.sources, 10);
+    result.sources = sanitizedSources;
   }
   
-  if (Array.isArray(result.sources)) {
-    const sanitized = sanitizeProSources(result.sources, 10);
-    result.sources = sanitized;
+  // Sanitize bestLinks (limit to 4), then validate with live checks and replace dead links
+  if (Array.isArray(result.bestLinks)) {
+    const sanitizedBest = sanitizeProSources(result.bestLinks, 4);
+    
+    // Validate live URLs and replace dead ones from sources pool
+    const validatedBest = await validateAndReplaceBestLinks(sanitizedBest, sanitizedSources);
+    result.bestLinks = validatedBest;
+    
+    // Ensure all bestLinks exist in sources (add replacements if needed)
+    const sourceUrls = new Set(sanitizedSources.map(s => s.url));
+    for (const best of validatedBest) {
+      if (!sourceUrls.has(best.url)) {
+        sanitizedSources.push(best);
+      }
+    }
+    result.sources = sanitizedSources;
+  }
+  
+  // Build legacy corroboration structure from sources
+  if (Array.isArray(result.sources) && result.sources.length > 0) {
+    const sourcesToProcess = result.sources as ProSource[];
     
     // Categorize sources by stance for legacy corroboration structure
     const corroborated: any[] = [];
     const contradicting: any[] = [];
     const neutral: any[] = [];
     
-    for (const src of sanitized) {
+    for (const src of sourcesToProcess) {
       const legacySource = {
         name: src.title,
         url: src.url,
@@ -480,7 +624,7 @@ const normalizeProResponse = (analysisResult: any): any => {
     
     // Create/update legacy corroboration structure for backward compat
     if (!analysisResult.corroboration) {
-      analysisResult.corroboration = { outcome: 'neutral', sourcesConsulted: sanitized.length };
+      analysisResult.corroboration = { outcome: 'neutral', sourcesConsulted: sourcesToProcess.length };
     }
     
     analysisResult.corroboration.sources = {
@@ -918,10 +1062,10 @@ serve(async (req) => {
       };
     }
 
-    // Normalize PRO response to ensure legacy compatibility
+    // Normalize PRO response to ensure legacy compatibility (includes live URL validation)
     if (isPro) {
-      console.log("Normalizing PRO response...");
-      analysisResult = normalizeProResponse(analysisResult);
+      console.log("Normalizing PRO response and validating live URLs...");
+      analysisResult = await normalizeProResponse(analysisResult);
     }
 
     // Ensure score is within bounds (use normalized top-level score)
