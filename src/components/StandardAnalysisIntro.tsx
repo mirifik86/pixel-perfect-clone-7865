@@ -1,5 +1,6 @@
 import { Sparkles, FileText } from 'lucide-react';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface AnalysisBreakdown {
   tone?: { points: number; reason: string };
@@ -107,7 +108,7 @@ const selectDynamicSummary = (
 };
 
 export const StandardAnalysisIntro = ({ language, breakdown }: StandardAnalysisIntroProps) => {
-  const t = translations[language];
+  const t = getTranslationWithFallback(translations, language);
   
   // If no breakdown provided, show the base subtitle
   const hasBreakdown = breakdown && Object.keys(breakdown).length > 0;
