@@ -187,11 +187,9 @@ const Index = () => {
     handlePromptResponse
   } = useLanguage();
   
-  // Map resolved language to 'en' | 'fr' for backward compatibility with analysis
-  // (analysis API only supports en/fr currently)
-  const language: 'en' | 'fr' = (resolvedLanguage === 'en' || resolvedLanguage === 'fr') 
-    ? resolvedLanguage 
-    : 'en'; // fallback to 'en' for other languages like 'ja'
+  // Pass the full resolved language to the analysis API
+  // The backend now supports all 8 languages: en, fr, es, de, pt, it, ja, ko
+  const language = resolvedLanguage;
   
   const [isLoading, setIsLoading] = useState(false);
   const [isProLoading, setIsProLoading] = useState(false);

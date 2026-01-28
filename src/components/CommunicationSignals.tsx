@@ -1,7 +1,8 @@
 import { MessageSquare, AlertTriangle, Target, Users, Link2, Shield, Zap, Eye, FileQuestion, Scale } from 'lucide-react';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface CommunicationSignalsProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   breakdown: {
     tone?: { points: number; reason: string };
     factual?: { points: number; reason: string };
