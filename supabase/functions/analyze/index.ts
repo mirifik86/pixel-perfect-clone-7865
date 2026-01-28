@@ -16,83 +16,17 @@ const getCurrentDateInfo = () => {
   };
 };
 
-// Language configuration for all 8 supported languages
-const LANGUAGE_CONFIG: Record<string, { name: string; nativeName: string; riskLevels: { low: string; moderate: string; high: string }; standardDisclaimer: string; notEvaluated: string }> = {
-  en: {
-    name: 'ENGLISH',
-    nativeName: 'English',
-    riskLevels: { low: 'Low Risk', moderate: 'Moderate Risk', high: 'High Risk' },
-    standardDisclaimer: 'This is a limited Standard analysis. A deeper investigation with source corroboration and detailed reasoning is available in PRO.',
-    notEvaluated: 'Not evaluated in Standard analysis'
-  },
-  fr: {
-    name: 'FRENCH',
-    nativeName: 'Français',
-    riskLevels: { low: 'Risque Faible', moderate: 'Risque Modéré', high: 'Risque Élevé' },
-    standardDisclaimer: 'Ceci est une analyse Standard limitée. Une investigation approfondie avec corroboration des sources et raisonnement détaillé est disponible en PRO.',
-    notEvaluated: 'Non évalué en analyse Standard'
-  },
-  es: {
-    name: 'SPANISH',
-    nativeName: 'Español',
-    riskLevels: { low: 'Riesgo Bajo', moderate: 'Riesgo Moderado', high: 'Riesgo Alto' },
-    standardDisclaimer: 'Este es un análisis Estándar limitado. Una investigación más profunda con corroboración de fuentes y razonamiento detallado está disponible en PRO.',
-    notEvaluated: 'No evaluado en análisis Estándar'
-  },
-  de: {
-    name: 'GERMAN',
-    nativeName: 'Deutsch',
-    riskLevels: { low: 'Niedriges Risiko', moderate: 'Mittleres Risiko', high: 'Hohes Risiko' },
-    standardDisclaimer: 'Dies ist eine begrenzte Standardanalyse. Eine tiefere Untersuchung mit Quellenbestätigung und detaillierter Begründung ist in PRO verfügbar.',
-    notEvaluated: 'In der Standardanalyse nicht bewertet'
-  },
-  pt: {
-    name: 'PORTUGUESE',
-    nativeName: 'Português',
-    riskLevels: { low: 'Risco Baixo', moderate: 'Risco Moderado', high: 'Risco Alto' },
-    standardDisclaimer: 'Esta é uma análise Padrão limitada. Uma investigação mais profunda com corroboração de fontes e raciocínio detalhado está disponível no PRO.',
-    notEvaluated: 'Não avaliado na análise Padrão'
-  },
-  it: {
-    name: 'ITALIAN',
-    nativeName: 'Italiano',
-    riskLevels: { low: 'Rischio Basso', moderate: 'Rischio Moderato', high: 'Rischio Alto' },
-    standardDisclaimer: 'Questa è un\'analisi Standard limitata. Un\'indagine più approfondita con corroborazione delle fonti e ragionamento dettagliato è disponibile in PRO.',
-    notEvaluated: 'Non valutato nell\'analisi Standard'
-  },
-  ja: {
-    name: 'JAPANESE',
-    nativeName: '日本語',
-    riskLevels: { low: '低リスク', moderate: '中リスク', high: '高リスク' },
-    standardDisclaimer: 'これは限定的なスタンダード分析です。ソースの裏付けと詳細な推論を含むより深い調査はPROで利用できます。',
-    notEvaluated: 'スタンダード分析では評価されていません'
-  },
-  ko: {
-    name: 'KOREAN',
-    nativeName: '한국어',
-    riskLevels: { low: '낮은 위험', moderate: '중간 위험', high: '높은 위험' },
-    standardDisclaimer: '이것은 제한된 표준 분석입니다. 출처 확인 및 상세한 추론을 포함한 심층 조사는 PRO에서 이용 가능합니다.',
-    notEvaluated: '표준 분석에서 평가되지 않음'
-  }
-};
-
-const getLanguageConfig = (language: string) => {
-  return LANGUAGE_CONFIG[language] || LANGUAGE_CONFIG['en'];
-};
-
 // Standard Analysis Engine – LeenScore Standard Scan
 // Advanced credibility diagnostic using semantic signal analysis
 const getSystemPrompt = (language: string) => {
-  const lang = getLanguageConfig(language);
+  const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
   
-  return `[LANGUAGE: ${lang.name}] You are LeenScore Standard Scan.
+  return `You are LeenScore Standard Scan.
 
 Your role is to provide an intelligent credibility diagnostic by analyzing semantic signals in the text.
 
-⚠️ MANDATORY OUTPUT LANGUAGE: ${lang.name} (${lang.nativeName})
-You MUST write ALL text fields (summary, reasons, articleSummary, breakdown reasons) in ${lang.name}.
-Do NOT use English unless the language is English. This is non-negotiable.
+IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
@@ -186,9 +120,9 @@ CONFIDENCE CALCULATION (internal, output as decimal):
 - Low confidence (0.00-0.49): Unclear text, conflicting signals, insufficient data
 
 RISK CLASSIFICATION:
-- 70-100: ${lang.riskLevels.low}
-- 40-69: ${lang.riskLevels.moderate}
-- 0-39: ${lang.riskLevels.high}
+- 70-100: Low Risk (${isFr ? 'Risque Faible' : 'Low Risk'})
+- 40-69: Moderate Risk (${isFr ? 'Risque Modéré' : 'Moderate Risk'})
+- 0-39: High Risk (${isFr ? 'Risque Élevé' : 'High Risk'})
 
 ===== TONE =====
 
@@ -205,16 +139,16 @@ RISK CLASSIFICATION:
   "inputType": "<factual_claim|opinion|vague_statement|question|mixed>",
   "domain": "<politics|health|security|science|technology|general>",
   "reasons": [
-    "<reason 1 in ${lang.name} - describe a specific semantic signal detected>",
-    "<reason 2 in ${lang.name} - describe another relevant signal or pattern>",
-    "<reason 3 in ${lang.name} - describe the overall credibility implication>"
+    "<reason 1 - describe a specific semantic signal detected>",
+    "<reason 2 - describe another relevant signal or pattern>",
+    "<reason 3 - describe the overall credibility implication>"
   ],
   "breakdown": {
-    "sources": {"points": 0, "reason": "${lang.notEvaluated}"},
-    "factual": {"points": <number -10 to +10>, "reason": "<observation in ${lang.name} about claim types and verifiability>"},
-    "prudence": {"points": <number -20 to +0>, "reason": "<observation in ${lang.name} about sensationalism/manipulation patterns>"},
-    "context": {"points": <number -15 to +10>, "reason": "<observation in ${lang.name} about evidence structure and presentation>"},
-    "transparency": {"points": <number -15 to +10>, "reason": "<observation in ${lang.name} about internal logical consistency>"}
+    "sources": {"points": 0, "reason": "${isFr ? 'Non évalué en analyse Standard' : 'Not evaluated in Standard analysis'}"},
+    "factual": {"points": <number -10 to +10>, "reason": "<observation about claim types and verifiability>"},
+    "prudence": {"points": <number -20 to +0>, "reason": "<observation about sensationalism/manipulation patterns>"},
+    "context": {"points": <number -15 to +10>, "reason": "<observation about evidence structure and presentation>"},
+    "transparency": {"points": <number -15 to +10>, "reason": "<observation about internal logical consistency>"}
   },
   "semanticSignals": {
     "claimsDetected": <boolean>,
@@ -224,11 +158,11 @@ RISK CLASSIFICATION:
     "logicalCoherence": "<strong|moderate|weak|incoherent>",
     "evidenceStructure": "<well_structured|moderate|poor|absent>"
   },
-  "summary": "<25-50 words in ${lang.name} focusing on the semantic signals detected and what they indicate about credibility>",
-  "articleSummary": "<factual summary in ${lang.name} of submitted content - what claims are made>",
+  "summary": "<25-50 words focusing on the semantic signals detected and what they indicate about credibility>",
+  "articleSummary": "<factual summary of submitted content - what claims are made>",
   "confidence": <number 0.00-1.00>,
   "confidenceLevel": "<low|medium|high>",
-  "disclaimer": "${lang.standardDisclaimer}"
+  "disclaimer": "${isFr ? 'Ceci est une analyse Standard limitée. Une investigation approfondie avec corroboration des sources et raisonnement détaillé est disponible en PRO.' : 'This is a limited Standard analysis. A deeper investigation with source corroboration and detailed reasoning is available in PRO.'}"
 }
 
 REASON WRITING GUIDELINES:
@@ -238,67 +172,13 @@ REASON WRITING GUIDELINES:
 - Second reason: Secondary pattern or balancing observation
 - Third reason: Overall credibility implication
 
-MANDATORY: ALL text output must be in ${lang.name}. This includes reasons, summary, articleSummary, and breakdown reasons.`
+ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
 // PRO ANALYSIS PROMPT - Credibility Intelligence Engine with Web Corroboration
 const getProSystemPrompt = (language: string) => {
-  const lang = getLanguageConfig(language);
+  const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
-  
-  // Localized PRO disclaimers
-  const proDisclaimers: Record<string, { imageDisclaimer: string; proDisclaimer: string; summaryHint: string; whyHint: string }> = {
-    en: {
-      imageDisclaimer: 'These signals are contextual indicators. They do not determine truthfulness.',
-      proDisclaimer: 'This assessment reflects plausibility based on available information, not absolute truth.',
-      summaryHint: 'Concise, calm credibility verdict written for a general audience.',
-      whyHint: 'One short sentence explaining relevance.'
-    },
-    fr: {
-      imageDisclaimer: 'Ces signaux sont des indicateurs contextuels. Ils ne déterminent pas la véracité.',
-      proDisclaimer: 'Cette évaluation reflète la plausibilité selon les informations disponibles, pas une vérité absolue.',
-      summaryHint: 'Verdict de crédibilité concis et calme, rédigé pour un public général.',
-      whyHint: 'Une phrase courte expliquant la pertinence.'
-    },
-    es: {
-      imageDisclaimer: 'Estas señales son indicadores contextuales. No determinan la veracidad.',
-      proDisclaimer: 'Esta evaluación refleja la plausibilidad según la información disponible, no la verdad absoluta.',
-      summaryHint: 'Veredicto de credibilidad conciso y calmado, escrito para una audiencia general.',
-      whyHint: 'Una frase corta explicando la relevancia.'
-    },
-    de: {
-      imageDisclaimer: 'Diese Signale sind kontextuelle Indikatoren. Sie bestimmen nicht die Wahrhaftigkeit.',
-      proDisclaimer: 'Diese Bewertung spiegelt die Plausibilität basierend auf verfügbaren Informationen wider, nicht die absolute Wahrheit.',
-      summaryHint: 'Prägnantes, ruhiges Glaubwürdigkeitsurteil für ein allgemeines Publikum.',
-      whyHint: 'Ein kurzer Satz, der die Relevanz erklärt.'
-    },
-    pt: {
-      imageDisclaimer: 'Esses sinais são indicadores contextuais. Eles não determinam a veracidade.',
-      proDisclaimer: 'Esta avaliação reflete a plausibilidade com base nas informações disponíveis, não a verdade absoluta.',
-      summaryHint: 'Veredicto de credibilidade conciso e calmo, escrito para um público geral.',
-      whyHint: 'Uma frase curta explicando a relevância.'
-    },
-    it: {
-      imageDisclaimer: 'Questi segnali sono indicatori contestuali. Non determinano la veridicità.',
-      proDisclaimer: 'Questa valutazione riflette la plausibilità in base alle informazioni disponibili, non la verità assoluta.',
-      summaryHint: 'Verdetto di credibilità conciso e calmo, scritto per un pubblico generale.',
-      whyHint: 'Una frase breve che spiega la rilevanza.'
-    },
-    ja: {
-      imageDisclaimer: 'これらのシグナルは文脈的な指標です。真実性を決定するものではありません。',
-      proDisclaimer: 'この評価は利用可能な情報に基づく妥当性を反映しており、絶対的な真実ではありません。',
-      summaryHint: '一般読者向けの簡潔で落ち着いた信頼性判定。',
-      whyHint: '関連性を説明する短い一文。'
-    },
-    ko: {
-      imageDisclaimer: '이러한 신호는 맥락적 지표입니다. 진실성을 결정하지 않습니다.',
-      proDisclaimer: '이 평가는 이용 가능한 정보를 기반으로 한 타당성을 반영하며, 절대적 진실이 아닙니다.',
-      summaryHint: '일반 독자를 위한 간결하고 차분한 신뢰성 판정.',
-      whyHint: '관련성을 설명하는 짧은 문장.'
-    }
-  };
-  
-  const pd = proDisclaimers[language] || proDisclaimers['en'];
   
   return `You are a credibility intelligence engine with web corroboration (PRO).
 
@@ -307,8 +187,7 @@ GOAL:
 - Provide up to 10 sources total, categorized as corroborating / neutral / contradicting.
 - Keep the UI premium: only 4 clickable "best links" should be surfaced for the user.
 
-CRITICAL LANGUAGE INSTRUCTION: You MUST respond ENTIRELY in ${lang.name} (${lang.nativeName}).
-Every word of your response must be in ${lang.name}. No exceptions. No mixing languages.
+IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
@@ -415,31 +294,31 @@ Return ONLY valid JSON with this exact structure and no additional keys:
   "result": {
     "score": <number 5-98>,
     "riskLevel": "<low|medium|high>",
-    "summary": "<${pd.summaryHint} - MUST BE IN ${lang.name}>",
+    "summary": "<${isFr ? 'Verdict de crédibilité concis et calme, rédigé pour un public général.' : 'Concise, calm credibility verdict written for a general audience.'}>",
     "confidence": <number 0.00-1.00>,
     "bestLinks": [
       {
-        "title": "<Best article/page title in ${lang.name}>",
-        "publisher": "<Organization or site name - keep original>",
+        "title": "<Best article/page title>",
+        "publisher": "<Organization or site name>",
         "url": "<https://... direct deep link>",
         "trustTier": "<high|medium|low>",
         "stance": "<corroborating|neutral|contradicting>",
-        "whyItMatters": "<${pd.whyHint} - MUST BE IN ${lang.name}>"
+        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
       }
     ],
     "sources": [
       {
-        "title": "<Article or page title in ${lang.name}>",
-        "publisher": "<Organization or site name - keep original>",
+        "title": "<Article or page title>",
+        "publisher": "<Organization or site name>",
         "url": "<https://... direct deep link>",
         "trustTier": "<high|medium|low>",
         "stance": "<corroborating|neutral|contradicting>",
-        "whyItMatters": "<${pd.whyHint} - MUST BE IN ${lang.name}>"
+        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
       }
     ]
   },
   "analysisType": "pro",
-  "articleSummary": "<factual summary of the submitted content - MUST BE IN ${lang.name}>",
+  "articleSummary": "<factual summary of the submitted content>",
   "corroboration": {
     "outcome": "<corroborated|neutral|constrained|refuted>",
     "sourcesConsulted": <number 1-10>
@@ -448,15 +327,15 @@ Return ONLY valid JSON with this exact structure and no additional keys:
     "origin": {
       "classification": "<real_photo|illustration_composite|probable_ai_generated|undetermined>",
       "confidence": "<low|medium|high>",
-      "indicators": ["<observed indicators in ${lang.name}>"]
+      "indicators": ["<observed indicators>"]
     },
     "coherence": {
       "classification": "<illustrative|demonstrative|potentially_misleading>",
-      "explanation": "<brief explanation in ${lang.name}>"
+      "explanation": "<brief explanation>"
     },
-    "disclaimer": "${pd.imageDisclaimer}"
+    "disclaimer": "${isFr ? 'Ces signaux sont des indicateurs contextuels. Ils ne déterminent pas la véracité.' : 'These signals are contextual indicators. They do not determine truthfulness.'}"
   },
-  "proDisclaimer": "${pd.proDisclaimer}"
+  "proDisclaimer": "${isFr ? "Cette évaluation reflète la plausibilité selon les informations disponibles, pas une vérité absolue." : 'This assessment reflects plausibility based on available information, not absolute truth.'}"
 }
 
 LIST RULES:
@@ -467,7 +346,7 @@ LIST RULES:
 
 IMPORTANT: Return ONLY valid JSON. Do not include breakdown, points, weights, or internal reasoning in the output.
 
-MANDATORY: ALL text output must be in ${lang.name} (${lang.nativeName}). This includes summary, articleSummary, whyItMatters, and all explanatory text.`;
+ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
 // Deep clone utility to ensure original data is never mutated

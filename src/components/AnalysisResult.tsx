@@ -9,8 +9,6 @@ import { UpgradeBridge } from './UpgradeBridge';
 import { LinguisticDisclaimer } from './LinguisticDisclaimer';
 import { ProHighlights } from './ProHighlights';
 import { VerificationCoverage } from './VerificationCoverage';
-import { type SupportedLanguage } from '@/i18n/config';
-import { getTranslationWithFallback } from '@/i18n/fallback';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
   sources?: { points: number; reason: string };
@@ -125,7 +123,7 @@ interface AnalysisData {
 
 interface AnalysisResultProps {
   data: AnalysisData;
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
   isProUnlocked?: boolean;
   articleSummary?: string;
   hasImage?: boolean;
@@ -174,10 +172,6 @@ const translations = {
     openSource: 'Open',
     showAllSources: 'Show all sources',
     hideAllSources: 'Hide additional sources',
-    sourceVerificationTitle: 'Source Verification',
-    sourceVerificationBody: 'Standard analysis focuses on linguistic and structural signals within the text itself. External source verification and cross-checking are included in PRO analysis.',
-    proEvidenceTooltip: 'Direct sources verified by PRO analysis. Each link leads to the specific page containing the evidence.',
-    availableInPro: 'Available in PRO.',
     // Image signals
     expertVisualAnalysis: 'Expert Visual Analysis',
     imageProvided: 'Image provided and analyzed',
@@ -268,10 +262,6 @@ const translations = {
     openSource: 'Ouvrir',
     showAllSources: 'Voir toutes les sources',
     hideAllSources: 'Masquer les sources supplémentaires',
-    sourceVerificationTitle: 'Vérification des Sources',
-    sourceVerificationBody: 'L\'analyse Standard se concentre sur les signaux linguistiques et structurels du texte lui-même. La vérification externe des sources et le recoupement sont inclus dans l\'analyse PRO.',
-    proEvidenceTooltip: 'Sources directes vérifiées par l\'analyse PRO. Chaque lien mène à la page spécifique contenant les preuves.',
-    availableInPro: 'Disponible en PRO.',
     // Image signals
     expertVisualAnalysis: 'Analyse Visuelle Expert',
     imageProvided: 'Image fournie et analysée',
@@ -387,7 +377,7 @@ const getSourceSnippet = (source: string | SourceDetail): string => {
 };
 
 // Normalize sources from both new and legacy formats into unified EvidenceSource[]
-const normalizeEvidenceSources = (data: AnalysisData, language: SupportedLanguage, maxCount?: number): EvidenceSource[] => {
+const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr', maxCount?: number): EvidenceSource[] => {
   const sources: EvidenceSource[] = [];
   
   // Priority 1: New format with bestLinks (data.result.bestLinks)
@@ -477,7 +467,7 @@ const normalizeEvidenceSources = (data: AnalysisData, language: SupportedLanguag
 };
 
 // Get ALL sources for PRO (up to 10) - combines bestLinks + sources
-const getAllProSources = (data: AnalysisData, language: SupportedLanguage): EvidenceSource[] => {
+const getAllProSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSource[] => {
   const allSources: EvidenceSource[] = [];
   const seenUrls = new Set<string>();
   
@@ -551,9 +541,7 @@ const getImageImpactBg = (impact: number) => {
 };
 
 export const AnalysisResult = ({ data, language, articleSummary, hasImage = false }: AnalysisResultProps) => {
-  // IMPORTANT: Never hide sections due to missing translations.
-  // Always fall back (selected → EN → FR) so result headers/labels render for all UI languages.
-  const t = getTranslationWithFallback(translations, language);
+  const t = translations[language];
   const isPro = data.analysisType === 'pro';
   const [showAllSources, setShowAllSources] = useState(false);
   
@@ -760,13 +748,15 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
           <div className="flex items-center gap-2 mb-4">
             <Shield className="h-5 w-5 text-slate-500" />
             <h3 className="font-serif text-lg font-semibold text-slate-900">
-              {t.sourceVerificationTitle}
+              {language === 'fr' ? 'Vérification des Sources' : 'Source Verification'}
             </h3>
           </div>
           
           <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
             <p className="text-sm text-slate-600 leading-relaxed">
-              {t.sourceVerificationBody}
+              {language === 'fr' 
+                ? 'L\'analyse Standard se concentre sur les signaux linguistiques et structurels du texte lui-même. La vérification externe des sources et le recoupement sont inclus dans l\'analyse PRO.'
+                : 'Standard analysis focuses on linguistic and structural signals within the text itself. External source verification and cross-checking are included in PRO analysis.'}
             </p>
           </div>
         </div>
@@ -838,7 +828,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[240px] text-center">
-                  <p className="text-xs">{t.proEvidenceTooltip}</p>
+                  <p className="text-xs">{language === 'fr' 
+                    ? 'Sources directes vérifiées par l\'analyse PRO. Chaque lien mène à la page spécifique contenant les preuves.' 
+                    : 'Direct sources verified by PRO analysis. Each link leads to the specific page containing the evidence.'}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1059,7 +1051,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                         {confidence.explanation}
                         {isNotEvaluated && signal.key === 'sources' && (
                           <span className="text-cyan-600 font-medium ml-1">
-                            {t.availableInPro}
+                            {language === 'fr' ? 'Disponible en PRO.' : 'Available in PRO.'}
                           </span>
                         )}
                       </p>

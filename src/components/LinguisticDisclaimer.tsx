@@ -1,10 +1,7 @@
-import { forwardRef } from 'react';
 import { Info } from 'lucide-react';
-import { type SupportedLanguage } from '@/i18n/config';
-import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface LinguisticDisclaimerProps {
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
 }
 
 const translations = {
@@ -16,33 +13,28 @@ const translations = {
   },
 };
 
-export const LinguisticDisclaimer = forwardRef<HTMLDivElement, LinguisticDisclaimerProps>(
-  ({ language }, ref) => {
-    const t = getTranslationWithFallback(translations, language);
+export const LinguisticDisclaimer = ({ language }: LinguisticDisclaimerProps) => {
+  const t = translations[language];
 
-    return (
+  return (
+    <div 
+      className="flex items-start gap-3 rounded-lg p-4 mb-6"
+      style={{
+        background: 'linear-gradient(135deg, hsl(220 20% 97%) 0%, hsl(200 15% 96%) 100%)',
+        border: '1px solid hsl(220 15% 88%)',
+      }}
+    >
       <div 
-        ref={ref}
-        className="flex items-start gap-3 rounded-lg p-4 mb-6"
+        className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5"
         style={{
-          background: 'linear-gradient(135deg, hsl(220 20% 97%) 0%, hsl(200 15% 96%) 100%)',
-          border: '1px solid hsl(220 15% 88%)',
+          background: 'hsl(220 20% 92%)',
         }}
       >
-        <div 
-          className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5"
-          style={{
-            background: 'hsl(220 20% 92%)',
-          }}
-        >
-          <Info className="w-3.5 h-3.5 text-slate-500" />
-        </div>
-        <p className="text-sm leading-relaxed text-slate-600 italic">
-          {t.text}
-        </p>
+        <Info className="w-3.5 h-3.5 text-slate-500" />
       </div>
-    );
-  }
-);
-
-LinguisticDisclaimer.displayName = 'LinguisticDisclaimer';
+      <p className="text-sm leading-relaxed text-slate-600 italic">
+        {t.text}
+      </p>
+    </div>
+  );
+};

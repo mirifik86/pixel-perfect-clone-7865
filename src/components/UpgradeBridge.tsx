@@ -1,10 +1,8 @@
 import { ArrowRight, Search, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { type SupportedLanguage } from '@/i18n/config';
-import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface UpgradeBridgeProps {
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
   onUpgradeClick?: () => void;
 }
 
@@ -32,7 +30,7 @@ const translations = {
 };
 
 export const UpgradeBridge = ({ language, onUpgradeClick }: UpgradeBridgeProps) => {
-  const t = getTranslationWithFallback(translations, language);
+  const t = translations[language];
 
   return (
     <div 

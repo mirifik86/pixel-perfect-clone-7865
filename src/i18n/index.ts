@@ -15,4 +15,3 @@ export {
 } from './config';
 export { detectBrowserLanguage, getDetectedLanguageInfo } from './detection';
 export { getTranslation, getTranslationArray, hasTranslation } from './translations';
-export { getTranslationWithFallback, pickLabel } from './fallback';

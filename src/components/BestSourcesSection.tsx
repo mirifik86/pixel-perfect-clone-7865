@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { type SupportedLanguage } from '@/i18n/config';
 import {
   Tooltip,
   TooltipContent,
@@ -50,7 +49,7 @@ interface BestSourcesSectionProps {
   // New PRO format
   bestLinks?: NewProSource[];
   allSources?: NewProSource[];
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
   outcome?: string;
   claim?: string;
   mode?: 'contradictingOnly' | 'supportingOnly' | 'all';
@@ -288,7 +287,7 @@ const SourceCard = ({
 }: { 
   source: NormalizedSource; 
   idx: number; 
-  language: SupportedLanguage; 
+  language: 'en' | 'fr'; 
   isVerified?: boolean;
   isPrimary?: boolean;
 }) => {
@@ -442,7 +441,7 @@ const SourceCard = ({
 
 // ===== FILTER STATS INDICATOR =====
 
-const FilterStatsIndicator = ({ displayed, total, language }: { displayed: number; total: number; language: SupportedLanguage }) => {
+const FilterStatsIndicator = ({ displayed, total, language }: { displayed: number; total: number; language: 'en' | 'fr' }) => {
   if (total === 0 || displayed === total) return null;
   const filtered = total - displayed;
   const label = language === 'fr' 

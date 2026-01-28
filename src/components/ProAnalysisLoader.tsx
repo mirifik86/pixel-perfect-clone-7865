@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Sparkles, Search, Globe, Shield, CheckCircle2 } from 'lucide-react';
-import { type SupportedLanguage } from '@/i18n/config';
 
 interface ProAnalysisLoaderProps {
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
 }
 
 // Generate random stars once

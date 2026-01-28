@@ -1,6 +1,4 @@
 import { Sparkles, FileText } from 'lucide-react';
-import { type SupportedLanguage } from '@/i18n/config';
-import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface AnalysisBreakdown {
   tone?: { points: number; reason: string };
@@ -11,7 +9,7 @@ interface AnalysisBreakdown {
 }
 
 interface StandardAnalysisIntroProps {
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
   breakdown?: AnalysisBreakdown;
   summary?: string;
 }
@@ -75,11 +73,9 @@ const translations = {
 
 const selectDynamicSummary = (
   characteristics: ReturnType<typeof detectTextCharacteristics>,
-  lang: SupportedLanguage
+  lang: 'en' | 'fr'
 ): string => {
-  // Fallback to 'en' for languages without specific translations
-  const effectiveLang = (lang === 'en' || lang === 'fr') ? lang : 'en';
-  const summaries = translations[effectiveLang].summaries;
+  const summaries = translations[lang].summaries;
   
   // Priority-based selection
   if (characteristics.isEmotionalTone) {
@@ -108,7 +104,7 @@ const selectDynamicSummary = (
 };
 
 export const StandardAnalysisIntro = ({ language, breakdown }: StandardAnalysisIntroProps) => {
-  const t = getTranslationWithFallback(translations, language);
+  const t = translations[language];
   
   // If no breakdown provided, show the base subtitle
   const hasBreakdown = breakdown && Object.keys(breakdown).length > 0;
