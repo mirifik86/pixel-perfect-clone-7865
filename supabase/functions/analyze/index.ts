@@ -239,6 +239,170 @@ ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 // Deep clone utility to ensure original data is never mutated
 const deepClone = (obj: any): any => JSON.parse(JSON.stringify(obj));
 
+// ===== PRO SOURCE SANITIZATION HELPERS =====
+
+// Extract domain from URL (without www)
+const getDomainFromUrl = (url: string): string => {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+};
+
+// Check if URL is a valid deep article link (not homepage/section)
+const isValidDeepLink = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.toLowerCase();
+    
+    // Reject if too short (likely homepage)
+    if (pathname === '/' || pathname.length < 5) {
+      return false;
+    }
+    
+    // Hub/section patterns to reject
+    const HUB_PATHS = [
+      '/news', '/politics', '/world', '/business', '/sports', '/entertainment',
+      '/opinion', '/lifestyle', '/technology', '/science', '/health', '/travel',
+      '/search', '/video', '/live', '/tag/', '/category/', '/topic/', '/section/',
+      '/author/', '/archive/', '/index', '/home'
+    ];
+    
+    for (const hub of HUB_PATHS) {
+      if (pathname === hub || pathname === hub + '/') {
+        return false;
+      }
+    }
+    
+    // Trusted domains can pass with shorter paths
+    const domain = getDomainFromUrl(url);
+    const TRUSTED_DOMAINS = [
+      'wikipedia.org', 'britannica.com', 'who.int', 'cdc.gov', 'nih.gov',
+      'nasa.gov', 'nature.com', 'sciencedirect.com', 'pubmed.ncbi.nlm.nih.gov'
+    ];
+    
+    const isTrusted = TRUSTED_DOMAINS.some(d => domain.includes(d)) ||
+      domain.endsWith('.gov') || domain.endsWith('.edu');
+    
+    if (isTrusted && pathname.length > 3) {
+      return true;
+    }
+    
+    // For non-trusted, require article-like patterns
+    const hasArticlePattern = 
+      pathname.includes('/article') ||
+      pathname.includes('/story') ||
+      pathname.includes('/news/') ||
+      /\/\d{4}\/\d{2}\//.test(pathname) || // Date pattern
+      pathname.split('/').some(seg => seg.length > 20 && seg.includes('-')); // Long slug
+    
+    return hasArticlePattern || pathname.split('/').filter(Boolean).length >= 2;
+  } catch {
+    return false;
+  }
+};
+
+// Sanitize and deduplicate PRO sources
+interface ProSource {
+  title: string;
+  publisher: string;
+  url: string;
+  trustTier: 'high' | 'medium' | 'low';
+  whyItMatters: string;
+}
+
+const sanitizeProSources = (sources: any[]): ProSource[] => {
+  if (!Array.isArray(sources) || sources.length === 0) {
+    return [];
+  }
+  
+  const tierOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  
+  // Filter to valid deep links only
+  const validSources = sources.filter((src: any) => 
+    src && typeof src.url === 'string' && isValidDeepLink(src.url)
+  );
+  
+  // Deduplicate by domain, keeping highest trust tier
+  const byDomain = new Map<string, ProSource>();
+  
+  for (const src of validSources) {
+    const domain = getDomainFromUrl(src.url);
+    const existing = byDomain.get(domain);
+    const srcTier = src.trustTier || 'medium';
+    
+    if (!existing || (tierOrder[srcTier] ?? 1) < (tierOrder[existing.trustTier] ?? 1)) {
+      byDomain.set(domain, {
+        title: String(src.title || 'Source'),
+        publisher: String(src.publisher || domain),
+        url: String(src.url),
+        trustTier: srcTier as 'high' | 'medium' | 'low',
+        whyItMatters: String(src.whyItMatters || '')
+      });
+    }
+  }
+  
+  // Sort by trust tier and limit to 3
+  return Array.from(byDomain.values())
+    .sort((a, b) => (tierOrder[a.trustTier] ?? 1) - (tierOrder[b.trustTier] ?? 1))
+    .slice(0, 3);
+};
+
+// Convert numeric confidence to legacy tier
+const confidenceToTier = (confidence: number): 'high' | 'medium' | 'low' => {
+  if (confidence >= 0.75) return 'high';
+  if (confidence >= 0.45) return 'medium';
+  return 'low';
+};
+
+// Normalize PRO response to legacy-compatible format
+const normalizeProResponse = (analysisResult: any): any => {
+  // If no nested result object, already in legacy format
+  if (!analysisResult.result) {
+    return analysisResult;
+  }
+  
+  const result = analysisResult.result;
+  
+  // Mirror core fields at top level for UI compatibility
+  analysisResult.score = Number(result.score ?? analysisResult.score ?? 50);
+  analysisResult.riskLevel = result.riskLevel ?? analysisResult.riskLevel;
+  analysisResult.summary = result.summary ?? analysisResult.summary;
+  
+  // Convert numeric confidence to legacy tier at top level
+  if (typeof result.confidence === 'number') {
+    analysisResult.confidence = confidenceToTier(result.confidence);
+    analysisResult.confidenceLevel = analysisResult.confidence;
+  }
+  
+  // Sanitize sources (filter, dedup, limit to 3)
+  if (Array.isArray(result.sources)) {
+    const sanitized = sanitizeProSources(result.sources);
+    result.sources = sanitized;
+    
+    // Create/update legacy corroboration structure for backward compat
+    const legacySources = sanitized.map(src => ({
+      name: src.title,
+      url: src.url,
+      snippet: src.whyItMatters
+    }));
+    
+    if (!analysisResult.corroboration) {
+      analysisResult.corroboration = { outcome: 'neutral', sourcesConsulted: sanitized.length };
+    }
+    
+    analysisResult.corroboration.sources = {
+      corroborated: legacySources,
+      contradicting: [],
+      neutral: []
+    };
+  }
+  
+  return analysisResult;
+};
+
 // Translation helper function - translates ALL text fields while preserving ALL numerical values
 const translateAnalysisResult = async (analysisResult: any, targetLanguage: string, apiKey: string): Promise<any> => {
   if (targetLanguage === 'en') {
@@ -564,21 +728,44 @@ serve(async (req) => {
         ? "L'analyse n'a pas pu être complétée. Veuillez réessayer dans quelques instants."
         : "Analysis could not be completed. Please try again in a moment.";
       
-      return new Response(
-        JSON.stringify({
+      // Build fallback with both legacy and PRO format support
+      const fallbackResponse: any = {
+        score: 50,
+        analysisType: isPro ? 'pro' : 'standard',
+        summary: fallbackMsg,
+        confidence: 'low',
+        confidenceLevel: 'low',
+        isRetryFallback: true
+      };
+      
+      if (isPro) {
+        // PRO fallback with status/result structure
+        fallbackResponse.status = 'ok';
+        fallbackResponse.result = {
           score: 50,
-          analysisType: isPro ? 'pro' : 'standard',
-          breakdown: {
-            sources: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
-            factual: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
-            tone: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
-            context: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
-            transparency: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" }
-          },
+          riskLevel: 'medium',
           summary: fallbackMsg,
-          confidence: "low",
-          isRetryFallback: true
-        }),
+          confidence: 0.3,
+          sources: []
+        };
+        fallbackResponse.corroboration = {
+          outcome: 'neutral',
+          sourcesConsulted: 0,
+          sources: { corroborated: [], contradicting: [], neutral: [] }
+        };
+      } else {
+        // Standard fallback with breakdown
+        fallbackResponse.breakdown = {
+          sources: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+          factual: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+          tone: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+          context: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" },
+          transparency: { points: 0, reason: language === 'fr' ? "Analyse indisponible" : "Analysis unavailable" }
+        };
+      }
+      
+      return new Response(
+        JSON.stringify(fallbackResponse),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -611,14 +798,39 @@ serve(async (req) => {
       };
     }
 
-    // Ensure score is within bounds and set analysis type
-    analysisResult.score = Math.max(0, Math.min(100, analysisResult.score));
+    // Normalize PRO response to ensure legacy compatibility
+    if (isPro) {
+      console.log("Normalizing PRO response...");
+      analysisResult = normalizeProResponse(analysisResult);
+    }
+
+    // Ensure score is within bounds (use normalized top-level score)
+    analysisResult.score = Math.max(0, Math.min(100, Number(analysisResult.score) || 50));
     analysisResult.analysisType = isPro ? 'pro' : 'standard';
+
+    // Also update nested result.score if present
+    if (analysisResult.result) {
+      analysisResult.result.score = analysisResult.score;
+    }
 
     // Translate to French if needed (after consistent English analysis)
     if (language === 'fr') {
       console.log("Translating analysis to French...");
+      
+      // For PRO: temporarily remove result object to prevent translation issues
+      // then restore after translation
+      let savedResult: any = null;
+      if (isPro && analysisResult.result) {
+        savedResult = deepClone(analysisResult.result);
+        delete analysisResult.result;
+      }
+      
       analysisResult = await translateAnalysisResult(analysisResult, 'fr', LOVABLE_API_KEY);
+      
+      // Restore PRO result object (sources URLs must not be translated)
+      if (savedResult) {
+        analysisResult.result = savedResult;
+      }
     }
 
     return new Response(
