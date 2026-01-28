@@ -187,30 +187,49 @@ RISK CLASSIFICATION:
 - "neutral": Source provides context without strong support or contradiction
 - "contradicting": Source refutes or challenges the claim
 
-===== SUMMARY STYLE (CRITICAL) =====
+===== SUMMARY STYLE (CRITICAL — ADVANCED FRAMEWORK) =====
 
+GLOBAL RULES:
 - Maximum 3 sentences.
-- Calm, authoritative, non-judgmental tone.
-- No technical language. No moralizing or emotional phrasing.
+- Calm, neutral, authoritative tone.
+- No technical language.
+- No moral judgment.
+- No speculation.
 
-STRUCTURE:
+UNIVERSAL STRUCTURE (applies to ALL claims: false, half-true, or true):
 
-1) Sentence 1: Clearly state the credibility verdict.
-   - If claim is vulgar, insulting, or clearly non-factual: state it is unsupported or appears to be an insult rather than a verifiable assertion.
+1) Sentence 1 — QUALIFICATION:
+   Clearly qualify the nature of the claim using one of these categories:
+   - "false" or "unsupported"
+   - "misleading" or "half-true"
+   - "factually accurate but incomplete"
+   - "factually accurate"
+   For vulgar/insulting claims: qualify as "unsupported and appears to be an insult rather than a verifiable assertion."
 
-2) Sentence 2: Present a concrete, relevant factual counterpoint that is well-established.
-   - Use names, dates, or widely known facts when appropriate and directly relevant.
-   - Example context: If someone makes a false claim about a public figure, cite documented facts (e.g., marriage records, official positions, dates).
-   - If no clear counter-fact exists, state the absence of credible evidence.
+2) Sentence 2 — FACTUAL ANCHOR:
+   Present a concrete, verifiable fact that directly supports, limits, or contradicts the claim.
+   - Use names, dates, or widely documented context when relevant.
+   - All facts must be undisputed and widely documented.
+   - Avoid "There is no evidence…" alone — instead provide context.
 
-3) Sentence 3 (optional): Reaffirm why the original claim lacks credibility or provide cautionary context.
+3) Sentence 3 — INTELLIGENT CONTEXT (optional but preferred):
+   Add clarifying context that improves understanding WITHOUT changing the subject:
+   - time frame limitations
+   - scope clarifications
+   - missing nuance
+   - common misunderstandings
+   If only two sentences are sufficient, stop at two.
 
-IMPORTANT:
-- Do not speculate.
-- Do not add unnecessary details.
-- Only include counter-facts that are directly relevant and widely documented.
-- Never moralize or use emotional language.
-- If the claim is nonsensical or an obvious insult, still provide factual context rather than simply dismissing it.
+STYLE GUIDANCE:
+- Prefer: "While the claim is partially accurate, it omits…"
+- Prefer: "The statement is factually correct, but often misunderstood because…"
+- Prefer: "This claim conflates two separate facts…"
+- Avoid: Simple dismissals without factual anchoring.
+
+CONSTRAINTS:
+- Never over-explain.
+- Never introduce tangential information.
+- Only include facts that are directly relevant and widely documented.
 
 ===== IMAGE SIGNALS (if image provided) =====
 
