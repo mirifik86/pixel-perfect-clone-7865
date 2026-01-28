@@ -81,6 +81,7 @@ interface NewProSource {
   publisher: string;
   url: string;
   trustTier: 'high' | 'medium' | 'low';
+  stance?: 'corroborating' | 'neutral' | 'contradicting';
   whyItMatters: string;
 }
 
@@ -90,6 +91,7 @@ interface ResultWrapper {
   riskLevel?: 'low' | 'medium' | 'high';
   summary?: string;
   confidence?: number;
+  bestLinks?: NewProSource[];
   sources?: NewProSource[];
 }
 
@@ -99,6 +101,7 @@ interface EvidenceSource {
   publisher: string;
   url: string;
   trustTier: 'high' | 'medium' | 'low';
+  stance?: 'corroborating' | 'neutral' | 'contradicting';
   whyItMatters: string;
 }
 
@@ -371,15 +374,16 @@ const getSourceSnippet = (source: string | SourceDetail): string => {
 const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSource[] => {
   const sources: EvidenceSource[] = [];
   
-  // Priority 1: New format (data.result.sources)
-  if (data.result?.sources && Array.isArray(data.result.sources)) {
-    for (const src of data.result.sources) {
+  // Priority 1: New format with bestLinks (data.result.bestLinks)
+  if (data.result?.bestLinks && Array.isArray(data.result.bestLinks)) {
+    for (const src of data.result.bestLinks) {
       if (src.url) {
         sources.push({
           title: src.title || derivePublisher(src.title || '', src.url),
           publisher: src.publisher || derivePublisher('', src.url),
           url: src.url,
           trustTier: src.trustTier || 'medium',
+          stance: src.stance,
           whyItMatters: src.whyItMatters || (language === 'fr' 
             ? 'Source consultée pour corroboration.' 
             : 'Source consulted for corroboration.'),
@@ -388,7 +392,25 @@ const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr'): Ev
     }
   }
   
-  // Priority 2: Legacy format (data.corroboration.sources)
+  // Priority 2: New format with sources only (data.result.sources)
+  if (sources.length === 0 && data.result?.sources && Array.isArray(data.result.sources)) {
+    for (const src of data.result.sources) {
+      if (src.url) {
+        sources.push({
+          title: src.title || derivePublisher(src.title || '', src.url),
+          publisher: src.publisher || derivePublisher('', src.url),
+          url: src.url,
+          trustTier: src.trustTier || 'medium',
+          stance: src.stance,
+          whyItMatters: src.whyItMatters || (language === 'fr' 
+            ? 'Source consultée pour corroboration.' 
+            : 'Source consulted for corroboration.'),
+        });
+      }
+    }
+  }
+  
+  // Priority 3: Legacy format (data.corroboration.sources)
   if (sources.length === 0 && data.corroboration?.sources) {
     const legacySources = data.corroboration.sources;
     
@@ -409,6 +431,7 @@ const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr'): Ev
           publisher: derivePublisher(name, url),
           url,
           trustTier: inferTrustTier(name, url),
+          stance: 'corroborating',
           whyItMatters: snippet || (language === 'fr' 
             ? 'Source consultée pour corroboration.' 
             : 'Source consulted for corroboration.'),
@@ -430,10 +453,10 @@ const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr'): Ev
     }
   }
   
-  // Sort by trust tier (high first) and limit to 3
+  // Sort by trust tier (high first) and limit to 4 (for bestLinks display)
   return Array.from(byDomain.values())
     .sort((a, b) => tierOrder[a.trustTier] - tierOrder[b.trustTier])
-    .slice(0, 3);
+    .slice(0, 4);
 };
 
 // Trust tier badge styles
@@ -441,6 +464,13 @@ const trustTierStyles: Record<string, { bg: string; text: string; border: string
   high: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
   medium: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
   low: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
+};
+
+// Stance badge styles
+const stanceBadgeStyles: Record<string, { bg: string; text: string; border: string; labelEn: string; labelFr: string }> = {
+  corroborating: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', labelEn: 'Corroborating', labelFr: 'Corrobore' },
+  neutral: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200', labelEn: 'Neutral', labelFr: 'Neutre' },
+  contradicting: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', labelEn: 'Contradicts', labelFr: 'Contredit' },
 };
 
 // Get image signals impact color (never red for 0/neutral)
@@ -750,8 +780,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        {/* Trust tier badge */}
-                        <div className="mb-2">
+                        {/* Badges row */}
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                          {/* Trust tier badge */}
                           <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${tierStyle.bg} ${tierStyle.text} ${tierStyle.border}`}>
                             <span className={`h-1.5 w-1.5 rounded-full ${
                               source.trustTier === 'high' ? 'bg-emerald-500' 
@@ -760,6 +791,13 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                             }`} />
                             {tierLabel}
                           </span>
+                          
+                          {/* Stance badge */}
+                          {source.stance && stanceBadgeStyles[source.stance] && (
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium border ${stanceBadgeStyles[source.stance].bg} ${stanceBadgeStyles[source.stance].text} ${stanceBadgeStyles[source.stance].border}`}>
+                              {language === 'fr' ? stanceBadgeStyles[source.stance].labelFr : stanceBadgeStyles[source.stance].labelEn}
+                            </span>
+                          )}
                         </div>
                         
                         {/* Title - clickable */}
