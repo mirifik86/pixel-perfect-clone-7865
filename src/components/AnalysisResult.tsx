@@ -10,6 +10,7 @@ import { LinguisticDisclaimer } from './LinguisticDisclaimer';
 import { ProHighlights } from './ProHighlights';
 import { VerificationCoverage } from './VerificationCoverage';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslationWithFallback } from '@/i18n/fallback';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
   sources?: { points: number; reason: string };
@@ -542,7 +543,9 @@ const getImageImpactBg = (impact: number) => {
 };
 
 export const AnalysisResult = ({ data, language, articleSummary, hasImage = false }: AnalysisResultProps) => {
-  const t = translations[language];
+  // IMPORTANT: Never hide sections due to missing translations.
+  // Always fall back (selected → EN → FR) so result headers/labels render for all UI languages.
+  const t = getTranslationWithFallback(translations, language);
   const isPro = data.analysisType === 'pro';
   const [showAllSources, setShowAllSources] = useState(false);
   

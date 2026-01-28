@@ -1,6 +1,7 @@
 import { Shield, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslationWithFallback } from '@/i18n/fallback';
 
 interface StandardAnalysisBadgeProps {
   language: SupportedLanguage;
@@ -18,7 +19,7 @@ const translations = {
 };
 
 export const StandardAnalysisBadge = ({ language }: StandardAnalysisBadgeProps) => {
-  const t = translations[language];
+  const t = getTranslationWithFallback(translations, language);
 
   return (
     <TooltipProvider>
