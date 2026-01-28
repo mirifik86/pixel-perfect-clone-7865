@@ -9,6 +9,7 @@ import { UpgradeBridge } from './UpgradeBridge';
 import { LinguisticDisclaimer } from './LinguisticDisclaimer';
 import { ProHighlights } from './ProHighlights';
 import { VerificationCoverage } from './VerificationCoverage';
+import { type SupportedLanguage } from '@/i18n/config';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
   sources?: { points: number; reason: string };
@@ -123,7 +124,7 @@ interface AnalysisData {
 
 interface AnalysisResultProps {
   data: AnalysisData;
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   isProUnlocked?: boolean;
   articleSummary?: string;
   hasImage?: boolean;
@@ -377,7 +378,7 @@ const getSourceSnippet = (source: string | SourceDetail): string => {
 };
 
 // Normalize sources from both new and legacy formats into unified EvidenceSource[]
-const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr', maxCount?: number): EvidenceSource[] => {
+const normalizeEvidenceSources = (data: AnalysisData, language: SupportedLanguage, maxCount?: number): EvidenceSource[] => {
   const sources: EvidenceSource[] = [];
   
   // Priority 1: New format with bestLinks (data.result.bestLinks)
@@ -467,7 +468,7 @@ const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr', max
 };
 
 // Get ALL sources for PRO (up to 10) - combines bestLinks + sources
-const getAllProSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSource[] => {
+const getAllProSources = (data: AnalysisData, language: SupportedLanguage): EvidenceSource[] => {
   const allSources: EvidenceSource[] = [];
   const seenUrls = new Set<string>();
   
@@ -541,7 +542,8 @@ const getImageImpactBg = (impact: number) => {
 };
 
 export const AnalysisResult = ({ data, language, articleSummary, hasImage = false }: AnalysisResultProps) => {
-  const t = translations[language];
+  // Fallback to English for unsupported languages in translations
+  const t = translations[language] || translations.en;
   const isPro = data.analysisType === 'pro';
   const [showAllSources, setShowAllSources] = useState(false);
   

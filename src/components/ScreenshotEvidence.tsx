@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FileText, RefreshCw, AlertTriangle, Camera, Loader2, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface ImageSignals {
   screenshotLikelihood: 'likely' | 'uncertain';
@@ -24,7 +25,7 @@ interface ScreenshotEvidenceProps {
   imageSignals: ImageSignals;
   onRerunAnalysis: (editedText: string) => void;
   isRerunning: boolean;
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   imagePreview?: string;
   visualTextMismatch?: VisualTextMismatch;
   visualDescription?: string;
@@ -130,7 +131,7 @@ export const ScreenshotEvidence = ({
   visualTextMismatch,
   visualDescription,
 }: ScreenshotEvidenceProps) => {
-  const t = translations[language];
+  const t = (translations as Record<string, typeof translations.en>)[language] || translations.en;
   const [editedText, setEditedText] = useState(extractedText);
   const [showPreview, setShowPreview] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

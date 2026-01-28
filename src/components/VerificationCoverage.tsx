@@ -1,4 +1,5 @@
 import { Globe, Building2, AlertTriangle } from 'lucide-react';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface ProSource {
   stance?: 'corroborating' | 'neutral' | 'contradicting';
@@ -7,7 +8,7 @@ interface ProSource {
 }
 
 interface VerificationCoverageProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   sources: ProSource[];
   sourcesConsulted?: number;
 }
@@ -56,7 +57,7 @@ const getDomainFromUrl = (url: string): string => {
 };
 
 export const VerificationCoverage = ({ language, sources, sourcesConsulted = 0 }: VerificationCoverageProps) => {
-  const t = translations[language];
+  const t = translations[language] || translations.en;
   
   // Calculate web coverage based on sources found
   const totalSources = Math.max(sources.length, sourcesConsulted);
