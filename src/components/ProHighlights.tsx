@@ -1,4 +1,5 @@
 import { CheckCircle, HelpCircle, XCircle } from 'lucide-react';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface ProSource {
   stance?: 'corroborating' | 'neutral' | 'contradicting';
@@ -7,11 +8,19 @@ interface ProSource {
 }
 
 interface ProHighlightsProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   sources: ProSource[];
 }
 
-const translations = {
+const translations: Record<string, {
+  title: string;
+  confirmedLabel: string;
+  uncertainLabel: string;
+  contradictedLabel: string;
+  noConfirmation: string;
+  noUncertainty: string;
+  noContradiction: string;
+}> = {
   en: {
     title: 'PRO Highlights',
     confirmedLabel: 'Confirmed',
@@ -33,7 +42,7 @@ const translations = {
 };
 
 export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
-  const t = translations[language];
+  const t = translations[language] || translations.en;
   
   // Extract sources by stance
   const corroborating = sources.filter(s => s.stance === 'corroborating');

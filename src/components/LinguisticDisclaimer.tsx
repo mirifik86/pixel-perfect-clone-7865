@@ -1,10 +1,11 @@
 import { Info } from 'lucide-react';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface LinguisticDisclaimerProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
 }
 
-const translations = {
+const translations: Record<string, { text: string }> = {
   en: {
     text: 'These observations are based on writing patterns and internal structure only. Verifying the accuracy of the claims requires external source analysis included in PRO.',
   },
@@ -14,7 +15,7 @@ const translations = {
 };
 
 export const LinguisticDisclaimer = ({ language }: LinguisticDisclaimerProps) => {
-  const t = translations[language];
+  const t = translations[language] || translations.en;
 
   return (
     <div 

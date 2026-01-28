@@ -7,12 +7,27 @@ const corsHeaders = {
 
 const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
-const getTranslationPrompt = (targetLanguage: string) => `You are a professional translator. Your task is to translate analysis JSON text while preserving the exact meaning.
+// Supported language names for translation prompt
+const languageNames: Record<string, string> = {
+  en: 'ENGLISH',
+  fr: 'FRENCH',
+  es: 'SPANISH',
+  de: 'GERMAN',
+  pt: 'PORTUGUESE',
+  it: 'ITALIAN',
+  ja: 'JAPANESE',
+  ko: 'KOREAN',
+};
+
+const getTranslationPrompt = (targetLanguage: string) => {
+  const langName = languageNames[targetLanguage] || 'ENGLISH';
+  
+  return `You are a professional translator. Your task is to translate analysis JSON text while preserving the exact meaning.
 
 CRITICAL RULES:
 1. Translate ALL human-readable text fields - NEVER change any numerical values
 2. Keep the same JSON structure exactly (keys, arrays, nesting)
-3. Translate to ${targetLanguage === 'fr' ? 'FRENCH' : 'ENGLISH'}
+3. Translate to ${langName}
 4. Maintain the same professional, analytical tone
 5. Keep technical terms accurate
 6. DO NOT translate proper names of sources (media names, institutions, websites)
@@ -55,6 +70,7 @@ NEVER MODIFY (keep exactly as-is):
 - result.sources[].stance (enum)
 
 Respond with the complete JSON object with translated text fields.`;
+};
 
 const setIfString = (setter: () => void, value: any) => {
   if (typeof value === 'string' && value.trim().length > 0) setter();
@@ -202,8 +218,8 @@ serve(async (req) => {
     }
 
     console.log("Translating analysis to:", targetLanguage);
-
-    // Retry logic with exponential backoff for rate limits
+    
+    const targetLangName = languageNames[targetLanguage] || targetLanguage.toUpperCase();
     const maxRetries = 3;
     
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -223,7 +239,7 @@ serve(async (req) => {
           model: "google/gemini-3-flash-preview",
           messages: [
             { role: "system", content: getTranslationPrompt(targetLanguage) },
-            { role: "user", content: `Translate this analysis JSON to ${targetLanguage === 'fr' ? 'French' : 'English'}:\n\n${JSON.stringify(analysisData, null, 2)}` }
+            { role: "user", content: `Translate this analysis JSON to ${targetLangName}:\n\n${JSON.stringify(analysisData, null, 2)}` }
           ],
           temperature: 0.1,
         }),
