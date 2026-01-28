@@ -2,18 +2,37 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface SourceDetail {
+// Legacy source format
+interface LegacySourceDetail {
   name: string;
   url: string;
   snippet: string;
 }
 
+// New PRO source format from analyze edge function
+interface NewProSource {
+  title: string;
+  publisher: string;
+  url: string;
+  trustTier: 'high' | 'medium' | 'low';
+  whyItMatters: string;
+}
+
+// Normalized source format (internal use)
+interface NormalizedSource {
+  name: string;
+  publisher?: string;
+  url: string;
+  snippet: string;
+  trustTier?: 'high' | 'medium' | 'low';
+}
+
 interface BestSourcesSectionProps {
   sources: {
-    corroborated?: (string | SourceDetail)[];
-    neutral?: (string | SourceDetail)[];
-    constrained?: (string | SourceDetail)[];
-    contradicting?: (string | SourceDetail)[];
+    corroborated?: (string | LegacySourceDetail | NewProSource)[];
+    neutral?: (string | LegacySourceDetail | NewProSource)[];
+    constrained?: (string | LegacySourceDetail | NewProSource)[];
+    contradicting?: (string | LegacySourceDetail | NewProSource)[];
   };
   language: 'en' | 'fr';
   outcome?: string;
@@ -32,34 +51,118 @@ const extractKeyTerms = (text: string): string[] => {
   if (!text) return [];
   const words = text.toLowerCase().split(/\s+/);
   return words
-    .map(word => word.replace(/[^a-zA-ZÀ-ÿ0-9]/g, '')) // Remove punctuation
+    .map(word => word.replace(/[^a-zA-ZÀ-ÿ0-9]/g, ''))
     .filter(word => word.length > 4);
 };
 
 // Check if source is topically relevant to the claim
-const isTopicallyRelevant = (source: SourceDetail, keyTerms: string[]): boolean => {
-  if (keyTerms.length === 0) return true; // No key terms = no filter
+const isTopicallyRelevant = (source: NormalizedSource, keyTerms: string[]): boolean => {
+  if (keyTerms.length === 0) return true;
   
   const nameLower = source.name.toLowerCase();
   const snippetLower = source.snippet.toLowerCase();
-  const combined = `${nameLower} ${snippetLower}`;
+  const publisherLower = (source.publisher || '').toLowerCase();
+  const combined = `${nameLower} ${snippetLower} ${publisherLower}`;
   
   return keyTerms.some(term => combined.includes(term));
 };
 
-// Helper to extract source details from either string or SourceDetail
-const getSourceDetails = (source: string | SourceDetail): SourceDetail | null => {
-  if (typeof source === 'object' && source.name && source.url) {
-    return source;
+// Get domain from URL (without www)
+const getDomainFromUrl = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.replace(/^www\./, '').toLowerCase();
+  } catch {
+    return '';
   }
+};
+
+// Helper to normalize source from any format to NormalizedSource
+const getSourceDetails = (source: string | LegacySourceDetail | NewProSource): NormalizedSource | null => {
+  if (typeof source === 'string') {
+    return null; // String-only sources can't be normalized
+  }
+  
+  if (!source || typeof source !== 'object') {
+    return null;
+  }
+  
+  // New PRO format: has title + whyItMatters
+  if ('title' in source && 'whyItMatters' in source) {
+    const proSource = source as NewProSource;
+    if (!proSource.url) return null;
+    
+    return {
+      name: proSource.title || getDomainFromUrl(proSource.url),
+      publisher: proSource.publisher || undefined,
+      url: proSource.url,
+      snippet: proSource.whyItMatters || '',
+      trustTier: proSource.trustTier || undefined,
+    };
+  }
+  
+  // Legacy format: has name + snippet
+  if ('name' in source && 'url' in source) {
+    const legacySource = source as LegacySourceDetail;
+    if (!legacySource.url) return null;
+    
+    // Infer trust tier from patterns
+    const inferredTier = inferTrustTier(legacySource.name, legacySource.url);
+    
+    return {
+      name: legacySource.name || getDomainFromUrl(legacySource.url),
+      publisher: derivePublisher(legacySource.name, legacySource.url),
+      url: legacySource.url,
+      snippet: legacySource.snippet || '',
+      trustTier: inferredTier,
+    };
+  }
+  
   return null;
 };
 
-// Classify source type based on name/url patterns
-const classifySourceType = (source: SourceDetail): { type: 'official' | 'reference' | 'media'; label: string; labelFr: string; icon: React.ReactNode; style: string } => {
+// Derive publisher from domain
+const derivePublisher = (name: string, url: string): string | undefined => {
+  const domain = getDomainFromUrl(url);
+  if (!domain) return undefined;
+  
+  // Clean domain to publisher name
+  const parts = domain.split('.');
+  if (parts.length >= 2) {
+    const main = parts[parts.length - 2];
+    return main.charAt(0).toUpperCase() + main.slice(1);
+  }
+  return undefined;
+};
+
+// Infer trust tier from source name/domain patterns
+const inferTrustTier = (name: string, url: string): 'high' | 'medium' | 'low' => {
+  const combined = (name + ' ' + url).toLowerCase();
+  
+  // High trust: government, major institutions, top-tier media
+  const highTrustPatterns = /\.(gov|gouv|edu|int)\b|wikipedia|britannica|reuters|associated\s*press|afp|bbc|cnn|new\s*york\s*times|washington\s*post|wall\s*street|nature\.com|science\.org|pubmed|who\.int|un\.org|nasa|nih|cdc|fda/i;
+  if (highTrustPatterns.test(combined)) {
+    return 'high';
+  }
+  
+  // Major media patterns
+  const majorMediaPatterns = /guardian|telegraph|le\s*monde|figaro|economist|bloomberg|politico|npr|pbs|time\.com|forbes|wired/i;
+  if (majorMediaPatterns.test(combined)) {
+    return 'medium';
+  }
+  
+  return 'medium';
+};
+
+// Classify source type based on name/url/publisher patterns
+const classifySourceType = (source: NormalizedSource): { type: 'official' | 'reference' | 'media'; label: string; labelFr: string; icon: React.ReactNode; style: string } => {
   const nameLower = source.name.toLowerCase();
   const urlLower = source.url.toLowerCase();
-  const combined = `${nameLower} ${urlLower}`;
+  const publisherLower = (source.publisher || '').toLowerCase();
+  const combined = `${nameLower} ${urlLower} ${publisherLower}`;
+  
+  // Use trustTier to boost classification if available
+  const trustTier = source.trustTier;
   
   // Official Sources: Government, institutional archives, official bodies
   const officialPatterns = /\.(gov|gouv|gob|govt)\b|\.gov\.|government|official|ministry|ministère|department|white\s*house|élysée|europa\.eu|who\.int|un\.org|unesco|fbi|cdc|fda|nasa|esa|nih|state\.gov|justice\.gov|treasury|defense\.gov/i;
@@ -67,7 +170,7 @@ const classifySourceType = (source: SourceDetail): { type: 'official' | 'referen
   // Reference: Encyclopedias, academic sources, fact-checkers
   const referencePatterns = /britannica|encyclopedia|encyclopédie|wikipedia|oxford|cambridge|merriam|webster|larousse|scholarpedia|stanford\s*encyclopedia|jstor|pubmed|ncbi|nature\.com|science\.org|sciencedirect|springer|snopes|factcheck|politifact/i;
   
-  if (officialPatterns.test(combined)) {
+  if (officialPatterns.test(combined) || (trustTier === 'high' && officialPatterns.test(combined))) {
     return {
       type: 'official',
       label: 'Official',
@@ -87,7 +190,6 @@ const classifySourceType = (source: SourceDetail): { type: 'official' | 'referen
     };
   }
   
-  // Default to media
   return {
     type: 'media',
     label: 'Major Media',
@@ -98,23 +200,17 @@ const classifySourceType = (source: SourceDetail): { type: 'official' | 'referen
 };
 
 // Detect contextual badge for contradicting sources based on snippet keywords
-const getContradictingContextBadge = (snippet: string, language: 'en' | 'fr'): { label: string; icon?: React.ReactNode } | null => {
+const getContradictingContextBadge = (snippet: string, language: 'en' | 'fr'): { label: string } | null => {
   const snippetLower = snippet.toLowerCase();
   
-  // Scientific classification keywords
   const classificationKeywords = ['mammal', 'mammalia', 'vertebrate', 'invertebrate', 'chordata', 'animalia', 'plantae'];
   if (classificationKeywords.some(kw => snippetLower.includes(kw))) {
-    return {
-      label: language === 'fr' ? 'Classification scientifique' : 'Scientific classification'
-    };
+    return { label: language === 'fr' ? 'Classification scientifique' : 'Scientific classification' };
   }
   
-  // Taxonomic evidence keywords
-  const taxonomyKeywords = ['species', 'genus', 'family', 'class', 'order', 'phylum', 'kingdom', 'taxonomy', 'taxonomic', 'espèce', 'genre', 'famille', 'classe', 'ordre', 'phylum', 'taxonomie'];
+  const taxonomyKeywords = ['species', 'genus', 'family', 'class', 'order', 'phylum', 'kingdom', 'taxonomy', 'taxonomic'];
   if (taxonomyKeywords.some(kw => snippetLower.includes(kw))) {
-    return {
-      label: language === 'fr' ? 'Preuve taxonomique' : 'Taxonomic evidence'
-    };
+    return { label: language === 'fr' ? 'Preuve taxonomique' : 'Taxonomic evidence' };
   }
   
   return null;
@@ -130,7 +226,7 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
-// Hub/section paths to reject (too generic, not article pages)
+// Hub/section paths to reject
 const HUB_PATHS = new Set([
   '/news', '/world', '/politics', '/business', '/sport', '/sports',
   '/entertainment', '/health', '/science', '/tech', '/technology',
@@ -140,117 +236,58 @@ const HUB_PATHS = new Set([
 ]);
 
 // Trusted domains that bypass strict article URL validation
-// These are authoritative sources that may use non-standard URL structures
 const TRUSTED_DOMAINS = new Set([
-  // Government & Museums
-  'nps.gov',
-  'si.edu',
-  'nationalzoo.si.edu',
-  'australian.museum',
-  // Reference & Encyclopedias
-  'britannica.com',
-  'wikipedia.org',
-  'en.wikipedia.org',
-  'fr.wikipedia.org',
-  'de.wikipedia.org',
-  'es.wikipedia.org',
-  // Pet & Animal authorities
-  'aspca.org',
-  'petmd.com',
-  'vcahospitals.com',
-  // Science & Health
-  'cdc.gov',
-  'nih.gov',
-  'nasa.gov',
-  'who.int',
-  'nature.com',
-  'sciencedirect.com',
-  'pubmed.ncbi.nlm.nih.gov',
+  'nps.gov', 'si.edu', 'nationalzoo.si.edu', 'australian.museum',
+  'britannica.com', 'wikipedia.org', 'en.wikipedia.org', 'fr.wikipedia.org',
+  'de.wikipedia.org', 'es.wikipedia.org', 'aspca.org', 'petmd.com',
+  'vcahospitals.com', 'cdc.gov', 'nih.gov', 'nasa.gov', 'who.int',
+  'nature.com', 'sciencedirect.com', 'pubmed.ncbi.nlm.nih.gov',
 ]);
 
-// Check if hostname is a trusted domain (exact match or ends with .gov/.edu)
+// Check if hostname is a trusted domain
 const isTrustedDomain = (hostname: string): boolean => {
   const normalizedHost = hostname.replace(/^www\./, '').toLowerCase();
   
-  // Check exact match in trusted domains set
-  if (TRUSTED_DOMAINS.has(normalizedHost)) {
-    return true;
-  }
+  if (TRUSTED_DOMAINS.has(normalizedHost)) return true;
   
-  // Check if it's a subdomain of a trusted domain
   for (const trusted of TRUSTED_DOMAINS) {
-    if (normalizedHost.endsWith(`.${trusted}`)) {
-      return true;
-    }
+    if (normalizedHost.endsWith(`.${trusted}`)) return true;
   }
   
-  // Accept all .gov and .edu domains
-  if (normalizedHost.endsWith('.gov') || normalizedHost.endsWith('.edu')) {
-    return true;
-  }
+  if (normalizedHost.endsWith('.gov') || normalizedHost.endsWith('.edu')) return true;
   
   return false;
 };
 
-// Check if URL points to an actual article page (not a hub/homepage)
-// Returns true for article-like URLs OR trusted domains (which bypass strict checks)
+// Check if URL points to an actual article page
 const isArticleUrl = (url: string): boolean => {
   try {
     const parsed = new URL(url);
     const hostname = parsed.hostname;
     const pathname = parsed.pathname.toLowerCase();
     
-    // Trusted domains bypass the strict article URL check
-    // (but still reject pure homepages)
     if (isTrustedDomain(hostname)) {
-      // Still reject pure homepage
-      if (pathname === '/' || pathname === '') {
-        return false;
-      }
-      // Accept any path from trusted domains
+      if (pathname === '/' || pathname === '') return false;
       return true;
     }
     
-    // Reject homepage or empty path
-    if (pathname === '/' || pathname === '') {
-      return false;
-    }
+    if (pathname === '/' || pathname === '') return false;
     
-    // Reject known hub/section paths
-    const normalizedPath = pathname.replace(/\/$/, ''); // remove trailing slash
-    if (HUB_PATHS.has(normalizedPath)) {
-      return false;
-    }
+    const normalizedPath = pathname.replace(/\/$/, '');
+    if (HUB_PATHS.has(normalizedPath)) return false;
     
-    // Get path segments (filter out empty strings)
     const segments = pathname.split('/').filter(s => s.length > 0);
+    if (segments.length <= 1) return false;
     
-    // Reject if too shallow (only 1 segment like /news or /world)
-    if (segments.length <= 1) {
-      return false;
-    }
+    if (pathname.includes('/article') || pathname.includes('/articles')) return true;
     
-    // Accept if contains /article or /articles
-    if (pathname.includes('/article') || pathname.includes('/articles')) {
-      return true;
-    }
-    
-    // Accept if contains date pattern (e.g., /2024/01/27 or -2024- or 2024-01-27)
     const datePattern = /\/\d{4}\/\d{1,2}\/\d{1,2}|-\d{4}-|\d{4}-\d{2}-\d{2}/;
-    if (datePattern.test(pathname)) {
-      return true;
-    }
+    if (datePattern.test(pathname)) return true;
     
-    // Accept if >= 3 segments OR has a long slug segment (>= 20 chars or contains hyphen)
-    if (segments.length >= 3) {
-      return true;
-    }
+    if (segments.length >= 3) return true;
     
-    // Check for long slug segment (indicates specific article)
     const hasLongSlug = segments.some(seg => seg.length >= 20 || seg.includes('-'));
-    if (hasLongSlug) {
-      return true;
-    }
+    if (hasLongSlug) return true;
     
     return false;
   } catch {
@@ -263,42 +300,24 @@ const isBadUrl = (url: string): boolean => {
   if (!url || url.trim() === '') return true;
   
   const lowered = url.toLowerCase();
-  const badPatterns = [
-    '404', 'not-found', 'page-not-found', 'notfound',
-    '/error', 'redirect=0', 'webcache', 'amp/s'
-  ];
+  const badPatterns = ['404', 'not-found', 'page-not-found', 'notfound', '/error', 'redirect=0', 'webcache', 'amp/s'];
   
   return badPatterns.some(pattern => lowered.includes(pattern));
 };
 
-// Too-general Wikipedia pages (overly broad, not useful)
+// Too-general Wikipedia pages
 const TOO_GENERAL_WIKI_PATHS = new Set([
-  '/wiki/animal',
-  '/wiki/animals',
-  '/wiki/insect',
-  '/wiki/insects',
-  '/wiki/mammal',
-  '/wiki/mammals',
-  '/wiki/reptile',
-  '/wiki/reptiles',
-  '/wiki/bird',
-  '/wiki/birds',
-  '/wiki/fish',
-  '/wiki/plant',
-  '/wiki/plants',
-  '/wiki/human',
-  '/wiki/humans',
+  '/wiki/animal', '/wiki/animals', '/wiki/insect', '/wiki/insects',
+  '/wiki/mammal', '/wiki/mammals', '/wiki/reptile', '/wiki/reptiles',
+  '/wiki/bird', '/wiki/birds', '/wiki/fish', '/wiki/plant', '/wiki/plants',
+  '/wiki/human', '/wiki/humans',
 ]);
 
-// Check if URL is a too-general Wikipedia page
 const isTooGeneralWikipedia = (url: string): boolean => {
   try {
     const parsed = new URL(url);
     const hostname = parsed.hostname.toLowerCase();
-    
-    // Only check Wikipedia domains
     if (!hostname.includes('wikipedia.org')) return false;
-    
     const pathname = parsed.pathname.toLowerCase().replace(/\/$/, '');
     return TOO_GENERAL_WIKI_PATHS.has(pathname);
   } catch {
@@ -306,27 +325,29 @@ const isTooGeneralWikipedia = (url: string): boolean => {
   }
 };
 
-// Get normalized URL key for deduplication (hostname + pathname, no query/hash)
-const getNormalizedUrlKey = (url: string): string => {
-  try {
-    const parsed = new URL(url);
-    const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
-    const pathname = parsed.pathname.toLowerCase().replace(/\/$/, ''); // normalize trailing slash
-    return `${hostname}${pathname}`;
-  } catch {
-    return '';
-  }
+// Trust tier priority for sorting/dedup
+const TRUST_TIER_PRIORITY: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+const getTrustTierPriority = (tier?: string): number => {
+  return TRUST_TIER_PRIORITY[tier || 'medium'] ?? 1;
 };
 
-// Helper function for trust level priority
-const getTrustPriority = (source: SourceDetail): number => {
+// Get trust priority from classification type
+const getTypePriority = (source: NormalizedSource): number => {
   const { type } = classifySourceType(source);
   if (type === 'official') return 1;
   if (type === 'reference') return 2;
-  return 3; // media
+  return 3;
 };
 
-// Source card component using anchor-based navigation for Safari COOP compatibility
+// Trust tier badge styles
+const trustTierBadgeStyles: Record<string, { bg: string; text: string; border: string }> = {
+  high: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+  medium: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  low: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
+};
+
+// Source card component
 const SourceCard = ({ 
   source, 
   idx, 
@@ -335,7 +356,7 @@ const SourceCard = ({
   openLabel,
   isVerified = false
 }: { 
-  source: SourceDetail; 
+  source: NormalizedSource; 
   idx: number; 
   isCounterClaim: boolean; 
   language: 'en' | 'fr'; 
@@ -352,9 +373,14 @@ const SourceCard = ({
     navigator.clipboard.writeText(source.url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    }).catch(() => {
-      // Fallback: do nothing if clipboard fails
-    });
+    }).catch(() => {});
+  };
+  
+  // Trust tier label
+  const trustTierLabels: Record<string, { en: string; fr: string }> = {
+    high: { en: 'High Trust', fr: 'Haute confiance' },
+    medium: { en: 'Medium Trust', fr: 'Confiance moyenne' },
+    low: { en: 'Low Trust', fr: 'Faible confiance' },
   };
   
   return (
@@ -390,11 +416,23 @@ const SourceCard = ({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1.5">
-            {/* Source Name */}
+            {/* Source Name - clickable */}
             <span className={`font-semibold text-sm transition-colors
                             ${isCounterClaim ? 'text-slate-800 group-hover:text-red-700' : 'text-slate-800 group-hover:text-cyan-700'}`}>
               {source.name}
             </span>
+            
+            {/* Trust Tier Badge (if available) */}
+            {source.trustTier && (
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border
+                               ${trustTierBadgeStyles[source.trustTier].bg} 
+                               ${trustTierBadgeStyles[source.trustTier].text} 
+                               ${trustTierBadgeStyles[source.trustTier].border}`}>
+                {language === 'fr' 
+                  ? trustTierLabels[source.trustTier].fr 
+                  : trustTierLabels[source.trustTier].en}
+              </span>
+            )}
             
             {/* Type Badge */}
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium 
@@ -434,7 +472,14 @@ const SourceCard = ({
             )}
           </div>
           
-          {/* Snippet */}
+          {/* Publisher (secondary line) */}
+          {source.publisher && (
+            <p className="text-xs text-slate-500 mb-1">
+              {source.publisher}
+            </p>
+          )}
+          
+          {/* Snippet / whyItMatters */}
           <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
             {source.snippet}
           </p>
@@ -463,7 +508,7 @@ const SourceCard = ({
             )}
           </button>
           
-          {/* Open button - styled as span since parent is anchor */}
+          {/* Open button */}
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
                            shadow-sm transition-all duration-200
                            ${isCounterClaim 
@@ -482,84 +527,79 @@ const SourceCard = ({
 // ===== FILTERING HELPERS =====
 
 interface FilteredSource {
-  source: SourceDetail;
+  source: NormalizedSource;
   category?: 'corroborated' | 'neutral';
 }
 
-// Pass A (strict): article URL + snippet + dedupe + topical relevance + quality filters
-const filterStrictPass = (
-  sources: FilteredSource[],
-  claimKeyTerms: string[],
-  seenUrls: Set<string>
-): FilteredSource[] => {
-  return sources.filter(({ source }) => {
-    if (!source.snippet || source.snippet.length < 10) return false;
-    if (isBadUrl(source.url)) return false;
-    if (isTooGeneralWikipedia(source.url)) return false;
-    if (!isArticleUrl(source.url)) return false;
-    if (!isTopicallyRelevant(source, claimKeyTerms)) return false;
+// Deduplicate by DOMAIN, preferring higher trust tier, then longer snippet
+const deduplicateByDomain = (sources: FilteredSource[]): FilteredSource[] => {
+  const byDomain = new Map<string, FilteredSource>();
+  
+  for (const item of sources) {
+    const domain = getDomainFromUrl(item.source.url);
+    if (!domain) continue;
     
-    const urlKey = getNormalizedUrlKey(source.url);
-    if (!urlKey || seenUrls.has(urlKey)) return false;
-    seenUrls.add(urlKey);
-    return true;
-  });
+    const existing = byDomain.get(domain);
+    if (!existing) {
+      byDomain.set(domain, item);
+      continue;
+    }
+    
+    // Prefer higher trust tier
+    const existingTier = getTrustTierPriority(existing.source.trustTier);
+    const newTier = getTrustTierPriority(item.source.trustTier);
+    
+    if (newTier < existingTier) {
+      byDomain.set(domain, item);
+      continue;
+    }
+    
+    // Same tier: prefer longer snippet
+    if (newTier === existingTier && item.source.snippet.length > existing.source.snippet.length) {
+      byDomain.set(domain, item);
+    }
+  }
+  
+  return Array.from(byDomain.values());
 };
 
-// Pass B (relaxed): article URL + snippet + dedupe + quality filters, NO topical relevance
-const filterRelaxedPass = (
-  sources: FilteredSource[],
-  seenUrls: Set<string>
-): FilteredSource[] => {
-  return sources.filter(({ source }) => {
-    if (!source.snippet || source.snippet.length < 10) return false;
-    if (isBadUrl(source.url)) return false;
-    if (isTooGeneralWikipedia(source.url)) return false;
-    if (!isArticleUrl(source.url)) return false;
-    
-    const urlKey = getNormalizedUrlKey(source.url);
-    if (!urlKey || seenUrls.has(urlKey)) return false;
-    seenUrls.add(urlKey);
-    return true;
-  });
-};
-
-// Pass C (ultra-relaxed): valid URL + snippet + dedupe + quality filters
-// No article URL check, no topical relevance - maximum recovery
-const filterUltraRelaxedPass = (
-  sources: FilteredSource[],
-  seenUrls: Set<string>
-): FilteredSource[] => {
+// Apply quality filters + article URL check
+const applyQualityFilters = (sources: FilteredSource[], claimKeyTerms: string[], strict: boolean): FilteredSource[] => {
   return sources.filter(({ source }) => {
     // Must have snippet of minimum length
     if (!source.snippet || source.snippet.length < 10) return false;
     
-    // Quality filters still apply
+    // Quality filters
     if (isBadUrl(source.url)) return false;
     if (isTooGeneralWikipedia(source.url)) return false;
     
-    // Must have valid URL (just check it parses)
-    try {
-      const parsed = new URL(source.url);
-      // Reject only pure homepages
-      if (parsed.pathname === '/' || parsed.pathname === '') return false;
-    } catch {
+    // Article URL check (strict mode only for non-trusted domains)
+    if (strict) {
+      const domain = getDomainFromUrl(source.url);
+      if (!isTrustedDomain(domain) && !isArticleUrl(source.url)) {
+        return false;
+      }
+    }
+    
+    // Topical relevance (only in strict mode)
+    if (strict && !isTopicallyRelevant(source, claimKeyTerms)) {
       return false;
     }
     
-    // Dedupe
-    const urlKey = getNormalizedUrlKey(source.url);
-    if (!urlKey || seenUrls.has(urlKey)) return false;
-    seenUrls.add(urlKey);
     return true;
   });
 };
 
-// Sort by trust level and cap
-const sortAndCap = (sources: FilteredSource[], max: number): FilteredSource[] => {
-  return [...sources]
-    .sort((a, b) => getTrustPriority(a.source) - getTrustPriority(b.source))
-    .slice(0, max);
+// Sort by trust tier then type priority
+const sortByTrust = (sources: FilteredSource[]): FilteredSource[] => {
+  return [...sources].sort((a, b) => {
+    // First by trust tier
+    const tierDiff = getTrustTierPriority(a.source.trustTier) - getTrustTierPriority(b.source.trustTier);
+    if (tierDiff !== 0) return tierDiff;
+    
+    // Then by type priority
+    return getTypePriority(a.source) - getTypePriority(b.source);
+  });
 };
 
 // Filter stats indicator component
@@ -588,270 +628,197 @@ const FilterStatsIndicator = ({
   );
 };
 
+// Max sources to display
+const MAX_SUPPORTING_SOURCES = 3;
+const MAX_CONTRADICTING_SOURCES = 3;
+
 export const BestSourcesSection = ({ sources, language, outcome, claim, mode = 'all' }: BestSourcesSectionProps) => {
-  // State for 2-pass filtering: when true, use relaxed Pass B
   const [showUnfiltered, setShowUnfiltered] = useState(false);
-  
-  // State for URL verification
   const [verifiedUrls, setVerifiedUrls] = useState<Set<string>>(new Set());
   const [invalidUrls, setInvalidUrls] = useState<Set<string>>(new Set());
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationComplete, setVerificationComplete] = useState(false);
   
-  // Extract key terms from claim for relevance filtering
   const claimKeyTerms = extractKeyTerms(claim || '');
   
   const t = {
     title: language === 'fr' ? 'Meilleures preuves (PRO)' : 'Best evidence (PRO)',
     open: language === 'fr' ? 'Ouvrir' : 'Open',
     refutedTitle: language === 'fr' ? 'Sources réfutantes (PRO)' : 'Refuting sources (PRO)',
-    // Counter-claim detection section
     counterClaimTitle: language === 'fr' 
       ? 'Sources crédibles affirmant l\'inverse' 
       : 'Credible sources stating the opposite',
     counterClaimExplanation: language === 'fr'
-      ? 'Plusieurs sources faisant autorité affirment clairement l\'inverse de cette affirmation, indiquant un consensus scientifique ou factuel fort en opposition.'
-      : 'Multiple authoritative sources clearly state the opposite of this claim, indicating strong scientific or factual consensus against it.',
-    // Sources found but filtered fallback (Pass A failed, Pass B/C have sources)
+      ? 'Plusieurs sources faisant autorité affirment clairement l\'inverse de cette affirmation.'
+      : 'Multiple authoritative sources clearly state the opposite of this claim.',
     sourcesFilteredTitle: language === 'fr' ? 'Sources trouvées, mais non affichées' : 'Sources found, but hidden',
     sourcesFilteredSubtitle: language === 'fr'
-      ? "Des sources ont été consultées, mais elles n'ont pas passé nos filtres de pertinence. Vous pouvez reformuler ou afficher les sources quand même."
-      : "Sources were consulted, but they didn't pass our relevance filters. You can rephrase or show them anyway.",
+      ? "Des sources ont été consultées, mais elles n'ont pas passé nos filtres de pertinence."
+      : "Sources were consulted, but they didn't pass our relevance filters.",
     showAnyway: language === 'fr' ? 'Afficher quand même' : 'Show anyway',
-    // Ultra fallback when even relaxed pass fails but sources were consulted
     sourcesUnusableTitle: language === 'fr' ? 'Sources consultées mais non affichables' : 'Sources consulted but not displayable',
     sourcesUnusableSubtitle: language === 'fr'
-      ? "Des sources ont été consultées mais les liens étaient inutilisables (morts ou trop généraux)."
-      : "Sources were consulted but links were not usable (dead or too general).",
+      ? "Des sources ont été consultées mais les liens étaient inutilisables."
+      : "Sources were consulted but links were not usable.",
     retryLabel: language === 'fr' ? 'Relancer la recherche PRO' : 'Retry PRO search',
     verifyingLinks: language === 'fr' ? 'Vérification des liens…' : 'Verifying links…',
   };
   
-  // ===== COUNT ALL CONSULTED SOURCES =====
-  const consultedCount = 
-    (sources.corroborated?.length ?? 0) + 
-    (sources.neutral?.length ?? 0) + 
-    (sources.contradicting?.length ?? 0);
-  
-  // ===== PREPARE RAW SOURCE ARRAYS =====
-  
-  // Supporting sources (corroborated + neutral)
-  const allSupportingSources: FilteredSource[] = [];
-  sources.corroborated?.forEach(s => {
-    const details = getSourceDetails(s);
-    if (details) {
-      allSupportingSources.push({ source: details, category: 'corroborated' });
-    }
-  });
-  sources.neutral?.forEach(s => {
-    const details = getSourceDetails(s);
-    if (details) {
-      allSupportingSources.push({ source: details, category: 'neutral' });
-    }
-  });
-  
-  // Contradicting sources
-  const allContradictingSources: FilteredSource[] = [];
-  sources.contradicting?.forEach(s => {
-    const details = getSourceDetails(s);
-    if (details) {
-      allContradictingSources.push({ source: details });
-    }
-  });
-  
-  // Collect all URLs for verification
-  const allSourceUrls = useMemo(() => {
-    const urls: { url: string; name: string; snippet: string }[] = [];
-    allSupportingSources.forEach(({ source }) => {
-      urls.push({ url: source.url, name: source.name, snippet: source.snippet });
+  // ===== NORMALIZE ALL SOURCES =====
+  const allSupportingSources: FilteredSource[] = useMemo(() => {
+    const result: FilteredSource[] = [];
+    sources.corroborated?.forEach(s => {
+      const details = getSourceDetails(s);
+      if (details) result.push({ source: details, category: 'corroborated' });
     });
-    allContradictingSources.forEach(({ source }) => {
+    sources.neutral?.forEach(s => {
+      const details = getSourceDetails(s);
+      if (details) result.push({ source: details, category: 'neutral' });
+    });
+    return result;
+  }, [sources.corroborated, sources.neutral]);
+  
+  const allContradictingSources: FilteredSource[] = useMemo(() => {
+    const result: FilteredSource[] = [];
+    sources.contradicting?.forEach(s => {
+      const details = getSourceDetails(s);
+      if (details) result.push({ source: details });
+    });
+    return result;
+  }, [sources.contradicting]);
+  
+  const consultedCount = allSupportingSources.length + allContradictingSources.length;
+  
+  // URLs for verification (only final candidates after filtering)
+  const candidateUrls = useMemo(() => {
+    // Dedup first, then filter, to reduce verification load
+    const dedupedSupporting = deduplicateByDomain(allSupportingSources);
+    const dedupedContradicting = deduplicateByDomain(allContradictingSources);
+    
+    const urls: { url: string; name: string; snippet: string }[] = [];
+    [...dedupedSupporting, ...dedupedContradicting].forEach(({ source }) => {
       urls.push({ url: source.url, name: source.name, snippet: source.snippet });
     });
     return urls;
   }, [allSupportingSources, allContradictingSources]);
   
-  // URL verification effect
+  // URL verification
   const verifyUrls = useCallback(async () => {
-    if (allSourceUrls.length === 0 || verificationComplete) return;
+    if (candidateUrls.length === 0 || verificationComplete) return;
     
     setIsVerifying(true);
     try {
       const { data, error } = await supabase.functions.invoke('verify-urls', {
-        body: { urls: allSourceUrls }
+        body: { urls: candidateUrls }
       });
       
       if (error) {
-        console.error('URL verification failed:', error);
-        // On error, assume all URLs are valid (graceful degradation)
-        setVerifiedUrls(new Set(allSourceUrls.map(u => u.url)));
+        setVerifiedUrls(new Set(candidateUrls.map(u => u.url)));
       } else if (data?.results) {
         const valid = new Set<string>();
         const invalid = new Set<string>();
         
         data.results.forEach((r: { originalUrl: string; isValid: boolean }) => {
-          if (r.isValid) {
-            valid.add(r.originalUrl);
-          } else {
-            invalid.add(r.originalUrl);
-          }
+          if (r.isValid) valid.add(r.originalUrl);
+          else invalid.add(r.originalUrl);
         });
         
         setVerifiedUrls(valid);
         setInvalidUrls(invalid);
       }
-    } catch (err) {
-      console.error('URL verification error:', err);
-      // Graceful degradation: treat all as valid
-      setVerifiedUrls(new Set(allSourceUrls.map(u => u.url)));
+    } catch {
+      setVerifiedUrls(new Set(candidateUrls.map(u => u.url)));
     } finally {
       setIsVerifying(false);
       setVerificationComplete(true);
     }
-  }, [allSourceUrls, verificationComplete]);
+  }, [candidateUrls, verificationComplete]);
   
   useEffect(() => {
     verifyUrls();
   }, [verifyUrls]);
   
-  // Filter helper that removes invalid URLs
+  // Filter out invalid URLs
   const filterVerified = useCallback((sources: FilteredSource[]): FilteredSource[] => {
-    if (!verificationComplete) return sources; // Show all while verifying
+    if (!verificationComplete) return sources;
     return sources.filter(({ source }) => !invalidUrls.has(source.url));
   }, [invalidUrls, verificationComplete]);
   
-  // ===== 3-PASS FILTERING =====
+  // ===== PROCESSING PIPELINE =====
+  // 1. Dedup by domain
+  // 2. Apply quality filters (strict or relaxed)
+  // 3. Remove invalid URLs
+  // 4. Sort by trust
+  // 5. Cap to max
   
-  // --- SUPPORTING SOURCES ---
-  // Pass A: Strict (article URL + snippet + dedupe + topical relevance)
-  const supportingSeenUrlsStrict = new Set<string>();
-  const strictSupportingSources = filterStrictPass(allSupportingSources, claimKeyTerms, supportingSeenUrlsStrict);
-  const sortedStrictSupporting = sortAndCap(filterVerified(strictSupportingSources), 6);
+  const processedSupportingStrict = useMemo(() => {
+    const deduped = deduplicateByDomain(allSupportingSources);
+    const filtered = applyQualityFilters(deduped, claimKeyTerms, true);
+    const verified = filterVerified(filtered);
+    const sorted = sortByTrust(verified);
+    return sorted.slice(0, MAX_SUPPORTING_SOURCES);
+  }, [allSupportingSources, claimKeyTerms, filterVerified]);
   
-  // Pass B: Relaxed (article URL + snippet + dedupe, NO topical relevance)
-  const supportingSeenUrlsRelaxed = new Set<string>();
-  const relaxedSupportingSources = filterRelaxedPass(allSupportingSources, supportingSeenUrlsRelaxed);
-  const sortedRelaxedSupporting = sortAndCap(filterVerified(relaxedSupportingSources), 6);
+  const processedSupportingRelaxed = useMemo(() => {
+    const deduped = deduplicateByDomain(allSupportingSources);
+    const filtered = applyQualityFilters(deduped, claimKeyTerms, false);
+    const verified = filterVerified(filtered);
+    const sorted = sortByTrust(verified);
+    return sorted.slice(0, MAX_SUPPORTING_SOURCES);
+  }, [allSupportingSources, claimKeyTerms, filterVerified]);
   
-  // Pass C: Ultra-relaxed (valid URL + snippet + dedupe only)
-  const supportingSeenUrlsUltra = new Set<string>();
-  const ultraSupportingSources = filterUltraRelaxedPass(allSupportingSources, supportingSeenUrlsUltra);
-  const sortedUltraSupporting = sortAndCap(filterVerified(ultraSupportingSources), 6);
+  const processedContradictingStrict = useMemo(() => {
+    const deduped = deduplicateByDomain(allContradictingSources);
+    const filtered = applyQualityFilters(deduped, claimKeyTerms, true);
+    const verified = filterVerified(filtered);
+    const sorted = sortByTrust(verified);
+    return sorted.slice(0, MAX_CONTRADICTING_SOURCES);
+  }, [allContradictingSources, claimKeyTerms, filterVerified]);
   
-  // Determine which pass to use for supporting sources
-  const passASupporting = sortedStrictSupporting;
-  const passBSupporting = sortedRelaxedSupporting;
-  const passCSupporting = sortedUltraSupporting;
+  const processedContradictingRelaxed = useMemo(() => {
+    const deduped = deduplicateByDomain(allContradictingSources);
+    const filtered = applyQualityFilters(deduped, claimKeyTerms, false);
+    const verified = filterVerified(filtered);
+    const sorted = sortByTrust(verified);
+    return sorted.slice(0, MAX_CONTRADICTING_SOURCES);
+  }, [allContradictingSources, claimKeyTerms, filterVerified]);
   
-  // Final supporting sources based on state
-  let finalSupportingSources: FilteredSource[];
-  if (showUnfiltered) {
-    // User clicked "Show anyway" - use best available: prefer B, fallback to C
-    finalSupportingSources = passBSupporting.length > 0 ? passBSupporting : passCSupporting;
-  } else {
-    // Use strict pass
-    finalSupportingSources = passASupporting;
-  }
+  // Final sources based on state
+  const finalSupportingSources = showUnfiltered ? processedSupportingRelaxed : processedSupportingStrict;
+  const finalContradictingSources = showUnfiltered ? processedContradictingRelaxed : processedContradictingStrict;
   
-  // Check if we need fallback UI
-  const supportingStrictFailed = passASupporting.length < 2;
-  const supportingHasRelaxed = passBSupporting.length >= 1 || passCSupporting.length >= 1;
+  // Fallback logic
+  const supportingStrictFailed = processedSupportingStrict.length < 2;
+  const supportingHasRelaxed = processedSupportingRelaxed.length >= 1;
   const supportingNeedsFallback = supportingStrictFailed && supportingHasRelaxed;
-  const supportingAllPassesFailed = passASupporting.length === 0 && passBSupporting.length === 0 && passCSupporting.length === 0;
-  
-  // --- CONTRADICTING SOURCES ---
-  // Pass A: Strict
-  const contradictingSeenUrlsStrict = new Set<string>();
-  const strictContradictingSources = filterStrictPass(allContradictingSources, claimKeyTerms, contradictingSeenUrlsStrict);
-  const sortedStrictContradicting = sortAndCap(filterVerified(strictContradictingSources), 6);
-  
-  // Pass B: Relaxed
-  const contradictingSeenUrlsRelaxed = new Set<string>();
-  const relaxedContradictingSources = filterRelaxedPass(allContradictingSources, contradictingSeenUrlsRelaxed);
-  const sortedRelaxedContradicting = sortAndCap(filterVerified(relaxedContradictingSources), 6);
-  
-  // Pass C: Ultra-relaxed
-  const contradictingSeenUrlsUltra = new Set<string>();
-  const ultraContradictingSources = filterUltraRelaxedPass(allContradictingSources, contradictingSeenUrlsUltra);
-  const sortedUltraContradicting = sortAndCap(filterVerified(ultraContradictingSources), 6);
-  
-  const passAContradicting = sortedStrictContradicting;
-  const passBContradicting = sortedRelaxedContradicting;
-  const passCContradicting = sortedUltraContradicting;
-  
-  // Final contradicting sources based on state
-  let finalContradictingSources: FilteredSource[];
-  if (showUnfiltered) {
-    finalContradictingSources = passBContradicting.length > 0 ? passBContradicting : passCContradicting;
-  } else {
-    finalContradictingSources = passAContradicting;
-  }
-  
-  const contradictingStrictFailed = passAContradicting.length === 0;
-  const contradictingHasRelaxed = passBContradicting.length >= 1 || passCContradicting.length >= 1;
-  const contradictingNeedsFallback = contradictingStrictFailed && contradictingHasRelaxed;
+  const supportingAllFailed = processedSupportingStrict.length === 0 && processedSupportingRelaxed.length === 0;
   
   const hasCounterClaims = finalContradictingSources.length > 0;
   const isRefuted = outcome === 'refuted';
   const sectionTitle = isRefuted ? t.refutedTitle : t.title;
   
-  // ===== MODE: contradictingOnly =====
+  // ===== RENDER =====
+  
+  // Loading state
+  if (isVerifying) {
+    return (
+      <div className="mt-6 pt-5 border-t border-slate-200/80">
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+          <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
+          <span className="text-sm text-slate-600">{t.verifyingLinks}</span>
+        </div>
+      </div>
+    );
+  }
+  
+  // MODE: contradictingOnly
   if (mode === 'contradictingOnly') {
-    // Show loading state while verifying
-    if (isVerifying) {
-      return (
-        <div className="mt-6 pt-5 border-t border-slate-200/80">
-          <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
-            <span className="text-sm text-slate-600">{t.verifyingLinks}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    // Show fallback if strict failed but relaxed has sources
-    const showContradictingFallback = !showUnfiltered && contradictingNeedsFallback;
-    
-    // If no contradicting sources at all (even ultra-relaxed), render nothing
-    if (!hasCounterClaims && !showContradictingFallback) {
-      return null;
-    }
-    
-    // Show fallback card if strict failed but relaxed/ultra has sources
-    if (showContradictingFallback) {
-      return (
-        <div className="mt-6 pt-5 border-t border-slate-200/80">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-amber-600" />
-            </div>
-            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {t.sourcesFilteredTitle}
-            </h4>
-          </div>
-          
-          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50/50 to-slate-50/80 p-5 shadow-sm">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {t.sourcesFilteredSubtitle}
-            </p>
-            <button
-              onClick={() => setShowUnfiltered(true)}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                         bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
-            >
-              {t.showAnyway}
-            </button>
-          </div>
-        </div>
-      );
-    }
+    if (finalContradictingSources.length === 0) return null;
     
     const displayTitle = isRefuted ? t.refutedTitle : t.counterClaimTitle;
-    const contradictingTotal = allContradictingSources.length;
     
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
-        {/* Section Header */}
         <div className="flex items-center justify-between gap-2.5 mb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
@@ -863,17 +830,15 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
           </div>
           <FilterStatsIndicator 
             displayed={finalContradictingSources.length} 
-            total={contradictingTotal} 
+            total={allContradictingSources.length} 
             language={language} 
           />
         </div>
         
-        {/* Explanation text */}
         <p className="text-sm text-slate-600 leading-relaxed mb-4 pl-10">
           {t.counterClaimExplanation}
         </p>
         
-        {/* Contradicting Source Cards */}
         <div className="space-y-3">
           {finalContradictingSources.map(({ source }, idx) => (
             <SourceCard 
@@ -891,25 +856,10 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     );
   }
   
-  // ===== MODE: supportingOnly =====
+  // MODE: supportingOnly
   if (mode === 'supportingOnly') {
-    // Show loading state while verifying
-    if (isVerifying) {
-      return (
-        <div className="mt-6 pt-5 border-t border-slate-200/80">
-          <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
-            <span className="text-sm text-slate-600">{t.verifyingLinks}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    // Check if we need fallback
-    const showSupportingFallback = !showUnfiltered && supportingNeedsFallback;
-    
-    // ALL passes failed completely AND sources were consulted = show unusable message
-    if (supportingAllPassesFailed && consultedCount > 0) {
+    // All failed + sources were consulted
+    if (supportingAllFailed && consultedCount > 0) {
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
           <div className="flex items-center gap-2.5 mb-4">
@@ -937,8 +887,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       );
     }
     
-    // Strict pass found < 2, but relaxed/ultra has sources - show "Sources found but hidden"
-    if (showSupportingFallback) {
+    // Show fallback if strict failed but relaxed has sources
+    if (!showUnfiltered && supportingNeedsFallback) {
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
           <div className="flex items-center gap-2.5 mb-4">
@@ -966,10 +916,7 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       );
     }
     
-    // Show sources if we have any (from strict pass or after clicking "Show anyway")
     if (finalSupportingSources.length > 0) {
-      const supportingTotal = allSupportingSources.length;
-      
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
           <div className="flex items-center justify-between gap-2.5 mb-4">
@@ -983,7 +930,7 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
             </div>
             <FilterStatsIndicator 
               displayed={finalSupportingSources.length} 
-              total={supportingTotal} 
+              total={allSupportingSources.length} 
               language={language} 
             />
           </div>
@@ -1005,34 +952,13 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
       );
     }
     
-    // No sources to display and consultedCount === 0
     return null;
   }
   
-  // ===== MODE: all (default) =====
+  // MODE: all (default)
+  const needsFallback = !showUnfiltered && supportingNeedsFallback && !hasCounterClaims;
   
-  // Show loading state while verifying
-  if (isVerifying) {
-    return (
-      <div className="mt-6 pt-5 border-t border-slate-200/80">
-        <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-          <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
-          <span className="text-sm text-slate-600">{t.verifyingLinks}</span>
-        </div>
-      </div>
-    );
-  }
-  
-  // Check if we need to show fallback for either category
-  const needsSupportingFallback = !showUnfiltered && supportingNeedsFallback;
-  const needsContradictingFallback = !showUnfiltered && contradictingNeedsFallback;
-  const needsAnyFallback = needsSupportingFallback || needsContradictingFallback;
-  
-  // All passes failed completely for supporting (and no counter-claims)
-  const allPassesFailed = supportingAllPassesFailed && !hasCounterClaims;
-  
-  // Show "Sources consulted but not displayable" only if ALL passes completely fail AND sources were consulted
-  if (allPassesFailed && consultedCount > 0 && !needsContradictingFallback) {
+  if (supportingAllFailed && !hasCounterClaims && consultedCount > 0) {
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
         <div className="flex items-center gap-2.5 mb-4">
@@ -1044,24 +970,23 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
           </h4>
         </div>
         
-          <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
-            <p className="text-sm text-slate-600 leading-relaxed mb-4">
-              {t.sourcesUnusableSubtitle}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                         bg-cyan-100 text-cyan-700 hover:bg-cyan-200 transition-colors duration-200"
-            >
-              {t.retryLabel}
-            </button>
-          </div>
+        <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
+          <p className="text-sm text-slate-600 leading-relaxed mb-4">
+            {t.sourcesUnusableSubtitle}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                       bg-cyan-100 text-cyan-700 hover:bg-cyan-200 transition-colors duration-200"
+          >
+            {t.retryLabel}
+          </button>
+        </div>
       </div>
     );
   }
   
-  // Show "Sources found but hidden" if strict pass failed but relaxed/ultra has sources
-  if (needsAnyFallback && !hasCounterClaims && finalSupportingSources.length < 2) {
+  if (needsFallback) {
     return (
       <div className="mt-6 pt-5 border-t border-slate-200/80">
         <div className="flex items-center gap-2.5 mb-4">
@@ -1089,13 +1014,12 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
     );
   }
   
-  // Normal rendering with sources
+  // Normal rendering
   return (
     <div className="mt-6 pt-5 border-t border-slate-200/80">
-      {/* Counter-Claim Detection Section - shown ABOVE regular evidence */}
+      {/* Counter-Claims Section */}
       {hasCounterClaims && (
         <div className="mb-6">
-          {/* Counter-Claim Header */}
           <div className="flex items-center gap-2.5 mb-3">
             <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
               <Shield className="w-4 h-4 text-red-600" />
@@ -1105,12 +1029,10 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
             </h4>
           </div>
           
-          {/* Explanation text */}
           <p className="text-sm text-slate-600 leading-relaxed mb-4 pl-10">
             {t.counterClaimExplanation}
           </p>
           
-          {/* Counter-Claim Source Cards */}
           <div className="space-y-3">
             {finalContradictingSources.map(({ source }, idx) => (
               <SourceCard 
@@ -1127,8 +1049,8 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
         </div>
       )}
       
-      {/* Regular Evidence Section */}
-      {finalSupportingSources.length >= 2 && (
+      {/* Supporting Sources Section */}
+      {finalSupportingSources.length > 0 && (
         <>
           <div className="flex items-center justify-between gap-2.5 mb-4">
             <div className="flex items-center gap-2.5">
@@ -1150,34 +1072,6 @@ export const BestSourcesSection = ({ sources, language, outcome, claim, mode = '
             {finalSupportingSources.map(({ source }, idx) => (
               <SourceCard 
                 key={`best-${idx}`}
-                source={source} 
-                idx={idx} 
-                isCounterClaim={false} 
-                language={language} 
-                openLabel={t.open}
-                isVerified={verifiedUrls.has(source.url)}
-              />
-            ))}
-          </div>
-        </>
-      )}
-      
-      {/* Show relaxed supporting sources if user clicked "Show anyway" but we have < 2 strict */}
-      {showUnfiltered && finalSupportingSources.length > 0 && finalSupportingSources.length < 2 && (
-        <>
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isRefuted ? 'bg-red-100' : 'bg-cyan-100'}`}>
-              <Shield className={`w-4 h-4 ${isRefuted ? 'text-red-600' : 'text-cyan-600'}`} />
-            </div>
-            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {sectionTitle}
-            </h4>
-          </div>
-          
-          <div className="space-y-3">
-            {finalSupportingSources.map(({ source }, idx) => (
-              <SourceCard 
-                key={`relaxed-${idx}`}
                 source={source} 
                 idx={idx} 
                 isCounterClaim={false} 
