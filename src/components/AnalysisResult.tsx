@@ -1,4 +1,5 @@
-import { CheckCircle, AlertCircle, Image, Sparkles, Info, Shield, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, AlertCircle, Image, Sparkles, Info, Shield, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { SignalMiniGauge } from './SignalMiniGauge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { StandardAnalysisBadge } from './StandardAnalysisBadge';
@@ -6,7 +7,8 @@ import { StandardAnalysisIntro } from './StandardAnalysisIntro';
 import { CommunicationSignals } from './CommunicationSignals';
 import { UpgradeBridge } from './UpgradeBridge';
 import { LinguisticDisclaimer } from './LinguisticDisclaimer';
-
+import { ProHighlights } from './ProHighlights';
+import { VerificationCoverage } from './VerificationCoverage';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
   sources?: { points: number; reason: string };
@@ -168,6 +170,8 @@ const translations = {
     trustMedium: 'Medium',
     trustLow: 'Low',
     openSource: 'Open',
+    showAllSources: 'Show all sources',
+    hideAllSources: 'Hide additional sources',
     // Image signals
     expertVisualAnalysis: 'Expert Visual Analysis',
     imageProvided: 'Image provided and analyzed',
@@ -256,6 +260,8 @@ const translations = {
     trustMedium: 'Moyenne',
     trustLow: 'Faible',
     openSource: 'Ouvrir',
+    showAllSources: 'Voir toutes les sources',
+    hideAllSources: 'Masquer les sources supplémentaires',
     // Image signals
     expertVisualAnalysis: 'Analyse Visuelle Expert',
     imageProvided: 'Image fournie et analysée',
@@ -371,7 +377,7 @@ const getSourceSnippet = (source: string | SourceDetail): string => {
 };
 
 // Normalize sources from both new and legacy formats into unified EvidenceSource[]
-const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSource[] => {
+const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr', maxCount?: number): EvidenceSource[] => {
   const sources: EvidenceSource[] = [];
   
   // Priority 1: New format with bestLinks (data.result.bestLinks)
@@ -453,10 +459,57 @@ const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr'): Ev
     }
   }
   
-  // Sort by trust tier (high first) and limit to 4 (for bestLinks display)
-  return Array.from(byDomain.values())
-    .sort((a, b) => tierOrder[a.trustTier] - tierOrder[b.trustTier])
-    .slice(0, 4);
+  // Sort by trust tier (high first) and optionally limit
+  const sorted = Array.from(byDomain.values())
+    .sort((a, b) => tierOrder[a.trustTier] - tierOrder[b.trustTier]);
+    
+  return maxCount ? sorted.slice(0, maxCount) : sorted;
+};
+
+// Get ALL sources for PRO (up to 10) - combines bestLinks + sources
+const getAllProSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSource[] => {
+  const allSources: EvidenceSource[] = [];
+  const seenUrls = new Set<string>();
+  
+  // Add bestLinks first (they're the priority)
+  if (data.result?.bestLinks && Array.isArray(data.result.bestLinks)) {
+    for (const src of data.result.bestLinks) {
+      if (src.url && !seenUrls.has(src.url)) {
+        seenUrls.add(src.url);
+        allSources.push({
+          title: src.title || derivePublisher(src.title || '', src.url),
+          publisher: src.publisher || derivePublisher('', src.url),
+          url: src.url,
+          trustTier: src.trustTier || 'medium',
+          stance: src.stance,
+          whyItMatters: src.whyItMatters || (language === 'fr' 
+            ? 'Source consultée pour corroboration.' 
+            : 'Source consulted for corroboration.'),
+        });
+      }
+    }
+  }
+  
+  // Add remaining sources
+  if (data.result?.sources && Array.isArray(data.result.sources)) {
+    for (const src of data.result.sources) {
+      if (src.url && !seenUrls.has(src.url)) {
+        seenUrls.add(src.url);
+        allSources.push({
+          title: src.title || derivePublisher(src.title || '', src.url),
+          publisher: src.publisher || derivePublisher('', src.url),
+          url: src.url,
+          trustTier: src.trustTier || 'medium',
+          stance: src.stance,
+          whyItMatters: src.whyItMatters || (language === 'fr' 
+            ? 'Source consultée pour corroboration.' 
+            : 'Source consulted for corroboration.'),
+        });
+      }
+    }
+  }
+  
+  return allSources.slice(0, 10);
 };
 
 // Trust tier badge styles
@@ -490,12 +543,19 @@ const getImageImpactBg = (impact: number) => {
 export const AnalysisResult = ({ data, language, articleSummary, hasImage = false }: AnalysisResultProps) => {
   const t = translations[language];
   const isPro = data.analysisType === 'pro';
+  const [showAllSources, setShowAllSources] = useState(false);
   
   // Safe breakdown accessor - PRO responses may not have breakdown
   const breakdown: AnalysisBreakdown = data.breakdown ?? {};
   
   // Normalize evidence sources from both formats
-  const evidenceSources = isPro ? normalizeEvidenceSources(data, language) : [];
+  // bestLinks: max 4 for primary display
+  const evidenceSources = isPro ? normalizeEvidenceSources(data, language, 4) : [];
+  // allSources: up to 10 for expandable view
+  const allProSources = isPro ? getAllProSources(data, language) : [];
+  // Additional sources beyond the bestLinks
+  const additionalSources = allProSources.slice(evidenceSources.length);
+  const hasAdditionalSources = additionalSources.length > 0;
 
   // Get summary - prefer result.summary for new format
   const summaryText = data.result?.summary || articleSummary || data.summary;
@@ -731,6 +791,20 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
+      {/* PRO: PRO Highlights Section */}
+      {isPro && (
+        <ProHighlights language={language} sources={allProSources} />
+      )}
+
+      {/* PRO: Verification Coverage Section */}
+      {isPro && (
+        <VerificationCoverage 
+          language={language} 
+          sources={allProSources} 
+          sourcesConsulted={data.corroboration?.sourcesConsulted}
+        />
+      )}
+
       {/* PRO: Best Evidence Section - Premium Deep Links */}
       {isPro && (
         <div 
@@ -764,6 +838,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
 
           {evidenceSources.length > 0 ? (
             <div className="space-y-3">
+              {/* Primary bestLinks (max 4) */}
               {evidenceSources.map((source, idx) => {
                 const tierStyle = trustTierStyles[source.trustTier];
                 const tierLabel = source.trustTier === 'high' ? t.trustHigh 
@@ -839,6 +914,81 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                   </div>
                 );
               })}
+              
+              {/* Expandable additional sources */}
+              {hasAdditionalSources && (
+                <>
+                  <button
+                    onClick={() => setShowAllSources(!showAllSources)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-600 hover:text-teal-700 transition-colors"
+                  >
+                    {showAllSources ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        {t.hideAllSources}
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        {t.showAllSources} ({additionalSources.length})
+                      </>
+                    )}
+                  </button>
+                  
+                  {/* Additional sources - lighter visual hierarchy */}
+                  {showAllSources && (
+                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                      {additionalSources.map((source, idx) => (
+                        <div 
+                          key={idx}
+                          className="rounded-lg border bg-slate-50/50 p-3 transition-all hover:bg-white"
+                          style={{
+                            borderColor: 'hsl(200 20% 90%)',
+                          }}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              {/* Compact badges */}
+                              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                                {source.stance && stanceBadgeStyles[source.stance] && (
+                                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${stanceBadgeStyles[source.stance].bg} ${stanceBadgeStyles[source.stance].text} ${stanceBadgeStyles[source.stance].border}`}>
+                                    {language === 'fr' ? stanceBadgeStyles[source.stance].labelFr : stanceBadgeStyles[source.stance].labelEn}
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Title */}
+                              <a 
+                                href={source.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block text-xs font-semibold text-slate-700 hover:text-teal-600 transition-colors line-clamp-1"
+                              >
+                                {source.title}
+                              </a>
+                              
+                              {/* Publisher */}
+                              <p className="text-[10px] text-slate-400 mt-0.5">
+                                {source.publisher}
+                              </p>
+                            </div>
+                            
+                            {/* Compact open button */}
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-shrink-0 flex items-center justify-center rounded-md p-1.5 text-slate-500 hover:text-teal-600 hover:bg-teal-50 transition-all"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ) : (
             /* No sources - calm neutral message */
