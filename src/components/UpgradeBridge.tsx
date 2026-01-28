@@ -1,8 +1,9 @@
 import { ArrowRight, Search, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface UpgradeBridgeProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   onUpgradeClick?: () => void;
 }
 

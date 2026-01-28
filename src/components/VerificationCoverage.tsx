@@ -1,4 +1,5 @@
 import { Globe, Building2, AlertTriangle } from 'lucide-react';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface ProSource {
   stance?: 'corroborating' | 'neutral' | 'contradicting';
@@ -7,7 +8,7 @@ interface ProSource {
 }
 
 interface VerificationCoverageProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   sources: ProSource[];
   sourcesConsulted?: number;
 }

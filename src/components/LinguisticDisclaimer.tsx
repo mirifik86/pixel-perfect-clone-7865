@@ -1,7 +1,8 @@
 import { Info } from 'lucide-react';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface LinguisticDisclaimerProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
 }
 
 const translations = {

@@ -1,4 +1,5 @@
 import { Sparkles, FileText } from 'lucide-react';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface AnalysisBreakdown {
   tone?: { points: number; reason: string };
@@ -9,7 +10,7 @@ interface AnalysisBreakdown {
 }
 
 interface StandardAnalysisIntroProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
   breakdown?: AnalysisBreakdown;
   summary?: string;
 }
@@ -73,9 +74,11 @@ const translations = {
 
 const selectDynamicSummary = (
   characteristics: ReturnType<typeof detectTextCharacteristics>,
-  lang: 'en' | 'fr'
+  lang: SupportedLanguage
 ): string => {
-  const summaries = translations[lang].summaries;
+  // Fallback to 'en' for languages without specific translations
+  const effectiveLang = (lang === 'en' || lang === 'fr') ? lang : 'en';
+  const summaries = translations[effectiveLang].summaries;
   
   // Priority-based selection
   if (characteristics.isEmotionalTone) {

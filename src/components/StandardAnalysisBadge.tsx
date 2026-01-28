@@ -1,8 +1,9 @@
 import { Shield, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { type SupportedLanguage } from '@/i18n/config';
 
 interface StandardAnalysisBadgeProps {
-  language: 'en' | 'fr';
+  language: SupportedLanguage;
 }
 
 const translations = {
