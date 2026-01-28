@@ -128,16 +128,17 @@ RISK CLASSIFICATION:
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
-// PRO ANALYSIS PROMPT - Credibility Intelligence Engine
+// PRO ANALYSIS PROMPT - Credibility Intelligence Engine with Web Corroboration
 const getProSystemPrompt = (language: string) => {
   const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
   
-  return `You are a credibility intelligence engine.
+  return `You are a credibility intelligence engine with web corroboration (PRO).
 
-Your role is to deliver a calm, authoritative verdict on the credibility of the input content.
-
-You must appear confident, neutral, and human — never technical.
+GOAL:
+- Perform deeper multi-source corroboration.
+- Provide up to 10 sources total, categorized as corroborating / neutral / contradicting.
+- Keep the UI premium: only 4 clickable "best links" should be surfaced for the user.
 
 IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
@@ -145,10 +146,9 @@ CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
 ===== CRITICAL PRINCIPLES =====
 
-- All scoring logic, calculations, and sub-scores are strictly INTERNAL and MUST remain invisible.
-- Never mention models, algorithms, analysis steps, probabilities, or methodologies.
-- Do not explain how the score is computed.
-- Speak with clarity and restraint, as a trusted expert would.
+- All scoring mechanics and sub-scores are strictly INTERNAL and must remain invisible.
+- Never mention models, algorithms, or how scoring is computed.
+- Speak calmly and authoritatively for a general audience.
 
 ===== SCORING (INTERNAL ONLY - NEVER EXPOSE) =====
 
@@ -156,23 +156,36 @@ Evaluate credibility internally based on:
 - Logical consistency of the content
 - Nature of claims (factual vs opinion/speculation)
 - Real-world plausibility
-- Level of certainty and assertiveness
+- Web corroboration strength
 
 BASE: 50 points
 Apply internal adjustments based on coherence, corroboration, and claim gravity.
 FINAL RANGE: 5 to 98 (NEVER return 0 or 100)
 
-===== SOURCE RULES =====
+RISK CLASSIFICATION:
+- 70-100: low
+- 40-69: medium
+- 0-39: high
 
-1. Include only DEEP LINKS that go directly to a specific article or official page.
-2. Never include more than one source from the same domain.
-3. Do not invent sources. If strong corroboration is unavailable, return an empty sources array and state this clearly in the summary.
-4. Assign a trust tier to each source: "high", "medium", or "low". Prefer fewer, stronger sources.
+===== DEEP LINK RULES (STRICT) =====
 
-TRUST TIERS:
+1) Only include DEEP LINKS that go directly to a specific article or official page (no homepage, section, tag, or search pages).
+2) Do not invent links. If strong corroboration is unavailable, return fewer sources (even zero).
+3) Prefer reputable publishers and primary/official sources when possible.
+4) Avoid duplicates and near-duplicates; do not repeat the same article.
+5) Never include more than one source from the same domain.
+
+===== TRUST TIERS =====
+
 - "high": Official/government sources, major institutions, authoritative encyclopedias
 - "medium": Reputable secondary sources, established media outlets
 - "low": Less established sources, opinion-based, or uncertain provenance
+
+===== STANCE CATEGORIES =====
+
+- "corroborating": Source supports or confirms the claim
+- "neutral": Source provides context without strong support or contradiction
+- "contradicting": Source refutes or challenges the claim
 
 ===== SUMMARY STYLE =====
 
@@ -200,13 +213,24 @@ Return ONLY valid JSON with this exact structure and no additional keys:
     "riskLevel": "<low|medium|high>",
     "summary": "<${isFr ? 'Verdict de crédibilité concis et calme, rédigé pour un public général.' : 'Concise, calm credibility verdict written for a general audience.'}>",
     "confidence": <number 0.00-1.00>,
+    "bestLinks": [
+      {
+        "title": "<Best article/page title>",
+        "publisher": "<Organization or site name>",
+        "url": "<https://... direct deep link>",
+        "trustTier": "<high|medium|low>",
+        "stance": "<corroborating|neutral|contradicting>",
+        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
+      }
+    ],
     "sources": [
       {
         "title": "<Article or page title>",
         "publisher": "<Organization or site name>",
         "url": "<https://... direct deep link>",
         "trustTier": "<high|medium|low>",
-        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant comment cette source soutient ou contredit la revendication.' : 'One short sentence explaining how this source supports or contradicts the claim.'}>"
+        "stance": "<corroborating|neutral|contradicting>",
+        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
       }
     ]
   },
@@ -230,6 +254,12 @@ Return ONLY valid JSON with this exact structure and no additional keys:
   },
   "proDisclaimer": "${isFr ? "Cette évaluation reflète la plausibilité selon les informations disponibles, pas une vérité absolue." : 'This assessment reflects plausibility based on available information, not absolute truth.'}"
 }
+
+LIST RULES:
+- bestLinks: include at most 4 items, chosen as the strongest and most relevant deep links.
+- sources: include up to 10 items total across all stances (corroborating/neutral/contradicting).
+- Ensure bestLinks are a subset of sources (same URLs).
+- Prefer diversity of publishers in bestLinks (avoid same-domain repetition there).
 
 IMPORTANT: Return ONLY valid JSON. Do not include breakdown, points, weights, or internal reasoning in the output.
 
@@ -304,16 +334,18 @@ const isValidDeepLink = (url: string): boolean => {
   }
 };
 
-// Sanitize and deduplicate PRO sources
+// PRO source with stance field
 interface ProSource {
   title: string;
   publisher: string;
   url: string;
   trustTier: 'high' | 'medium' | 'low';
+  stance: 'corroborating' | 'neutral' | 'contradicting';
   whyItMatters: string;
 }
 
-const sanitizeProSources = (sources: any[]): ProSource[] => {
+// Sanitize and deduplicate PRO sources (supports both bestLinks and sources arrays)
+const sanitizeProSources = (sources: any[], limit: number = 10): ProSource[] => {
   if (!Array.isArray(sources) || sources.length === 0) {
     return [];
   }
@@ -332,6 +364,7 @@ const sanitizeProSources = (sources: any[]): ProSource[] => {
     const domain = getDomainFromUrl(src.url);
     const existing = byDomain.get(domain);
     const srcTier = src.trustTier || 'medium';
+    const srcStance = src.stance || 'neutral';
     
     if (!existing || (tierOrder[srcTier] ?? 1) < (tierOrder[existing.trustTier] ?? 1)) {
       byDomain.set(domain, {
@@ -339,15 +372,16 @@ const sanitizeProSources = (sources: any[]): ProSource[] => {
         publisher: String(src.publisher || domain),
         url: String(src.url),
         trustTier: srcTier as 'high' | 'medium' | 'low',
+        stance: srcStance as 'corroborating' | 'neutral' | 'contradicting',
         whyItMatters: String(src.whyItMatters || '')
       });
     }
   }
   
-  // Sort by trust tier and limit to 3
+  // Sort by trust tier and apply limit
   return Array.from(byDomain.values())
     .sort((a, b) => (tierOrder[a.trustTier] ?? 1) - (tierOrder[b.trustTier] ?? 1))
-    .slice(0, 3);
+    .slice(0, limit);
 };
 
 // Convert numeric confidence to legacy tier
@@ -377,27 +411,54 @@ const normalizeProResponse = (analysisResult: any): any => {
     analysisResult.confidenceLevel = analysisResult.confidence;
   }
   
-  // Sanitize sources (filter, dedup, limit to 3)
+  // Sanitize bestLinks (limit to 4) and sources (limit to 10)
+  if (Array.isArray(result.bestLinks)) {
+    result.bestLinks = sanitizeProSources(result.bestLinks, 4);
+  }
+  
   if (Array.isArray(result.sources)) {
-    const sanitized = sanitizeProSources(result.sources);
+    const sanitized = sanitizeProSources(result.sources, 10);
     result.sources = sanitized;
     
-    // Create/update legacy corroboration structure for backward compat
-    const legacySources = sanitized.map(src => ({
-      name: src.title,
-      url: src.url,
-      snippet: src.whyItMatters
-    }));
+    // Categorize sources by stance for legacy corroboration structure
+    const corroborated: any[] = [];
+    const contradicting: any[] = [];
+    const neutral: any[] = [];
     
+    for (const src of sanitized) {
+      const legacySource = {
+        name: src.title,
+        url: src.url,
+        snippet: src.whyItMatters,
+        trustTier: src.trustTier
+      };
+      
+      if (src.stance === 'corroborating') {
+        corroborated.push(legacySource);
+      } else if (src.stance === 'contradicting') {
+        contradicting.push(legacySource);
+      } else {
+        neutral.push(legacySource);
+      }
+    }
+    
+    // Create/update legacy corroboration structure for backward compat
     if (!analysisResult.corroboration) {
       analysisResult.corroboration = { outcome: 'neutral', sourcesConsulted: sanitized.length };
     }
     
     analysisResult.corroboration.sources = {
-      corroborated: legacySources,
-      contradicting: [],
-      neutral: []
+      corroborated,
+      contradicting,
+      neutral
     };
+    
+    // Update outcome based on stance distribution
+    if (contradicting.length > corroborated.length) {
+      analysisResult.corroboration.outcome = 'refuted';
+    } else if (corroborated.length > 0) {
+      analysisResult.corroboration.outcome = 'corroborated';
+    }
   }
   
   return analysisResult;
@@ -520,6 +581,27 @@ Respond with ONLY the translated JSON object, no other text.`;
         }
       }
       
+      // PRO bestLinks - preserve structure, allow translated whyItMatters
+      const origBestLinks = originalData.result?.bestLinks;
+      const translatedBestLinks = translated.result?.bestLinks;
+      
+      if (origBestLinks && Array.isArray(origBestLinks)) {
+        const processedBestLinks = origBestLinks.map((origLink: any, idx: number) => {
+          const translatedLink = translatedBestLinks?.[idx] || {};
+          return {
+            title: origLink.title,
+            publisher: origLink.publisher,
+            url: origLink.url,
+            trustTier: origLink.trustTier,
+            stance: origLink.stance,
+            whyItMatters: translatedLink.whyItMatters || origLink.whyItMatters
+          };
+        });
+        
+        if (!translated.result) translated.result = {};
+        translated.result.bestLinks = processedBestLinks;
+      }
+      
       // PRO sources - handle both flat and nested result structure
       const origSources = originalData.result?.sources || originalData.sources;
       const translatedSources = translated.result?.sources || translated.sources;
@@ -532,6 +614,7 @@ Respond with ONLY the translated JSON object, no other text.`;
             publisher: origSource.publisher,
             url: origSource.url,
             trustTier: origSource.trustTier,
+            stance: origSource.stance,
             whyItMatters: translatedSource.whyItMatters || origSource.whyItMatters
           };
         });
@@ -739,13 +822,14 @@ serve(async (req) => {
       };
       
       if (isPro) {
-        // PRO fallback with status/result structure
+        // PRO fallback with status/result structure including bestLinks
         fallbackResponse.status = 'ok';
         fallbackResponse.result = {
           score: 50,
           riskLevel: 'medium',
           summary: fallbackMsg,
           confidence: 0.3,
+          bestLinks: [],
           sources: []
         };
         fallbackResponse.corroboration = {
