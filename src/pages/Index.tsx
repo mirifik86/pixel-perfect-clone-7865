@@ -91,6 +91,86 @@ interface BilingualSummaries {
   fr: { summary: string; articleSummary: string } | null;
 }
 
+// Helper to safely create default breakdown
+const createDefaultBreakdown = (): AnalysisBreakdown => ({
+  sources: { points: 0, reason: '' },
+  factual: { points: 0, reason: '' },
+  tone: { points: 0, reason: '' },
+  context: { points: 0, reason: '' },
+  transparency: { points: 0, reason: '' },
+});
+
+// Normalize any analysis response (legacy or new PRO format) to AnalysisData
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const normalizeAnalysisData = (raw: any): AnalysisData => {
+  if (!raw) {
+    return {
+      score: 0,
+      breakdown: createDefaultBreakdown(),
+      summary: '',
+      articleSummary: '',
+      confidence: 'low',
+    };
+  }
+
+  // New PRO format: { status: "ok", result: { score, riskLevel, summary, confidence, bestLinks, sources } }
+  if (raw.result && typeof raw.result === 'object') {
+    const result = raw.result;
+    const numericConfidence = typeof result.confidence === 'number' ? result.confidence : 0;
+    const confidenceTier: 'low' | 'medium' | 'high' =
+      numericConfidence >= 0.75 ? 'high' : numericConfidence >= 0.45 ? 'medium' : 'low';
+
+    // Build breakdown from result or use defaults
+    const breakdown: AnalysisBreakdown = result.breakdown && typeof result.breakdown === 'object'
+      ? {
+          sources: { points: Number(result.breakdown.sources?.points ?? 0), reason: String(result.breakdown.sources?.reason ?? '') },
+          factual: { points: Number(result.breakdown.factual?.points ?? 0), reason: String(result.breakdown.factual?.reason ?? '') },
+          tone: { points: Number(result.breakdown.tone?.points ?? 0), reason: String(result.breakdown.tone?.reason ?? '') },
+          context: { points: Number(result.breakdown.context?.points ?? 0), reason: String(result.breakdown.context?.reason ?? '') },
+          transparency: { points: Number(result.breakdown.transparency?.points ?? 0), reason: String(result.breakdown.transparency?.reason ?? '') },
+        }
+      : createDefaultBreakdown();
+
+    const normalized: AnalysisData = {
+      score: Number(result.score ?? 0),
+      analysisType: raw.analysisType ?? result.analysisType ?? 'pro',
+      breakdown,
+      summary: String(result.summary ?? raw.summary ?? ''),
+      articleSummary: String(raw.articleSummary ?? ''),
+      confidence: confidenceTier,
+      corroboration: raw.corroboration ?? result.corroboration,
+    };
+
+    // Attach raw.result for downstream components (bestLinks, sources, etc.)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (normalized as any).result = result;
+
+    return normalized;
+  }
+
+  // Legacy format: already matches AnalysisData shape
+  return {
+    score: Number(raw.score ?? 0),
+    analysisType: raw.analysisType,
+    breakdown: raw.breakdown && typeof raw.breakdown === 'object'
+      ? {
+          sources: { points: Number(raw.breakdown.sources?.points ?? 0), reason: String(raw.breakdown.sources?.reason ?? '') },
+          factual: { points: Number(raw.breakdown.factual?.points ?? 0), reason: String(raw.breakdown.factual?.reason ?? '') },
+          tone: { points: Number(raw.breakdown.tone?.points ?? 0), reason: String(raw.breakdown.tone?.reason ?? '') },
+          context: { points: Number(raw.breakdown.context?.points ?? 0), reason: String(raw.breakdown.context?.reason ?? '') },
+          transparency: { points: Number(raw.breakdown.transparency?.points ?? 0), reason: String(raw.breakdown.transparency?.reason ?? '') },
+        }
+      : createDefaultBreakdown(),
+    summary: String(raw.summary ?? ''),
+    articleSummary: String(raw.articleSummary ?? ''),
+    confidence: raw.confidence === 'high' || raw.confidence === 'medium' ? raw.confidence : 'low',
+    corroboration: raw.corroboration,
+    // Preserve result if it exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(raw.result ? { result: raw.result } as any : {}),
+  };
+};
+
 // REMOVED: Local translations object - now using i18n system
 
 const Index = () => {
@@ -195,7 +275,7 @@ const Index = () => {
 
   // Always run the actual analysis once (master), then translate for the other language.
   // This guarantees identical scoring + web corroboration across the EN/FR toggle.
-  const runBilingualTextAnalysis = async ({
+  const runBilingualTextAnalysis = useCallback(async ({
     content,
     analysisType,
   }: {
@@ -214,8 +294,10 @@ const Index = () => {
     if (master.error) throw master.error;
     if (master.data?.error) throw new Error(master.data.error);
 
-    const enData = master.data as AnalysisData;
+    // Normalize the response to handle both legacy and new PRO formats
+    const enData = normalizeAnalysisData(master.data);
 
+    // Translate: pass normalized data but preserve raw result (URLs must not be translated)
     const fr = await supabase.functions.invoke('translate-analysis', {
       body: {
         analysisData: enData,
@@ -223,10 +305,13 @@ const Index = () => {
       },
     });
 
-    const frData = (!fr.error && fr.data && !fr.data.error ? (fr.data as AnalysisData) : enData);
+    // Normalize the French translation as well
+    const frData = (!fr.error && fr.data && !fr.data.error 
+      ? normalizeAnalysisData(fr.data) 
+      : enData);
 
     return { en: enData, fr: frData };
-  };
+  }, []);
 
   const handleReset = useCallback(() => {
     setAnalysisByLanguage({ en: null, fr: null });
@@ -239,19 +324,6 @@ const Index = () => {
     setAnalysisError(null);
     setHasFormContent(false);
     lastInputRef.current = null;
-  }, []);
-  
-  // Retry the last analysis (for error recovery)
-  const handleRetry = useCallback(() => {
-    if (!lastInputRef.current) return;
-    
-    setAnalysisError(null);
-    
-    if (lastInputRef.current.type === 'text') {
-      handleAnalyze(lastInputRef.current.content);
-    } else if (lastInputRef.current.file && lastInputRef.current.preview) {
-      handleImageAnalysis(lastInputRef.current.file, lastInputRef.current.preview);
-    }
   }, []);
 
   // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
@@ -292,7 +364,7 @@ const Index = () => {
         setIsLoaderExiting(false);
       }, 500); // Match exit animation duration
     }
-  }, [language, runBilingualTextAnalysis]);
+  }, [i18nT, runBilingualTextAnalysis]);
 
   // Screenshot Analysis Handler - now called directly when image is ready
   // contextText: optional text provided alongside the image for multimodal analysis
@@ -450,7 +522,20 @@ const Index = () => {
         setIsLoaderExiting(false);
       }, 500); // Match exit animation duration
     }
-  }, [language, runBilingualTextAnalysis]);
+  }, [language, i18nT, runBilingualTextAnalysis]);
+
+  // Retry the last analysis (for error recovery)
+  const handleRetry = useCallback(() => {
+    if (!lastInputRef.current) return;
+    
+    setAnalysisError(null);
+    
+    if (lastInputRef.current.type === 'text') {
+      handleAnalyze(lastInputRef.current.content);
+    } else if (lastInputRef.current.file && lastInputRef.current.preview) {
+      handleImageAnalysis(lastInputRef.current.file, lastInputRef.current.preview);
+    }
+  }, [handleAnalyze, handleImageAnalysis]);
 
   // Input validation - checks if text appears to be meaningful content
   const isValidInput = useCallback((text: string): boolean => {
@@ -515,7 +600,7 @@ const Index = () => {
   };
 
   // PRO Analysis - uses the same content with analysisType: 'pro'
-  const handleProAnalysis = async () => {
+  const handleProAnalysis = useCallback(async () => {
     if (!lastAnalyzedContent) return;
     
     const errorAnalysis = i18nT('index.errorAnalysis');
@@ -538,7 +623,7 @@ const Index = () => {
     } finally {
       setIsProLoading(false);
     }
-  };
+  }, [lastAnalyzedContent, i18nT, runBilingualTextAnalysis]);
 
   // INSTANT language switch - uses global i18n system
   const handleLanguageChange = (mode: LanguageMode) => {
