@@ -21,19 +21,23 @@ TRANSLATE these text fields (ALL of them):
 - summary (main analysis summary)
 - articleSummary (factual content summary)
 - disclaimer / proDisclaimer (legal disclaimers)
-- breakdown.*.reason (ALL breakdown categories: sources, factual, tone, context, transparency, claimGravity, contextualCoherence, webCorroboration, imageCoherence)
+- breakdown.*.reason (ALL breakdown categories)
 - webPresence.observation (web presence description)
 - corroboration.summary (corroboration findings)
 - imageSignals.disclaimer (image analysis disclaimer)
-- imageSignals.origin.indicators[] (each indicator string in the array)
+- imageSignals.origin.indicators[] (each indicator string)
 - imageSignals.coherence.explanation (coherence explanation)
 - imageSignals.scoring.reasoning (scoring reasoning)
-- imageSignals.scoring.severityConditionsMet[] (each severity condition string)
+- result.summary (PRO summary)
+- result.bestLinks[].title (source titles)
+- result.bestLinks[].whyItMatters (relevance explanations)
+- result.sources[].title (source titles)
+- result.sources[].whyItMatters (relevance explanations)
 
 NEVER MODIFY (keep exactly as-is):
 - score (number)
 - breakdown.*.points (numbers)
-- breakdown.*.weight (percentages like "30%")
+- breakdown.*.weight (percentages)
 - confidence, inputType, domain, analysisType (enum values)
 - corroboration.outcome / sourcesConsulted / sourceTypes
 - corroboration.sources (source names - keep EXACTLY as-is)
@@ -41,19 +45,44 @@ NEVER MODIFY (keep exactly as-is):
 - imageSignals.coherence.classification (enum)
 - imageSignals.metadata.* (all metadata fields are enums)
 - imageSignals.scoring.* (all numerical scoring fields)
+- result.bestLinks[].url (URLs - NEVER translate)
+- result.bestLinks[].publisher (publisher names - keep as-is)
+- result.bestLinks[].trustTier (enum: high/medium/low)
+- result.bestLinks[].stance (enum: corroborating/neutral/contradicting)
+- result.sources[].url (URLs - NEVER translate)
+- result.sources[].publisher (publisher names - keep as-is)
+- result.sources[].trustTier (enum)
+- result.sources[].stance (enum)
 
 Respond with the complete JSON object with translated text fields.`;
 
+const setIfString = (setter: () => void, value: any) => {
+  if (typeof value === 'string' && value.trim().length > 0) setter();
+};
+
+// Translate text fields in source arrays (bestLinks, sources)
+const mergeSourceArrays = (
+  originalArr: any[] | undefined,
+  translatedArr: any[] | undefined
+): void => {
+  if (!Array.isArray(originalArr) || !Array.isArray(translatedArr)) return;
+  
+  for (let i = 0; i < originalArr.length && i < translatedArr.length; i++) {
+    const orig = originalArr[i];
+    const trans = translatedArr[i];
+    
+    // Only merge text fields, keep URL/publisher/trustTier/stance unchanged
+    setIfString(() => (orig.title = trans.title), trans?.title);
+    setIfString(() => (orig.whyItMatters = trans.whyItMatters), trans?.whyItMatters);
+  }
+};
+
 // Merge translated text fields into the original analysis object.
-// This guarantees that scores, corroboration sources, enums, and all other data remain IDENTICAL.
+// This guarantees that scores, URLs, enums, and all other data remain IDENTICAL.
 const mergeTranslatedText = (original: any, translated: any) => {
   const out = deepClone(original);
 
-  const setIfString = (setter: () => void, value: any) => {
-    if (typeof value === 'string' && value.trim().length > 0) setter();
-  };
-
-  // Top-level fields
+  // Top-level fields (legacy + mirrored PRO)
   setIfString(() => (out.summary = translated?.summary), translated?.summary);
   setIfString(() => (out.articleSummary = translated?.articleSummary), translated?.articleSummary);
   setIfString(() => (out.disclaimer = translated?.disclaimer), translated?.disclaimer);
@@ -77,7 +106,7 @@ const mergeTranslatedText = (original: any, translated: any) => {
     }
   }
 
-  // PRO corroboration summary (preserve sources & all enums/numbers by keeping original object)
+  // PRO corroboration summary (preserve sources & all enums/numbers)
   if (out.corroboration?.summary) {
     setIfString(
       () => (out.corroboration.summary = translated?.corroboration?.summary),
@@ -89,7 +118,6 @@ const mergeTranslatedText = (original: any, translated: any) => {
   if (out.imageSignals) {
     const tImg = translated?.imageSignals;
 
-    // Nested image disclaimer
     if (out.imageSignals.disclaimer) {
       setIfString(
         () => (out.imageSignals.disclaimer = tImg?.disclaimer),
@@ -97,7 +125,6 @@ const mergeTranslatedText = (original: any, translated: any) => {
       );
     }
 
-    // Origin indicators (these are human-readable signals, not enums)
     if (Array.isArray(out.imageSignals.origin?.indicators) && Array.isArray(tImg?.origin?.indicators)) {
       const nextIndicators = tImg.origin.indicators.filter((x: any) => typeof x === 'string' && x.trim().length > 0);
       if (nextIndicators.length === out.imageSignals.origin.indicators.length) {
@@ -119,7 +146,6 @@ const mergeTranslatedText = (original: any, translated: any) => {
       );
     }
 
-    // Optional severity conditions list (if present)
     if (
       Array.isArray(out.imageSignals.scoring?.severityConditionsMet) &&
       Array.isArray(tImg?.scoring?.severityConditionsMet)
@@ -128,6 +154,27 @@ const mergeTranslatedText = (original: any, translated: any) => {
       if (next.length === out.imageSignals.scoring.severityConditionsMet.length) {
         out.imageSignals.scoring.severityConditionsMet = next;
       }
+    }
+  }
+
+  // NEW PRO FORMAT: result object with bestLinks and sources
+  if (out.result && typeof out.result === 'object') {
+    const tResult = translated?.result;
+    
+    // Translate result.summary
+    setIfString(
+      () => (out.result.summary = tResult?.summary),
+      tResult?.summary,
+    );
+
+    // Translate bestLinks array (title + whyItMatters only)
+    if (Array.isArray(out.result.bestLinks)) {
+      mergeSourceArrays(out.result.bestLinks, tResult?.bestLinks);
+    }
+
+    // Translate sources array (title + whyItMatters only)
+    if (Array.isArray(out.result.sources)) {
+      mergeSourceArrays(out.result.sources, tResult?.sources);
     }
   }
 
@@ -158,11 +205,10 @@ serve(async (req) => {
 
     // Retry logic with exponential backoff for rate limits
     const maxRetries = 3;
-    let lastError: Error | null = null;
     
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       if (attempt > 0) {
-        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
+        const delay = Math.pow(2, attempt) * 1000;
         console.log(`Retry attempt ${attempt + 1}, waiting ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
@@ -223,15 +269,13 @@ serve(async (req) => {
 
       if (response.status === 429) {
         console.warn(`Rate limited on attempt ${attempt + 1}`);
-        lastError = new Error("Rate limit exceeded");
-        continue; // Retry
+        continue;
       }
 
       // Non-retryable error
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
       
-      // Fallback: return original untranslated data instead of failing
       console.warn("Returning original data due to API error");
       return new Response(
         JSON.stringify(analysisData),
@@ -245,7 +289,6 @@ serve(async (req) => {
       JSON.stringify(analysisData),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
 
   } catch (error) {
     console.error("Translation error:", error);
