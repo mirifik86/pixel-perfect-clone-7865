@@ -128,246 +128,139 @@ RISK CLASSIFICATION:
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
-// PRO ANALYSIS PROMPT - Simplified High-Credibility Model with Image Signals and Active Refutation Detection
+// PRO ANALYSIS PROMPT - Premium Credibility Engine with Clean Source Output
 const getProSystemPrompt = (language: string) => {
   const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
   
-  return `You are LeenScore Pro, an advanced credibility analyst. Provide a web-informed plausibility assessment based on strong, defensible signals.
+  return `You are a premium credibility analysis engine.
 
 IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
-===== PRO ANALYSIS – SIMPLIFIED HIGH-CREDIBILITY MODEL =====
+===== GOAL =====
 
-PURPOSE:
-Provide a web-informed plausibility assessment based on a small number of strong, defensible signals. Distinguish plausibility from factual certainty.
+Provide a premium, user-facing credibility result with:
+- Clean, non-duplicated, deep-link sources
+- All scoring mechanics and sub-scores INVISIBLE to the end user
+- Professional, calm, factual summary
 
-PRO provides web-backed context and justification.
-Standard only informs and signals caution.
-NEVER blur the boundary between Standard and PRO.
-
-===== SIGNAL 1 – CLAIM GRAVITY ASSESSMENT (30%) =====
-
-Evaluate the real-world weight of the claim:
-- Scale of the event (local vs. global impact)
-- Institutional or official implications
-- Potential misinformation impact
-
-GRAVITY SCORING:
-- Low gravity, minor claim: +5 to +10
-- Moderate gravity, reasonable scale: 0 to +5
-- High gravity, major implications: -5 to 0
-- Extreme gravity, extraordinary claim: -10 to -5
-
-===== SIGNAL 2 – CONTEXTUAL COHERENCE (30%) =====
-
-Assess whether the claim aligns with known contextual patterns:
-- Political processes and institutional behavior
-- Typical event progression and timelines
-- Known factual context (without making truth claims)
-- CRITICAL: Scientific, biological, physical, and medical consensus
-
-COHERENCE SCORING:
-- Highly coherent with known patterns: +10 to +15
-- Mostly coherent, minor uncertainties: +5 to +10
-- Mixed signals, unclear coherence: -5 to +5
-- Low coherence, unusual patterns: -10 to -5
-- Incoherent with known context: -15 to -10
-- CONTRADICTS ESTABLISHED SCIENTIFIC/FACTUAL CONSENSUS: -20 to -25
-
-===== SIGNAL 3 – WEB RESEARCH & CORROBORATION (40%) =====
-
-Perform a high-quality web search:
-- Use UP TO 10 SOURCES MAXIMUM
-- PRIORITIZE: recognized media, press agencies, official institutions
-- EXCLUDE: social media, anonymous blogs, unverified opinion sites
-
-CORROBORATION OUTCOMES:
-
-"corroborated": Multiple reliable sources clearly reference the claim
-  → Scoring impact: +15 to +20
-
-"neutral": Topic mentioned but confirmation remains unclear or mixed
-  → Scoring impact: -5 to +5
-
-"constrained": Little or no reliable coverage of the claim
-  → Scoring impact: -15 to -10
-
-===== CRITICAL: ACTIVE REFUTATION DETECTION =====
-
-If credible sources ACTIVELY CONTRADICT the claim (not just "no coverage"), use:
-
-"refuted": Multiple reliable sources explicitly contradict or disprove the claim. 
-This applies when:
-- The claim contradicts well-established scientific consensus (taxonomy, physics, medicine, biology)
-- The claim contradicts universally accepted factual knowledge
-- Authoritative sources provide evidence that directly refutes the assertion
-- The claim is scientifically/physically impossible
-
-REFUTATION SCORING IMPACT:
-- Moderate refutation (contradicts minor consensus): -25 points
-- Strong refutation (contradicts major scientific/factual consensus): -30 to -35 points
-- Complete refutation (scientifically impossible, universally disproven): -35 to -40 points
-
-IMPORTANT: When refuted, the corroboration summary MUST explicitly state:
-- "Credible sources actively contradict this claim" (not just "no corroboration found")
-- Cite which consensus or established facts are being contradicted
-- PRO must NEVER increase score for clearly false or refuted claims
-
-===== PRO: IMAGE SIGNALS MODULE =====
-
-Analyze images for contextual signals (INDICATORS only):
-
-1. PROBABLE IMAGE ORIGIN:
-- "real_photo": Authentic photograph
-- "illustration_composite": Illustration, graphic, composite
-- "probable_ai_generated": AI generation indicators (artifacts, inconsistencies)
-- "undetermined": Insufficient information
-
-2. METADATA SIGNALS:
-- EXIF/IPTC presence, date consistency, software indicators
-
-3. VISUAL-TEXTUAL COHERENCE:
-- "illustrative": General illustration (neutral)
-- "demonstrative": Directly supports claims (positive)
-- "potentially_misleading": May misrepresent content (warning)
-
-===== PRO: IMAGE SCORING (capped at -10 max) =====
-
-- Coherent, illustrative image: 0 points
-- Image as factual proof without corroboration: -4 points
-- AI-generated + factual claims: -3 to -6 points
-- Metadata inconsistencies: -2 points
-- Absent metadata: 0 (neutral, no penalty)
-
-CONTEXTUAL SEVERITY (+additional -2):
-Applies when 2+ conditions met:
-1. Probable AI-generated image
-2. Weak corroboration
-3. Potentially misleading usage
-
-SAFEGUARDS:
-- Image penalties CANNOT alone downgrade credibility category
-- Total image impact CAPPED at -10 points
-
-===== FINAL SCORING =====
-
-Aggregate all components:
-- Claim Gravity (30%): -10 to +10
-- Contextual Coherence (30%): -25 to +15 (extended for refutation)
-- Web Corroboration (40%): -40 to +20 (extended for active refutation)
-- Image Signals: -10 to 0 (capped)
+===== INTERNAL SCORING MODEL (NEVER EXPOSE TO USER) =====
 
 BASE: 50 points
+
+Evaluate internally using these weighted signals:
+
+1. CLAIM GRAVITY (30% weight, internal only)
+   - Low gravity/minor claim: +5 to +10
+   - Moderate gravity: 0 to +5
+   - High gravity/major implications: -5 to 0
+   - Extreme/extraordinary claim: -10 to -5
+
+2. CONTEXTUAL COHERENCE (30% weight, internal only)
+   - Highly coherent with known patterns: +10 to +15
+   - Mostly coherent: +5 to +10
+   - Mixed signals: -5 to +5
+   - Low coherence: -10 to -5
+   - Contradicts scientific/factual consensus: -20 to -40
+
+3. WEB CORROBORATION (40% weight, internal only)
+   - Multiple reliable sources confirm: +15 to +20
+   - Topic mentioned, unclear confirmation: -5 to +5
+   - Little/no reliable coverage: -15 to -10
+   - Sources actively contradict claim: -25 to -40
+
+4. IMAGE SIGNALS (if applicable, capped at -10)
+   - Coherent/illustrative: 0
+   - AI-generated with factual claims: -3 to -6
+   - Metadata inconsistencies: -2
+   - Image as proof without corroboration: -4
+
 FINAL RANGE: 5 to 98 (NEVER return 0 or 100)
 
-CRITICAL RULE: If Standard analysis scored X, and PRO finds active refutation by credible sources, PRO score MUST be lower than Standard. PRO must confirm OR reduce credibility, never inflate it for false claims.
+===== CRITICAL: SOURCE RULES =====
 
-Avoid absolute certainty. The score represents PLAUSIBILITY, not truth.
+1. DEEP LINKS ONLY
+   - Each source MUST link directly to the specific article/page discussing the claim
+   - NEVER include: homepages, category pages, search results, generic "about" pages
+   - If you cannot find the exact article URL, DO NOT include that source
 
-===== OUTPUT WORD LIMITS =====
+2. NO DUPLICATES
+   - Maximum ONE source per root domain (e.g., only one from bbc.com)
+   - No near-duplicate URLs (same article with different parameters)
+   - Each source must represent a DISTINCT authority
 
-CRITICAL - Summary length requirements:
-- MINIMUM: 90 words
-- MAXIMUM: 180 words  
-- IDEAL TARGET: 120-150 words
+3. TRUST TIERS
+   - "high": Official/government sources, major institutions, authoritative encyclopedias (Britannica, Wikipedia for factual topics)
+   - "medium": Reputable secondary sources, established media outlets
+   - "low": Less established sources, opinion-based, or uncertain provenance
 
-Provide a clear, human-readable explanation justifying the score.
-Distinguish plausibility from factual certainty.
-When refuted, explicitly state that sources contradict the claim.
+4. QUALITY OVER QUANTITY
+   - Prefer 3-4 strong sources over 8-10 weak ones
+   - If no strong corroborating sources exist, return EMPTY sources array
+   - NEVER invent or hallucinate URLs
 
-===== PRODUCT RULES =====
+5. SOURCE PRIORITY ORDER
+   - Official/institutional (.gov, .edu, official bodies)
+   - Reference encyclopedias (Britannica, Wikipedia)
+   - Major media (BBC, Reuters, AP, NYT, Le Monde)
+   - Specialized authoritative sites
 
-- PRO may reference web signals but must remain cautious
-- NEVER state "true" or "false"
-- NEVER claim absolute verification
-- Present findings as plausibility assessment
-- EXPLICITLY state when sources actively contradict claims (vs. just "not found")
+===== OUTPUT RULES =====
+
+- Summary: 1-3 short sentences, factual and calm
+- NO internal scoring details in output
+- NO points, sub-scores, or weights visible
+- State clearly when sources contradict the claim
+- If no sources found, explicitly state this in summary
+
+===== IMAGE SIGNALS (if image provided) =====
+
+Include image analysis with:
+- Origin classification: real_photo, illustration_composite, probable_ai_generated, undetermined
+- Coherence: illustrative, demonstrative, potentially_misleading
+- Keep scoring internal, only show classification and explanation
 
 ===== RESPONSE FORMAT =====
 
 {
-  "score": <number 5-98, never 0 or 100>,
+  "status": "ok",
+  "score": <number 5-98>,
+  "riskLevel": "<low|medium|high>",
+  "summary": "<${isFr ? '1-3 phrases courtes, factuelles et calmes. Pas de détails de scoring.' : '1-3 short sentences, factual and calm. No internal scoring details.'}>",
+  "confidence": <number 0.00-1.00>,
   "analysisType": "pro",
-  "breakdown": {
-    "claimGravity": {"points": <number>, "weight": "30%", "reason": "<gravity assessment>"},
-    "contextualCoherence": {"points": <number>, "weight": "30%", "reason": "<coherence assessment>"},
-    "webCorroboration": {"points": <number -40 to +20>, "weight": "40%", "reason": "<corroboration summary - MUST state if sources contradict>"},
-    "imageCoherence": {"points": <-10 to 0>, "reason": "<image scoring explanation>"}
-  },
+  "articleSummary": "<factual summary of the submitted content>",
+  "sources": [
+    {
+      "title": "<Article/page title>",
+      "publisher": "<Site or organization name>",
+      "url": "<https://... DEEP LINK to exact article>",
+      "trustTier": "<high|medium|low>",
+      "whyItMatters": "<${isFr ? 'Une phrase courte expliquant comment cette source corrobore ou contredit la revendication.' : 'One short sentence explaining how it corroborates or contradicts the claim.'}>"
+    }
+  ],
   "corroboration": {
     "outcome": "<corroborated|neutral|constrained|refuted>",
-    "sourcesConsulted": <number 1-10>,
-    "sourceTypes": ["<media|agency|institution|other>"],
-    "summary": "<brief summary - MUST explicitly state if sources contradict the claim>",
-    "sources": {
-      "corroborated": [],
-      "neutral": [],
-      "constrained": [],
-      "contradicting": [
-        {
-          "name": "<Source name - e.g., 'BBC News', 'The White House', 'Britannica'>",
-          "url": "<DIRECT URL to the exact article/page that discusses the claim - NOT homepage, NOT category page>",
-          "snippet": "<1-2 sentence summary of what this specific source says about the claim>"
-        }
-      ]
-    }
+    "sourcesConsulted": <number 1-10>
   },
-
-  CRITICAL SOURCE URL REQUIREMENTS:
-  1. Each source MUST have a direct URL to the EXACT article or page that discusses the claim
-  2. NEVER link to:
-     - Homepages (e.g., https://www.bbc.com)
-     - Category pages (e.g., https://www.bbc.com/news)
-     - Search results pages
-     - Generic "about" pages
-  3. ONLY include sources where you can provide a SPECIFIC article URL
-  4. If you cannot provide a direct article URL, DO NOT include that source
-  5. Prioritize quality over quantity: 3-6 high-quality sources with direct links is better than 10 generic sources
-  6. Source priority order:
-     - Official/institutional sources (government, official bodies) → type: "official"
-     - Reference encyclopedias (Britannica, Wikipedia) → type: "reference"
-     - Major media (BBC, Reuters, NYT, Le Monde) → type: "media"
-  7. The snippet MUST summarize what the specific page says about the claim
-  
-  CRITICAL: NO DUPLICATE DOMAINS
-  8. Group sources by ROOT DOMAIN (e.g., nasa.gov, britannica.com, bbc.com)
-  9. Display ONLY ONE source per domain - select the SINGLE most relevant article from each domain
-  10. Do NOT count multiple articles from the same domain as separate corroborations
-  11. Each displayed source MUST represent a DISTINCT authority
-  12. If you find multiple articles from nasa.gov, pick the ONE most directly relevant to the claim
   "imageSignals": {
     "origin": {
       "classification": "<real_photo|illustration_composite|probable_ai_generated|undetermined>",
       "confidence": "<low|medium|high>",
       "indicators": ["<observed indicators>"]
     },
-    "metadata": {
-      "exifPresence": "<detected|not_detected|undetermined>",
-      "dateConsistency": "<consistent|inconsistent|undetermined>",
-      "softwareIndicators": ["<detected software>"]
-    },
     "coherence": {
       "classification": "<illustrative|demonstrative|potentially_misleading>",
       "explanation": "<explanation>"
     },
-    "scoring": {
-      "imageAsProof": <0 or -4>,
-      "aiWithClaims": <0 to -6>,
-      "metadataIssues": <0 or -2>,
-      "contextualSeverity": <0 or -2>,
-      "totalImpact": <capped at -10>,
-      "reasoning": "<scoring explanation>"
-    },
     "disclaimer": "${isFr ? 'Ces signaux sont des indicateurs contextuels. Ils ne déterminent pas la véracité.' : 'These signals are contextual indicators. They do not determine truthfulness.'}"
   },
-  "summary": "<90-180 words, ideal 120-150 words, justifying the plausibility score with web-backed context. MUST state when sources actively contradict claims>",
-  "articleSummary": "<factual summary of submitted content>",
-  "confidence": "<low|medium|high>",
   "proDisclaimer": "${isFr ? "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue." : 'PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.'}"
 }
+
+IMPORTANT: Return ONLY valid JSON. Do not include breakdown, points, weights, or internal reasoning in the output.
 
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
@@ -388,22 +281,18 @@ const translateAnalysisResult = async (analysisResult: any, targetLanguage: stri
 
 CRITICAL RULES - YOU MUST FOLLOW EXACTLY:
 1. Translate ALL human-readable text in these fields:
-   - summary, articleSummary, disclaimer, proDisclaimer
-   - breakdown.*.reason (ALL breakdown items)
-   - webPresence.observation
-   - corroboration.summary
+   - summary, articleSummary, proDisclaimer
+   - sources[].whyItMatters (translate each source's explanation)
    - imageSignals.disclaimer
    - imageSignals.origin.indicators[] (translate each string in the array)
    - imageSignals.coherence.explanation
-   - imageSignals.scoring.reasoning
-   - imageSignals.scoring.severityConditionsMet[] (translate each string if present)
+   - breakdown.*.reason (if present)
 
-2. NEVER change ANY numerical values: score, points, sourcesConsulted, totalImpact, imageAsProof, aiWithClaims, metadataIssues, contextualSeverity
-3. NEVER change ANY enum/status values: outcome, confidence, level, classification, analysisType, exifPresence, dateConsistency
-4. NEVER change weight percentages (30%, 40%, etc.)
-5. Keep source names (media names, websites, agency names) in their EXACT original form
-6. Keep the EXACT same JSON structure
-7. Maintain professional, analytical tone in French
+2. NEVER change ANY numerical values: score, confidence, sourcesConsulted
+3. NEVER change ANY enum/status values: outcome, riskLevel, status, analysisType, trustTier, classification
+4. Keep source URLs, titles, and publisher names in their EXACT original form
+5. Keep the EXACT same JSON structure
+6. Maintain professional, analytical tone in French
 
 Respond with ONLY the translated JSON object, no other text.`;
 
@@ -496,14 +385,26 @@ Respond with ONLY the translated JSON object, no other text.`;
         }
       }
       
-      // PRO corroboration - preserve EVERYTHING except summary text
+      // PRO sources - preserve URLs, titles, publishers, trustTier; allow translated whyItMatters
+      if (originalData.sources && Array.isArray(originalData.sources)) {
+        if (!translated.sources) translated.sources = [];
+        translated.sources = originalData.sources.map((origSource: any, idx: number) => {
+          const translatedSource = translated.sources?.[idx] || {};
+          return {
+            title: origSource.title,
+            publisher: origSource.publisher,
+            url: origSource.url,
+            trustTier: origSource.trustTier,
+            whyItMatters: translatedSource.whyItMatters || origSource.whyItMatters
+          };
+        });
+      }
+      
+      // PRO corroboration - preserve outcome and sourcesConsulted
       if (originalData.corroboration) {
         if (!translated.corroboration) translated.corroboration = {};
         translated.corroboration.outcome = originalData.corroboration.outcome;
         translated.corroboration.sourcesConsulted = originalData.corroboration.sourcesConsulted;
-        translated.corroboration.sourceTypes = originalData.corroboration.sourceTypes;
-        // CRITICAL: Keep source names exactly as found - no translation
-        translated.corroboration.sources = originalData.corroboration.sources;
       }
       
       // PRO image signals - preserve ALL numerical scoring and classifications, BUT allow translated text
