@@ -1,6 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // ===== INTERFACES =====
 
@@ -301,9 +307,24 @@ const SourceCard = ({
   };
   
   const trustTierLabels: Record<string, { en: string; fr: string }> = {
-    high: { en: 'High Trust', fr: 'Haute confiance' },
-    medium: { en: 'Medium Trust', fr: 'Confiance moyenne' },
-    low: { en: 'Low Trust', fr: 'Faible confiance' },
+    high: { en: 'High', fr: 'Élevée' },
+    medium: { en: 'Medium', fr: 'Moyenne' },
+    low: { en: 'Low', fr: 'Faible' },
+  };
+  
+  const trustTierTooltips: Record<string, { en: string; fr: string }> = {
+    high: { 
+      en: 'Official, institutional, or recognized reference source.', 
+      fr: 'Source officielle, institutionnelle ou média de référence reconnu.' 
+    },
+    medium: { 
+      en: 'Recognized media or reliable secondary analysis, but not official.', 
+      fr: 'Média reconnu ou analyse secondaire fiable, mais non officielle.' 
+    },
+    low: { 
+      en: 'Indirect or contextual source, interpret with caution.', 
+      fr: 'Source indirecte ou contextuelle, à interpréter avec prudence.' 
+    },
   };
   
   return (
@@ -340,14 +361,24 @@ const SourceCard = ({
               {source.title}
             </span>
             
-            {/* Trust Tier Badge */}
+            {/* Trust Tier Badge with Tooltip */}
             {source.trustTier && (
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border
-                               ${trustTierBadgeStyles[source.trustTier].bg} 
-                               ${trustTierBadgeStyles[source.trustTier].text} 
-                               ${trustTierBadgeStyles[source.trustTier].border}`}>
-                {language === 'fr' ? trustTierLabels[source.trustTier].fr : trustTierLabels[source.trustTier].en}
-              </span>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border cursor-help
+                                     ${trustTierBadgeStyles[source.trustTier].bg} 
+                                     ${trustTierBadgeStyles[source.trustTier].text} 
+                                     ${trustTierBadgeStyles[source.trustTier].border}`}>
+                      {language === 'fr' ? trustTierLabels[source.trustTier].fr : trustTierLabels[source.trustTier].en}
+                      <Info className="w-3 h-3 opacity-60" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs text-xs">
+                    <p>{language === 'fr' ? trustTierTooltips[source.trustTier].fr : trustTierTooltips[source.trustTier].en}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             
             {/* Stance Badge */}
