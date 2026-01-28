@@ -554,9 +554,14 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
   }, [normalizedBestLinks]);
   
   // URL verification
-  const candidateUrls = useMemo(() => {
-    return [...normalizedBestLinks, ...additionalSources].map(s => ({ url: s.url, name: s.title, snippet: s.whyItMatters }));
+  const allCandidateSources = useMemo(() => {
+    // Combine all sources for the verification pool
+    return [...normalizedBestLinks, ...additionalSources];
   }, [normalizedBestLinks, additionalSources]);
+  
+  const candidateUrls = useMemo(() => {
+    return allCandidateSources.map(s => ({ url: s.url, name: s.title, snippet: s.whyItMatters }));
+  }, [allCandidateSources]);
   
   const verifyUrls = useCallback(async () => {
     if (candidateUrls.length === 0 || verificationComplete) return;
@@ -566,6 +571,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
       const { data, error } = await supabase.functions.invoke('verify-urls', { body: { urls: candidateUrls } });
       
       if (error) {
+        // On error, assume all valid to avoid hiding sources
         setVerifiedUrls(new Set(candidateUrls.map(u => u.url)));
       } else if (data?.results) {
         const valid = new Set<string>();
@@ -578,6 +584,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
         setInvalidUrls(invalid);
       }
     } catch {
+      // On exception, assume all valid
       setVerifiedUrls(new Set(candidateUrls.map(u => u.url)));
     } finally {
       setIsVerifying(false);
@@ -589,16 +596,55 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
     verifyUrls();
   }, [verifyUrls]);
   
-  // Filter out invalid URLs
-  const filterVerified = useCallback((sources: NormalizedSource[]): NormalizedSource[] => {
-    if (!verificationComplete) return sources;
-    return sources.filter(s => !invalidUrls.has(s.url));
-  }, [invalidUrls, verificationComplete]);
-  
-  const finalBestLinks = filterVerified(normalizedBestLinks);
-  const finalAdditionalSources = filterVerified(additionalSources);
-  const finalSupporting = filterVerified(supportingSources);
-  const finalContradicting = filterVerified(contradictingSources);
+  // Build final source lists with replacement logic
+  const { finalBestLinks, finalAdditionalSources, finalSupporting, finalContradicting } = useMemo(() => {
+    if (!verificationComplete) {
+      // Before verification, return empty to show loader
+      return { 
+        finalBestLinks: [], 
+        finalAdditionalSources: [], 
+        finalSupporting: [], 
+        finalContradicting: [] 
+      };
+    }
+    
+    // Separate valid and invalid sources
+    const validSources = allCandidateSources.filter(s => !invalidUrls.has(s.url));
+    const invalidBestLinks = normalizedBestLinks.filter(s => invalidUrls.has(s.url));
+    const validBestLinks = normalizedBestLinks.filter(s => !invalidUrls.has(s.url));
+    
+    // Find replacement candidates (valid sources not already in bestLinks)
+    const bestLinkUrls = new Set(normalizedBestLinks.map(s => s.url));
+    const replacementPool = validSources.filter(s => !bestLinkUrls.has(s.url));
+    
+    // Build final bestLinks: keep valid ones + add replacements for invalid ones
+    const finalBest: NormalizedSource[] = [...validBestLinks];
+    let replacementIndex = 0;
+    
+    for (let i = 0; i < invalidBestLinks.length && replacementIndex < replacementPool.length; i++) {
+      // Add a replacement from the pool
+      finalBest.push(replacementPool[replacementIndex]);
+      replacementIndex++;
+    }
+    
+    // Sort by trust tier and limit to max
+    const sortedFinalBest = sortByTrustTier(finalBest).slice(0, MAX_BEST_LINKS);
+    
+    // Additional sources are valid sources not in finalBest
+    const finalBestUrls = new Set(sortedFinalBest.map(s => s.url));
+    const finalAdditional = validSources.filter(s => !finalBestUrls.has(s.url));
+    
+    // Separate by stance
+    const supporting = sortedFinalBest.filter(s => s.stance !== 'contradicting');
+    const contradicting = sortedFinalBest.filter(s => s.stance === 'contradicting');
+    
+    return { 
+      finalBestLinks: sortedFinalBest, 
+      finalAdditionalSources: finalAdditional, 
+      finalSupporting: supporting, 
+      finalContradicting: contradicting 
+    };
+  }, [allCandidateSources, normalizedBestLinks, invalidUrls, verificationComplete]);
   
   // ===== RENDER =====
   
