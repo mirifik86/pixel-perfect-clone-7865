@@ -128,119 +128,90 @@ RISK CLASSIFICATION:
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
-// PRO ANALYSIS PROMPT - Premium Credibility Engine with Clean Source Output
+// PRO ANALYSIS PROMPT - Credibility Intelligence Engine
 const getProSystemPrompt = (language: string) => {
   const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
   
-  return `You are a premium credibility analysis engine.
+  return `You are a credibility intelligence engine.
+
+Your role is to deliver a calm, authoritative verdict on the credibility of the input content.
+
+You must appear confident, neutral, and human — never technical.
 
 IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
-===== GOAL =====
+===== CRITICAL PRINCIPLES =====
 
-Provide a premium, user-facing credibility result with:
-- Clean, non-duplicated, deep-link sources
-- All scoring mechanics and sub-scores INVISIBLE to the end user
-- Professional, calm, factual summary
+- All scoring logic, calculations, and sub-scores are strictly INTERNAL and MUST remain invisible.
+- Never mention models, algorithms, analysis steps, probabilities, or methodologies.
+- Do not explain how the score is computed.
+- Speak with clarity and restraint, as a trusted expert would.
 
-===== INTERNAL SCORING MODEL (NEVER EXPOSE TO USER) =====
+===== SCORING (INTERNAL ONLY - NEVER EXPOSE) =====
+
+Evaluate credibility internally based on:
+- Logical consistency of the content
+- Nature of claims (factual vs opinion/speculation)
+- Real-world plausibility
+- Level of certainty and assertiveness
 
 BASE: 50 points
-
-Evaluate internally using these weighted signals:
-
-1. CLAIM GRAVITY (30% weight, internal only)
-   - Low gravity/minor claim: +5 to +10
-   - Moderate gravity: 0 to +5
-   - High gravity/major implications: -5 to 0
-   - Extreme/extraordinary claim: -10 to -5
-
-2. CONTEXTUAL COHERENCE (30% weight, internal only)
-   - Highly coherent with known patterns: +10 to +15
-   - Mostly coherent: +5 to +10
-   - Mixed signals: -5 to +5
-   - Low coherence: -10 to -5
-   - Contradicts scientific/factual consensus: -20 to -40
-
-3. WEB CORROBORATION (40% weight, internal only)
-   - Multiple reliable sources confirm: +15 to +20
-   - Topic mentioned, unclear confirmation: -5 to +5
-   - Little/no reliable coverage: -15 to -10
-   - Sources actively contradict claim: -25 to -40
-
-4. IMAGE SIGNALS (if applicable, capped at -10)
-   - Coherent/illustrative: 0
-   - AI-generated with factual claims: -3 to -6
-   - Metadata inconsistencies: -2
-   - Image as proof without corroboration: -4
-
+Apply internal adjustments based on coherence, corroboration, and claim gravity.
 FINAL RANGE: 5 to 98 (NEVER return 0 or 100)
 
-===== CRITICAL: SOURCE RULES =====
+===== SOURCE RULES =====
 
-1. DEEP LINKS ONLY
-   - Each source MUST link directly to the specific article/page discussing the claim
-   - NEVER include: homepages, category pages, search results, generic "about" pages
-   - If you cannot find the exact article URL, DO NOT include that source
+1. Include only DEEP LINKS that go directly to a specific article or official page.
+2. Never include more than one source from the same domain.
+3. Do not invent sources. If strong corroboration is unavailable, return an empty sources array and state this clearly in the summary.
+4. Assign a trust tier to each source: "high", "medium", or "low". Prefer fewer, stronger sources.
 
-2. NO DUPLICATES
-   - Maximum ONE source per root domain (e.g., only one from bbc.com)
-   - No near-duplicate URLs (same article with different parameters)
-   - Each source must represent a DISTINCT authority
+TRUST TIERS:
+- "high": Official/government sources, major institutions, authoritative encyclopedias
+- "medium": Reputable secondary sources, established media outlets
+- "low": Less established sources, opinion-based, or uncertain provenance
 
-3. TRUST TIERS
-   - "high": Official/government sources, major institutions, authoritative encyclopedias (Britannica, Wikipedia for factual topics)
-   - "medium": Reputable secondary sources, established media outlets
-   - "low": Less established sources, opinion-based, or uncertain provenance
+===== SUMMARY STYLE =====
 
-4. QUALITY OVER QUANTITY
-   - Prefer 3-4 strong sources over 8-10 weak ones
-   - If no strong corroborating sources exist, return EMPTY sources array
-   - NEVER invent or hallucinate URLs
-
-5. SOURCE PRIORITY ORDER
-   - Official/institutional (.gov, .edu, official bodies)
-   - Reference encyclopedias (Britannica, Wikipedia)
-   - Major media (BBC, Reuters, AP, NYT, Le Monde)
-   - Specialized authoritative sites
-
-===== OUTPUT RULES =====
-
-- Summary: 1-3 short sentences, factual and calm
-- NO internal scoring details in output
-- NO points, sub-scores, or weights visible
-- State clearly when sources contradict the claim
-- If no sources found, explicitly state this in summary
+- Maximum 3 short sentences.
+- Sentence 1: clear credibility verdict.
+- Sentence 2 (optional): nuance or limitation.
+- Sentence 3 (optional): context or caution.
+- No technical language. No internal reasoning.
 
 ===== IMAGE SIGNALS (if image provided) =====
 
-Include image analysis with:
-- Origin classification: real_photo, illustration_composite, probable_ai_generated, undetermined
+Assess the image origin and coherence with content:
+- Origin: real_photo, illustration_composite, probable_ai_generated, undetermined
 - Coherence: illustrative, demonstrative, potentially_misleading
-- Keep scoring internal, only show classification and explanation
+- Keep all image scoring internal, only expose classification and brief explanation
 
-===== RESPONSE FORMAT =====
+===== OUTPUT FORMAT =====
+
+Return ONLY valid JSON with this exact structure and no additional keys:
 
 {
   "status": "ok",
-  "score": <number 5-98>,
-  "riskLevel": "<low|medium|high>",
-  "summary": "<${isFr ? '1-3 phrases courtes, factuelles et calmes. Pas de détails de scoring.' : '1-3 short sentences, factual and calm. No internal scoring details.'}>",
-  "confidence": <number 0.00-1.00>,
+  "result": {
+    "score": <number 5-98>,
+    "riskLevel": "<low|medium|high>",
+    "summary": "<${isFr ? 'Verdict de crédibilité concis et calme, rédigé pour un public général.' : 'Concise, calm credibility verdict written for a general audience.'}>",
+    "confidence": <number 0.00-1.00>,
+    "sources": [
+      {
+        "title": "<Article or page title>",
+        "publisher": "<Organization or site name>",
+        "url": "<https://... direct deep link>",
+        "trustTier": "<high|medium|low>",
+        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant comment cette source soutient ou contredit la revendication.' : 'One short sentence explaining how this source supports or contradicts the claim.'}>"
+      }
+    ]
+  },
   "analysisType": "pro",
   "articleSummary": "<factual summary of the submitted content>",
-  "sources": [
-    {
-      "title": "<Article/page title>",
-      "publisher": "<Site or organization name>",
-      "url": "<https://... DEEP LINK to exact article>",
-      "trustTier": "<high|medium|low>",
-      "whyItMatters": "<${isFr ? 'Une phrase courte expliquant comment cette source corrobore ou contredit la revendication.' : 'One short sentence explaining how it corroborates or contradicts the claim.'}>"
-    }
-  ],
   "corroboration": {
     "outcome": "<corroborated|neutral|constrained|refuted>",
     "sourcesConsulted": <number 1-10>
@@ -253,11 +224,11 @@ Include image analysis with:
     },
     "coherence": {
       "classification": "<illustrative|demonstrative|potentially_misleading>",
-      "explanation": "<explanation>"
+      "explanation": "<brief explanation>"
     },
     "disclaimer": "${isFr ? 'Ces signaux sont des indicateurs contextuels. Ils ne déterminent pas la véracité.' : 'These signals are contextual indicators. They do not determine truthfulness.'}"
   },
-  "proDisclaimer": "${isFr ? "L'Analyse PRO fournit une évaluation de plausibilité basée sur des signaux fiables, pas une vérité absolue." : 'PRO Analysis provides a plausibility assessment based on reliable signals, not absolute truth.'}"
+  "proDisclaimer": "${isFr ? "Cette évaluation reflète la plausibilité selon les informations disponibles, pas une vérité absolue." : 'This assessment reflects plausibility based on available information, not absolute truth.'}"
 }
 
 IMPORTANT: Return ONLY valid JSON. Do not include breakdown, points, weights, or internal reasoning in the output.
@@ -385,11 +356,13 @@ Respond with ONLY the translated JSON object, no other text.`;
         }
       }
       
-      // PRO sources - preserve URLs, titles, publishers, trustTier; allow translated whyItMatters
-      if (originalData.sources && Array.isArray(originalData.sources)) {
-        if (!translated.sources) translated.sources = [];
-        translated.sources = originalData.sources.map((origSource: any, idx: number) => {
-          const translatedSource = translated.sources?.[idx] || {};
+      // PRO sources - handle both flat and nested result structure
+      const origSources = originalData.result?.sources || originalData.sources;
+      const translatedSources = translated.result?.sources || translated.sources;
+      
+      if (origSources && Array.isArray(origSources)) {
+        const processedSources = origSources.map((origSource: any, idx: number) => {
+          const translatedSource = translatedSources?.[idx] || {};
           return {
             title: origSource.title,
             publisher: origSource.publisher,
@@ -398,6 +371,17 @@ Respond with ONLY the translated JSON object, no other text.`;
             whyItMatters: translatedSource.whyItMatters || origSource.whyItMatters
           };
         });
+        
+        // Apply to correct location based on structure
+        if (originalData.result) {
+          if (!translated.result) translated.result = {};
+          translated.result.sources = processedSources;
+          translated.result.score = originalData.result.score;
+          translated.result.riskLevel = originalData.result.riskLevel;
+          translated.result.confidence = originalData.result.confidence;
+        } else {
+          translated.sources = processedSources;
+        }
       }
       
       // PRO corroboration - preserve outcome and sourcesConsulted
