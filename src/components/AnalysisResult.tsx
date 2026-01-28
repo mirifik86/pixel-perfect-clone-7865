@@ -87,7 +87,7 @@ interface Corroboration {
 interface AnalysisData {
   score: number;
   analysisType?: 'standard' | 'pro';
-  breakdown: AnalysisBreakdown;
+  breakdown?: AnalysisBreakdown;
   summary: string;
   confidence: 'low' | 'medium' | 'high';
   visualNote?: string;
@@ -347,6 +347,9 @@ const calculateCorroborationBonus = (corroboration: Corroboration): number => {
 export const AnalysisResult = ({ data, language, articleSummary, hasImage = false }: AnalysisResultProps) => {
   const t = translations[language];
   const isPro = data.analysisType === 'pro';
+  
+  // Safe breakdown accessor - PRO responses may not have breakdown
+  const breakdown: AnalysisBreakdown = data.breakdown ?? {};
 
   // CRITICAL: Determine if we have REAL corroborating sources
   // Only count as corroborated if at least one actual source exists
@@ -467,28 +470,28 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   // Standard signal data with micro-diagnostics
   const standardSignalData = [
     { key: 'sources', label: t.signalSource, points: realSourcesPoints },
-    { key: 'factual', label: t.signalFactual, points: data.breakdown.factual?.points ?? 0 },
-    { key: 'context', label: t.signalContext, points: data.breakdown.context?.points ?? 0 },
-    { key: 'tone', label: t.signalPrudence, points: data.breakdown.prudence?.points ?? data.breakdown.tone?.points ?? 0 },
+    { key: 'factual', label: t.signalFactual, points: breakdown.factual?.points ?? 0 },
+    { key: 'context', label: t.signalContext, points: breakdown.context?.points ?? 0 },
+    { key: 'tone', label: t.signalPrudence, points: breakdown.prudence?.points ?? breakdown.tone?.points ?? 0 },
     // Only include visual signal if an image was provided
-    ...(hasImage ? [{ key: 'visualCoherence', label: t.signalVisual, points: data.breakdown.visualCoherence?.points ?? 0 }] : []),
+    ...(hasImage ? [{ key: 'visualCoherence', label: t.signalVisual, points: breakdown.visualCoherence?.points ?? 0 }] : []),
   ];
 
   // PRO signal badges with LucideIcon type - exclude image signal when no image
   const proSignalBadges: Array<{ label: string; level: number; icon: typeof Scale }> = [
-    { label: t.signalGravity, level: getBadgeLevel(data.breakdown.claimGravity?.points ?? 0), icon: Scale },
-    { label: t.signalCoherence, level: getBadgeLevel(data.breakdown.contextualCoherence?.points ?? 0), icon: GitBranch },
-    { label: t.signalWeb, level: getBadgeLevel(data.breakdown.webCorroboration?.points ?? 0), icon: Search },
+    { label: t.signalGravity, level: getBadgeLevel(breakdown.claimGravity?.points ?? 0), icon: Scale },
+    { label: t.signalCoherence, level: getBadgeLevel(breakdown.contextualCoherence?.points ?? 0), icon: GitBranch },
+    { label: t.signalWeb, level: getBadgeLevel(breakdown.webCorroboration?.points ?? 0), icon: Search },
     // Only include image signal badge if an image was provided
-    ...(hasImage ? [{ label: t.signalImage, level: getBadgeLevel(data.breakdown.imageCoherence?.points ?? 0), icon: Image }] : []),
+    ...(hasImage ? [{ label: t.signalImage, level: getBadgeLevel(breakdown.imageCoherence?.points ?? 0), icon: Image }] : []),
   ];
 
   // Get keys for breakdown display
-  const standardKeys = Object.keys(data.breakdown).filter((key) => standardCriteriaLabels[key] !== undefined);
+  const standardKeys = Object.keys(breakdown).filter((key) => standardCriteriaLabels[key] !== undefined);
   // Exclude imageCoherence from PRO breakdown when no image is provided
   const proKeysBase = ['claimGravity', 'contextualCoherence', 'webCorroboration'];
   const proKeys = [...proKeysBase, ...(hasImage ? ['imageCoherence'] : [])].filter(
-    (key) => data.breakdown[key as keyof AnalysisBreakdown] !== undefined
+    (key) => breakdown[key as keyof AnalysisBreakdown] !== undefined
   );
 
   return (
@@ -573,7 +576,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
 
       {/* STANDARD: New warm intro section with dynamic summary */}
       {!isPro && (
-        <StandardAnalysisIntro language={language} breakdown={data.breakdown} />
+        <StandardAnalysisIntro language={language} breakdown={breakdown} />
       )}
 
       {/* Standard: Summary card with confidence badge */}
@@ -593,7 +596,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
 
       {/* STANDARD: Detected Communication Signals */}
       {!isPro && (
-        <CommunicationSignals language={language} breakdown={data.breakdown} />
+        <CommunicationSignals language={language} breakdown={breakdown} />
       )}
 
       {/* Standard: Updated Verification Section - Neutral messaging */}
@@ -978,7 +981,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
           </h3>
           <div className="space-y-4">
             {proKeys.map((key) => {
-              const item = data.breakdown[key as keyof AnalysisBreakdown] as { points: number; weight?: string; reason: string } | undefined;
+              const item = breakdown[key as keyof AnalysisBreakdown] as { points: number; weight?: string; reason: string } | undefined;
               if (!item) return null;
               const Icon = proCriteriaIcons[key];
               return (
