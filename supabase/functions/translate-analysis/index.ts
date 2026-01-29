@@ -47,7 +47,7 @@ const getTranslationPrompt = (targetLanguage: string) => {
       
       Return the fully translated analysis object, keeping all keys and structure unchanged.
       `;
-      
+};
 
 const setIfString = (setter: () => void, value: any) => {
   if (typeof value === 'string' && value.trim().length > 0) setter();
