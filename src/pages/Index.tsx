@@ -10,7 +10,7 @@ import { ScoreGauge } from '@/components/ScoreGauge';
 import { UnifiedAnalysisForm, UnifiedAnalysisFormHandle } from '@/components/UnifiedAnalysisForm';
 import { AnalysisResult } from '@/components/AnalysisResult';
 import { AnalysisError } from '@/components/AnalysisError';
-import { ProAnalysisLoader } from '@/components/ProAnalysisLoader';
+// ProAnalysisLoader removed - now unified into InGaugeAnalysisLoader
 import { ProAnalysisModal } from '@/components/ProAnalysisModal';
 import { MissionControlLoader } from '@/components/MissionControlLoader';
 import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
@@ -673,11 +673,17 @@ const Index = () => {
   };
 
   // PRO Analysis - uses the same content with analysisType: 'pro'
+  // Uses unified isLoading state with loaderMode to show PRO loader in gauge center
   const handleProAnalysis = useCallback(async () => {
     if (!lastAnalyzedContent) return;
     
     const errorAnalysis = i18nT('index.errorAnalysis');
-    setIsProLoading(true);
+    
+    // Clear existing analysis first to show loader
+    setAnalysisByLanguage({ en: null, fr: null });
+    setSummariesByLanguage({ en: null, fr: null });
+    setIsLoading(true);
+    setIsProLoading(true); // Track PRO mode for loader styling
 
     try {
       const { en, fr } = await runBilingualTextAnalysis({ content: lastAnalyzedContent, analysisType: 'pro' });
@@ -694,7 +700,13 @@ const Index = () => {
       console.error('Unexpected error:', err);
       toast.error(errorAnalysis);
     } finally {
-      setIsProLoading(false);
+      // Trigger exit animation before hiding loader
+      setIsLoaderExiting(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsProLoading(false);
+        setIsLoaderExiting(false);
+      }, 500);
     }
   }, [lastAnalyzedContent, i18nT, runBilingualTextAnalysis]);
 
@@ -809,6 +821,7 @@ const Index = () => {
                   isLoading={isLoading && !isImageAnalysis}
                   onChevronCycleComplete={handleChevronCycleComplete}
                   onTransferStart={handleTransferStart}
+                  loaderMode={isProLoading ? 'pro' : 'standard'}
                 />
               </div>
             )}
@@ -974,10 +987,7 @@ const Index = () => {
             </div>
           )}
 
-          {/* PRO Analysis loading skeleton */}
-          {isProLoading && (
-            <ProAnalysisLoader language={language} />
-          )}
+          {/* PRO Analysis loader removed - now unified into ScoreGauge center */}
 
           {/* Analysis result - detailed breakdown below */}
           {analysisData && !isProLoading && (

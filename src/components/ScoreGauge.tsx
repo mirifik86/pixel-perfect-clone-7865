@@ -12,6 +12,7 @@ interface ScoreGaugeProps {
   isLoading?: boolean; // Loading state for the button
   onChevronCycleComplete?: () => void; // Callback when chevron cascade completes (for input highlight)
   onTransferStart?: () => void; // Callback when idle→ready transfer animation starts (for input capture effect)
+  loaderMode?: 'standard' | 'pro'; // Which loader mode to display during analysis
 }
 
 // Generate sparkle particles configuration
@@ -35,7 +36,8 @@ export const ScoreGauge = ({
   onAnalyze,
   isLoading = false,
   onChevronCycleComplete,
-  onTransferStart
+  onTransferStart,
+  loaderMode = 'standard'
 }: ScoreGaugeProps) => {
   const { language, t } = useLanguage();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -754,7 +756,7 @@ export const ScoreGauge = ({
 
           {/* ANALYZING STATE: Premium in-gauge loader with evolving steps */}
           {uiState === 'analyzing' && (
-            <InGaugeAnalysisLoader size={size} />
+            <InGaugeAnalysisLoader size={size} mode={loaderMode} />
           )}
 
           {/* IDLE STATE: "READY TO ANALYZE" with premium halo pulse */}
