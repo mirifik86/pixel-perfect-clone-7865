@@ -19,79 +19,35 @@ const languageNames: Record<string, string> = {
   ko: 'KOREAN',
 };
 
-You are a translation engine for LeenScore analysis results.
+const getTranslationPrompt = (targetLanguage: string) => {
+  const langName = languageNames[targetLanguage] || 'ENGLISH';
+  
+  return `
+  You are a translation engine for LeenScore analysis results.
 
-SYSTEM INSTRUCTION (MANDATORY):
-
-Your task is to translate the ENTIRE analysis object into the target language.
-
-CRITICAL RULES:
-- Translate ALL human-readable text fields.
-- This includes:
-  - Section titles
-  - Headings
-  - Summaries
-  - Explanations
-  - Confidence labels (low / medium / high)
-  - Any descriptive strings
-
-- Do NOT leave any text in English unless the target language is English.
-- Do NOT summarize, rewrite, shorten, or omit content.
-- Do NOT change numbers, enums, URLs, or structural keys.
-- Preserve the JSON structure EXACTLY as received.
-
-Target language: ${langName}
-
-Return the fully translated analysis object, keeping all keys and structure unchanged.
-
-
-CRITICAL RULES:
-1. Translate ALL human-readable text fields - NEVER change any numerical values
-2. Keep the same JSON structure exactly (keys, arrays, nesting)
-3. Translate to ${langName}
-4. Maintain the same professional, analytical tone
-5. Keep technical terms accurate
-6. DO NOT translate proper names of sources (media names, institutions, websites)
-
-TRANSLATE these text fields (ALL of them):
-- summary (main analysis summary)
-- articleSummary (factual content summary)
-- disclaimer / proDisclaimer (legal disclaimers)
-- breakdown.*.reason (ALL breakdown categories)
-- webPresence.observation (web presence description)
-- corroboration.summary (corroboration findings)
-- imageSignals.disclaimer (image analysis disclaimer)
-- imageSignals.origin.indicators[] (each indicator string)
-- imageSignals.coherence.explanation (coherence explanation)
-- imageSignals.scoring.reasoning (scoring reasoning)
-- result.summary (PRO summary)
-- result.bestLinks[].title (source titles)
-- result.bestLinks[].whyItMatters (relevance explanations)
-- result.sources[].title (source titles)
-- result.sources[].whyItMatters (relevance explanations)
-
-NEVER MODIFY (keep exactly as-is):
-- score (number)
-- breakdown.*.points (numbers)
-- breakdown.*.weight (percentages)
-- confidence, inputType, domain, analysisType (enum values)
-- corroboration.outcome / sourcesConsulted / sourceTypes
-- corroboration.sources (source names - keep EXACTLY as-is)
-- imageSignals.origin.classification / confidence (enums)
-- imageSignals.coherence.classification (enum)
-- imageSignals.metadata.* (all metadata fields are enums)
-- imageSignals.scoring.* (all numerical scoring fields)
-- result.bestLinks[].url (URLs - NEVER translate)
-- result.bestLinks[].publisher (publisher names - keep as-is)
-- result.bestLinks[].trustTier (enum: high/medium/low)
-- result.bestLinks[].stance (enum: corroborating/neutral/contradicting)
-- result.sources[].url (URLs - NEVER translate)
-- result.sources[].publisher (publisher names - keep as-is)
-- result.sources[].trustTier (enum)
-- result.sources[].stance (enum)
-
-Respond with the complete JSON object with translated text fields.`;
-};
+      SYSTEM INSTRUCTION (MANDATORY):
+      
+      Your task is to translate the ENTIRE analysis object into the target language.
+      
+      CRITICAL RULES:
+      - Translate ALL human-readable text fields WITHOUT EXCEPTION.
+      - This includes:
+        - Section titles
+        - Headings
+        - Labels (e.g. Summary, Confidence, Risk level)
+        - Summaries
+        - Explanations
+        - Disclaimers
+      - Do NOT leave any text in English unless the target language is English.
+      - Do NOT summarize, rewrite, shorten, or omit content.
+      - Do NOT change numbers, enums, URLs, or structural keys.
+      - Preserve the JSON structure EXACTLY as received.
+      
+      Target language: ${langName}
+      
+      Return the fully translated analysis object, keeping all keys and structure unchanged.
+      `;
+      
 
 const setIfString = (setter: () => void, value: any) => {
   if (typeof value === 'string' && value.trim().length > 0) setter();
