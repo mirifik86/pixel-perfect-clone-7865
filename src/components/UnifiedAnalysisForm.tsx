@@ -444,45 +444,42 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       }}
                     />
                     
-                    {/* Main validation message */}
+                    {/* Main validation title */}
                     <p 
-                      className="relative font-medium leading-snug"
+                      className="relative font-semibold leading-snug"
                       style={{
                         fontSize: 'var(--text-sm)',
-                        color: 'hsl(35 65% 72%)',
+                        color: 'hsl(35 70% 75%)',
                         textShadow: '0 0 20px hsl(35 55% 50% / 0.35)',
                         letterSpacing: '0.02em',
                       }}
                     >
-                      {validationMessage}
+                      {t('form.validationTitle')}
                     </p>
                     
-                    {/* Bonus examples hint */}
-                    <div 
-                      className="relative mt-2 pt-2"
+                    {/* Subline guidance */}
+                    <p 
+                      className="relative mt-1"
                       style={{
-                        borderTop: '1px solid hsl(35 40% 40% / 0.2)',
+                        fontSize: 'var(--text-xs)',
+                        color: 'hsl(35 55% 65% / 0.9)',
+                        letterSpacing: '0.01em',
                       }}
                     >
-                      <p 
-                        className="text-xs font-medium mb-1"
-                        style={{ color: 'hsl(35 50% 60% / 0.8)' }}
-                      >
-                        {t('form.validationExampleLabel')}
-                      </p>
-                      <p 
-                        className="text-xs italic"
-                        style={{ color: 'hsl(35 45% 55% / 0.7)' }}
-                      >
-                        {t('form.validationExample1')}
-                      </p>
-                      <p 
-                        className="text-xs"
-                        style={{ color: 'hsl(35 45% 55% / 0.7)' }}
-                      >
-                        {t('form.validationExample2')}
-                      </p>
-                    </div>
+                      {t('form.validationSubline')}
+                    </p>
+                    
+                    {/* Micro-hint */}
+                    <p 
+                      className="relative mt-1.5"
+                      style={{
+                        fontSize: '0.68rem',
+                        color: 'hsl(35 40% 55% / 0.65)',
+                        letterSpacing: '0.01em',
+                      }}
+                    >
+                      {t('form.validationHint')}
+                    </p>
                   </div>
                 </div>
               )}

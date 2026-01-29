@@ -51,10 +51,9 @@
     "disclaimerLine1": "는 사실을 선언하지 않습니다.",
     "disclaimerLine2": "정보의 신뢰성을 평가하는 데 도움을 줍니다.",
     "validationError": "분석할 수 없는 콘텐츠 — 수정하거나 새로 입력해 주세요.",
-    "validationNotAnalyzable": "분석할 수 없는 콘텐츠 — 완전한 문장을 추가하거나 링크를 붙여넣으세요.",
-    "validationExampleLabel": "예시:",
-    "validationExample1": "\"트럼프는 미국 대통령입니다.\"",
-    "validationExample2": "링크 붙여넣기: https://example.com/article"
+    "validationTitle": "분석할 수 없는 콘텐츠",
+    "validationSubline": "완전한 문장 또는 짧은 단락을 추가하세요.",
+    "validationHint": "단어만 입력하거나 불완전한 텍스트는 피해 주세요."
   },
   "gauge": {
     "pending": "대기 중",
