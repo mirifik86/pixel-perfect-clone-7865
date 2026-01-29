@@ -300,5 +300,59 @@
       { "label": "Verifying credibility" },
       { "label": "Cross-referencing data" }
     ]
+  },
+  "proHighlights": {
+    "title": "PRO Highlights",
+    "confirmed": "Confirmed",
+    "uncertain": "Uncertain",
+    "contradicted": "Contradicted",
+    "noConfirmation": "No strong external confirmation found.",
+    "noUncertainty": "No significant uncertainty identified.",
+    "noContradiction": "No notable contradictions found."
+  },
+  "verificationCoverage": {
+    "title": "Verification Coverage",
+    "webCoverage": "Web coverage",
+    "sourceDiversity": "Source diversity",
+    "contradictionCheck": "Contradiction check",
+    "extensive": "Extensive",
+    "moderate": "Moderate",
+    "limited": "Limited",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "clear": "Clear",
+    "mixed": "Mixed",
+    "noneFound": "None found"
+  },
+  "bestSources": {
+    "title": "Best Evidence",
+    "refutingSources": "Refuting Sources",
+    "showAll": "Show all sources (up to 10)",
+    "hideAll": "Hide additional sources",
+    "noCorroboration": "No strong external corroboration was found for this claim.",
+    "verifying": "Verifying links…",
+    "open": "Open",
+    "copyLink": "Copy link",
+    "verified": "Verified",
+    "trustHigh": "High",
+    "trustMedium": "Medium",
+    "trustLow": "Low",
+    "stanceCorroborating": "Corroborating",
+    "stanceNeutral": "Neutral",
+    "stanceContradicting": "Contradicts",
+    "typeOfficial": "Official",
+    "typeReference": "Reference",
+    "typeMedia": "Major Media",
+    "trustTooltipHigh": "Official, institutional, or recognized reference source.",
+    "trustTooltipMedium": "Recognized media or reliable secondary analysis, but not official.",
+    "trustTooltipLow": "Indirect or contextual source, interpret with caution.",
+    "filtered": "filtered",
+    "shown": "shown",
+    "of": "of"
+  },
+  "documentTitle": {
+    "default": "LeenScore — Credibility, measured.",
+    "analyzing": "Analyzing... — LeenScore"
   }
 }

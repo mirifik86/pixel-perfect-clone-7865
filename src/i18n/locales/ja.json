@@ -293,5 +293,59 @@
       { "label": "信頼性を検証中" },
       { "label": "データをクロスリファレンス中" }
     ]
+  },
+  "proHighlights": {
+    "title": "PROハイライト",
+    "confirmed": "確認済み",
+    "uncertain": "不確実",
+    "contradicted": "矛盾あり",
+    "noConfirmation": "強力な外部確認は見つかりませんでした。",
+    "noUncertainty": "重大な不確実性は特定されませんでした。",
+    "noContradiction": "顕著な矛盾は見つかりませんでした。"
+  },
+  "verificationCoverage": {
+    "title": "検証カバレッジ",
+    "webCoverage": "ウェブカバレッジ",
+    "sourceDiversity": "ソースの多様性",
+    "contradictionCheck": "矛盾チェック",
+    "extensive": "広範囲",
+    "moderate": "中程度",
+    "limited": "限定的",
+    "high": "高い",
+    "medium": "中程度",
+    "low": "低い",
+    "clear": "明確",
+    "mixed": "混合",
+    "noneFound": "見つかりません"
+  },
+  "bestSources": {
+    "title": "最良の証拠",
+    "refutingSources": "反論ソース",
+    "showAll": "すべてのソースを表示（最大10）",
+    "hideAll": "追加ソースを非表示",
+    "noCorroboration": "この主張に対する強力な外部裏付けは見つかりませんでした。",
+    "verifying": "リンクを確認中…",
+    "open": "開く",
+    "copyLink": "リンクをコピー",
+    "verified": "確認済み",
+    "trustHigh": "高い",
+    "trustMedium": "中程度",
+    "trustLow": "低い",
+    "stanceCorroborating": "裏付け",
+    "stanceNeutral": "中立",
+    "stanceContradicting": "矛盾",
+    "typeOfficial": "公式",
+    "typeReference": "参照",
+    "typeMedia": "主要メディア",
+    "trustTooltipHigh": "公式、機関、または認知された参照ソース。",
+    "trustTooltipMedium": "認知されたメディアまたは信頼できる二次分析、ただし非公式。",
+    "trustTooltipLow": "間接的またはコンテキスト的なソース、慎重に解釈してください。",
+    "filtered": "件フィルター済み",
+    "shown": "件表示",
+    "of": "/"
+  },
+  "documentTitle": {
+    "default": "LeenScore — 信頼性を、測定。",
+    "analyzing": "分析中… — LeenScore"
   }
 }

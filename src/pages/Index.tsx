@@ -190,6 +190,11 @@ const Index = () => {
   // Master analysis is always in English, then translated to the selected UI language
   const language = resolvedLanguage;
   
+  // Update document title based on language
+  useEffect(() => {
+    document.title = i18nT('documentTitle.default');
+  }, [resolvedLanguage, i18nT]);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isProLoading, setIsProLoading] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);

@@ -293,5 +293,59 @@
       { "label": "신뢰성 검증 중" },
       { "label": "데이터 교차 참조 중" }
     ]
+  },
+  "proHighlights": {
+    "title": "PRO 하이라이트",
+    "confirmed": "확인됨",
+    "uncertain": "불확실",
+    "contradicted": "모순됨",
+    "noConfirmation": "강력한 외부 확인을 찾을 수 없습니다.",
+    "noUncertainty": "중대한 불확실성이 확인되지 않았습니다.",
+    "noContradiction": "주목할 만한 모순이 발견되지 않았습니다."
+  },
+  "verificationCoverage": {
+    "title": "검증 범위",
+    "webCoverage": "웹 범위",
+    "sourceDiversity": "출처 다양성",
+    "contradictionCheck": "모순 확인",
+    "extensive": "광범위",
+    "moderate": "보통",
+    "limited": "제한적",
+    "high": "높음",
+    "medium": "중간",
+    "low": "낮음",
+    "clear": "명확",
+    "mixed": "혼합",
+    "noneFound": "찾을 수 없음"
+  },
+  "bestSources": {
+    "title": "최고의 증거",
+    "refutingSources": "반박 출처",
+    "showAll": "모든 출처 보기 (최대 10개)",
+    "hideAll": "추가 출처 숨기기",
+    "noCorroboration": "이 주장에 대한 강력한 외부 확증을 찾을 수 없습니다.",
+    "verifying": "링크 확인 중…",
+    "open": "열기",
+    "copyLink": "링크 복사",
+    "verified": "확인됨",
+    "trustHigh": "높음",
+    "trustMedium": "중간",
+    "trustLow": "낮음",
+    "stanceCorroborating": "확증",
+    "stanceNeutral": "중립",
+    "stanceContradicting": "모순",
+    "typeOfficial": "공식",
+    "typeReference": "참조",
+    "typeMedia": "주요 미디어",
+    "trustTooltipHigh": "공식, 기관 또는 인정된 참조 출처.",
+    "trustTooltipMedium": "인정된 미디어 또는 신뢰할 수 있는 2차 분석, 단 비공식.",
+    "trustTooltipLow": "간접적이거나 맥락적인 출처, 주의해서 해석하세요.",
+    "filtered": "개 필터됨",
+    "shown": "개 표시",
+    "of": "/"
+  },
+  "documentTitle": {
+    "default": "LeenScore — 신뢰성, 측정.",
+    "analyzing": "분석 중… — LeenScore"
   }
 }
