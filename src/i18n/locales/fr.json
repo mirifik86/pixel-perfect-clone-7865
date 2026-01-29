@@ -50,7 +50,7 @@
     "disclaimer": "LeenScore ne déclare pas les faits. Il vous aide à évaluer la crédibilité des informations.",
     "disclaimerLine1": "ne déclare pas les faits.",
     "disclaimerLine2": "Il vous aide à évaluer la crédibilité des informations.",
-    "validationError": "Le contenu saisi ne semble pas contenir d'information analysable. Veuillez entrer une affirmation, un texte ou importer une image."
+    "validationError": "Contenu non analysable. Veuillez saisir une phrase complète ou un texte significatif."
   },
   "gauge": {
     "pending": "En attente",

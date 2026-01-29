@@ -185,26 +185,53 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
-      {/* Validation message - positioned above the input card */}
+      {/* Validation message - premium centered error card */}
       {validationMessage && (
         <div 
           className="flex items-center justify-center animate-fade-in"
           style={{ 
-            marginBottom: 'var(--space-3)',
-            padding: 'var(--space-2) var(--space-4)',
+            marginBottom: 'var(--space-4)',
+            padding: 'var(--space-4) var(--space-5)',
           }}
         >
-          <p 
-            className="text-center font-medium leading-relaxed"
+          <div
+            className="relative rounded-xl text-center"
             style={{
-              fontSize: '12px',
-              color: 'hsl(35 65% 62% / 0.95)',
-              textShadow: '0 0 12px hsl(35 55% 50% / 0.25)',
-              letterSpacing: '0.01em',
+              padding: 'var(--space-4) var(--space-6)',
+              background: 'linear-gradient(165deg, hsl(35 30% 12% / 0.95), hsl(35 25% 8% / 0.98))',
+              border: '1.5px solid hsl(35 50% 45% / 0.4)',
+              boxShadow: `
+                0 0 40px hsl(35 60% 50% / 0.15),
+                0 8px 32px hsl(0 0% 0% / 0.3),
+                inset 0 0 20px hsl(35 50% 50% / 0.08),
+                inset 0 1px 0 hsl(0 0% 100% / 0.1)
+              `,
+              backdropFilter: 'blur(20px)',
+              maxWidth: '400px',
             }}
           >
-            {validationMessage}
-          </p>
+            {/* Breathing glow effect */}
+            <div 
+              className="absolute -inset-2 rounded-2xl pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at center, hsl(35 55% 50% / 0.2), transparent 70%)',
+                filter: 'blur(12px)',
+                animation: 'validation-glow 2.5s ease-in-out infinite',
+              }}
+            />
+            
+            <p 
+              className="relative font-medium leading-relaxed"
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: 'hsl(35 70% 70%)',
+                textShadow: '0 0 15px hsl(35 55% 50% / 0.3)',
+                letterSpacing: '0.015em',
+              }}
+            >
+              {validationMessage}
+            </p>
+          </div>
         </div>
       )}
       
@@ -639,6 +666,17 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           50% { 
             opacity: 1; 
             text-shadow: 0 0 24px hsl(174 60% 55% / 0.4), 0 0 45px hsl(174 50% 50% / 0.2);
+          }
+        }
+        /* Validation error breathing glow */
+        @keyframes validation-glow {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.02);
           }
         }
       `}</style>
