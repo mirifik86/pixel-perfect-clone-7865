@@ -19,10 +19,31 @@ const languageNames: Record<string, string> = {
   ko: 'KOREAN',
 };
 
-const getTranslationPrompt = (targetLanguage: string) => {
-  const langName = languageNames[targetLanguage] || 'ENGLISH';
-  
-  return `You are a professional translator. Your task is to translate analysis JSON text while preserving the exact meaning.
+You are a translation engine for LeenScore analysis results.
+
+SYSTEM INSTRUCTION (MANDATORY):
+
+Your task is to translate the ENTIRE analysis object into the target language.
+
+CRITICAL RULES:
+- Translate ALL human-readable text fields.
+- This includes:
+  - Section titles
+  - Headings
+  - Summaries
+  - Explanations
+  - Confidence labels (low / medium / high)
+  - Any descriptive strings
+
+- Do NOT leave any text in English unless the target language is English.
+- Do NOT summarize, rewrite, shorten, or omit content.
+- Do NOT change numbers, enums, URLs, or structural keys.
+- Preserve the JSON structure EXACTLY as received.
+
+Target language: ${langName}
+
+Return the fully translated analysis object, keeping all keys and structure unchanged.
+
 
 CRITICAL RULES:
 1. Translate ALL human-readable text fields - NEVER change any numerical values
