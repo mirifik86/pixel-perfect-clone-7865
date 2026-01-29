@@ -163,6 +163,7 @@ const translations = {
     explainVisualModerate: 'Visual elements show partial coherence with the content.',
     explainVisualLimited: 'Visual signals raise questions about authenticity or context.',
     // PRO
+    proAnalysisBadge: 'PRO ANALYSIS',
     proExplanation: 'PRO Explanation',
     bestEvidence: 'Best Evidence',
     noCorroboration: 'No strong external corroboration was found for this claim.',
@@ -172,6 +173,7 @@ const translations = {
     openSource: 'Open',
     showAllSources: 'Show all sources',
     hideAllSources: 'Hide additional sources',
+    genericLink: 'Generic link',
     // Image signals
     expertVisualAnalysis: 'Expert Visual Analysis',
     imageProvided: 'Image provided and analyzed',
@@ -253,6 +255,7 @@ const translations = {
     explainVisualModerate: 'Les éléments visuels montrent une cohérence partielle avec le contenu.',
     explainVisualLimited: 'Les signaux visuels soulèvent des questions sur l\'authenticité ou le contexte.',
     // PRO
+    proAnalysisBadge: 'ANALYSE PRO',
     proExplanation: 'Explication PRO',
     bestEvidence: 'Meilleures preuves',
     noCorroboration: 'Aucune corroboration externe forte n\'a été trouvée pour cette affirmation.',
@@ -262,6 +265,7 @@ const translations = {
     openSource: 'Ouvrir',
     showAllSources: 'Voir toutes les sources',
     hideAllSources: 'Masquer les sources supplémentaires',
+    genericLink: 'Lien générique',
     // Image signals
     expertVisualAnalysis: 'Analyse Visuelle Expert',
     imageProvided: 'Image fournie et analysée',
@@ -322,6 +326,18 @@ const getDomainFromUrl = (url: string): string => {
   }
 };
 
+// Helper: check if URL is a generic homepage (not a specific article)
+const isGenericHomepageUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname.toLowerCase();
+    // Generic homepages: /, empty, /index, /index.html, /home
+    return path === '/' || path === '' || path === '/index' || path === '/index.html' || path === '/home';
+  } catch {
+    return false;
+  }
+};
+
 // Helper: derive publisher from domain or source name
 const derivePublisher = (name: string, url: string): string => {
   // If name looks like a proper publisher name, use it
@@ -377,6 +393,7 @@ const getSourceSnippet = (source: string | SourceDetail): string => {
 };
 
 // Normalize sources from both new and legacy formats into unified EvidenceSource[]
+// Excludes generic homepage links from primary evidence list (with fallback)
 const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr', maxCount?: number): EvidenceSource[] => {
   const sources: EvidenceSource[] = [];
   
@@ -446,37 +463,56 @@ const normalizeEvidenceSources = (data: AnalysisData, language: 'en' | 'fr', max
     }
   }
   
-  // Deduplicate by domain, keeping highest trust tier
+  // Deduplicate by domain, keeping highest trust tier and non-generic links
   const tierOrder = { high: 0, medium: 1, low: 2 };
   const byDomain = new Map<string, EvidenceSource>();
   
   for (const src of sources) {
     const domain = getDomainFromUrl(src.url);
     const existing = byDomain.get(domain);
+    const srcIsGeneric = isGenericHomepageUrl(src.url);
+    const existingIsGeneric = existing ? isGenericHomepageUrl(existing.url) : true;
     
-    if (!existing || tierOrder[src.trustTier] < tierOrder[existing.trustTier]) {
+    if (!existing) {
       byDomain.set(domain, src);
+    } else {
+      // Replace if: non-generic beats generic, OR same genericness + better trust tier
+      const shouldReplace = 
+        (!srcIsGeneric && existingIsGeneric) ||
+        (srcIsGeneric === existingIsGeneric && tierOrder[src.trustTier] < tierOrder[existing.trustTier]);
+      
+      if (shouldReplace) {
+        byDomain.set(domain, src);
+      }
     }
   }
   
-  // Sort by trust tier (high first) and optionally limit
+  // Sort by trust tier (high first)
   const sorted = Array.from(byDomain.values())
     .sort((a, b) => tierOrder[a.trustTier] - tierOrder[b.trustTier]);
+  
+  // Filter out generic homepage links for primary evidence list
+  const nonGeneric = sorted.filter(s => !isGenericHomepageUrl(s.url));
+  
+  // Fallback: if filtering results in zero sources, use original list
+  const finalList = nonGeneric.length > 0 ? nonGeneric : sorted;
     
-  return maxCount ? sorted.slice(0, maxCount) : sorted;
+  return maxCount ? finalList.slice(0, maxCount) : finalList;
 };
 
-// Get ALL sources for PRO (up to 10) - combines bestLinks + sources
+// Get ALL sources for PRO (up to 10) - combines bestLinks + sources with domain-based deduplication
 const getAllProSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSource[] => {
-  const allSources: EvidenceSource[] = [];
-  const seenUrls = new Set<string>();
+  interface CandidateSource extends EvidenceSource {
+    fromBestLinks: boolean;
+  }
+  
+  const candidates: CandidateSource[] = [];
   
   // Add bestLinks first (they're the priority)
   if (data.result?.bestLinks && Array.isArray(data.result.bestLinks)) {
     for (const src of data.result.bestLinks) {
-      if (src.url && !seenUrls.has(src.url)) {
-        seenUrls.add(src.url);
-        allSources.push({
+      if (src.url) {
+        candidates.push({
           title: src.title || derivePublisher(src.title || '', src.url),
           publisher: src.publisher || derivePublisher('', src.url),
           url: src.url,
@@ -485,6 +521,7 @@ const getAllProSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSo
           whyItMatters: src.whyItMatters || (language === 'fr' 
             ? 'Source consultée pour corroboration.' 
             : 'Source consulted for corroboration.'),
+          fromBestLinks: true,
         });
       }
     }
@@ -493,9 +530,8 @@ const getAllProSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSo
   // Add remaining sources
   if (data.result?.sources && Array.isArray(data.result.sources)) {
     for (const src of data.result.sources) {
-      if (src.url && !seenUrls.has(src.url)) {
-        seenUrls.add(src.url);
-        allSources.push({
+      if (src.url) {
+        candidates.push({
           title: src.title || derivePublisher(src.title || '', src.url),
           publisher: src.publisher || derivePublisher('', src.url),
           url: src.url,
@@ -504,12 +540,56 @@ const getAllProSources = (data: AnalysisData, language: 'en' | 'fr'): EvidenceSo
           whyItMatters: src.whyItMatters || (language === 'fr' 
             ? 'Source consultée pour corroboration.' 
             : 'Source consulted for corroboration.'),
+          fromBestLinks: false,
         });
       }
     }
   }
   
-  return allSources.slice(0, 10);
+  // Domain-based deduplication with priority: bestLinks > trustTier > non-generic
+  const tierOrder = { high: 0, medium: 1, low: 2 };
+  const byDomain = new Map<string, CandidateSource>();
+  
+  for (const src of candidates) {
+    const domain = getDomainFromUrl(src.url);
+    const existing = byDomain.get(domain);
+    
+    if (!existing) {
+      byDomain.set(domain, src);
+    } else {
+      // Priority A: bestLinks beats sources
+      if (src.fromBestLinks && !existing.fromBestLinks) {
+        byDomain.set(domain, src);
+        continue;
+      }
+      if (!src.fromBestLinks && existing.fromBestLinks) {
+        continue; // Keep existing
+      }
+      
+      // Priority B: Higher trust tier wins
+      if (tierOrder[src.trustTier] < tierOrder[existing.trustTier]) {
+        byDomain.set(domain, src);
+        continue;
+      }
+      if (tierOrder[src.trustTier] > tierOrder[existing.trustTier]) {
+        continue; // Keep existing
+      }
+      
+      // Priority C: Non-generic homepage beats generic
+      const srcIsGeneric = isGenericHomepageUrl(src.url);
+      const existingIsGeneric = isGenericHomepageUrl(existing.url);
+      if (!srcIsGeneric && existingIsGeneric) {
+        byDomain.set(domain, src);
+      }
+    }
+  }
+  
+  // Convert back to EvidenceSource[] (strip fromBestLinks flag)
+  const sorted = Array.from(byDomain.values())
+    .sort((a, b) => tierOrder[a.trustTier] - tierOrder[b.trustTier])
+    .map(({ fromBestLinks, ...rest }) => rest);
+  
+  return sorted.slice(0, 10);
 };
 
 // Trust tier badge styles
@@ -549,12 +629,13 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   const breakdown: AnalysisBreakdown = data.breakdown ?? {};
   
   // Normalize evidence sources from both formats
-  // bestLinks: max 4 for primary display
+  // bestLinks: max 4 for primary display (excludes generic homepage links)
   const evidenceSources = isPro ? normalizeEvidenceSources(data, language, 4) : [];
-  // allSources: up to 10 for expandable view
+  // allSources: up to 10 for expandable view (domain-deduplicated)
   const allProSources = isPro ? getAllProSources(data, language) : [];
-  // Additional sources beyond the bestLinks
-  const additionalSources = allProSources.slice(evidenceSources.length);
+  // Additional sources: sources not already in evidenceSources (by domain comparison)
+  const evidenceDomains = new Set(evidenceSources.map(s => getDomainFromUrl(s.url)));
+  const additionalSources = allProSources.filter(s => !evidenceDomains.has(getDomainFromUrl(s.url)));
   const hasAdditionalSources = additionalSources.length > 0;
 
   // Get summary - prefer result.summary for new format
@@ -691,7 +772,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                 textShadow: '0 0 30px hsl(45 100% 60% / 0.5)',
               }}
             >
-              PRO ANALYSIS
+              {t.proAnalysisBadge}
             </span>
             
             {/* Premium verified badge */}
@@ -967,9 +1048,14 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
                                 {source.title}
                               </a>
                               
-                              {/* Publisher */}
+                              {/* Publisher + optional generic link label */}
                               <p className="text-[10px] text-slate-400 mt-0.5">
                                 {source.publisher}
+                                {isGenericHomepageUrl(source.url) && (
+                                  <span className="ml-1.5 inline-flex items-center rounded px-1 py-0.5 bg-slate-100 text-slate-400 text-[9px]">
+                                    {t.genericLink}
+                                  </span>
+                                )}
                               </p>
                             </div>
                             
