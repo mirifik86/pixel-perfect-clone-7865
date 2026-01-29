@@ -51,10 +51,9 @@
     "disclaimerLine1": "non dichiara fatti.",
     "disclaimerLine2": "Ti aiuta a valutare la credibilità delle informazioni.",
     "validationError": "Contenuto non analizzabile — correggi o inseriscine uno nuovo.",
-    "validationNotAnalyzable": "Contenuto non analizzabile — aggiungi una frase completa (o incolla un link).",
-    "validationExampleLabel": "Esempi:",
-    "validationExample1": "\"Trump è presidente degli Stati Uniti.\"",
-    "validationExample2": "Incolla un link: https://esempio.com/articolo"
+    "validationTitle": "Contenuto non analizzabile",
+    "validationSubline": "Aggiungi una frase completa o un breve paragrafo.",
+    "validationHint": "Evita parole singole e testo incompleto."
   },
   "gauge": {
     "pending": "In attesa",

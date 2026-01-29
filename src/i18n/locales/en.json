@@ -51,10 +51,9 @@
     "disclaimerLine1": "does not declare facts.",
     "disclaimerLine2": "It helps you evaluate information credibility.",
     "validationError": "Content not analyzable — please correct it or enter a new one.",
-    "validationNotAnalyzable": "Content not analyzable — add a full sentence (or paste a link).",
-    "validationExampleLabel": "Examples:",
-    "validationExample1": "\"Trump is president of the United States.\"",
-    "validationExample2": "Paste a link: https://example.com/article"
+    "validationTitle": "Content not analyzable",
+    "validationSubline": "Add a complete sentence or a short paragraph.",
+    "validationHint": "Avoid single words and incomplete text."
   },
   "gauge": {
     "pending": "Pending",
