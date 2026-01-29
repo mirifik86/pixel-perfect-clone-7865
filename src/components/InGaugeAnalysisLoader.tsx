@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLanguage } from '@/i18n/useLanguage';
 import { Sparkles } from 'lucide-react';
 
@@ -43,16 +43,17 @@ const proBadgeText = {
   ko: "PRO"
 };
 
-// Generate particles for PRO mode orbital effect
+// Generate particles for PRO mode orbital effect - more organic distribution
 const generateParticles = (count: number) => {
   return Array.from({ length: count }, (_, i) => ({
     id: i,
-    angle: (i / count) * 360,
-    distance: 0.85 + Math.random() * 0.1,
-    size: 1.5 + Math.random() * 1.5,
-    delay: Math.random() * 2,
-    duration: 3 + Math.random() * 2,
-    opacity: 0.3 + Math.random() * 0.4,
+    angle: (i / count) * 360 + (Math.random() - 0.5) * 30, // Random offset for organic feel
+    distance: 0.82 + Math.random() * 0.12,
+    size: 1.2 + Math.random() * 1.2,
+    delay: Math.random() * 3,
+    duration: 4 + Math.random() * 3,
+    opacity: 0.25 + Math.random() * 0.35,
+    orbitSpeed: 12 + Math.random() * 8, // Individual orbit speeds
   }));
 };
 
@@ -60,13 +61,15 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
   const { language } = useLanguage();
   const [stepIndex, setStepIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isPulsing, setIsPulsing] = useState(false);
+  const prevStepRef = useRef(0);
   
   const isPro = mode === 'pro';
   const steps = isPro 
     ? (proSteps[language] || proSteps.en)
     : (standardSteps[language] || standardSteps.en);
   
-  // Memoize particles for PRO mode
+  // Memoize particles for PRO mode - 8 particles for subtle effect
   const particles = useMemo(() => isPro ? generateParticles(8) : [], [isPro]);
   
   // Cycle through steps with smooth fade transitions
@@ -78,8 +81,17 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
     const interval = setInterval(() => {
       setIsTransitioning(true);
       
+      // Trigger pulse on PRO stage change
+      if (isPro) {
+        setIsPulsing(true);
+        setTimeout(() => setIsPulsing(false), 400);
+      }
+      
       setTimeout(() => {
-        setStepIndex((prev) => (prev + 1) % steps.length);
+        setStepIndex((prev) => {
+          prevStepRef.current = prev;
+          return (prev + 1) % steps.length;
+        });
         setIsTransitioning(false);
       }, fadeOutDuration);
       
@@ -94,21 +106,28 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
   const loaderRadius = (loaderSize - loaderStrokeWidth) / 2;
   const loaderCircumference = 2 * Math.PI * loaderRadius;
   
+  // Outer ring for dual-ring effect (PRO only)
+  const outerRingRadius = loaderRadius + 5;
+  const outerRingCircumference = 2 * Math.PI * outerRingRadius;
+  
   // Centered positioning
   const textOffsetTop = size * 0.08;
   
   return (
     <div className="absolute inset-0 flex items-center justify-center animate-fade-in">
-      {/* PRO: Premium shimmer sweep on the gauge ring (rendered at parent level) */}
+      {/* PRO: Premium effects on the gauge */}
       {isPro && (
         <>
-          {/* Inner glow pulse - premium PRO effect */}
+          {/* Inner glow pulse - synced with stage change */}
           <div 
             className="absolute rounded-full pointer-events-none"
             style={{
               inset: 8,
               background: 'radial-gradient(circle, hsl(200 80% 55% / 0.08) 0%, hsl(260 60% 50% / 0.04) 50%, transparent 70%)',
               animation: 'inner-glow-pulse 2.5s ease-in-out infinite',
+              transform: isPulsing ? 'scale(1.03)' : 'scale(1)',
+              opacity: isPulsing ? 1 : 0.8,
+              transition: 'transform 300ms ease-out, opacity 300ms ease-out',
             }}
           />
           
@@ -149,40 +168,42 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
             />
           </div>
           
-          {/* Orbiting particles - very subtle */}
-          <div 
-            className="absolute pointer-events-none"
-            style={{
-              inset: 0,
-              animation: 'particle-orbit 8s linear infinite',
-            }}
-          >
-            {particles.map((particle) => {
-              const rad = (particle.angle * Math.PI) / 180;
-              const x = Math.cos(rad) * (size / 2) * particle.distance;
-              const y = Math.sin(rad) * (size / 2) * particle.distance;
-              
-              return (
-                <div
-                  key={particle.id}
-                  className="absolute rounded-full"
-                  style={{
-                    left: '50%',
-                    top: '50%',
-                    width: particle.size,
-                    height: particle.size,
-                    transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                    background: particle.id % 2 === 0 
-                      ? 'hsl(174 80% 65%)' 
-                      : 'hsl(200 85% 70%)',
-                    opacity: particle.opacity,
-                    boxShadow: `0 0 ${particle.size * 2}px ${particle.id % 2 === 0 ? 'hsl(174 80% 60%)' : 'hsl(200 85% 65%)'}`,
-                    animation: `twinkle ${particle.duration}s ease-in-out ${particle.delay}s infinite`,
-                  }}
-                />
-              );
-            })}
-          </div>
+          {/* Orbiting micro particles - organic motion */}
+          {particles.map((particle) => (
+            <div
+              key={particle.id}
+              className="absolute pointer-events-none"
+              style={{
+                left: '50%',
+                top: '50%',
+                width: 0,
+                height: 0,
+                animation: `particle-orbit-individual ${particle.orbitSpeed}s linear infinite`,
+                animationDelay: `${-particle.delay}s`,
+              }}
+            >
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: particle.size,
+                  height: particle.size,
+                  transform: `translate(-50%, -50%) translateX(${(size / 2) * particle.distance}px) rotate(${particle.angle}deg)`,
+                  background: particle.id % 3 === 0 
+                    ? 'hsl(174 85% 70%)' 
+                    : particle.id % 3 === 1
+                      ? 'hsl(200 90% 75%)'
+                      : 'hsl(260 75% 72%)',
+                  opacity: particle.opacity,
+                  boxShadow: `0 0 ${particle.size * 3}px ${
+                    particle.id % 3 === 0 ? 'hsl(174 85% 65%)' : 
+                    particle.id % 3 === 1 ? 'hsl(200 90% 70%)' : 'hsl(260 75% 68%)'
+                  }`,
+                  animation: `twinkle-soft ${particle.duration}s ease-in-out infinite`,
+                  animationDelay: `${particle.delay}s`,
+                }}
+              />
+            </div>
+          ))}
         </>
       )}
       
@@ -195,7 +216,7 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           marginTop: -textOffsetTop,
         }}
       >
-        {/* PRO Badge - appears above the loader */}
+        {/* PRO Badge - sharper, higher contrast with glow */}
         {isPro && (
           <div 
             className="absolute flex items-center justify-center gap-1.5"
@@ -203,27 +224,30 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
               top: -size * 0.02,
               left: '50%',
               transform: 'translateX(-50%)',
-              padding: '3px 10px',
+              padding: '4px 12px',
               borderRadius: '20px',
-              background: 'linear-gradient(135deg, hsl(200 85% 50% / 0.25) 0%, hsl(260 70% 55% / 0.25) 100%)',
-              border: '1px solid hsl(200 80% 55% / 0.4)',
-              boxShadow: '0 2px 12px hsl(200 80% 50% / 0.3), inset 0 1px 0 hsl(200 60% 60% / 0.2)',
+              background: 'linear-gradient(135deg, hsl(200 90% 52% / 0.3) 0%, hsl(260 75% 58% / 0.3) 100%)',
+              border: '1px solid hsl(200 85% 60% / 0.5)',
+              boxShadow: '0 2px 16px hsl(200 85% 55% / 0.4), 0 0 30px hsl(260 70% 55% / 0.2), inset 0 1px 0 hsl(200 70% 70% / 0.3)',
               animation: 'pro-badge-glow 2s ease-in-out infinite',
             }}
           >
             <Sparkles 
-              className="h-3 w-3"
+              className="h-3.5 w-3.5"
               style={{ 
-                color: 'hsl(174 80% 60%)',
+                color: 'hsl(174 90% 65%)',
+                filter: 'drop-shadow(0 0 4px hsl(174 85% 60% / 0.8))',
                 animation: 'sparkle-pulse 1.5s ease-in-out infinite',
               }} 
             />
             <span 
-              className="text-xs font-bold tracking-wide"
+              className="text-xs font-black tracking-wider"
               style={{
-                background: 'linear-gradient(135deg, hsl(174 80% 60%) 0%, hsl(200 85% 65%) 50%, hsl(260 70% 70%) 100%)',
+                background: 'linear-gradient(135deg, hsl(174 90% 68%) 0%, hsl(200 95% 72%) 40%, hsl(260 80% 75%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 0 6px hsl(200 80% 60% / 0.5))',
+                letterSpacing: '0.1em',
               }}
             >
               {proBadgeText[language] || proBadgeText.en}
@@ -235,20 +259,94 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
         <div 
           className="relative"
           style={{ 
-            width: loaderSize, 
-            height: loaderSize,
+            width: loaderSize + (isPro ? 12 : 0), 
+            height: loaderSize + (isPro ? 12 : 0),
             marginTop: isPro ? size * 0.04 : 0,
           }}
         >
-          {/* Deep ambient glow - multi-layer (enhanced for PRO) */}
+          {/* PRO: Outer glass ring - slow counter-rotation, soft glow */}
+          {isPro && (
+            <svg 
+              className="absolute"
+              width={loaderSize + 12} 
+              height={loaderSize + 12} 
+              viewBox={`0 0 ${loaderSize + 12} ${loaderSize + 12}`}
+              style={{
+                left: 0,
+                top: 0,
+                animation: 'loader-rotate-reverse 8s linear infinite',
+                filter: 'blur(0.5px)',
+              }}
+            >
+              <defs>
+                <linearGradient id="outerRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(200 85% 65%)" stopOpacity="0.35" />
+                  <stop offset="50%" stopColor="hsl(260 70% 62%)" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="hsl(174 80% 58%)" stopOpacity="0.35" />
+                </linearGradient>
+              </defs>
+              <circle
+                cx={(loaderSize + 12) / 2}
+                cy={(loaderSize + 12) / 2}
+                r={outerRingRadius}
+                fill="none"
+                stroke="url(#outerRingGradient)"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeDasharray={`${outerRingCircumference * 0.25} ${outerRingCircumference * 0.15} ${outerRingCircumference * 0.1} ${outerRingCircumference * 0.5}`}
+                style={{
+                  filter: 'drop-shadow(0 0 8px hsl(200 80% 60% / 0.4)) drop-shadow(0 0 16px hsl(260 70% 55% / 0.25))',
+                }}
+              />
+            </svg>
+          )}
+          
+          {/* PRO: Shimmer sweep overlay on main ring */}
+          {isPro && (
+            <div 
+              className="absolute rounded-full pointer-events-none overflow-hidden"
+              style={{
+                left: isPro ? 6 : 0,
+                top: isPro ? 6 : 0,
+                width: loaderSize,
+                height: loaderSize,
+              }}
+            >
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: `conic-gradient(
+                    from 0deg,
+                    transparent 0deg,
+                    transparent 160deg,
+                    hsl(200 90% 80% / 0.12) 175deg,
+                    hsl(180 85% 75% / 0.18) 180deg,
+                    hsl(200 90% 80% / 0.12) 185deg,
+                    transparent 200deg,
+                    transparent 360deg
+                  )`,
+                  animation: 'shimmer-sweep 7s linear infinite',
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Deep ambient glow - enhanced pulse on stage change for PRO */}
           <div 
-            className="absolute inset-0 rounded-full"
+            className="absolute rounded-full"
             style={{
+              left: isPro ? 6 : 0,
+              top: isPro ? 6 : 0,
+              width: loaderSize,
+              height: loaderSize,
               background: isPro
-                ? 'radial-gradient(circle, hsl(200 85% 55% / 0.5) 0%, hsl(174 70% 45% / 0.25) 40%, transparent 70%)'
+                ? 'radial-gradient(circle, hsl(200 85% 55% / 0.55) 0%, hsl(174 70% 45% / 0.25) 40%, transparent 70%)'
                 : 'radial-gradient(circle, hsl(174 80% 50% / 0.5) 0%, hsl(174 70% 45% / 0.2) 40%, transparent 70%)',
               filter: 'blur(12px)',
               animation: 'loader-glow-breathe 2s ease-in-out infinite',
+              transform: isPro && isPulsing ? 'scale(1.15)' : 'scale(1)',
+              opacity: isPro && isPulsing ? 1 : 0.85,
+              transition: 'transform 350ms cubic-bezier(0.4, 0, 0.2, 1), opacity 350ms ease-out',
             }}
           />
           
@@ -256,9 +354,12 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           <div 
             className="absolute rounded-full"
             style={{
-              inset: -8,
+              left: isPro ? -2 : -8,
+              top: isPro ? -2 : -8,
+              right: isPro ? -2 : -8,
+              bottom: isPro ? -2 : -8,
               background: isPro
-                ? 'radial-gradient(circle, transparent 50%, hsl(200 80% 60% / 0.18) 70%, transparent 100%)'
+                ? 'radial-gradient(circle, transparent 50%, hsl(200 80% 60% / 0.2) 70%, transparent 100%)'
                 : 'radial-gradient(circle, transparent 50%, hsl(174 75% 55% / 0.15) 70%, transparent 100%)',
               animation: 'loader-outer-pulse 2.5s ease-in-out infinite',
             }}
@@ -266,10 +367,14 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           
           {/* Static track ring - darker */}
           <svg 
-            className="absolute inset-0"
+            className="absolute"
             width={loaderSize} 
             height={loaderSize} 
             viewBox={`0 0 ${loaderSize} ${loaderSize}`}
+            style={{
+              left: isPro ? 6 : 0,
+              top: isPro ? 6 : 0,
+            }}
           >
             <circle
               cx={loaderSize / 2}
@@ -283,11 +388,13 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           
           {/* Primary rotating arc - intense glow (premium gradient for PRO) */}
           <svg 
-            className="absolute inset-0"
+            className="absolute"
             width={loaderSize} 
             height={loaderSize} 
             viewBox={`0 0 ${loaderSize} ${loaderSize}`}
             style={{
+              left: isPro ? 6 : 0,
+              top: isPro ? 6 : 0,
               animation: `loader-rotate ${isPro ? '1.2s' : '1.4s'} linear infinite`,
             }}
           >
@@ -295,10 +402,10 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
               <linearGradient id={`arcGradient-${mode}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 {isPro ? (
                   <>
-                    <stop offset="0%" stopColor="hsl(200 90% 60%)" stopOpacity="1" />
-                    <stop offset="40%" stopColor="hsl(174 85% 55%)" stopOpacity="0.95" />
-                    <stop offset="70%" stopColor="hsl(260 75% 60%)" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="hsl(200 80% 50%)" stopOpacity="0.3" />
+                    <stop offset="0%" stopColor="hsl(200 95% 65%)" stopOpacity="1" />
+                    <stop offset="35%" stopColor="hsl(174 90% 58%)" stopOpacity="0.95" />
+                    <stop offset="65%" stopColor="hsl(260 80% 65%)" stopOpacity="0.85" />
+                    <stop offset="100%" stopColor="hsl(200 85% 55%)" stopOpacity="0.3" />
                   </>
                 ) : (
                   <>
@@ -320,7 +427,7 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
               strokeDasharray={`${loaderCircumference * 0.35} ${loaderCircumference * 0.65}`}
               style={{
                 filter: isPro
-                  ? 'drop-shadow(0 0 10px hsl(200 85% 60% / 0.9)) drop-shadow(0 0 20px hsl(260 70% 55% / 0.5))'
+                  ? 'drop-shadow(0 0 10px hsl(200 90% 62% / 0.9)) drop-shadow(0 0 22px hsl(260 75% 58% / 0.5))'
                   : 'drop-shadow(0 0 8px hsl(174 85% 55% / 0.9)) drop-shadow(0 0 16px hsl(174 75% 50% / 0.5))',
               }}
             />
@@ -328,11 +435,13 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           
           {/* Secondary counter-rotating arc - subtle depth */}
           <svg 
-            className="absolute inset-0"
+            className="absolute"
             width={loaderSize} 
             height={loaderSize} 
             viewBox={`0 0 ${loaderSize} ${loaderSize}`}
             style={{
+              left: isPro ? 6 : 0,
+              top: isPro ? 6 : 0,
               animation: `loader-rotate-reverse ${isPro ? '2.2s' : '2.8s'} linear infinite`,
             }}
           >
@@ -341,13 +450,13 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
               cy={loaderSize / 2}
               r={loaderRadius - 6}
               fill="none"
-              stroke={isPro ? 'hsl(260 70% 65% / 0.4)' : 'hsl(180 70% 60% / 0.35)'}
+              stroke={isPro ? 'hsl(260 75% 68% / 0.45)' : 'hsl(180 70% 60% / 0.35)'}
               strokeWidth={1.2}
               strokeLinecap="round"
               strokeDasharray={`${(loaderCircumference - 12 * Math.PI) * 0.15} ${(loaderCircumference - 12 * Math.PI) * 0.85}`}
               style={{
                 filter: isPro
-                  ? 'drop-shadow(0 0 5px hsl(260 70% 60% / 0.5))'
+                  ? 'drop-shadow(0 0 6px hsl(260 75% 62% / 0.5))'
                   : 'drop-shadow(0 0 4px hsl(180 70% 55% / 0.4))',
               }}
             />
@@ -355,11 +464,13 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           
           {/* Tertiary fast inner ring */}
           <svg 
-            className="absolute inset-0"
+            className="absolute"
             width={loaderSize} 
             height={loaderSize} 
             viewBox={`0 0 ${loaderSize} ${loaderSize}`}
             style={{
+              left: isPro ? 6 : 0,
+              top: isPro ? 6 : 0,
               animation: `loader-rotate ${isPro ? '0.7s' : '0.9s'} linear infinite`,
             }}
           >
@@ -368,7 +479,7 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
               cy={loaderSize / 2}
               r={loaderRadius - 10}
               fill="none"
-              stroke={isPro ? 'hsl(200 80% 70% / 0.3)' : 'hsl(174 75% 65% / 0.25)'}
+              stroke={isPro ? 'hsl(200 85% 72% / 0.35)' : 'hsl(174 75% 65% / 0.25)'}
               strokeWidth={0.8}
               strokeLinecap="round"
               strokeDasharray={`${(loaderCircumference - 20 * Math.PI) * 0.1} ${(loaderCircumference - 20 * Math.PI) * 0.9}`}
@@ -377,15 +488,18 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           
           {/* Center core pulse */}
           <div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="absolute rounded-full"
             style={{
-              width: isPro ? 7 : 6,
-              height: isPro ? 7 : 6,
+              left: isPro ? 6 + loaderSize / 2 : loaderSize / 2,
+              top: isPro ? 6 + loaderSize / 2 : loaderSize / 2,
+              width: isPro ? 8 : 6,
+              height: isPro ? 8 : 6,
+              transform: 'translate(-50%, -50%)',
               background: isPro
-                ? 'radial-gradient(circle, hsl(200 90% 75%) 0%, hsl(260 80% 60%) 100%)'
+                ? 'radial-gradient(circle, hsl(200 95% 78%) 0%, hsl(260 85% 65%) 100%)'
                 : 'radial-gradient(circle, hsl(174 90% 70%) 0%, hsl(174 85% 55%) 100%)',
               boxShadow: isPro
-                ? '0 0 14px hsl(200 85% 65% / 0.9), 0 0 28px hsl(260 75% 58% / 0.5)'
+                ? '0 0 16px hsl(200 90% 68% / 0.9), 0 0 32px hsl(260 80% 60% / 0.5)'
                 : '0 0 12px hsl(174 85% 60% / 0.9), 0 0 24px hsl(174 80% 55% / 0.5)',
               animation: 'center-core-pulse 1.2s ease-in-out infinite',
             }}
@@ -393,19 +507,22 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           
           {/* Expanding ring effect */}
           <div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="absolute rounded-full"
             style={{
+              left: isPro ? 6 + loaderSize / 2 : loaderSize / 2,
+              top: isPro ? 6 + loaderSize / 2 : loaderSize / 2,
               width: 8,
               height: 8,
+              transform: 'translate(-50%, -50%)',
               border: isPro
-                ? '1px solid hsl(200 80% 65% / 0.6)'
+                ? '1px solid hsl(200 85% 68% / 0.6)'
                 : '1px solid hsl(174 80% 60% / 0.6)',
               animation: 'ring-expand-out 2s ease-out infinite',
             }}
           />
         </div>
         
-        {/* Status text - premium styling */}
+        {/* Status text - premium styling with improved hierarchy */}
         <div 
           className="relative flex items-center justify-center"
           style={{ 
@@ -417,15 +534,15 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           <span
             className="absolute text-center font-semibold uppercase whitespace-nowrap"
             style={{
-              fontSize: 'clamp(0.55rem, 1.8vw, 0.7rem)',
-              color: isPro ? 'hsl(200 70% 80%)' : 'hsl(174 60% 75%)',
+              fontSize: 'clamp(0.55rem, 1.8vw, 0.72rem)',
+              color: isPro ? 'hsl(200 75% 85%)' : 'hsl(174 60% 75%)',
               textShadow: isPro
-                ? '0 0 20px hsl(200 75% 60% / 0.6), 0 0 40px hsl(260 65% 55% / 0.3)'
+                ? '0 0 24px hsl(200 80% 62% / 0.7), 0 0 48px hsl(260 70% 58% / 0.35)'
                 : '0 0 20px hsl(174 70% 55% / 0.6), 0 0 40px hsl(174 60% 50% / 0.3)',
-              opacity: isTransitioning ? 0 : 1,
+              opacity: isTransitioning ? 0 : (isPro ? 0.95 : 0.9),
               transform: isTransitioning ? 'translateY(4px) scale(0.96)' : 'translateY(0) scale(1)',
               transition: `opacity ${isPro ? '180ms' : '280ms'} ease-out, transform ${isPro ? '180ms' : '280ms'} ease-out`,
-              letterSpacing: '0.18em',
+              letterSpacing: isPro ? '0.22em' : '0.18em',
             }}
           >
             {steps[stepIndex]}
@@ -447,17 +564,17 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
             style={{
               width: `${((stepIndex + 1) / steps.length) * 100}%`,
               background: isPro
-                ? 'linear-gradient(90deg, hsl(200 85% 55%), hsl(174 80% 50%), hsl(260 70% 58%))'
+                ? 'linear-gradient(90deg, hsl(200 90% 58%), hsl(174 85% 52%), hsl(260 75% 62%))'
                 : 'linear-gradient(90deg, hsl(174 80% 50%), hsl(180 75% 55%))',
               boxShadow: isPro
-                ? '0 0 10px hsl(200 80% 60% / 0.7)'
+                ? '0 0 12px hsl(200 85% 62% / 0.7)'
                 : '0 0 8px hsl(174 80% 55% / 0.7)',
               transition: 'width 400ms ease-out',
             }}
           />
         </div>
         
-        {/* Step dots - refined */}
+        {/* Step dots - refined with consistent centering */}
         <div 
           className="flex items-center justify-center gap-2"
           style={{ marginTop: size * 0.025 }}
@@ -471,16 +588,16 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
                 height: 4,
                 background: idx === stepIndex 
                   ? isPro
-                    ? 'linear-gradient(90deg, hsl(200 85% 60%), hsl(260 75% 62%))'
+                    ? 'linear-gradient(90deg, hsl(200 90% 62%), hsl(260 80% 65%))'
                     : 'linear-gradient(90deg, hsl(174 85% 55%), hsl(180 80% 60%))'
                   : idx < stepIndex 
                     ? isPro
-                      ? 'hsl(200 65% 55% / 0.5)'
+                      ? 'hsl(200 70% 58% / 0.55)'
                       : 'hsl(174 65% 50% / 0.5)'
                     : 'hsl(200 15% 35% / 0.4)',
                 boxShadow: idx === stepIndex 
                   ? isPro
-                    ? '0 0 12px hsl(200 85% 60% / 0.8), 0 0 24px hsl(260 70% 55% / 0.4)'
+                    ? '0 0 14px hsl(200 90% 62% / 0.8), 0 0 28px hsl(260 75% 58% / 0.4)'
                     : '0 0 10px hsl(174 85% 55% / 0.8), 0 0 20px hsl(174 75% 50% / 0.4)'
                   : 'none',
                 borderRadius: idx === stepIndex ? 4 : 2,
@@ -523,32 +640,32 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
         @keyframes center-core-pulse {
           0%, 100% { 
             opacity: 0.7; 
-            transform: translate(-50%, -50%) scale(0.85);
             box-shadow: 0 0 12px hsl(174 85% 60% / 0.9), 0 0 24px hsl(174 80% 55% / 0.5);
           }
           50% { 
             opacity: 1; 
-            transform: translate(-50%, -50%) scale(1.3);
             box-shadow: 0 0 18px hsl(174 90% 65% / 1), 0 0 36px hsl(174 85% 58% / 0.7);
           }
         }
         @keyframes ring-expand-out {
           0% {
             opacity: 0.8;
-            transform: translate(-50%, -50%) scale(0.5);
+            width: 8px;
+            height: 8px;
           }
           100% {
             opacity: 0;
-            transform: translate(-50%, -50%) scale(3);
+            width: 28px;
+            height: 28px;
           }
         }
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; transform: translate(calc(-50% + var(--x, 0)), calc(-50% + var(--y, 0))) scale(0.8); }
-          50% { opacity: 0.7; transform: translate(calc(-50% + var(--x, 0)), calc(-50% + var(--y, 0))) scale(1.2); }
+        @keyframes twinkle-soft {
+          0%, 100% { opacity: 0.2; transform: scale(0.85); }
+          50% { opacity: 0.6; transform: scale(1.15); }
         }
         @keyframes inner-glow-pulse {
           0%, 100% { opacity: 0.5; }
-          50% { opacity: 0.9; }
+          50% { opacity: 0.85; }
         }
         @keyframes beam-sweep-left {
           from { transform: rotate(0deg); }
@@ -558,21 +675,25 @@ export const InGaugeAnalysisLoader = ({ size, mode = 'standard' }: InGaugeAnalys
           from { transform: rotate(360deg); }
           to { transform: rotate(0deg); }
         }
-        @keyframes particle-orbit {
+        @keyframes particle-orbit-individual {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes shimmer-sweep {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
         @keyframes pro-badge-glow {
           0%, 100% { 
-            box-shadow: 0 2px 12px hsl(200 80% 50% / 0.3), inset 0 1px 0 hsl(200 60% 60% / 0.2);
+            box-shadow: 0 2px 16px hsl(200 85% 55% / 0.4), 0 0 30px hsl(260 70% 55% / 0.2), inset 0 1px 0 hsl(200 70% 70% / 0.3);
           }
           50% { 
-            box-shadow: 0 2px 18px hsl(200 80% 55% / 0.5), 0 0 25px hsl(260 70% 55% / 0.3), inset 0 1px 0 hsl(200 60% 60% / 0.3);
+            box-shadow: 0 2px 22px hsl(200 90% 58% / 0.55), 0 0 40px hsl(260 75% 58% / 0.35), inset 0 1px 0 hsl(200 75% 75% / 0.4);
           }
         }
         @keyframes sparkle-pulse {
-          0%, 100% { opacity: 0.7; transform: scale(0.9); }
-          50% { opacity: 1; transform: scale(1.1); }
+          0%, 100% { opacity: 0.75; transform: scale(0.92); }
+          50% { opacity: 1; transform: scale(1.08); }
         }
       `}</style>
     </div>
