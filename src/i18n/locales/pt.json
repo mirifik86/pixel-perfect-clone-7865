@@ -293,5 +293,59 @@
       { "label": "Verificando credibilidade" },
       { "label": "Cruzando dados" }
     ]
+  },
+  "proHighlights": {
+    "title": "Destaques PRO",
+    "confirmed": "Confirmado",
+    "uncertain": "Incerto",
+    "contradicted": "Contraditado",
+    "noConfirmation": "Nenhuma confirmação externa forte encontrada.",
+    "noUncertainty": "Nenhuma incerteza significativa identificada.",
+    "noContradiction": "Nenhuma contradição notável encontrada."
+  },
+  "verificationCoverage": {
+    "title": "Cobertura de verificação",
+    "webCoverage": "Cobertura web",
+    "sourceDiversity": "Diversidade de fontes",
+    "contradictionCheck": "Verificação de contradições",
+    "extensive": "Extensa",
+    "moderate": "Moderada",
+    "limited": "Limitada",
+    "high": "Alta",
+    "medium": "Média",
+    "low": "Baixa",
+    "clear": "Clara",
+    "mixed": "Mista",
+    "noneFound": "Nenhuma encontrada"
+  },
+  "bestSources": {
+    "title": "Melhores provas",
+    "refutingSources": "Fontes refutantes",
+    "showAll": "Ver todas as fontes (até 10)",
+    "hideAll": "Ocultar fontes adicionais",
+    "noCorroboration": "Nenhuma corroboração externa forte encontrada para esta afirmação.",
+    "verifying": "Verificando links…",
+    "open": "Abrir",
+    "copyLink": "Copiar link",
+    "verified": "Verificado",
+    "trustHigh": "Alta",
+    "trustMedium": "Média",
+    "trustLow": "Baixa",
+    "stanceCorroborating": "Corrobora",
+    "stanceNeutral": "Neutro",
+    "stanceContradicting": "Contradiz",
+    "typeOfficial": "Oficial",
+    "typeReference": "Referência",
+    "typeMedia": "Mídia principal",
+    "trustTooltipHigh": "Fonte oficial, institucional ou de referência reconhecida.",
+    "trustTooltipMedium": "Mídia reconhecida ou análise secundária confiável, mas não oficial.",
+    "trustTooltipLow": "Fonte indireta ou contextual, interpretar com cautela.",
+    "filtered": "filtrada(s)",
+    "shown": "mostrada(s)",
+    "of": "de"
+  },
+  "documentTitle": {
+    "default": "LeenScore — Credibilidade, medida.",
+    "analyzing": "Analisando… — LeenScore"
   }
 }

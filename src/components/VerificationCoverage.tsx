@@ -1,5 +1,6 @@
 import { Globe, Building2, AlertTriangle } from 'lucide-react';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslation } from '@/i18n/translations';
 
 interface ProSource {
   stance?: 'corroborating' | 'neutral' | 'contradicting';
@@ -13,39 +14,6 @@ interface VerificationCoverageProps {
   sourcesConsulted?: number;
 }
 
-const translations = {
-  en: {
-    title: 'Verification Coverage',
-    webCoverage: 'Web coverage',
-    sourceDiversity: 'Source diversity',
-    contradictionCheck: 'Contradiction check',
-    extensive: 'Extensive',
-    moderate: 'Moderate',
-    limited: 'Limited',
-    high: 'High',
-    medium: 'Medium',
-    low: 'Low',
-    clear: 'Clear',
-    mixed: 'Mixed',
-    noneFound: 'None found',
-  },
-  fr: {
-    title: 'Couverture de vérification',
-    webCoverage: 'Couverture web',
-    sourceDiversity: 'Diversité des sources',
-    contradictionCheck: 'Vérification des contradictions',
-    extensive: 'Étendue',
-    moderate: 'Modérée',
-    limited: 'Limitée',
-    high: 'Élevée',
-    medium: 'Moyenne',
-    low: 'Faible',
-    clear: 'Claire',
-    mixed: 'Mixte',
-    noneFound: 'Aucune trouvée',
-  },
-};
-
 // Helper: extract domain from URL
 const getDomainFromUrl = (url: string): string => {
   try {
@@ -57,33 +25,34 @@ const getDomainFromUrl = (url: string): string => {
 };
 
 export const VerificationCoverage = ({ language, sources, sourcesConsulted = 0 }: VerificationCoverageProps) => {
-  const t = translations[language] || translations.en;
+  // Use i18n system for translations
+  const t = (key: string) => getTranslation(language, key);
   
   // Calculate web coverage based on sources found
   const totalSources = Math.max(sources.length, sourcesConsulted);
-  const getWebCoverage = (): { level: 'extensive' | 'moderate' | 'limited'; label: string } => {
-    if (totalSources >= 6) return { level: 'extensive', label: t.extensive };
-    if (totalSources >= 3) return { level: 'moderate', label: t.moderate };
-    return { level: 'limited', label: t.limited };
+  const getWebCoverage = (): { level: 'extensive' | 'moderate' | 'limited'; labelKey: string } => {
+    if (totalSources >= 6) return { level: 'extensive', labelKey: 'verificationCoverage.extensive' };
+    if (totalSources >= 3) return { level: 'moderate', labelKey: 'verificationCoverage.moderate' };
+    return { level: 'limited', labelKey: 'verificationCoverage.limited' };
   };
   
   // Calculate source diversity based on unique domains
   const uniqueDomains = new Set(
     sources.filter(s => s.url).map(s => getDomainFromUrl(s.url!))
   );
-  const getSourceDiversity = (): { level: 'high' | 'medium' | 'low'; label: string } => {
-    if (uniqueDomains.size >= 5) return { level: 'high', label: t.high };
-    if (uniqueDomains.size >= 3) return { level: 'medium', label: t.medium };
-    return { level: 'low', label: t.low };
+  const getSourceDiversity = (): { level: 'high' | 'medium' | 'low'; labelKey: string } => {
+    if (uniqueDomains.size >= 5) return { level: 'high', labelKey: 'verificationCoverage.high' };
+    if (uniqueDomains.size >= 3) return { level: 'medium', labelKey: 'verificationCoverage.medium' };
+    return { level: 'low', labelKey: 'verificationCoverage.low' };
   };
   
   // Check for contradictions
   const contradictingSources = sources.filter(s => s.stance === 'contradicting');
   const neutralSources = sources.filter(s => s.stance === 'neutral');
-  const getContradictionCheck = (): { level: 'clear' | 'mixed' | 'none'; label: string } => {
-    if (contradictingSources.length > 0) return { level: 'clear', label: t.clear };
-    if (neutralSources.length > 1) return { level: 'mixed', label: t.mixed };
-    return { level: 'none', label: t.noneFound };
+  const getContradictionCheck = (): { level: 'clear' | 'mixed' | 'none'; labelKey: string } => {
+    if (contradictingSources.length > 0) return { level: 'clear', labelKey: 'verificationCoverage.clear' };
+    if (neutralSources.length > 1) return { level: 'mixed', labelKey: 'verificationCoverage.mixed' };
+    return { level: 'none', labelKey: 'verificationCoverage.noneFound' };
   };
   
   const webCoverage = getWebCoverage();
@@ -113,40 +82,40 @@ export const VerificationCoverage = ({ language, sources, sourcesConsulted = 0 }
       }}
     >
       <h3 className="font-serif text-lg font-semibold text-slate-900 mb-4">
-        {t.title}
+        {t('verificationCoverage.title')}
       </h3>
       
       <div className="flex flex-wrap gap-3">
         {/* Web Coverage Chip */}
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-slate-500" />
-          <span className="text-sm text-slate-600">{t.webCoverage}:</span>
+          <span className="text-sm text-slate-600">{t('verificationCoverage.webCoverage')}:</span>
           <span 
             className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${chipStyles[webCoverage.level].bg} ${chipStyles[webCoverage.level].text} ${chipStyles[webCoverage.level].border}`}
           >
-            {webCoverage.label}
+            {t(webCoverage.labelKey)}
           </span>
         </div>
         
         {/* Source Diversity Chip */}
         <div className="flex items-center gap-2">
           <Building2 className="h-4 w-4 text-slate-500" />
-          <span className="text-sm text-slate-600">{t.sourceDiversity}:</span>
+          <span className="text-sm text-slate-600">{t('verificationCoverage.sourceDiversity')}:</span>
           <span 
             className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${chipStyles[sourceDiversity.level].bg} ${chipStyles[sourceDiversity.level].text} ${chipStyles[sourceDiversity.level].border}`}
           >
-            {sourceDiversity.label}
+            {t(sourceDiversity.labelKey)}
           </span>
         </div>
         
         {/* Contradiction Check Chip */}
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-slate-500" />
-          <span className="text-sm text-slate-600">{t.contradictionCheck}:</span>
+          <span className="text-sm text-slate-600">{t('verificationCoverage.contradictionCheck')}:</span>
           <span 
             className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${chipStyles[contradictionCheck.level].bg} ${chipStyles[contradictionCheck.level].text} ${chipStyles[contradictionCheck.level].border}`}
           >
-            {contradictionCheck.label}
+            {t(contradictionCheck.labelKey)}
           </span>
         </div>
       </div>

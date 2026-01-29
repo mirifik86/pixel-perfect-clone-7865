@@ -1,5 +1,6 @@
 import { CheckCircle, HelpCircle, XCircle } from 'lucide-react';
 import { type SupportedLanguage } from '@/i18n/config';
+import { getTranslation } from '@/i18n/translations';
 
 interface ProSource {
   stance?: 'corroborating' | 'neutral' | 'contradicting';
@@ -12,37 +13,9 @@ interface ProHighlightsProps {
   sources: ProSource[];
 }
 
-const translations: Record<string, {
-  title: string;
-  confirmedLabel: string;
-  uncertainLabel: string;
-  contradictedLabel: string;
-  noConfirmation: string;
-  noUncertainty: string;
-  noContradiction: string;
-}> = {
-  en: {
-    title: 'PRO Highlights',
-    confirmedLabel: 'Confirmed',
-    uncertainLabel: 'Uncertain',
-    contradictedLabel: 'Contradicted',
-    noConfirmation: 'No strong external confirmation found.',
-    noUncertainty: 'No significant uncertainty identified.',
-    noContradiction: 'No notable contradictions found.',
-  },
-  fr: {
-    title: 'Points clés PRO',
-    confirmedLabel: 'Confirmé',
-    uncertainLabel: 'Incertain',
-    contradictedLabel: 'Contredit',
-    noConfirmation: 'Aucune confirmation externe forte trouvée.',
-    noUncertainty: 'Aucune incertitude significative identifiée.',
-    noContradiction: 'Aucune contradiction notable trouvée.',
-  },
-};
-
 export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
-  const t = translations[language] || translations.en;
+  // Use i18n system for translations
+  const t = (key: string) => getTranslation(language, key);
   
   // Extract sources by stance
   const corroborating = sources.filter(s => s.stance === 'corroborating');
@@ -63,9 +36,9 @@ export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
     return best.whyItMatters || best.title || null;
   };
   
-  const confirmedText = getHighlightSentence(corroborating) || t.noConfirmation;
-  const uncertainText = getHighlightSentence(neutral) || t.noUncertainty;
-  const contradictedText = getHighlightSentence(contradicting) || t.noContradiction;
+  const confirmedText = getHighlightSentence(corroborating) || t('proHighlights.noConfirmation');
+  const uncertainText = getHighlightSentence(neutral) || t('proHighlights.noUncertainty');
+  const contradictedText = getHighlightSentence(contradicting) || t('proHighlights.noContradiction');
   
   const hasConfirmation = corroborating.length > 0;
   const hasUncertainty = neutral.length > 0;
@@ -81,7 +54,7 @@ export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
       }}
     >
       <h3 className="font-serif text-lg font-semibold text-slate-900 mb-4">
-        {t.title}
+        {t('proHighlights.title')}
       </h3>
       
       <div className="space-y-3">
@@ -106,7 +79,7 @@ export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
             <p className={`text-xs font-semibold uppercase tracking-wide mb-1 ${
               hasConfirmation ? 'text-emerald-700' : 'text-slate-500'
             }`}>
-              {t.confirmedLabel}
+              {t('proHighlights.confirmed')}
             </p>
             <p className={`text-sm leading-relaxed ${
               hasConfirmation ? 'text-slate-700' : 'text-slate-500 italic'
@@ -137,7 +110,7 @@ export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
             <p className={`text-xs font-semibold uppercase tracking-wide mb-1 ${
               hasUncertainty ? 'text-amber-700' : 'text-slate-500'
             }`}>
-              {t.uncertainLabel}
+              {t('proHighlights.uncertain')}
             </p>
             <p className={`text-sm leading-relaxed ${
               hasUncertainty ? 'text-slate-700' : 'text-slate-500 italic'
@@ -168,7 +141,7 @@ export const ProHighlights = ({ language, sources }: ProHighlightsProps) => {
             <p className={`text-xs font-semibold uppercase tracking-wide mb-1 ${
               hasContradiction ? 'text-red-700' : 'text-slate-500'
             }`}>
-              {t.contradictedLabel}
+              {t('proHighlights.contradicted')}
             </p>
             <p className={`text-sm leading-relaxed ${
               hasContradiction ? 'text-slate-700' : 'text-slate-500 italic'
