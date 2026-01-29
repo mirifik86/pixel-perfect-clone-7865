@@ -113,23 +113,43 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     };
   }
 
+  // Helper: convert numeric confidence (0..1) to tier string
+  const confidenceToTier = (conf: unknown): 'low' | 'medium' | 'high' => {
+    if (typeof conf === 'number') {
+      return conf >= 0.75 ? 'high' : conf >= 0.45 ? 'medium' : 'low';
+    }
+    if (conf === 'high' || conf === 'medium') {
+      return conf;
+    }
+    return 'low';
+  };
+
+  // Helper: build breakdown with prudence -> tone fallback
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buildBreakdown = (bd: any): AnalysisBreakdown => {
+    if (!bd || typeof bd !== 'object') {
+      return createDefaultBreakdown();
+    }
+    
+    // If tone is missing but prudence exists, map prudence -> tone
+    const toneSource = bd.tone ?? bd.prudence;
+    
+    return {
+      sources: { points: Number(bd.sources?.points ?? 0), reason: String(bd.sources?.reason ?? '') },
+      factual: { points: Number(bd.factual?.points ?? 0), reason: String(bd.factual?.reason ?? '') },
+      tone: { points: Number(toneSource?.points ?? 0), reason: String(toneSource?.reason ?? '') },
+      context: { points: Number(bd.context?.points ?? 0), reason: String(bd.context?.reason ?? '') },
+      transparency: { points: Number(bd.transparency?.points ?? 0), reason: String(bd.transparency?.reason ?? '') },
+    };
+  };
+
   // New PRO format: { status: "ok", result: { score, riskLevel, summary, confidence, bestLinks, sources } }
   if (raw.result && typeof raw.result === 'object') {
     const result = raw.result;
-    const numericConfidence = typeof result.confidence === 'number' ? result.confidence : 0;
-    const confidenceTier: 'low' | 'medium' | 'high' =
-      numericConfidence >= 0.75 ? 'high' : numericConfidence >= 0.45 ? 'medium' : 'low';
+    const confidenceTier = confidenceToTier(result.confidence);
 
     // Build breakdown from result or use defaults
-    const breakdown: AnalysisBreakdown = result.breakdown && typeof result.breakdown === 'object'
-      ? {
-          sources: { points: Number(result.breakdown.sources?.points ?? 0), reason: String(result.breakdown.sources?.reason ?? '') },
-          factual: { points: Number(result.breakdown.factual?.points ?? 0), reason: String(result.breakdown.factual?.reason ?? '') },
-          tone: { points: Number(result.breakdown.tone?.points ?? 0), reason: String(result.breakdown.tone?.reason ?? '') },
-          context: { points: Number(result.breakdown.context?.points ?? 0), reason: String(result.breakdown.context?.reason ?? '') },
-          transparency: { points: Number(result.breakdown.transparency?.points ?? 0), reason: String(result.breakdown.transparency?.reason ?? '') },
-        }
-      : createDefaultBreakdown();
+    const breakdown = buildBreakdown(result.breakdown);
 
     const normalized: AnalysisData = {
       score: Number(result.score ?? 0),
@@ -148,22 +168,17 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     return normalized;
   }
 
-  // Legacy format: already matches AnalysisData shape
+  // Legacy/Standard format: already matches AnalysisData shape
+  // Handle numeric confidence -> tier conversion
+  const confidenceTier = confidenceToTier(raw.confidence);
+  
   return {
     score: Number(raw.score ?? 0),
     analysisType: raw.analysisType,
-    breakdown: raw.breakdown && typeof raw.breakdown === 'object'
-      ? {
-          sources: { points: Number(raw.breakdown.sources?.points ?? 0), reason: String(raw.breakdown.sources?.reason ?? '') },
-          factual: { points: Number(raw.breakdown.factual?.points ?? 0), reason: String(raw.breakdown.factual?.reason ?? '') },
-          tone: { points: Number(raw.breakdown.tone?.points ?? 0), reason: String(raw.breakdown.tone?.reason ?? '') },
-          context: { points: Number(raw.breakdown.context?.points ?? 0), reason: String(raw.breakdown.context?.reason ?? '') },
-          transparency: { points: Number(raw.breakdown.transparency?.points ?? 0), reason: String(raw.breakdown.transparency?.reason ?? '') },
-        }
-      : createDefaultBreakdown(),
+    breakdown: buildBreakdown(raw.breakdown),
     summary: String(raw.summary ?? ''),
     articleSummary: String(raw.articleSummary ?? ''),
-    confidence: raw.confidence === 'high' || raw.confidence === 'medium' ? raw.confidence : 'low',
+    confidence: confidenceTier,
     corroboration: raw.corroboration,
     // Preserve result if it exists
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
