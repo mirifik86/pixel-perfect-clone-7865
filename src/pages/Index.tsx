@@ -635,8 +635,10 @@ const Index = () => {
     }
   }, [handleImageAnalysis, handleAnalyze, isValidInput, i18nT]);
   
-  // Validation message persists until valid analysis starts (no-op callback)
-  const handleClearValidation = useCallback(() => {}, []);
+  // Clear validation message when input is emptied
+  const handleClearValidation = useCallback(() => {
+    setValidationMessage(null);
+  }, []);
 
   // Re-run analysis with edited text
   const handleRerunAnalysis = async (editedText: string) => {

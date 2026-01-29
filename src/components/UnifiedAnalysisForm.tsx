@@ -143,9 +143,13 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(e.target.value);
-    // Do NOT clear validation on typing - only clear when valid analysis starts
-    // onClearValidation is now a no-op, validation clears via parent setting validationMessage to null
+    const newValue = e.target.value;
+    setInputText(newValue);
+    // Clear validation if input is emptied (user deleted all text)
+    if (newValue.trim().length === 0 && validationMessage) {
+      onClearValidation?.();
+    }
+    // Otherwise keep validation visible until next Analyze attempt
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
