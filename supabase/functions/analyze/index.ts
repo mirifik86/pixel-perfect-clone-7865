@@ -214,135 +214,67 @@ RISK CLASSIFICATION:
 - 40-69: medium
 - 0-39: high
 
-===== DEEP LINK RULES (STRICT) =====
+===== SOURCE QUALITY RULES (MANDATORY) =====
 
-1) Only include DEEP LINKS that go directly to a specific article or official page (no homepage, section, tag, or search pages).
-2) Do not invent links. If strong corroboration is unavailable, return fewer sources (even zero).
-3) Prefer reputable publishers and primary/official sources when possible.
-4) Avoid duplicates and near-duplicates; do not repeat the same article.
-5) Never include more than one source from the same domain.
+QUALITY OVER QUANTITY - Return fewer sources if necessary. Accuracy and precision are mandatory.
+
+1) DIRECT ARTICLE URLs ONLY:
+   - Every source MUST link to a specific article, report, or page that directly addresses the claim.
+   - The URL must lead to the exact corroborating content, NOT to:
+     * Homepages (e.g., https://www.bbc.com/)
+     * Category pages (e.g., /news/, /politics/, /health/)
+     * Search result pages
+     * Tag or topic aggregation pages
+     * Author profile pages
+
+2) ZERO TOLERANCE FOR WEAK SOURCES:
+   - If no precise corroborating article exists, return ZERO sources.
+   - Do NOT invent or fabricate URLs.
+   - Do NOT include sources that only tangentially relate to the claim.
+   - Do NOT include sources that require the user to search within the page.
+
+3) STRICT URL DEDUPLICATION:
+   - Deduplicate by exact URL (not just domain).
+   - If two sources point to the same article, keep only one.
+   - Never include more than one source from the same domain.
+
+4) HIGH-CREDIBILITY PRIORITIZATION:
+   - Prefer established news outlets, official publications, government sites, academic institutions.
+   - Primary/official sources always rank above secondary reporting.
+   - Reputable organizations (WHO, CDC, NASA, major universities) over blogs or opinion sites.
+
+5) URL VERIFICATION:
+   - Each URL must be a real, navigable link to a specific page.
+   - The "Open" action must lead directly to the corroborating article.
 
 ===== TRUST TIERS =====
 
-- "high": Official/government sources, major institutions, authoritative encyclopedias
-- "medium": Reputable secondary sources, established media outlets
-- "low": Less established sources, opinion-based, or uncertain provenance
+- "high": Official/government sources (.gov, .edu), major institutions (WHO, CDC, NASA), authoritative encyclopedias (Wikipedia, Britannica), peer-reviewed journals
+- "medium": Established media outlets (BBC, Reuters, AP, NYT), reputable secondary sources
+- "low": Less established sources, opinion-based content, uncertain provenance
 
 ===== STANCE CATEGORIES =====
 
-- "corroborating": Source supports or confirms the claim
-- "neutral": Source provides context without strong support or contradiction
-- "contradicting": Source refutes or challenges the claim
+- "corroborating": Source directly supports or confirms the specific claim with evidence
+- "neutral": Source provides relevant context without strong support or contradiction
+- "contradicting": Source directly refutes or challenges the claim with evidence
 
-===== SUMMARY STYLE (CRITICAL — ADVANCED FRAMEWORK) =====
+===== SOURCE OUTPUT REQUIREMENTS =====
 
-GLOBAL RULES:
-- Maximum 3 sentences.
-- Calm, neutral, authoritative tone.
-- No technical language.
-- No moral judgment.
-- No speculation.
-
-UNIVERSAL STRUCTURE (applies to ALL claims: false, half-true, or true):
-
-1) Sentence 1 — QUALIFICATION:
-   Clearly qualify the nature of the claim using one of these categories:
-   - "false" or "unsupported"
-   - "misleading" or "half-true"
-   - "factually accurate but incomplete"
-   - "factually accurate"
-   For vulgar/insulting claims: qualify as "unsupported and appears to be an insult rather than a verifiable assertion."
-
-2) Sentence 2 — FACTUAL ANCHOR:
-   Present a concrete, verifiable fact that directly supports, limits, or contradicts the claim.
-   - Use names, dates, or widely documented context when relevant.
-   - All facts must be undisputed and widely documented.
-   - Avoid "There is no evidence…" alone — instead provide context.
-
-3) Sentence 3 — INTELLIGENT CONTEXT (optional but preferred):
-   Add clarifying context that improves understanding WITHOUT changing the subject:
-   - time frame limitations
-   - scope clarifications
-   - missing nuance
-   - common misunderstandings
-   If only two sentences are sufficient, stop at two.
-
-STYLE GUIDANCE:
-- Prefer: "While the claim is partially accurate, it omits…"
-- Prefer: "The statement is factually correct, but often misunderstood because…"
-- Prefer: "This claim conflates two separate facts…"
-- Avoid: Simple dismissals without factual anchoring.
-
-CONSTRAINTS:
-- Never over-explain.
-- Never introduce tangential information.
-- Only include facts that are directly relevant and widely documented.
-
-===== IMAGE SIGNALS (if image provided) =====
-
-Assess the image origin and coherence with content:
-- Origin: real_photo, illustration_composite, probable_ai_generated, undetermined
-- Coherence: illustrative, demonstrative, potentially_misleading
-- Keep all image scoring internal, only expose classification and brief explanation
-
-===== OUTPUT FORMAT =====
-
-Return ONLY valid JSON with this exact structure and no additional keys:
-
-{
-  "status": "ok",
-  "result": {
-    "score": <number 5-98>,
-    "riskLevel": "<low|medium|high>",
-    "summary": "<${isFr ? 'Verdict de crédibilité concis et calme, rédigé pour un public général.' : 'Concise, calm credibility verdict written for a general audience.'}>",
-    "confidence": <number 0.00-1.00>,
-    "bestLinks": [
-      {
-        "title": "<Best article/page title>",
-        "publisher": "<Organization or site name>",
-        "url": "<https://... direct deep link>",
-        "trustTier": "<high|medium|low>",
-        "stance": "<corroborating|neutral|contradicting>",
-        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
-      }
-    ],
-    "sources": [
-      {
-        "title": "<Article or page title>",
-        "publisher": "<Organization or site name>",
-        "url": "<https://... direct deep link>",
-        "trustTier": "<high|medium|low>",
-        "stance": "<corroborating|neutral|contradicting>",
-        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
-      }
-    ]
-  },
-  "analysisType": "pro",
-  "articleSummary": "<factual summary of the submitted content>",
-  "corroboration": {
-    "outcome": "<corroborated|neutral|constrained|refuted>",
-    "sourcesConsulted": <number 1-10>
-  },
-  "imageSignals": {
-    "origin": {
-      "classification": "<real_photo|illustration_composite|probable_ai_generated|undetermined>",
-      "confidence": "<low|medium|high>",
-      "indicators": ["<observed indicators>"]
-    },
-    "coherence": {
-      "classification": "<illustrative|demonstrative|potentially_misleading>",
-      "explanation": "<brief explanation>"
-    },
-    "disclaimer": "${isFr ? 'Ces signaux sont des indicateurs contextuels. Ils ne déterminent pas la véracité.' : 'These signals are contextual indicators. They do not determine truthfulness.'}"
-  },
-  "proDisclaimer": "${isFr ? "Cette évaluation reflète la plausibilité selon les informations disponibles, pas une vérité absolue." : 'This assessment reflects plausibility based on available information, not absolute truth.'}"
-}
+Each source MUST include:
+- title: Exact article headline (not site name)
+- publisher: Organization or publication name
+- url: Direct deep link to the specific article (NEVER a homepage)
+- trustTier: high | medium | low
+- stance: corroborating | neutral | contradicting
+- whyItMatters: One sentence explaining how this specific source relates to the claim
 
 LIST RULES:
-- bestLinks: include at most 4 items, chosen as the strongest and most relevant deep links.
-- sources: include up to 10 items total across all stances (corroborating/neutral/contradicting).
-- Ensure bestLinks are a subset of sources (same URLs).
-- Prefer diversity of publishers in bestLinks (avoid same-domain repetition there).
+- bestLinks: At most 4 items. Only the strongest, most direct evidence.
+- sources: Up to 10 items total across all stances.
+- bestLinks must be a subset of sources (same URLs).
+- Prefer diversity of publishers in bestLinks.
+- If fewer than 4 high-quality sources exist, return fewer. Never pad with weak sources.
 
 IMPORTANT: Return ONLY valid JSON. Do not include breakdown, points, weights, or internal reasoning in the output.
 
@@ -364,54 +296,83 @@ const getDomainFromUrl = (url: string): string => {
   }
 };
 
-// Check if URL is a valid deep article link (not homepage/section)
+// Check if URL is a valid deep article link (not homepage/section/search)
 const isValidDeepLink = (url: string): boolean => {
   try {
     const parsed = new URL(url);
     const pathname = parsed.pathname.toLowerCase();
+    const search = parsed.search;
     
     // Reject if too short (likely homepage)
     if (pathname === '/' || pathname.length < 5) {
       return false;
     }
     
-    // Hub/section patterns to reject
+    // Reject search result pages
+    if (search && (search.includes('q=') || search.includes('query=') || search.includes('search='))) {
+      return false;
+    }
+    
+    // Hub/section/category patterns to reject
     const HUB_PATHS = [
       '/news', '/politics', '/world', '/business', '/sports', '/entertainment',
       '/opinion', '/lifestyle', '/technology', '/science', '/health', '/travel',
       '/search', '/video', '/live', '/tag/', '/category/', '/topic/', '/section/',
-      '/author/', '/archive/', '/index', '/home'
+      '/author/', '/archive/', '/index', '/home', '/latest', '/trending',
+      '/topics/', '/tags/', '/authors/', '/contributors/', '/about', '/contact',
+      '/subscribe', '/newsletters', '/podcast', '/podcasts', '/all-news'
     ];
     
     for (const hub of HUB_PATHS) {
-      if (pathname === hub || pathname === hub + '/') {
+      if (pathname === hub || pathname === hub + '/' || pathname.startsWith(hub + '/') && pathname.split('/').filter(Boolean).length <= 2) {
         return false;
       }
     }
     
-    // Trusted domains can pass with shorter paths
+    // Reject Wikipedia category/portal/special pages
     const domain = getDomainFromUrl(url);
+    if (domain.includes('wikipedia.org')) {
+      if (pathname.includes('/Category:') || pathname.includes('/Portal:') || 
+          pathname.includes('/Special:') || pathname.includes('/Help:') ||
+          pathname.includes('/Wikipedia:') || pathname.includes('/Template:')) {
+        return false;
+      }
+      // Valid Wikipedia article
+      if (pathname.startsWith('/wiki/') && pathname.length > 7) {
+        return true;
+      }
+    }
+    
+    // Trusted domains can pass with article-like paths
     const TRUSTED_DOMAINS = [
       'wikipedia.org', 'britannica.com', 'who.int', 'cdc.gov', 'nih.gov',
-      'nasa.gov', 'nature.com', 'sciencedirect.com', 'pubmed.ncbi.nlm.nih.gov'
+      'nasa.gov', 'nature.com', 'sciencedirect.com', 'pubmed.ncbi.nlm.nih.gov',
+      'scholar.google.com', 'arxiv.org'
     ];
     
     const isTrusted = TRUSTED_DOMAINS.some(d => domain.includes(d)) ||
       domain.endsWith('.gov') || domain.endsWith('.edu');
     
-    if (isTrusted && pathname.length > 3) {
+    if (isTrusted && pathname.length > 10) {
       return true;
     }
     
-    // For non-trusted, require article-like patterns
-    const hasArticlePattern = 
-      pathname.includes('/article') ||
-      pathname.includes('/story') ||
-      pathname.includes('/news/') ||
-      /\/\d{4}\/\d{2}\//.test(pathname) || // Date pattern
-      pathname.split('/').some(seg => seg.length > 20 && seg.includes('-')); // Long slug
+    // For non-trusted, require strong article-like patterns
+    const segments = pathname.split('/').filter(Boolean);
     
-    return hasArticlePattern || pathname.split('/').filter(Boolean).length >= 2;
+    // Must have at least 2 path segments (e.g., /2024/01/article-slug)
+    if (segments.length < 2) {
+      return false;
+    }
+    
+    // Check for article patterns
+    const hasDatePattern = /\/\d{4}\/\d{2}\//.test(pathname) || /\/\d{4}-\d{2}-\d{2}/.test(pathname);
+    const hasArticleKeyword = pathname.includes('/article') || pathname.includes('/story') || 
+                              pathname.includes('/post') || pathname.includes('/news/');
+    const hasLongSlug = segments.some(seg => seg.length > 15 && seg.includes('-'));
+    const hasNumericId = segments.some(seg => /^\d{5,}$/.test(seg) || /^[a-f0-9]{8,}$/.test(seg));
+    
+    return hasDatePattern || hasArticleKeyword || hasLongSlug || hasNumericId;
   } catch {
     return false;
   }
