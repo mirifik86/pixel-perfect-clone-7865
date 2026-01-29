@@ -144,10 +144,8 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
-    // Clear validation message when user starts typing
-    if (validationMessage && e.target.value !== inputText) {
-      onClearValidation?.();
-    }
+    // Do NOT clear validation on typing - only clear when valid analysis starts
+    // onClearValidation is now a no-op, validation clears via parent setting validationMessage to null
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -185,55 +183,6 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
-      {/* Validation message - premium centered error card */}
-      {validationMessage && (
-        <div 
-          className="flex items-center justify-center animate-fade-in"
-          style={{ 
-            marginBottom: 'var(--space-4)',
-            padding: 'var(--space-4) var(--space-5)',
-          }}
-        >
-          <div
-            className="relative rounded-xl text-center"
-            style={{
-              padding: 'var(--space-4) var(--space-6)',
-              background: 'linear-gradient(165deg, hsl(35 30% 12% / 0.95), hsl(35 25% 8% / 0.98))',
-              border: '1.5px solid hsl(35 50% 45% / 0.4)',
-              boxShadow: `
-                0 0 40px hsl(35 60% 50% / 0.15),
-                0 8px 32px hsl(0 0% 0% / 0.3),
-                inset 0 0 20px hsl(35 50% 50% / 0.08),
-                inset 0 1px 0 hsl(0 0% 100% / 0.1)
-              `,
-              backdropFilter: 'blur(20px)',
-              maxWidth: '400px',
-            }}
-          >
-            {/* Breathing glow effect */}
-            <div 
-              className="absolute -inset-2 rounded-2xl pointer-events-none"
-              style={{
-                background: 'radial-gradient(ellipse at center, hsl(35 55% 50% / 0.2), transparent 70%)',
-                filter: 'blur(12px)',
-                animation: 'validation-glow 2.5s ease-in-out infinite',
-              }}
-            />
-            
-            <p 
-              className="relative font-medium leading-relaxed"
-              style={{
-                fontSize: 'var(--text-sm)',
-                color: 'hsl(35 70% 70%)',
-                textShadow: '0 0 15px hsl(35 55% 50% / 0.3)',
-                letterSpacing: '0.015em',
-              }}
-            >
-              {validationMessage}
-            </p>
-          </div>
-        </div>
-      )}
       
       {/* Hidden file input */}
       <input
@@ -457,6 +406,55 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                 />
               </div>
               
+              {/* Validation message - premium centered beam between text and image */}
+              {validationMessage && (
+                <div 
+                  className="flex items-center justify-center animate-fade-in"
+                  style={{ 
+                    padding: 'var(--space-2) 0',
+                  }}
+                >
+                  <div
+                    className="relative rounded-2xl text-center w-full"
+                    style={{
+                      padding: 'var(--space-3) var(--space-4)',
+                      background: 'linear-gradient(165deg, hsl(35 30% 10% / 0.92), hsl(35 25% 7% / 0.96))',
+                      border: '1px solid hsl(35 50% 45% / 0.35)',
+                      boxShadow: `
+                        0 0 50px hsl(35 60% 50% / 0.18),
+                        0 4px 24px hsl(0 0% 0% / 0.25),
+                        inset 0 0 25px hsl(35 50% 50% / 0.06),
+                        inset 0 1px 0 hsl(0 0% 100% / 0.08)
+                      `,
+                      backdropFilter: 'blur(16px)',
+                      maxWidth: '680px',
+                    }}
+                  >
+                    {/* Breathing halo/beam effect */}
+                    <div 
+                      className="absolute -inset-3 rounded-3xl pointer-events-none"
+                      style={{
+                        background: 'radial-gradient(ellipse at center, hsl(35 55% 50% / 0.15), transparent 65%)',
+                        filter: 'blur(16px)',
+                        animation: 'validation-beam 3s ease-in-out infinite',
+                      }}
+                    />
+                    
+                    <p 
+                      className="relative font-medium leading-snug"
+                      style={{
+                        fontSize: 'var(--text-sm)',
+                        color: 'hsl(35 65% 72%)',
+                        textShadow: '0 0 20px hsl(35 55% 50% / 0.35)',
+                        letterSpacing: '0.02em',
+                      }}
+                    >
+                      {validationMessage}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               {/* Visual separator with "or" */}
               <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
                 <div 
@@ -677,6 +675,17 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           50% { 
             opacity: 1;
             transform: scale(1.02);
+          }
+        }
+        /* Premium validation beam - slow breathing halo */
+        @keyframes validation-beam {
+          0%, 100% { 
+            opacity: 0.5;
+            transform: scale(0.98);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.01);
           }
         }
       `}</style>
