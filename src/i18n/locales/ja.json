@@ -49,7 +49,12 @@
     "then": "次へ",
     "disclaimer": "LeenScoreは事実を宣言しません。情報の信頼性を評価するお手伝いをします。",
     "disclaimerLine1": "は事実を宣言しません。",
-    "disclaimerLine2": "情報の信頼性を評価するお手伝いをします。"
+    "disclaimerLine2": "情報の信頼性を評価するお手伝いをします。",
+    "validationError": "分析できないコンテンツです — 修正するか新しいものを入力してください。",
+    "validationNotAnalyzable": "分析できないコンテンツです — 完全な文を追加するか、リンクを貼り付けてください。",
+    "validationExampleLabel": "例：",
+    "validationExample1": "「トランプはアメリカ合衆国の大統領です。」",
+    "validationExample2": "リンクを貼り付ける: https://example.com/article"
   },
   "gauge": {
     "pending": "保留中",

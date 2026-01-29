@@ -49,7 +49,12 @@
     "then": "Poi",
     "disclaimer": "LeenScore non dichiara fatti. Ti aiuta a valutare la credibilità delle informazioni.",
     "disclaimerLine1": "non dichiara fatti.",
-    "disclaimerLine2": "Ti aiuta a valutare la credibilità delle informazioni."
+    "disclaimerLine2": "Ti aiuta a valutare la credibilità delle informazioni.",
+    "validationError": "Contenuto non analizzabile — correggi o inseriscine uno nuovo.",
+    "validationNotAnalyzable": "Contenuto non analizzabile — aggiungi una frase completa (o incolla un link).",
+    "validationExampleLabel": "Esempi:",
+    "validationExample1": "\"Trump è presidente degli Stati Uniti.\"",
+    "validationExample2": "Incolla un link: https://esempio.com/articolo"
   },
   "gauge": {
     "pending": "In attesa",

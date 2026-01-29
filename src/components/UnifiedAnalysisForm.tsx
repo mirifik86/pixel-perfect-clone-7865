@@ -444,6 +444,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       }}
                     />
                     
+                    {/* Main validation message */}
                     <p 
                       className="relative font-medium leading-snug"
                       style={{
@@ -455,6 +456,33 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     >
                       {validationMessage}
                     </p>
+                    
+                    {/* Bonus examples hint */}
+                    <div 
+                      className="relative mt-2 pt-2"
+                      style={{
+                        borderTop: '1px solid hsl(35 40% 40% / 0.2)',
+                      }}
+                    >
+                      <p 
+                        className="text-xs font-medium mb-1"
+                        style={{ color: 'hsl(35 50% 60% / 0.8)' }}
+                      >
+                        {t('form.validationExampleLabel')}
+                      </p>
+                      <p 
+                        className="text-xs italic"
+                        style={{ color: 'hsl(35 45% 55% / 0.7)' }}
+                      >
+                        {t('form.validationExample1')}
+                      </p>
+                      <p 
+                        className="text-xs"
+                        style={{ color: 'hsl(35 45% 55% / 0.7)' }}
+                      >
+                        {t('form.validationExample2')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
