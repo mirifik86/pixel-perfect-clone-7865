@@ -49,7 +49,12 @@
     "then": "Dann",
     "disclaimer": "LeenScore erklärt keine Fakten. Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten.",
     "disclaimerLine1": "erklärt keine Fakten.",
-    "disclaimerLine2": "Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten."
+    "disclaimerLine2": "Es hilft Ihnen, die Glaubwürdigkeit von Informationen zu bewerten.",
+    "validationError": "Inhalt nicht analysierbar — bitte korrigieren oder neu eingeben.",
+    "validationNotAnalyzable": "Inhalt nicht analysierbar — fügen Sie einen vollständigen Satz hinzu (oder fügen Sie einen Link ein).",
+    "validationExampleLabel": "Beispiele:",
+    "validationExample1": "\"Trump ist Präsident der Vereinigten Staaten.\"",
+    "validationExample2": "Link einfügen: https://beispiel.de/artikel"
   },
   "gauge": {
     "pending": "Ausstehend",

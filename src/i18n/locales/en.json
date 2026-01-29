@@ -50,7 +50,11 @@
     "disclaimer": "LeenScore does not declare facts. It helps you evaluate information credibility.",
     "disclaimerLine1": "does not declare facts.",
     "disclaimerLine2": "It helps you evaluate information credibility.",
-    "validationError": "Content not analyzable — please correct it or enter a new one."
+    "validationError": "Content not analyzable — please correct it or enter a new one.",
+    "validationNotAnalyzable": "Content not analyzable — add a full sentence (or paste a link).",
+    "validationExampleLabel": "Examples:",
+    "validationExample1": "\"Trump is president of the United States.\"",
+    "validationExample2": "Paste a link: https://example.com/article"
   },
   "gauge": {
     "pending": "Pending",

@@ -588,28 +588,49 @@ const Index = () => {
     }
   }, [handleAnalyze, handleImageAnalysis]);
 
-  // Input validation - language-agnostic using Unicode character properties
-  const isValidInput = useCallback((text: string): boolean => {
-    const trimmed = text.trim();
+  // Language-aware input validation - blocks gibberish while supporting non-space languages
+  const isValidTextInput = useCallback((input: string, uiLang: string): boolean => {
+    const text = input.trim();
+    
+    // URL bypass - always accept URLs
+    if (/https?:\/\/|www\./i.test(text)) return true;
     
     // Minimum length check (at least 10 characters for meaningful content)
-    if (trimmed.length < 10) return false;
+    if (text.length < 10) return false;
     
-    // Check for repetitive characters (like "aaaaaaa") - universal blocker
-    const repetitivePattern = /(.)\1{5,}/u;
-    if (repetitivePattern.test(trimmed)) return false;
+    // Block repetition spam (like "aaaaaaa" or "!!!!!!!!")
+    if (/(.)\1{6,}/u.test(text)) return false;
     
-    // Count Unicode letters (any language) and numbers using \p{} syntax
-    const letterCount = (trimmed.match(/\p{L}/gu) || []).length;
-    const numberCount = (trimmed.match(/\p{N}/gu) || []).length;
-    const alphanumericCount = letterCount + numberCount;
+    // Count Unicode letters and numbers
+    const letterCount = (text.match(/\p{L}/gu) || []).length;
+    const numberCount = (text.match(/\p{N}/gu) || []).length;
+    const meaningfulCount = letterCount + numberCount;
     
-    // Require at least some real content: letters OR letter+number mix
-    if (letterCount === 0 && alphanumericCount < 3) return false;
+    // Require at least 6 meaningful characters
+    if (meaningfulCount < 6) return false;
     
-    // Reject mostly symbols: require letter/number ratio >= ~0.35 of total length
-    const alphanumericRatio = alphanumericCount / trimmed.length;
-    if (alphanumericRatio < 0.35) return false;
+    // Reject mostly symbols: require letter/number ratio >= 0.35
+    if (meaningfulCount / text.length < 0.35) return false;
+    
+    // Language-aware gibberish detection
+    const spaceLangs = ['en', 'fr', 'es', 'de', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi'];
+    
+    if (spaceLangs.includes(uiLang)) {
+      // For space-based languages: require at least 2 "real" tokens
+      // A real token has at least 2 alphanumeric chars and at least 1 letter
+      const tokens = text.split(/\s+/);
+      const realTokens = tokens.filter(token => {
+        const tokenMeaningful = (token.match(/[\p{L}\p{N}]/gu) || []).length;
+        const tokenLetters = (token.match(/\p{L}/gu) || []).length;
+        return tokenMeaningful >= 2 && tokenLetters >= 1;
+      });
+      
+      // Require at least 2 real tokens (blocks single-word gibberish like "ojadosigriow")
+      if (realTokens.length < 2) return false;
+    } else {
+      // Non-space languages (ja, zh, ko, etc.): require at least 8 letters (ideographs count)
+      if (letterCount < 8) return false;
+    }
     
     return true;
   }, []);
@@ -626,14 +647,14 @@ const Index = () => {
     }
     
     if (text) {
-      if (!isValidInput(text)) {
-        setValidationMessage(i18nT('form.validationError'));
+      if (!isValidTextInput(text, resolvedLanguage)) {
+        setValidationMessage(i18nT('form.validationNotAnalyzable'));
         return;
       }
       setValidationMessage(null);
       await handleAnalyze(text);
     }
-  }, [handleImageAnalysis, handleAnalyze, isValidInput, i18nT]);
+  }, [handleImageAnalysis, handleAnalyze, isValidTextInput, i18nT, resolvedLanguage]);
   
   // Clear validation message when input is emptied
   const handleClearValidation = useCallback(() => {
