@@ -1,5 +1,4 @@
 import { Sparkles, FileText } from 'lucide-react';
-import { type SupportedLanguage } from '@/i18n/config';
 
 interface AnalysisBreakdown {
   tone?: { points: number; reason: string };
@@ -10,7 +9,7 @@ interface AnalysisBreakdown {
 }
 
 interface StandardAnalysisIntroProps {
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
   breakdown?: AnalysisBreakdown;
   summary?: string;
 }
@@ -34,12 +33,7 @@ const detectTextCharacteristics = (breakdown: AnalysisBreakdown) => {
   };
 };
 
-const translations: Record<string, {
-  title: string;
-  baseSubtitle: string;
-  summaries: Record<string, string>;
-  dynamicIntro: string;
-}> = {
+const translations = {
   en: {
     title: 'Linguistic Credibility Analysis',
     baseSubtitle: 'This first-level analysis examines how the content is written to detect signals commonly associated with reliable or misleading information.',
@@ -79,10 +73,9 @@ const translations: Record<string, {
 
 const selectDynamicSummary = (
   characteristics: ReturnType<typeof detectTextCharacteristics>,
-  lang: SupportedLanguage
+  lang: 'en' | 'fr'
 ): string => {
-  const t = translations[lang] || translations.en;
-  const summaries = t.summaries;
+  const summaries = translations[lang].summaries;
   
   // Priority-based selection
   if (characteristics.isEmotionalTone) {
@@ -111,7 +104,7 @@ const selectDynamicSummary = (
 };
 
 export const StandardAnalysisIntro = ({ language, breakdown }: StandardAnalysisIntroProps) => {
-  const t = translations[language] || translations.en;
+  const t = translations[language];
   
   // If no breakdown provided, show the base subtitle
   const hasBreakdown = breakdown && Object.keys(breakdown).length > 0;

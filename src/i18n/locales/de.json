@@ -293,59 +293,5 @@
       { "label": "Glaubwürdigkeit überprüfen" },
       { "label": "Daten abgleichen" }
     ]
-  },
-  "proHighlights": {
-    "title": "PRO-Highlights",
-    "confirmed": "Bestätigt",
-    "uncertain": "Unsicher",
-    "contradicted": "Widersprochen",
-    "noConfirmation": "Keine starke externe Bestätigung gefunden.",
-    "noUncertainty": "Keine signifikante Unsicherheit identifiziert.",
-    "noContradiction": "Keine bemerkenswerten Widersprüche gefunden."
-  },
-  "verificationCoverage": {
-    "title": "Verifizierungsabdeckung",
-    "webCoverage": "Web-Abdeckung",
-    "sourceDiversity": "Quellenvielfalt",
-    "contradictionCheck": "Widerspruchsprüfung",
-    "extensive": "Umfangreich",
-    "moderate": "Mäßig",
-    "limited": "Begrenzt",
-    "high": "Hoch",
-    "medium": "Mittel",
-    "low": "Niedrig",
-    "clear": "Klar",
-    "mixed": "Gemischt",
-    "noneFound": "Keine gefunden"
-  },
-  "bestSources": {
-    "title": "Beste Beweise",
-    "refutingSources": "Widerlegende Quellen",
-    "showAll": "Alle Quellen anzeigen (bis zu 10)",
-    "hideAll": "Zusätzliche Quellen ausblenden",
-    "noCorroboration": "Keine starke externe Bestätigung für diese Behauptung gefunden.",
-    "verifying": "Links werden überprüft…",
-    "open": "Öffnen",
-    "copyLink": "Link kopieren",
-    "verified": "Verifiziert",
-    "trustHigh": "Hoch",
-    "trustMedium": "Mittel",
-    "trustLow": "Niedrig",
-    "stanceCorroborating": "Bestätigend",
-    "stanceNeutral": "Neutral",
-    "stanceContradicting": "Widersprechend",
-    "typeOfficial": "Offiziell",
-    "typeReference": "Referenz",
-    "typeMedia": "Großes Medium",
-    "trustTooltipHigh": "Offizielle, institutionelle oder anerkannte Referenzquelle.",
-    "trustTooltipMedium": "Anerkanntes Medium oder zuverlässige Sekundäranalyse, aber nicht offiziell.",
-    "trustTooltipLow": "Indirekte oder kontextuelle Quelle, mit Vorsicht interpretieren.",
-    "filtered": "gefiltert",
-    "shown": "angezeigt",
-    "of": "von"
-  },
-  "documentTitle": {
-    "default": "LeenScore — Glaubwürdigkeit, gemessen.",
-    "analyzing": "Analysieren… — LeenScore"
   }
 }

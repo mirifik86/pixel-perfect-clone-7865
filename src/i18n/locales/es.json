@@ -293,59 +293,5 @@
       { "label": "Verificando credibilidad" },
       { "label": "Cruzando datos" }
     ]
-  },
-  "proHighlights": {
-    "title": "Puntos clave PRO",
-    "confirmed": "Confirmado",
-    "uncertain": "Incierto",
-    "contradicted": "Contradicho",
-    "noConfirmation": "No se encontró confirmación externa fuerte.",
-    "noUncertainty": "No se identificó incertidumbre significativa.",
-    "noContradiction": "No se encontraron contradicciones notables."
-  },
-  "verificationCoverage": {
-    "title": "Cobertura de verificación",
-    "webCoverage": "Cobertura web",
-    "sourceDiversity": "Diversidad de fuentes",
-    "contradictionCheck": "Verificación de contradicciones",
-    "extensive": "Extensa",
-    "moderate": "Moderada",
-    "limited": "Limitada",
-    "high": "Alta",
-    "medium": "Media",
-    "low": "Baja",
-    "clear": "Clara",
-    "mixed": "Mixta",
-    "noneFound": "Ninguna encontrada"
-  },
-  "bestSources": {
-    "title": "Mejores pruebas",
-    "refutingSources": "Fuentes refutantes",
-    "showAll": "Ver todas las fuentes (hasta 10)",
-    "hideAll": "Ocultar fuentes adicionales",
-    "noCorroboration": "No se encontró corroboración externa fuerte para esta afirmación.",
-    "verifying": "Verificando enlaces…",
-    "open": "Abrir",
-    "copyLink": "Copiar enlace",
-    "verified": "Verificado",
-    "trustHigh": "Alta",
-    "trustMedium": "Media",
-    "trustLow": "Baja",
-    "stanceCorroborating": "Corrobora",
-    "stanceNeutral": "Neutral",
-    "stanceContradicting": "Contradice",
-    "typeOfficial": "Oficial",
-    "typeReference": "Referencia",
-    "typeMedia": "Medio principal",
-    "trustTooltipHigh": "Fuente oficial, institucional o de referencia reconocida.",
-    "trustTooltipMedium": "Medio reconocido o análisis secundario fiable, pero no oficial.",
-    "trustTooltipLow": "Fuente indirecta o contextual, interpretar con precaución.",
-    "filtered": "filtrada(s)",
-    "shown": "mostrada(s)",
-    "of": "de"
-  },
-  "documentTitle": {
-    "default": "LeenScore — Credibilidad, medida.",
-    "analyzing": "Analizando… — LeenScore"
   }
 }

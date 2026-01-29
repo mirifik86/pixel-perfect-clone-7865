@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ExternalLink, Shield, BookOpen, Newspaper, Building2, Copy, Check, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { type SupportedLanguage } from '@/i18n/config';
-import { getTranslation } from '@/i18n/translations';
 import {
   Tooltip,
   TooltipContent,
@@ -51,7 +49,7 @@ interface BestSourcesSectionProps {
   // New PRO format
   bestLinks?: NewProSource[];
   allSources?: NewProSource[];
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
   outcome?: string;
   claim?: string;
   mode?: 'contradictingOnly' | 'supportingOnly' | 'all';
@@ -242,19 +240,19 @@ const sortByTrustTier = (sources: NormalizedSource[]): NormalizedSource[] => {
 
 // ===== CLASSIFICATION & BADGES =====
 
-const classifySourceType = (source: NormalizedSource, t: (key: string) => string): { type: 'official' | 'reference' | 'media'; label: string; icon: React.ReactNode; style: string } => {
+const classifySourceType = (source: NormalizedSource): { type: 'official' | 'reference' | 'media'; label: string; labelFr: string; icon: React.ReactNode; style: string } => {
   const combined = `${source.title} ${source.url} ${source.publisher || ''}`.toLowerCase();
   
   const officialPatterns = /\.(gov|gouv)\b|government|official|ministry|white\s*house|europa\.eu|who\.int|un\.org|fbi|cdc|fda|nasa|nih/i;
   const referencePatterns = /britannica|encyclopedia|wikipedia|oxford|cambridge|merriam|jstor|pubmed|ncbi|nature\.com|science\.org|snopes|factcheck|politifact/i;
   
   if (officialPatterns.test(combined)) {
-    return { type: 'official', label: t('bestSources.typeOfficial'), icon: <Building2 className="w-3.5 h-3.5" />, style: 'bg-blue-500/10 text-blue-700 border-blue-500/25' };
+    return { type: 'official', label: 'Official', labelFr: 'Officiel', icon: <Building2 className="w-3.5 h-3.5" />, style: 'bg-blue-500/10 text-blue-700 border-blue-500/25' };
   }
   if (referencePatterns.test(combined)) {
-    return { type: 'reference', label: t('bestSources.typeReference'), icon: <BookOpen className="w-3.5 h-3.5" />, style: 'bg-violet-500/10 text-violet-700 border-violet-500/25' };
+    return { type: 'reference', label: 'Reference', labelFr: 'Référence', icon: <BookOpen className="w-3.5 h-3.5" />, style: 'bg-violet-500/10 text-violet-700 border-violet-500/25' };
   }
-  return { type: 'media', label: t('bestSources.typeMedia'), icon: <Newspaper className="w-3.5 h-3.5" />, style: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/25' };
+  return { type: 'media', label: 'Major Media', labelFr: 'Média majeur', icon: <Newspaper className="w-3.5 h-3.5" />, style: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/25' };
 };
 
 const getFaviconUrl = (url: string): string => {
@@ -272,10 +270,10 @@ const trustTierBadgeStyles: Record<string, { bg: string; text: string; border: s
   low: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
 };
 
-const stanceBadgeStyles: Record<string, { bg: string; text: string; border: string }> = {
-  corroborating: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-  neutral: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
-  contradicting: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+const stanceBadgeStyles: Record<string, { bg: string; text: string; border: string; labelEn: string; labelFr: string }> = {
+  corroborating: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', labelEn: 'Corroborating', labelFr: 'Corrobore' },
+  neutral: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200', labelEn: 'Neutral', labelFr: 'Neutre' },
+  contradicting: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', labelEn: 'Contradicts', labelFr: 'Contredit' },
 };
 
 // ===== SOURCE CARD COMPONENT =====
@@ -289,18 +287,15 @@ const SourceCard = ({
 }: { 
   source: NormalizedSource; 
   idx: number; 
-  language: SupportedLanguage; 
+  language: 'en' | 'fr'; 
   isVerified?: boolean;
   isPrimary?: boolean;
 }) => {
   const [copied, setCopied] = useState(false);
-  
-  // Use i18n for translations
-  const t = (key: string) => getTranslation(language, key);
-  
-  const classification = classifySourceType(source, t);
+  const classification = classifySourceType(source);
   const faviconUrl = getFaviconUrl(source.url);
   const isContradicting = source.stance === 'contradicting';
+  const openLabel = language === 'fr' ? 'Ouvrir' : 'Open';
   
   const handleCopyLink = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -311,34 +306,25 @@ const SourceCard = ({
     }).catch(() => {});
   };
   
-  // Get stance label from i18n
-  const getStanceLabel = (stance: string): string => {
-    switch (stance) {
-      case 'corroborating': return t('bestSources.stanceCorroborating');
-      case 'neutral': return t('bestSources.stanceNeutral');
-      case 'contradicting': return t('bestSources.stanceContradicting');
-      default: return stance;
-    }
+  const trustTierLabels: Record<string, { en: string; fr: string }> = {
+    high: { en: 'High', fr: 'Élevée' },
+    medium: { en: 'Medium', fr: 'Moyenne' },
+    low: { en: 'Low', fr: 'Faible' },
   };
   
-  // Get trust tier label from i18n
-  const getTrustLabel = (tier: string): string => {
-    switch (tier) {
-      case 'high': return t('bestSources.trustHigh');
-      case 'medium': return t('bestSources.trustMedium');
-      case 'low': return t('bestSources.trustLow');
-      default: return tier;
-    }
-  };
-  
-  // Get trust tier tooltip from i18n
-  const getTrustTooltip = (tier: string): string => {
-    switch (tier) {
-      case 'high': return t('bestSources.trustTooltipHigh');
-      case 'medium': return t('bestSources.trustTooltipMedium');
-      case 'low': return t('bestSources.trustTooltipLow');
-      default: return '';
-    }
+  const trustTierTooltips: Record<string, { en: string; fr: string }> = {
+    high: { 
+      en: 'Official, institutional, or recognized reference source.', 
+      fr: 'Source officielle, institutionnelle ou média de référence reconnu.' 
+    },
+    medium: { 
+      en: 'Recognized media or reliable secondary analysis, but not official.', 
+      fr: 'Média reconnu ou analyse secondaire fiable, mais non officielle.' 
+    },
+    low: { 
+      en: 'Indirect or contextual source, interpret with caution.', 
+      fr: 'Source indirecte ou contextuelle, à interpréter avec prudence.' 
+    },
   };
   
   return (
@@ -384,12 +370,12 @@ const SourceCard = ({
                                      ${trustTierBadgeStyles[source.trustTier].bg} 
                                      ${trustTierBadgeStyles[source.trustTier].text} 
                                      ${trustTierBadgeStyles[source.trustTier].border}`}>
-                      {getTrustLabel(source.trustTier)}
+                      {language === 'fr' ? trustTierLabels[source.trustTier].fr : trustTierLabels[source.trustTier].en}
                       <Info className="w-3 h-3 opacity-60" />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-xs text-xs">
-                    <p>{getTrustTooltip(source.trustTier)}</p>
+                    <p>{language === 'fr' ? trustTierTooltips[source.trustTier].fr : trustTierTooltips[source.trustTier].en}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -401,21 +387,21 @@ const SourceCard = ({
                                ${stanceBadgeStyles[source.stance].bg} 
                                ${stanceBadgeStyles[source.stance].text} 
                                ${stanceBadgeStyles[source.stance].border}`}>
-                {getStanceLabel(source.stance)}
+                {language === 'fr' ? stanceBadgeStyles[source.stance].labelFr : stanceBadgeStyles[source.stance].labelEn}
               </span>
             )}
             
             {/* Type Badge */}
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${classification.style}`}>
               {classification.icon}
-              {classification.label}
+              {language === 'fr' ? classification.labelFr : classification.label}
             </span>
             
             {/* Verified Badge */}
             {isVerified && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                 <CheckCircle2 className="w-3 h-3" />
-                {t('bestSources.verified')}
+                {language === 'fr' ? 'Vérifié' : 'Verified'}
               </span>
             )}
           </div>
@@ -435,7 +421,7 @@ const SourceCard = ({
             onClick={handleCopyLink}
             className={`inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
                        ${copied ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
-            title={t('bestSources.copyLink')}
+            title={language === 'fr' ? 'Copier le lien' : 'Copy link'}
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
@@ -444,7 +430,7 @@ const SourceCard = ({
                            ${isContradicting 
                              ? 'bg-slate-100 text-slate-600 group-hover:bg-red-600 group-hover:text-white' 
                              : 'bg-slate-100 text-slate-600 group-hover:bg-cyan-600 group-hover:text-white'}`}>
-            {t('bestSources.open')}
+            {openLabel}
             <ExternalLink className="w-3.5 h-3.5" />
           </span>
         </div>
@@ -455,11 +441,12 @@ const SourceCard = ({
 
 // ===== FILTER STATS INDICATOR =====
 
-const FilterStatsIndicator = ({ displayed, total, language }: { displayed: number; total: number; language: SupportedLanguage }) => {
+const FilterStatsIndicator = ({ displayed, total, language }: { displayed: number; total: number; language: 'en' | 'fr' }) => {
   if (total === 0 || displayed === total) return null;
   const filtered = total - displayed;
-  const t = (key: string) => getTranslation(language, key);
-  const label = `${displayed} ${t('bestSources.of')} ${total} ${t('bestSources.shown')} (${filtered} ${t('bestSources.filtered')})`;
+  const label = language === 'fr' 
+    ? `${displayed} sur ${total} (${filtered} filtrée${filtered > 1 ? 's' : ''})`
+    : `${displayed} of ${total} shown (${filtered} filtered)`;
   return (
     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200/80">
       <Filter className="w-3 h-3" />
@@ -480,8 +467,16 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationComplete, setVerificationComplete] = useState(false);
   
-  // Use i18n for all translations
-  const tr = (key: string) => getTranslation(language, key);
+  const t = {
+    bestEvidence: language === 'fr' ? 'Meilleures preuves' : 'Best Evidence',
+    showAll: language === 'fr' ? 'Voir toutes les sources (jusqu\'à 10)' : 'Show all sources (up to 10)',
+    hideAll: language === 'fr' ? 'Masquer les sources supplémentaires' : 'Hide additional sources',
+    noCorroboration: language === 'fr' 
+      ? 'Aucune corroboration externe forte n\'a été trouvée pour cette affirmation.'
+      : 'No strong external corroboration was found for this claim.',
+    verifying: language === 'fr' ? 'Vérification des liens…' : 'Verifying links…',
+    open: language === 'fr' ? 'Ouvrir' : 'Open',
+  };
   
   // ===== NORMALIZE ALL SOURCES =====
   const { normalizedBestLinks, normalizedAllSources, totalConsulted } = useMemo(() => {
@@ -658,7 +653,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
       <div className="mt-6 pt-5 border-t border-slate-200/80">
         <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
           <Loader2 className="w-5 h-5 text-cyan-600 animate-spin" />
-          <span className="text-sm text-slate-600">{tr('bestSources.verifying')}</span>
+          <span className="text-sm text-slate-600">{t.verifying}</span>
         </div>
       </div>
     );
@@ -675,7 +670,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
               <Shield className="w-4 h-4 text-red-600" />
             </div>
             <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">
-              {tr('bestSources.refutingSources')}
+              {language === 'fr' ? 'Sources réfutantes' : 'Refuting Sources'}
             </h4>
           </div>
           <FilterStatsIndicator displayed={finalContradicting.length} total={contradictingSources.length} language={language} />
@@ -699,7 +694,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
             <div className="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center">
               <Shield className="w-4 h-4 text-cyan-600" />
             </div>
-            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{tr('bestSources.title')}</h4>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{t.bestEvidence}</h4>
           </div>
           <FilterStatsIndicator displayed={finalSupporting.length} total={supportingSources.length} language={language} />
         </div>
@@ -719,7 +714,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
           <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
-            <p className="text-sm text-slate-600 leading-relaxed">{tr('bestSources.noCorroboration')}</p>
+            <p className="text-sm text-slate-600 leading-relaxed">{t.noCorroboration}</p>
           </div>
         </div>
       );
@@ -735,7 +730,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
           <div className="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center">
             <Shield className="w-4 h-4 text-cyan-600" />
           </div>
-          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{tr('bestSources.title')}</h4>
+          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{t.bestEvidence}</h4>
         </div>
         <FilterStatsIndicator displayed={finalBestLinks.length} total={normalizedBestLinks.length} language={language} />
       </div>
@@ -756,12 +751,12 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
             {showAllSources ? (
               <>
                 <ChevronUp className="w-4 h-4" />
-                {tr('bestSources.hideAll')}
+                {t.hideAll}
               </>
             ) : (
               <>
                 <ChevronDown className="w-4 h-4" />
-                {tr('bestSources.showAll')}
+                {t.showAll}
               </>
             )}
           </button>

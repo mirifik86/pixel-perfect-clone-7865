@@ -85,9 +85,10 @@ interface ScreenshotAnalysisData {
   visual_description?: string;
 }
 
-// Multilingual summaries stored at analysis time - no translation calls on toggle
-interface MultilingualSummaries {
-  [key: string]: { summary: string; articleSummary: string } | null;
+// Bilingual summaries stored at analysis time - no translation calls on toggle
+interface BilingualSummaries {
+  en: { summary: string; articleSummary: string } | null;
+  fr: { summary: string; articleSummary: string } | null;
 }
 
 // Helper to safely create default breakdown
@@ -186,14 +187,11 @@ const Index = () => {
     handlePromptResponse
   } = useLanguage();
   
-  // Use the resolved language directly for analysis display
-  // Master analysis is always in English, then translated to the selected UI language
-  const language = resolvedLanguage;
-  
-  // Update document title based on language
-  useEffect(() => {
-    document.title = i18nT('documentTitle.default');
-  }, [resolvedLanguage, i18nT]);
+  // Map resolved language to 'en' | 'fr' for backward compatibility with analysis
+  // (analysis API only supports en/fr currently)
+  const language: 'en' | 'fr' = (resolvedLanguage === 'en' || resolvedLanguage === 'fr') 
+    ? resolvedLanguage 
+    : 'en'; // fallback to 'en' for other languages like 'ja'
   
   const [isLoading, setIsLoading] = useState(false);
   const [isProLoading, setIsProLoading] = useState(false);
@@ -240,19 +238,23 @@ const Index = () => {
     formRef.current?.submit();
   }, []);
   
-  // Analysis results stored per language - supports all UI languages
-  const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<string, AnalysisData | null>>({});
+  // Both language results are fetched in parallel on submit - no API calls on toggle
+  const [analysisByLanguage, setAnalysisByLanguage] = useState<Record<'en' | 'fr', AnalysisData | null>>({
+    en: null,
+    fr: null,
+  });
   
-  // MULTILINGUAL SUMMARIES: Stored at analysis time for instant switching
-  const [summariesByLanguage, setSummariesByLanguage] = useState<MultilingualSummaries>({});
-  
-  // Get analysis for current language, fallback to English if not available
-  const analysisData = analysisByLanguage[language] ?? analysisByLanguage['en'] ?? null;
-  const hasAnyAnalysis = Boolean(Object.values(analysisByLanguage).some(a => a) || screenshotData?.analysis);
+  // BILINGUAL SUMMARIES: Both languages stored at analysis time for instant switching
+  const [summariesByLanguage, setSummariesByLanguage] = useState<BilingualSummaries>({
+    en: null,
+    fr: null,
+  });
+  const analysisData = analysisByLanguage[language];
+  const hasAnyAnalysis = Boolean(analysisByLanguage.en || analysisByLanguage.fr || screenshotData?.analysis);
 
   // Sync screenshotData.analysis with the current UI language (no API calls)
   useEffect(() => {
-    const targetAnalysis = analysisByLanguage[language] ?? analysisByLanguage['en'];
+    const targetAnalysis = analysisByLanguage[language];
     if (!targetAnalysis) return;
     setScreenshotData(prev => {
       if (!prev) return prev;
@@ -261,28 +263,25 @@ const Index = () => {
     });
   }, [language, analysisByLanguage]);
 
-  // Score is consistent across all languages (same analysis, different text)
+  // Score is consistent across both languages (same analysis, different text)
   // Also fallback to screenshotData.analysis.score for image analysis results
-  const score = analysisByLanguage['en']?.score 
-    ?? Object.values(analysisByLanguage).find(a => a)?.score
+  const score = (analysisByLanguage.en ?? analysisByLanguage.fr)?.score 
     ?? screenshotData?.analysis?.score 
     ?? null;
   
   // INSTANT SUMMARY ACCESS: Pure synchronous lookup, no async operations
-  const currentSummaries = summariesByLanguage[language] ?? summariesByLanguage['en'];
+  const currentSummaries = summariesByLanguage[language];
   const displayArticleSummary = currentSummaries?.articleSummary || null;
 
-  // Always run the actual analysis once (master in English), then translate to the selected UI language.
-  // This guarantees identical scoring across all languages.
-  const runMultilingualAnalysis = useCallback(async ({
+  // Always run the actual analysis once (master), then translate for the other language.
+  // This guarantees identical scoring + web corroboration across the EN/FR toggle.
+  const runBilingualTextAnalysis = useCallback(async ({
     content,
     analysisType,
-    targetLanguage,
   }: {
     content: string;
     analysisType?: 'standard' | 'pro';
-    targetLanguage: SupportedLanguage;
-  }): Promise<{ en: AnalysisData; translated: AnalysisData; targetLang: SupportedLanguage }> => {
+  }): Promise<{ en: AnalysisData; fr: AnalysisData }> => {
     // Master analysis is always in English for determinism.
     const master = await supabase.functions.invoke('analyze', {
       body: {
@@ -298,30 +297,25 @@ const Index = () => {
     // Normalize the response to handle both legacy and new PRO formats
     const enData = normalizeAnalysisData(master.data);
 
-    // If target is English, no translation needed
-    if (targetLanguage === 'en') {
-      return { en: enData, translated: enData, targetLang: 'en' };
-    }
-
-    // Translate to the target UI language
-    const translated = await supabase.functions.invoke('translate-analysis', {
+    // Translate: pass normalized data but preserve raw result (URLs must not be translated)
+    const fr = await supabase.functions.invoke('translate-analysis', {
       body: {
         analysisData: enData,
-        targetLanguage: targetLanguage,
+        targetLanguage: 'fr',
       },
     });
 
-    // Normalize the translated result
-    const translatedData = (!translated.error && translated.data && !translated.data.error 
-      ? normalizeAnalysisData(translated.data) 
+    // Normalize the French translation as well
+    const frData = (!fr.error && fr.data && !fr.data.error 
+      ? normalizeAnalysisData(fr.data) 
       : enData);
 
-    return { en: enData, translated: translatedData, targetLang: targetLanguage };
+    return { en: enData, fr: frData };
   }, []);
 
   const handleReset = useCallback(() => {
-    setAnalysisByLanguage({});
-    setSummariesByLanguage({});
+    setAnalysisByLanguage({ en: null, fr: null });
+    setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent('');
     setUploadedFile(null);
     setScreenshotData(null);
@@ -332,7 +326,7 @@ const Index = () => {
     lastInputRef.current = null;
   }, []);
 
-  // Analyze with master in English, then translate to the selected UI language
+  // Analyze in BOTH languages simultaneously - no API calls needed on language toggle
   const handleAnalyze = useCallback(async (input: string) => {
     const errorAnalysis = i18nT('index.errorAnalysis');
 
@@ -341,33 +335,20 @@ const Index = () => {
     
     setIsLoading(true);
     setIsImageAnalysis(false);
-    setAnalysisByLanguage({});
-    setSummariesByLanguage({});
+    setAnalysisByLanguage({ en: null, fr: null });
+    setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent(input);
     setAnalysisError(null);
 
     try {
-      const { en, translated, targetLang } = await runMultilingualAnalysis({ 
-        content: input, 
-        analysisType: 'standard',
-        targetLanguage: resolvedLanguage,
+      const { en, fr } = await runBilingualTextAnalysis({ content: input, analysisType: 'standard' });
+
+      setSummariesByLanguage({
+        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
+        fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
       });
 
-      // Store both English (master) and translated version
-      const newAnalysis: Record<string, AnalysisData | null> = {
-        en,
-        ...(targetLang !== 'en' ? { [targetLang]: translated } : {}),
-      };
-      
-      const newSummaries: MultilingualSummaries = {
-        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
-        ...(targetLang !== 'en' ? { 
-          [targetLang]: { summary: translated.summary || '', articleSummary: translated.articleSummary || '' } 
-        } : {}),
-      };
-
-      setSummariesByLanguage(newSummaries);
-      setAnalysisByLanguage(newAnalysis);
+      setAnalysisByLanguage({ en, fr });
     } catch (err) {
       console.error('Unexpected error:', err);
       // Stay on page, show error panel instead of toast only
@@ -383,7 +364,7 @@ const Index = () => {
         setIsLoaderExiting(false);
       }, 500); // Match exit animation duration
     }
-  }, [i18nT, runMultilingualAnalysis, resolvedLanguage]);
+  }, [i18nT, runBilingualTextAnalysis]);
 
   // Screenshot Analysis Handler - now called directly when image is ready
   // contextText: optional text provided alongside the image for multimodal analysis
@@ -477,51 +458,46 @@ const Index = () => {
       // If the image endpoint already returned a full PRO analysis, skip the second text analysis call
       // and just use the provided analysis directly (avoids double analysis).
       if (data.analysis && data.analysis.analysisType === 'pro') {
-        // PRO analysis already complete - store summaries for the current language
+        // PRO analysis already complete - store bilingual summaries from this analysis
+        // Note: image endpoint returns analysis in the requested language, so we store it accordingly
         setSummariesByLanguage({
           en: language === 'en' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
-          [language]: language !== 'en' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+          fr: language === 'fr' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
         });
         setAnalysisByLanguage({
           en: language === 'en' ? data.analysis : null,
-          [language]: language !== 'en' ? data.analysis : null,
+          fr: language === 'fr' ? data.analysis : null,
         });
       } else if (data?.ocr?.cleaned_text) {
-        // If OCR extracted text, run a single master analysis (EN) then translate to UI language.
+        // If OCR extracted text, run a single master analysis (EN) then translate (FR).
+        // This keeps ALL sections (Explication PRO, détails, corroboration, etc.) coherent across the FR/EN toggle.
         try {
-          const { en, translated, targetLang } = await runMultilingualAnalysis({
+          const { en, fr } = await runBilingualTextAnalysis({
             content: data.ocr.cleaned_text,
             analysisType,
-            targetLanguage: resolvedLanguage,
           });
 
-          const newSummaries: MultilingualSummaries = {
+          setSummariesByLanguage({
             en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
-            ...(targetLang !== 'en' ? { 
-              [targetLang]: { summary: translated.summary || '', articleSummary: translated.articleSummary || '' } 
-            } : {}),
-          };
+            fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
+          });
 
-          const newAnalysis: Record<string, AnalysisData | null> = {
-            en,
-            ...(targetLang !== 'en' ? { [targetLang]: translated } : {}),
-          };
-
-          setSummariesByLanguage(newSummaries);
-          setAnalysisByLanguage(newAnalysis);
+          setAnalysisByLanguage({ en, fr });
 
           // Keep screenshotData.analysis aligned with the currently selected UI language
           setScreenshotData({
             ...processedData,
-            analysis: targetLang !== 'en' ? translated : en,
+            analysis: language === 'fr' ? fr : en,
           });
         } catch (e) {
           // Fallback: keep analyze-image provided analysis (single language)
           setSummariesByLanguage({
-            [language]: data.analysis ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+            en: language === 'en' && data.analysis ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+            fr: language === 'fr' && data.analysis ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
           });
           setAnalysisByLanguage({
-            [language]: data.analysis ?? null,
+            en: language === 'en' ? data.analysis : null,
+            fr: language === 'fr' ? data.analysis : null,
           });
         }
       }
@@ -546,7 +522,7 @@ const Index = () => {
         setIsLoaderExiting(false);
       }, 500); // Match exit animation duration
     }
-  }, [language, i18nT, runMultilingualAnalysis, resolvedLanguage]);
+  }, [language, i18nT, runBilingualTextAnalysis]);
 
   // Retry the last analysis (for error recovery)
   const handleRetry = useCallback(() => {
@@ -631,26 +607,14 @@ const Index = () => {
     setIsProLoading(true);
 
     try {
-      const { en, translated, targetLang } = await runMultilingualAnalysis({ 
-        content: lastAnalyzedContent, 
-        analysisType: 'pro',
-        targetLanguage: resolvedLanguage,
+      const { en, fr } = await runBilingualTextAnalysis({ content: lastAnalyzedContent, analysisType: 'pro' });
+
+      setSummariesByLanguage({
+        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
+        fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
       });
 
-      const newSummaries: MultilingualSummaries = {
-        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
-        ...(targetLang !== 'en' ? { 
-          [targetLang]: { summary: translated.summary || '', articleSummary: translated.articleSummary || '' } 
-        } : {}),
-      };
-
-      const newAnalysis: Record<string, AnalysisData | null> = {
-        en,
-        ...(targetLang !== 'en' ? { [targetLang]: translated } : {}),
-      };
-
-      setSummariesByLanguage(newSummaries);
-      setAnalysisByLanguage(newAnalysis);
+      setAnalysisByLanguage({ en, fr });
       setIsProModalOpen(false);
       toast.success(i18nT('pro.analysisComplete'));
     } catch (err) {
@@ -659,7 +623,7 @@ const Index = () => {
     } finally {
       setIsProLoading(false);
     }
-  }, [lastAnalyzedContent, i18nT, runMultilingualAnalysis, resolvedLanguage]);
+  }, [lastAnalyzedContent, i18nT, runBilingualTextAnalysis]);
 
   // INSTANT language switch - uses global i18n system
   const handleLanguageChange = (mode: LanguageMode) => {

@@ -18,44 +18,15 @@ const getCurrentDateInfo = () => {
 
 // Standard Analysis Engine – LeenScore Standard Scan
 // Advanced credibility diagnostic using semantic signal analysis
-
-// Language names for prompt instructions (all 8 supported languages)
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'ENGLISH',
-  fr: 'FRENCH',
-  es: 'SPANISH',
-  de: 'GERMAN',
-  pt: 'PORTUGUESE',
-  it: 'ITALIAN',
-  ja: 'JAPANESE',
-  ko: 'KOREAN'
-};
-
 const getSystemPrompt = (language: string) => {
-  const langName = LANGUAGE_NAMES[language] || 'ENGLISH';
+  const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
   
   return `You are LeenScore Standard Scan.
 
 Your role is to provide an intelligent credibility diagnostic by analyzing semantic signals in the text.
 
-===== SYSTEM OVERRIDE (MANDATORY) =====
-
-The user interface language is: ${language}
-
-You MUST output the ENTIRE analysis strictly in ${langName}.
-
-This includes:
-- Section titles
-- Explanations
-- Summary
-- Confidence labels
-- Reasons
-- Disclaimer
-- Any descriptive text
-
-Do NOT output English unless the language is English.
-If you are unsure, still write everything in ${langName}.
+IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
@@ -148,10 +119,10 @@ CONFIDENCE CALCULATION (internal, output as decimal):
 - Medium confidence (0.50-0.79): Mixed signals, some ambiguity
 - Low confidence (0.00-0.49): Unclear text, conflicting signals, insufficient data
 
-RISK CLASSIFICATION (output label in ${langName}):
-- 70-100: Low Risk
-- 40-69: Moderate Risk
-- 0-39: High Risk
+RISK CLASSIFICATION:
+- 70-100: Low Risk (${isFr ? 'Risque Faible' : 'Low Risk'})
+- 40-69: Moderate Risk (${isFr ? 'Risque Modéré' : 'Moderate Risk'})
+- 0-39: High Risk (${isFr ? 'Risque Élevé' : 'High Risk'})
 
 ===== TONE =====
 
@@ -173,8 +144,8 @@ RISK CLASSIFICATION (output label in ${langName}):
     "<reason 3 - describe the overall credibility implication>"
   ],
   "breakdown": {
-    "sources": {"points": 0, "reason": "<'Not evaluated in Standard analysis' in ${langName}>"},
-    "factual": {"points": <number -10 to +10>, "reason": "<observation about claim types and verifiability in ${langName}>"},
+    "sources": {"points": 0, "reason": "${isFr ? 'Non évalué en analyse Standard' : 'Not evaluated in Standard analysis'}"},
+    "factual": {"points": <number -10 to +10>, "reason": "<observation about claim types and verifiability>"},
     "prudence": {"points": <number -20 to +0>, "reason": "<observation about sensationalism/manipulation patterns>"},
     "context": {"points": <number -15 to +10>, "reason": "<observation about evidence structure and presentation>"},
     "transparency": {"points": <number -15 to +10>, "reason": "<observation about internal logical consistency>"}
@@ -187,11 +158,11 @@ RISK CLASSIFICATION (output label in ${langName}):
     "logicalCoherence": "<strong|moderate|weak|incoherent>",
     "evidenceStructure": "<well_structured|moderate|poor|absent>"
   },
-  "summary": "<25-50 words in ${langName} focusing on the semantic signals detected and what they indicate about credibility>",
-  "articleSummary": "<factual summary of submitted content in ${langName}>",
+  "summary": "<25-50 words focusing on the semantic signals detected and what they indicate about credibility>",
+  "articleSummary": "<factual summary of submitted content - what claims are made>",
   "confidence": <number 0.00-1.00>,
   "confidenceLevel": "<low|medium|high>",
-  "disclaimer": "<'This is a limited Standard analysis. A deeper investigation with source corroboration and detailed reasoning is available in PRO.' translated to ${langName}>"
+  "disclaimer": "${isFr ? 'Ceci est une analyse Standard limitée. Une investigation approfondie avec corroboration des sources et raisonnement détaillé est disponible en PRO.' : 'This is a limited Standard analysis. A deeper investigation with source corroboration and detailed reasoning is available in PRO.'}"
 }
 
 REASON WRITING GUIDELINES:
@@ -201,12 +172,12 @@ REASON WRITING GUIDELINES:
 - Second reason: Secondary pattern or balancing observation
 - Third reason: Overall credibility implication
 
-REMINDER: ALL text fields MUST be written in ${langName}. This is mandatory.`;
+ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
 // PRO ANALYSIS PROMPT - Credibility Intelligence Engine with Web Corroboration
 const getProSystemPrompt = (language: string) => {
-  const langName = LANGUAGE_NAMES[language] || 'ENGLISH';
+  const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
   
   return `You are a credibility intelligence engine with web corroboration (PRO).
@@ -216,21 +187,7 @@ GOAL:
 - Provide up to 10 sources total, categorized as corroborating / neutral / contradicting.
 - Keep the UI premium: only 4 clickable "best links" should be surfaced for the user.
 
-===== SYSTEM OVERRIDE (MANDATORY) =====
-
-The user interface language is: ${language}
-
-You MUST output the ENTIRE analysis strictly in ${langName}.
-
-This includes:
-- Summary
-- articleSummary
-- whyItMatters for each source
-- All disclaimers
-- Any descriptive text
-
-Do NOT output English unless the language is English.
-If you are unsure, still write everything in ${langName}.
+IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
@@ -337,7 +294,7 @@ Return ONLY valid JSON with this exact structure and no additional keys:
   "result": {
     "score": <number 5-98>,
     "riskLevel": "<low|medium|high>",
-    "summary": "<Concise, calm credibility verdict written in ${langName} for a general audience>",
+    "summary": "<${isFr ? 'Verdict de crédibilité concis et calme, rédigé pour un public général.' : 'Concise, calm credibility verdict written for a general audience.'}>",
     "confidence": <number 0.00-1.00>,
     "bestLinks": [
       {
@@ -346,7 +303,7 @@ Return ONLY valid JSON with this exact structure and no additional keys:
         "url": "<https://... direct deep link>",
         "trustTier": "<high|medium|low>",
         "stance": "<corroborating|neutral|contradicting>",
-        "whyItMatters": "<One short sentence in ${langName} explaining relevance>"
+        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
       }
     ],
     "sources": [
@@ -356,12 +313,12 @@ Return ONLY valid JSON with this exact structure and no additional keys:
         "url": "<https://... direct deep link>",
         "trustTier": "<high|medium|low>",
         "stance": "<corroborating|neutral|contradicting>",
-        "whyItMatters": "<One short sentence in ${langName} explaining relevance>"
+        "whyItMatters": "<${isFr ? 'Une phrase courte expliquant la pertinence.' : 'One short sentence explaining relevance.'}>"
       }
     ]
   },
   "analysisType": "pro",
-  "articleSummary": "<factual summary of the submitted content in ${langName}>",
+  "articleSummary": "<factual summary of the submitted content>",
   "corroboration": {
     "outcome": "<corroborated|neutral|constrained|refuted>",
     "sourcesConsulted": <number 1-10>
@@ -376,9 +333,9 @@ Return ONLY valid JSON with this exact structure and no additional keys:
       "classification": "<illustrative|demonstrative|potentially_misleading>",
       "explanation": "<brief explanation>"
     },
-    "disclaimer": "<'These signals are contextual indicators. They do not determine truthfulness.' in ${langName}>"
+    "disclaimer": "${isFr ? 'Ces signaux sont des indicateurs contextuels. Ils ne déterminent pas la véracité.' : 'These signals are contextual indicators. They do not determine truthfulness.'}"
   },
-  "proDisclaimer": "<'This assessment reflects plausibility based on available information, not absolute truth.' in ${langName}>"
+  "proDisclaimer": "${isFr ? "Cette évaluation reflète la plausibilité selon les informations disponibles, pas une vérité absolue." : 'This assessment reflects plausibility based on available information, not absolute truth.'}"
 }
 
 LIST RULES:
@@ -389,7 +346,7 @@ LIST RULES:
 
 IMPORTANT: Return ONLY valid JSON. Do not include breakdown, points, weights, or internal reasoning in the output.
 
-REMINDER: ALL text fields MUST be written in ${langName}. This is mandatory.`;
+ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
 // Deep clone utility to ensure original data is never mutated

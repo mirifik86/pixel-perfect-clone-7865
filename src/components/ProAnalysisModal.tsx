@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Search, Image, ArrowRight, Scale, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { type SupportedLanguage } from '@/i18n/config';
 
 interface ProAnalysisModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
   onLaunchPro?: () => void;
   isLoading?: boolean;
 }
@@ -115,7 +114,7 @@ export const ProAnalysisModal = ({
     }
   };
 
-  const t = (content as Record<string, typeof content.en>)[language] || content.en;
+  const t = content[language];
 
   if (!open) return null;
 

@@ -293,59 +293,5 @@
       { "label": "Verifica credibilità" },
       { "label": "Incrocio dati" }
     ]
-  },
-  "proHighlights": {
-    "title": "Punti chiave PRO",
-    "confirmed": "Confermato",
-    "uncertain": "Incerto",
-    "contradicted": "Contraddetto",
-    "noConfirmation": "Nessuna conferma esterna forte trovata.",
-    "noUncertainty": "Nessuna incertezza significativa identificata.",
-    "noContradiction": "Nessuna contraddizione notevole trovata."
-  },
-  "verificationCoverage": {
-    "title": "Copertura di verifica",
-    "webCoverage": "Copertura web",
-    "sourceDiversity": "Diversità delle fonti",
-    "contradictionCheck": "Verifica contraddizioni",
-    "extensive": "Estesa",
-    "moderate": "Moderata",
-    "limited": "Limitata",
-    "high": "Alta",
-    "medium": "Media",
-    "low": "Bassa",
-    "clear": "Chiara",
-    "mixed": "Mista",
-    "noneFound": "Nessuna trovata"
-  },
-  "bestSources": {
-    "title": "Migliori prove",
-    "refutingSources": "Fonti confutanti",
-    "showAll": "Mostra tutte le fonti (fino a 10)",
-    "hideAll": "Nascondi fonti aggiuntive",
-    "noCorroboration": "Nessuna corroborazione esterna forte trovata per questa affermazione.",
-    "verifying": "Verifica link in corso…",
-    "open": "Apri",
-    "copyLink": "Copia link",
-    "verified": "Verificato",
-    "trustHigh": "Alta",
-    "trustMedium": "Media",
-    "trustLow": "Bassa",
-    "stanceCorroborating": "Corrobora",
-    "stanceNeutral": "Neutrale",
-    "stanceContradicting": "Contraddice",
-    "typeOfficial": "Ufficiale",
-    "typeReference": "Riferimento",
-    "typeMedia": "Media principale",
-    "trustTooltipHigh": "Fonte ufficiale, istituzionale o di riferimento riconosciuta.",
-    "trustTooltipMedium": "Media riconosciuto o analisi secondaria affidabile, ma non ufficiale.",
-    "trustTooltipLow": "Fonte indiretta o contestuale, interpretare con cautela.",
-    "filtered": "filtrata/e",
-    "shown": "mostrata/e",
-    "of": "di"
-  },
-  "documentTitle": {
-    "default": "LeenScore — Credibilità, misurata.",
-    "analyzing": "Analisi in corso… — LeenScore"
   }
 }

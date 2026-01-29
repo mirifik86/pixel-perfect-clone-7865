@@ -296,59 +296,5 @@
       { "label": "Vérification de crédibilité" },
       { "label": "Recoupement des données" }
     ]
-  },
-  "proHighlights": {
-    "title": "Points clés PRO",
-    "confirmed": "Confirmé",
-    "uncertain": "Incertain",
-    "contradicted": "Contredit",
-    "noConfirmation": "Aucune confirmation externe forte trouvée.",
-    "noUncertainty": "Aucune incertitude significative identifiée.",
-    "noContradiction": "Aucune contradiction notable trouvée."
-  },
-  "verificationCoverage": {
-    "title": "Couverture de vérification",
-    "webCoverage": "Couverture web",
-    "sourceDiversity": "Diversité des sources",
-    "contradictionCheck": "Vérification des contradictions",
-    "extensive": "Étendue",
-    "moderate": "Modérée",
-    "limited": "Limitée",
-    "high": "Élevée",
-    "medium": "Moyenne",
-    "low": "Faible",
-    "clear": "Claire",
-    "mixed": "Mixte",
-    "noneFound": "Aucune trouvée"
-  },
-  "bestSources": {
-    "title": "Meilleures preuves",
-    "refutingSources": "Sources réfutantes",
-    "showAll": "Voir toutes les sources (jusqu'à 10)",
-    "hideAll": "Masquer les sources supplémentaires",
-    "noCorroboration": "Aucune corroboration externe forte n'a été trouvée pour cette affirmation.",
-    "verifying": "Vérification des liens…",
-    "open": "Ouvrir",
-    "copyLink": "Copier le lien",
-    "verified": "Vérifié",
-    "trustHigh": "Élevée",
-    "trustMedium": "Moyenne",
-    "trustLow": "Faible",
-    "stanceCorroborating": "Corrobore",
-    "stanceNeutral": "Neutre",
-    "stanceContradicting": "Contredit",
-    "typeOfficial": "Officiel",
-    "typeReference": "Référence",
-    "typeMedia": "Média majeur",
-    "trustTooltipHigh": "Source officielle, institutionnelle ou média de référence reconnu.",
-    "trustTooltipMedium": "Média reconnu ou analyse secondaire fiable, mais non officielle.",
-    "trustTooltipLow": "Source indirecte ou contextuelle, à interpréter avec prudence.",
-    "filtered": "filtrée(s)",
-    "shown": "affichée(s)",
-    "of": "sur"
-  },
-  "documentTitle": {
-    "default": "LeenScore — Crédibilité, mesurée.",
-    "analyzing": "Analyse en cours… — LeenScore"
   }
 }

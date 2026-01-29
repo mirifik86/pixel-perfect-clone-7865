@@ -1,12 +1,11 @@
 import { Shield, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { type SupportedLanguage } from '@/i18n/config';
 
 interface StandardAnalysisBadgeProps {
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
 }
 
-const translations: Record<string, { badge: string; tooltip: string }> = {
+const translations = {
   en: {
     badge: 'Standard AI Analysis',
     tooltip: 'Linguistic credibility signals only — no external fact-checking included.',
@@ -18,7 +17,7 @@ const translations: Record<string, { badge: string; tooltip: string }> = {
 };
 
 export const StandardAnalysisBadge = ({ language }: StandardAnalysisBadgeProps) => {
-  const t = translations[language] || translations.en;
+  const t = translations[language];
 
   return (
     <TooltipProvider>

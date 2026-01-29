@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Sparkles, Search, Globe, Shield, CheckCircle2 } from 'lucide-react';
-import { type SupportedLanguage } from '@/i18n/config';
 
 interface ProAnalysisLoaderProps {
-  language: SupportedLanguage;
+  language: 'en' | 'fr';
 }
 
 // Generate random stars once
@@ -42,11 +41,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  const content: Record<string, {
-    title: string;
-    subtitle: string;
-    steps: Array<{ icon: typeof Globe; label: string }>;
-  }> = {
+  const content = {
     en: {
       title: 'PRO Analysis in progress',
       subtitle: 'Searching and cross-checking reliable sources',
@@ -67,7 +62,7 @@ export const ProAnalysisLoader = ({ language }: ProAnalysisLoaderProps) => {
     },
   };
 
-  const t = content[language] || content.en;
+  const t = content[language];
 
   return (
     <div className="w-full max-w-2xl animate-fade-in mt-4 md:mt-8">
