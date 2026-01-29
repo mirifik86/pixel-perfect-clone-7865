@@ -588,50 +588,31 @@ const Index = () => {
     }
   }, [handleAnalyze, handleImageAnalysis]);
 
-  // Language-aware input validation - blocks gibberish while supporting non-space languages
+  // Simple text validation - blocks obvious gibberish while supporting non-Latin languages
   const isValidTextInput = useCallback((input: string, uiLang: string): boolean => {
     const text = input.trim();
     
-    // URL bypass - always accept URLs
-    if (/https?:\/\/|www\./i.test(text)) return true;
-    
-    // Minimum length check (at least 10 characters for meaningful content)
+    // Rule 1: Minimum length (10 chars)
     if (text.length < 10) return false;
     
-    // Block repetition spam (like "aaaaaaa" or "!!!!!!!!")
-    if (/(.)\1{6,}/u.test(text)) return false;
+    // Rule 2: Minimum letters using Unicode (4 letters)
+    const letters = (text.match(/\p{L}/gu) || []).length;
+    if (letters < 4) return false;
     
-    // Count Unicode letters and numbers
-    const letterCount = (text.match(/\p{L}/gu) || []).length;
-    const numberCount = (text.match(/\p{N}/gu) || []).length;
-    const meaningfulCount = letterCount + numberCount;
-    
-    // Require at least 6 meaningful characters
-    if (meaningfulCount < 6) return false;
-    
-    // Reject mostly symbols: require letter/number ratio >= 0.35
-    if (meaningfulCount / text.length < 0.35) return false;
-    
-    // Language-aware gibberish detection
-    const spaceLangs = ['en', 'fr', 'es', 'de', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi'];
+    // Rule 3: For space-based languages, require at least 2 real words
+    const spaceLangs = ['en', 'fr', 'es', 'de', 'it', 'pt'];
     
     if (spaceLangs.includes(uiLang)) {
-      // For space-based languages: require at least 2 "real" tokens
-      // A real token has at least 2 alphanumeric chars and at least 1 letter
       const tokens = text.split(/\s+/);
-      const realTokens = tokens.filter(token => {
-        const tokenMeaningful = (token.match(/[\p{L}\p{N}]/gu) || []).length;
+      const realWords = tokens.filter(token => {
         const tokenLetters = (token.match(/\p{L}/gu) || []).length;
-        return tokenMeaningful >= 2 && tokenLetters >= 1;
+        return tokenLetters >= 2;
       });
       
-      // Require at least 2 real tokens (blocks single-word gibberish like "ojadosigriow")
-      if (realTokens.length < 2) return false;
-    } else {
-      // Non-space languages (ja, zh, ko, etc.): require at least 8 letters (ideographs count)
-      if (letterCount < 8) return false;
+      if (realWords.length < 2) return false;
     }
     
+    // Rule 4: Non-space languages (ja, zh, ko) only need rules 1 and 2
     return true;
   }, []);
 
