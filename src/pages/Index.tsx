@@ -588,43 +588,28 @@ const Index = () => {
     }
   }, [handleAnalyze, handleImageAnalysis]);
 
-  // Input validation - language-aware: non-Latin scripts use simpler rules
+  // Input validation - language-agnostic using Unicode character properties
   const isValidInput = useCallback((text: string): boolean => {
     const trimmed = text.trim();
     
     // Minimum length check (at least 10 characters for meaningful content)
     if (trimmed.length < 10) return false;
     
-    // Check for at least 2 non-whitespace chunks (word-like segments)
-    const chunks = trimmed.split(/\s+/).filter(c => c.length >= 1);
-    if (chunks.length < 2) return false;
-    
-    // Check for repetitive characters (like "aaaaaaa" or "asdfasdf") - universal
-    const repetitivePattern = /(.)\1{4,}/;
+    // Check for repetitive characters (like "aaaaaaa") - universal blocker
+    const repetitivePattern = /(.)\1{5,}/u;
     if (repetitivePattern.test(trimmed)) return false;
     
-    // Determine if input contains non-Latin scripts (Japanese, Korean, Chinese, Arabic, etc.)
-    const nonLatinPattern = /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF\u0600-\u06FF\u0590-\u05FF\u0900-\u097F]/;
-    const hasNonLatinChars = nonLatinPattern.test(trimmed);
+    // Count Unicode letters (any language) and numbers using \p{} syntax
+    const letterCount = (trimmed.match(/\p{L}/gu) || []).length;
+    const numberCount = (trimmed.match(/\p{N}/gu) || []).length;
+    const alphanumericCount = letterCount + numberCount;
     
-    // For non-Latin languages: simpler validation (length + chunks already passed)
-    if (hasNonLatinChars) {
-      return true;
-    }
+    // Require at least some real content: letters OR letter+number mix
+    if (letterCount === 0 && alphanumericCount < 3) return false;
     
-    // For Latin-based languages: stricter validation
-    // Check for random character patterns (no vowels)
-    const vowelPattern = /[aeiouàâäéèêëïîôùûüœæ]/i;
-    const hasVowels = vowelPattern.test(trimmed);
-    if (!hasVowels) return false;
-    
-    // Check for word-like patterns (at least 2 words with 2+ characters each)
-    const words = trimmed.split(/\s+/).filter(w => w.length >= 2);
-    if (words.length < 2) return false;
-    
-    // Check for excessive special characters or numbers only
-    const alphaRatio = (trimmed.match(/[a-zA-ZàâäéèêëïîôùûüœæçÀÂÄÉÈÊËÏÎÔÙÛÜŒÆÇ]/g) || []).length / trimmed.length;
-    if (alphaRatio < 0.5) return false;
+    // Reject mostly symbols: require letter/number ratio >= ~0.35 of total length
+    const alphanumericRatio = alphanumericCount / trimmed.length;
+    if (alphanumericRatio < 0.35) return false;
     
     return true;
   }, []);
