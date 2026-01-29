@@ -202,8 +202,15 @@ const Index = () => {
   // Error state for robust error handling (no redirect to home)
   const [analysisError, setAnalysisError] = useState<{ message: string; code: string } | null>(null);
   
-  // Track the last input for retry functionality
-  const lastInputRef = useRef<{ type: 'text' | 'image'; content: string; file?: File; preview?: string } | null>(null);
+  // Track the last input for retry functionality (includes analysisType and contextText for multimodal)
+  const lastInputRef = useRef<{ 
+    type: 'text' | 'image'; 
+    content: string; 
+    file?: File; 
+    preview?: string;
+    analysisType?: 'standard' | 'pro';
+    contextText?: string;
+  } | null>(null);
   
   // Track if current analysis is from an image (for loader display)
   const [isImageAnalysis, setIsImageAnalysis] = useState(false);
@@ -376,8 +383,8 @@ const Index = () => {
   ) => {
     const errorAnalysis = i18nT('index.errorAnalysis');
     
-    // Store input for retry
-    lastInputRef.current = { type: 'image', content: preview, file, preview };
+    // Store input for retry (including analysisType and contextText for multimodal)
+    lastInputRef.current = { type: 'image', content: preview, file, preview, analysisType, contextText };
     
     setUploadedFile({ file, preview });
     setIsLoading(true);
@@ -457,16 +464,39 @@ const Index = () => {
 
       // If the image endpoint already returned a full PRO analysis, skip the second text analysis call
       // and just use the provided analysis directly (avoids double analysis).
+      // BILINGUAL CONSISTENCY: Always ensure both en and fr are populated
       if (data.analysis && data.analysis.analysisType === 'pro') {
-        // PRO analysis already complete - store bilingual summaries from this analysis
-        // Note: image endpoint returns analysis in the requested language, so we store it accordingly
+        // PRO analysis already complete - store in current language, translate for the other
+        const currentLangData = normalizeAnalysisData(data.analysis);
+        const otherLang: 'en' | 'fr' = language === 'en' ? 'fr' : 'en';
+        
+        // Translate to get the missing language version
+        let otherLangData = currentLangData;
+        try {
+          const translateResult = await supabase.functions.invoke('translate-analysis', {
+            body: {
+              analysisData: currentLangData,
+              targetLanguage: otherLang,
+            },
+          });
+          if (!translateResult.error && translateResult.data && !translateResult.data.error) {
+            otherLangData = normalizeAnalysisData(translateResult.data);
+          }
+        } catch {
+          // Fallback: use same data for both languages if translation fails
+        }
+        
         setSummariesByLanguage({
-          en: language === 'en' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
-          fr: language === 'fr' ? { summary: data.analysis.summary || '', articleSummary: data.analysis.articleSummary || '' } : null,
+          en: language === 'en' 
+            ? { summary: currentLangData.summary || '', articleSummary: currentLangData.articleSummary || '' }
+            : { summary: otherLangData.summary || '', articleSummary: otherLangData.articleSummary || '' },
+          fr: language === 'fr'
+            ? { summary: currentLangData.summary || '', articleSummary: currentLangData.articleSummary || '' }
+            : { summary: otherLangData.summary || '', articleSummary: otherLangData.articleSummary || '' },
         });
         setAnalysisByLanguage({
-          en: language === 'en' ? data.analysis : null,
-          fr: language === 'fr' ? data.analysis : null,
+          en: language === 'en' ? currentLangData : otherLangData,
+          fr: language === 'fr' ? currentLangData : otherLangData,
         });
       } else if (data?.ocr?.cleaned_text) {
         // If OCR extracted text, run a single master analysis (EN) then translate (FR).
@@ -524,7 +554,7 @@ const Index = () => {
     }
   }, [language, i18nT, runBilingualTextAnalysis]);
 
-  // Retry the last analysis (for error recovery)
+  // Retry the last analysis (for error recovery) - preserves analysisType and contextText for multimodal
   const handleRetry = useCallback(() => {
     if (!lastInputRef.current) return;
     
@@ -533,18 +563,42 @@ const Index = () => {
     if (lastInputRef.current.type === 'text') {
       handleAnalyze(lastInputRef.current.content);
     } else if (lastInputRef.current.file && lastInputRef.current.preview) {
-      handleImageAnalysis(lastInputRef.current.file, lastInputRef.current.preview);
+      // Pass stored analysisType and contextText for multimodal retry consistency
+      handleImageAnalysis(
+        lastInputRef.current.file, 
+        lastInputRef.current.preview,
+        lastInputRef.current.analysisType || 'standard',
+        lastInputRef.current.contextText
+      );
     }
   }, [handleAnalyze, handleImageAnalysis]);
 
-  // Input validation - checks if text appears to be meaningful content
+  // Input validation - language-aware: non-Latin scripts use simpler rules
   const isValidInput = useCallback((text: string): boolean => {
     const trimmed = text.trim();
     
     // Minimum length check (at least 10 characters for meaningful content)
     if (trimmed.length < 10) return false;
     
-    // Check for random character patterns (no vowels or too many consecutive consonants)
+    // Check for at least 2 non-whitespace chunks (word-like segments)
+    const chunks = trimmed.split(/\s+/).filter(c => c.length >= 1);
+    if (chunks.length < 2) return false;
+    
+    // Check for repetitive characters (like "aaaaaaa" or "asdfasdf") - universal
+    const repetitivePattern = /(.)\1{4,}/;
+    if (repetitivePattern.test(trimmed)) return false;
+    
+    // Determine if input contains non-Latin scripts (Japanese, Korean, Chinese, Arabic, etc.)
+    const nonLatinPattern = /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF\u0600-\u06FF\u0590-\u05FF\u0900-\u097F]/;
+    const hasNonLatinChars = nonLatinPattern.test(trimmed);
+    
+    // For non-Latin languages: simpler validation (length + chunks already passed)
+    if (hasNonLatinChars) {
+      return true;
+    }
+    
+    // For Latin-based languages: stricter validation
+    // Check for random character patterns (no vowels)
     const vowelPattern = /[aeiouàâäéèêëïîôùûüœæ]/i;
     const hasVowels = vowelPattern.test(trimmed);
     if (!hasVowels) return false;
@@ -556,10 +610,6 @@ const Index = () => {
     // Check for excessive special characters or numbers only
     const alphaRatio = (trimmed.match(/[a-zA-ZàâäéèêëïîôùûüœæçÀÂÄÉÈÊËÏÎÔÙÛÜŒÆÇ]/g) || []).length / trimmed.length;
     if (alphaRatio < 0.5) return false;
-    
-    // Check for repetitive characters (like "aaaaaaa" or "asdfasdf")
-    const repetitivePattern = /(.)\1{4,}/;
-    if (repetitivePattern.test(trimmed)) return false;
     
     return true;
   }, []);
