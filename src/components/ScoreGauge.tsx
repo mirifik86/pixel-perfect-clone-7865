@@ -481,7 +481,7 @@ export const ScoreGauge = ({
           setIsFocused(false);
         }}
       >
-        {/* GLASS LENS HIGHLIGHT on ring - premium subtle reflection */}
+        {/* GLASS LENS HIGHLIGHT on ring - premium glass effect */}
         <div 
           className="absolute inset-0 rounded-full pointer-events-none overflow-hidden"
           style={{ zIndex: 10 }}
@@ -490,27 +490,35 @@ export const ScoreGauge = ({
           <div 
             className="absolute"
             style={{
-              top: '3%',
-              left: '8%',
-              width: '45%',
-              height: '25%',
-              background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.12) 0%, hsl(0 0% 100% / 0.04) 50%, transparent 100%)',
+              top: '2%',
+              left: '6%',
+              width: '50%',
+              height: '30%',
+              background: 'linear-gradient(140deg, hsl(0 0% 100% / 0.18) 0%, hsl(0 0% 100% / 0.08) 40%, transparent 100%)',
               borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-              filter: 'blur(1px)',
-              transform: 'rotate(-15deg)',
+              filter: 'blur(1.5px)',
+              transform: 'rotate(-18deg)',
             }}
           />
-          {/* Secondary micro-reflection - bottom edge */}
+          {/* Secondary micro-reflection - bottom-right edge */}
           <div 
             className="absolute"
             style={{
-              bottom: '6%',
-              right: '12%',
-              width: '30%',
-              height: '8%',
-              background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.04) 50%, transparent 100%)',
+              bottom: '5%',
+              right: '10%',
+              width: '35%',
+              height: '10%',
+              background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.06) 50%, transparent 100%)',
               borderRadius: '50%',
               filter: 'blur(1px)',
+            }}
+          />
+          {/* Inner rim glass sheen */}
+          <div 
+            className="absolute inset-2 rounded-full"
+            style={{
+              background: 'linear-gradient(160deg, hsl(0 0% 100% / 0.04) 0%, transparent 30%, transparent 70%, hsl(0 0% 100% / 0.02) 100%)',
+              border: '1px solid hsl(0 0% 100% / 0.03)',
             }}
           />
         </div>
@@ -989,51 +997,54 @@ export const ScoreGauge = ({
               
               {/* Premium glass pill backdrop - reactive to state */}
               <div 
-                className="absolute rounded-full pointer-events-none transition-all duration-300"
+                className="absolute rounded-full pointer-events-none transition-all duration-300 overflow-hidden"
                 style={{
                   width: size * 0.72,
                   height: size * 0.22,
                   background: typingState === 'valid'
                     ? (isHovering || isFocused)
-                      ? 'linear-gradient(135deg, hsl(200 40% 24% / 0.6) 0%, hsl(220 35% 20% / 0.5) 50%, hsl(200 40% 22% / 0.55) 100%)'
+                      ? 'linear-gradient(135deg, hsl(200 40% 24% / 0.65) 0%, hsl(220 35% 20% / 0.55) 50%, hsl(200 40% 22% / 0.6) 100%)'
                       : 'linear-gradient(135deg, hsl(200 35% 22% / 0.55) 0%, hsl(220 30% 18% / 0.45) 50%, hsl(200 35% 20% / 0.5) 100%)'
-                    // DISABLED: Lighter, more visible pill
                     : 'linear-gradient(135deg, hsl(200 22% 22% / 0.45) 0%, hsl(220 18% 18% / 0.38) 50%, hsl(200 22% 20% / 0.42) 100%)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   border: typingState === 'valid'
                     ? (isHovering || isFocused)
-                      ? '1px solid hsl(174 55% 65% / 0.35)'
-                      : '1px solid hsl(174 50% 60% / 0.25)'
-                    // DISABLED: Subtle cyan border for premium feel
-                    : '1px solid hsl(174 35% 55% / 0.15)',
+                      ? '1.5px solid hsl(174 60% 68% / 0.45)'
+                      : '1px solid hsl(174 55% 62% / 0.3)'
+                    : '1px solid hsl(174 40% 55% / 0.18)',
                   boxShadow: typingState === 'valid'
                     ? (isHovering || isFocused)
                       ? `
-                        inset 0 1px 1px hsl(0 0% 100% / 0.14),
-                        inset 0 -1px 1px hsl(0 0% 0% / 0.15),
-                        0 4px 24px hsl(200 50% 10% / 0.5),
-                        0 0 20px hsl(174 65% 55% / 0.35),
-                        0 0 40px hsl(174 60% 50% / 0.15)
+                        inset 0 1px 2px hsl(0 0% 100% / 0.18),
+                        inset 0 -1px 1px hsl(0 0% 0% / 0.12),
+                        0 4px 16px hsl(200 50% 8% / 0.45),
+                        0 0 12px hsl(174 60% 55% / 0.25)
                       `
                       : `
-                        inset 0 1px 1px hsl(0 0% 100% / 0.1),
-                        inset 0 -1px 1px hsl(0 0% 0% / 0.15),
-                        0 4px 20px hsl(200 50% 10% / 0.45),
-                        0 0 16px hsl(174 60% 55% / 0.25),
-                        0 0 32px hsl(174 55% 50% / 0.1)
+                        inset 0 1px 2px hsl(0 0% 100% / 0.12),
+                        inset 0 -1px 1px hsl(0 0% 0% / 0.1),
+                        0 4px 14px hsl(200 50% 10% / 0.4),
+                        0 0 8px hsl(174 55% 55% / 0.15)
                       `
-                    // DISABLED: Subtle static premium halo (NOT animated)
                     : `
                       inset 0 1px 1px hsl(0 0% 100% / 0.06),
-                      inset 0 -1px 1px hsl(0 0% 0% / 0.12),
-                      0 4px 16px hsl(200 45% 12% / 0.35),
-                      0 0 12px hsl(174 45% 52% / 0.12),
-                      0 0 24px hsl(174 40% 48% / 0.06)
+                      inset 0 -1px 1px hsl(0 0% 0% / 0.08),
+                      0 4px 12px hsl(200 45% 12% / 0.3)
                     `,
-                  animation: typingState === 'valid' && !isHovering ? 'cta-halo-pulse 2.2s ease-in-out infinite' : 'none',
                 }}
-              />
+              >
+                {/* One-time diagonal sheen on ready state */}
+                {typingState === 'valid' && (
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(115deg, transparent 0%, transparent 40%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.3) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 60%, transparent 100%)',
+                      animation: 'cta-sheen 1s ease-out forwards',
+                    }}
+                  />
+                )}
+              </div>
               
               {/* Inner glow - intensifies when valid, subtle static for disabled */}
               <div 
@@ -1102,103 +1113,46 @@ export const ScoreGauge = ({
           </div>
         )}
         
-        {/* Premium cascade guidance chevrons - DOWNWARD for idle state */}
+        {/* Premium single dot indicator - IDLE state */}
         {uiState === 'idle' && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
             style={{ 
-              top: size + 8,
-              gap: '6px',
+              top: size + 16,
             }}
           >
-            {/* Three chevrons with waterfall cascade animation */}
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="relative"
-                style={{
-                  animation: `chevron-cascade 3s cubic-bezier(0.22, 1, 0.36, 1) ${i * 160}ms infinite`,
-                }}
-                onAnimationIteration={i === 2 ? () => onChevronCycleComplete?.() : undefined}
-              >
-                {/* Subtle chevron glow - very low opacity */}
-                <div 
-                  className="absolute inset-0 -m-2"
-                  style={{
-                    background: 'radial-gradient(circle, hsl(180 40% 60% / 0.15) 0%, transparent 60%)',
-                    filter: 'blur(3px)',
-                  }}
-                />
-                {/* Chevron SVG - muted teal with subtle glow */}
-                <svg 
-                  width="14" 
-                  height="7" 
-                  viewBox="0 0 14 7" 
-                  fill="none"
-                  style={{
-                    filter: 'drop-shadow(0 0 2px hsl(180 35% 55% / 0.25))',
-                  }}
-                >
-                  <path 
-                    d="M1 1L7 6L13 1" 
-                    stroke="hsl(180 40% 65% / 0.7)" 
-                    strokeWidth="1.25" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            ))}
+            <div
+              className="rounded-full"
+              style={{
+                width: '6px',
+                height: '6px',
+                background: 'hsl(174 55% 58% / 0.6)',
+                boxShadow: '0 0 8px hsl(174 50% 55% / 0.4), 0 0 16px hsl(174 45% 50% / 0.2)',
+                animation: 'indicator-dot-pulse 3s ease-in-out infinite',
+              }}
+              onAnimationIteration={() => onChevronCycleComplete?.()}
+            />
           </div>
         )}
         
-        {/* Premium UPWARD chevrons - READY state (between input and gauge) */}
+        {/* Premium single dot indicator - READY state */}
         {uiState === 'ready' && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
             style={{ 
-              bottom: -32, // Position below gauge (pointing upward toward it)
-              gap: '5px',
+              bottom: -24,
             }}
           >
-            {/* Three upward chevrons with waterfall cascade animation - reversed order for upward motion */}
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="relative"
-                style={{
-                  animation: `chevron-up-cascade 3.2s cubic-bezier(0.22, 1, 0.36, 1) ${(2 - i) * 140}ms infinite`,
-                }}
-              >
-                {/* Subtle chevron glow */}
-                <div 
-                  className="absolute inset-0 -m-2"
-                  style={{
-                    background: 'radial-gradient(circle, hsl(174 50% 55% / 0.12) 0%, transparent 60%)',
-                    filter: 'blur(3px)',
-                  }}
-                />
-                {/* Upward chevron SVG - subtle, lower opacity than downward */}
-                <svg 
-                  width="12" 
-                  height="6" 
-                  viewBox="0 0 14 7" 
-                  fill="none"
-                  style={{
-                    filter: 'drop-shadow(0 0 2px hsl(174 45% 55% / 0.2))',
-                    transform: 'rotate(180deg)', // Flip to point upward
-                  }}
-                >
-                  <path 
-                    d="M1 1L7 6L13 1" 
-                    stroke="hsl(174 50% 60% / 0.55)" 
-                    strokeWidth="1.25" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            ))}
+            <div
+              className="rounded-full"
+              style={{
+                width: '5px',
+                height: '5px',
+                background: 'hsl(174 60% 55% / 0.5)',
+                boxShadow: '0 0 6px hsl(174 55% 55% / 0.35), 0 0 12px hsl(174 50% 50% / 0.15)',
+                animation: 'indicator-dot-pulse 2.5s ease-in-out infinite',
+              }}
+            />
           </div>
         )}
       </div>
@@ -1733,6 +1687,28 @@ export const ScoreGauge = ({
           50% { 
             opacity: 1;
             transform: scale(1.02);
+          }
+        }
+        /* Premium single dot indicator pulse */
+        @keyframes indicator-dot-pulse {
+          0%, 100% { 
+            opacity: 0.5;
+            transform: scale(1);
+            box-shadow: 0 0 6px hsl(174 50% 55% / 0.35), 0 0 12px hsl(174 45% 50% / 0.15);
+          }
+          50% { 
+            opacity: 0.8;
+            transform: scale(1.15);
+            box-shadow: 0 0 10px hsl(174 55% 55% / 0.5), 0 0 20px hsl(174 50% 50% / 0.25);
+          }
+        }
+        /* CTA sheen animation - runs once */
+        @keyframes cta-sheen {
+          0% { 
+            transform: translateX(-150%);
+          }
+          100% { 
+            transform: translateX(150%);
           }
         }
       `}</style>
