@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState, useMemo } from 'react';
 
 interface RotatingGlobeProps {
   size: number;
@@ -6,144 +6,101 @@ interface RotatingGlobeProps {
 }
 
 /**
- * Premium Mini Earth + Solar System
+ * Mini Earth Globe - CLEARLY VISIBLE inside roulette center
  * 
  * Features:
- * - Subtle Earth globe with rotating world map texture
- * - Idle: 120s per rotation (ultra slow)
- * - Analyzing: 30s per rotation + sun glow + orbital rings + moon/satellite
- * - All effects are premium and understated
- * - Respects prefers-reduced-motion
+ * - Prominent Earth globe with rotating world map texture
+ * - Starfield behind the globe
+ * - Soft sun glow radial gradient
+ * - Idle: 80s per rotation
+ * - Analyzing: 25s per rotation
  */
 export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeProps) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [showOrbits, setShowOrbits] = useState(false);
   
-  // Detect reduced motion preference
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
-    
     const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
   
-  // Smooth fade-in for orbit elements
-  useEffect(() => {
-    if (isAnalyzing) {
-      const timer = setTimeout(() => setShowOrbits(true), 200);
-      return () => clearTimeout(timer);
-    } else {
-      setShowOrbits(false);
-    }
-  }, [isAnalyzing]);
-  
   const shouldAnimate = !prefersReducedMotion;
-  const animationDuration = isAnalyzing ? '30s' : '120s';
+  const animationDuration = isAnalyzing ? '25s' : '80s';
   
-  // Globe dimensions
-  const globeSize = size * 0.42;
-  const orbitRing1 = size * 0.52;
-  const orbitRing2 = size * 0.62;
+  // Globe is 55% of gauge size for clear visibility
+  const globeSize = Math.max(size * 0.55, 90);
   
-  // Use a subtle equirectangular world map
-  const textureUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_der_Grinten_projection_SW.jpg/1280px-Van_der_Grinten_projection_SW.jpg';
+  // Generate random stars
+  const stars = useMemo(() => 
+    Array.from({ length: 25 }, (_, i) => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 0.8 + Math.random() * 1.5,
+      opacity: 0.3 + Math.random() * 0.5,
+      delay: Math.random() * 3,
+    }))
+  , []);
+  
+  // Earth texture - using existing project asset
+  const textureUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Blue_Marble_2002.png/1280px-Blue_Marble_2002.png';
   
   return (
     <div 
       className="absolute pointer-events-none"
       style={{
-        width: size * 0.7,
-        height: size * 0.7,
+        width: globeSize * 1.6,
+        height: globeSize * 1.6,
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 0,
       }}
     >
-      {/* ========== SUN GLOW (analysis mode only) ========== */}
+      {/* ========== STARFIELD BACKGROUND ========== */}
       <div 
-        className="absolute rounded-full transition-opacity duration-700"
+        className="absolute inset-0 rounded-full overflow-hidden"
         style={{
-          width: globeSize * 1.8,
-          height: globeSize * 1.8,
+          background: 'radial-gradient(circle, hsl(230 30% 8%) 0%, hsl(240 25% 5%) 100%)',
+        }}
+      >
+        {stars.map((star, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              background: 'hsl(0 0% 100%)',
+              opacity: star.opacity,
+              animation: shouldAnimate ? `twinkle ${2 + star.delay}s ease-in-out infinite` : 'none',
+              animationDelay: `${star.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* ========== SUN GLOW (always visible, brighter during analysis) ========== */}
+      <div 
+        className="absolute rounded-full transition-all duration-500"
+        style={{
+          width: globeSize * 1.4,
+          height: globeSize * 1.4,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle, 
-            hsl(45 60% 70% / ${isAnalyzing ? 0.08 : 0}) 0%, 
-            hsl(35 50% 60% / ${isAnalyzing ? 0.04 : 0}) 30%, 
-            transparent 60%
+          background: `radial-gradient(circle at 40% 40%, 
+            hsl(45 70% 65% / ${isAnalyzing ? 0.25 : 0.12}) 0%, 
+            hsl(35 60% 55% / ${isAnalyzing ? 0.15 : 0.06}) 30%, 
+            hsl(200 40% 40% / 0.05) 60%,
+            transparent 80%
           )`,
-          filter: 'blur(8px)',
-          opacity: showOrbits ? 1 : 0,
+          filter: 'blur(6px)',
         }}
       />
-      
-      {/* ========== ORBITAL RING 1 (outer) ========== */}
-      <div 
-        className="absolute rounded-full transition-opacity duration-500"
-        style={{
-          width: orbitRing2,
-          height: orbitRing2,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          border: '1px solid hsl(200 30% 50% / 0.12)',
-          opacity: showOrbits ? 1 : 0,
-        }}
-      >
-        {/* Satellite dot on outer ring */}
-        {shouldAnimate && showOrbits && (
-          <div 
-            className="absolute"
-            style={{
-              width: '3px',
-              height: '3px',
-              borderRadius: '50%',
-              background: 'hsl(200 40% 60% / 0.5)',
-              boxShadow: '0 0 4px hsl(200 40% 60% / 0.3)',
-              top: '50%',
-              left: '50%',
-              transformOrigin: '0 0',
-              animation: 'orbit-satellite 25s linear infinite',
-            }}
-          />
-        )}
-      </div>
-      
-      {/* ========== ORBITAL RING 2 (inner) ========== */}
-      <div 
-        className="absolute rounded-full transition-opacity duration-500"
-        style={{
-          width: orbitRing1,
-          height: orbitRing1,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          border: '1px solid hsl(174 35% 55% / 0.15)',
-          opacity: showOrbits ? 1 : 0,
-        }}
-      >
-        {/* Moon dot on inner ring */}
-        {shouldAnimate && showOrbits && (
-          <div 
-            className="absolute"
-            style={{
-              width: '4px',
-              height: '4px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, hsl(45 10% 75%) 0%, hsl(45 5% 60%) 100%)',
-              boxShadow: '0 0 6px hsl(45 15% 70% / 0.4)',
-              top: '50%',
-              left: '50%',
-              transformOrigin: '0 0',
-              animation: 'orbit-moon 18s linear infinite',
-            }}
-          />
-        )}
-      </div>
       
       {/* ========== EARTH GLOBE ========== */}
       <div 
@@ -154,23 +111,27 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          opacity: isAnalyzing ? 0.75 : 0.55,
-          transition: 'opacity 0.5s ease-out',
+          boxShadow: `
+            0 0 ${isAnalyzing ? 30 : 20}px hsl(200 60% 50% / ${isAnalyzing ? 0.4 : 0.25}),
+            0 0 ${isAnalyzing ? 50 : 35}px hsl(174 50% 45% / ${isAnalyzing ? 0.25 : 0.15}),
+            inset -8px -6px 20px hsl(240 30% 5% / 0.7)
+          `,
+          transition: 'box-shadow 0.5s ease-out',
         }}
       >
-        {/* Globe base - deep ocean gradient fallback */}
+        {/* Globe base - ocean blue gradient */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(circle at 35% 35%, 
-              hsl(200 35% 28%) 0%, 
-              hsl(210 30% 18%) 50%, 
-              hsl(220 25% 10%) 100%
+            background: `radial-gradient(circle at 35% 30%, 
+              hsl(200 55% 35%) 0%, 
+              hsl(210 50% 25%) 40%, 
+              hsl(220 45% 15%) 100%
             )`,
           }}
         />
         
-        {/* Primary rotating texture layer */}
+        {/* Rotating Earth texture - PRIMARY layer (clearly visible) */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
@@ -179,73 +140,74 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
             backgroundPosition: '0% 50%',
             backgroundRepeat: 'repeat-x',
             animation: shouldAnimate ? `globe-rotate ${animationDuration} linear infinite` : 'none',
-            opacity: 0.6,
-            filter: 'saturate(0.45) brightness(0.75) contrast(1.05)',
-            mixBlendMode: 'overlay',
+            opacity: 0.85,
+            filter: 'saturate(0.7) brightness(0.9) contrast(1.1)',
           }}
         />
         
-        {/* Secondary layer for depth */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            backgroundImage: `url(${textureUrl})`,
-            backgroundSize: '200% 100%',
-            backgroundPosition: '0% 50%',
-            backgroundRepeat: 'repeat-x',
-            animation: shouldAnimate ? `globe-rotate ${animationDuration} linear infinite` : 'none',
-            opacity: 0.3,
-            filter: 'saturate(0.35) brightness(0.65)',
-          }}
-        />
-        
-        {/* Atmospheric highlight (top-left light source) */}
+        {/* Atmospheric highlight (sunlit side) */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: `radial-gradient(circle at 30% 25%, 
-              hsl(174 40% 70% / 0.12) 0%, 
-              transparent 45%
+              hsl(180 50% 80% / 0.2) 0%, 
+              hsl(200 40% 60% / 0.08) 30%,
+              transparent 50%
             )`,
           }}
         />
         
-        {/* Edge shadow for 3D spherical effect */}
+        {/* Dark side shadow */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `linear-gradient(135deg, 
+              transparent 40%, 
+              hsl(240 30% 5% / 0.4) 70%, 
+              hsl(240 30% 3% / 0.6) 100%
+            )`,
+          }}
+        />
+        
+        {/* Atmosphere rim glow */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             boxShadow: `
-              inset -6px -5px 16px hsl(240 30% 5% / 0.55),
-              inset 3px 2px 10px hsl(174 35% 55% / 0.08)
+              inset 0 0 ${globeSize * 0.15}px hsl(200 60% 60% / 0.15),
+              inset -4px -3px 15px hsl(240 30% 5% / 0.6)
             `,
-          }}
-        />
-        
-        {/* Analyzing state: subtle atmospheric glow */}
-        <div 
-          className="absolute inset-0 rounded-full transition-opacity duration-500"
-          style={{
-            boxShadow: '0 0 12px hsl(174 50% 50% / 0.25), 0 0 24px hsl(174 45% 45% / 0.12)',
-            opacity: isAnalyzing ? 1 : 0,
           }}
         />
       </div>
       
-      {/* ========== SCAN RING (analysis mode pulse) ========== */}
-      {showOrbits && (
-        <div 
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: globeSize * 1.1,
-            height: globeSize * 1.1,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            border: '1px solid hsl(174 50% 55% / 0.2)',
-            animation: shouldAnimate ? 'scan-pulse 3s ease-out infinite' : 'none',
-          }}
-        />
-      )}
+      {/* ========== ORBIT RINGS (analysis mode) ========== */}
+      <div 
+        className="absolute rounded-full transition-opacity duration-500"
+        style={{
+          width: globeSize * 1.25,
+          height: globeSize * 1.25,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) rotateX(65deg)',
+          border: `1px solid hsl(174 50% 60% / ${isAnalyzing ? 0.35 : 0.12})`,
+          opacity: 1,
+        }}
+      />
+      
+      {/* Outer orbit ring */}
+      <div 
+        className="absolute rounded-full transition-opacity duration-500"
+        style={{
+          width: globeSize * 1.45,
+          height: globeSize * 1.45,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) rotateX(65deg) rotateZ(30deg)',
+          border: `1px solid hsl(200 40% 55% / ${isAnalyzing ? 0.25 : 0.08})`,
+          opacity: 1,
+        }}
+      />
     </div>
   );
 });
