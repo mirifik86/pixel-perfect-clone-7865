@@ -50,10 +50,10 @@
     "disclaimer": "LeenScore ne déclare pas les faits. Il vous aide à évaluer la crédibilité des informations.",
     "disclaimerLine1": "ne déclare pas les faits.",
     "disclaimerLine2": "Il vous aide à évaluer la crédibilité des informations.",
-    "validationError": "Contenu non analysable — veuillez corriger ou entrer de nouveau.",
-    "validationTitle": "Contenu non analysable",
-    "validationSubline": "Ajoutez une phrase complète ou un court paragraphe.",
-    "validationHint": "Évitez les mots isolés et le texte incomplet."
+    "validationError": "Contenu non analysable, veuillez corriger ou entrer de nouveau.",
+    "validationTitle": "Contenu non analysable, veuillez corriger ou entrer de nouveau.",
+    "validationSubline": "",
+    "validationHint": ""
   },
   "gauge": {
     "pending": "En attente",
