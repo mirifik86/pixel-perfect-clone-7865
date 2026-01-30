@@ -34,8 +34,8 @@ export const StarfieldBackground = memo(() => {
           backgroundSize: 'cover',
           backgroundPosition: 'center 55%',
           backgroundRepeat: 'no-repeat',
-          // 95% netteté - flou minimal, atmosphérique
-          filter: 'blur(0.5px) brightness(0.22) contrast(0.75) saturate(0.55)',
+          // Fond spatial visible mais atmosphérique
+          filter: 'blur(0.5px) brightness(0.45) contrast(0.85) saturate(0.7)',
           transform: 'scale(1.08)', // Prevent blur edge artifacts
         }}
       />
@@ -45,10 +45,10 @@ export const StarfieldBackground = memo(() => {
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 45% 45% at 50% 42%, 
-              hsl(220 35% 3% / 0.85) 0%,
-              hsl(220 30% 4% / 0.7) 40%,
-              hsl(225 25% 5% / 0.5) 70%,
+            radial-gradient(ellipse 40% 40% at 50% 42%, 
+              hsl(220 35% 3% / 0.6) 0%,
+              hsl(220 30% 4% / 0.4) 40%,
+              hsl(225 25% 5% / 0.25) 70%,
               transparent 100%
             )
           `,
@@ -61,9 +61,9 @@ export const StarfieldBackground = memo(() => {
         style={{
           background: `
             radial-gradient(ellipse 130% 110% at 50% 50%, 
-              transparent 25%,
-              hsl(225 35% 4% / 0.5) 60%,
-              hsl(230 40% 3%) 100%
+              transparent 30%,
+              hsl(225 35% 4% / 0.3) 65%,
+              hsl(230 40% 3% / 0.7) 100%
             )
           `,
         }}
