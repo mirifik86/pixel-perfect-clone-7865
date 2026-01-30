@@ -106,23 +106,7 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           }}
         />
         
-        {/* SPECULAR HIGHLIGHT - premium gloss */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `
-              radial-gradient(ellipse 50% 40% at 25% 20%, 
-                hsl(180 70% 92% / 0.28) 0%, 
-                hsl(190 60% 85% / 0.12) 40%,
-                transparent 65%
-              ),
-              radial-gradient(ellipse 35% 25% at 30% 28%, 
-                hsl(45 60% 95% / 0.1) 0%, 
-                transparent 55%
-              )
-            `,
-          }}
-        />
+        {/* Removed: SPECULAR HIGHLIGHT - was creating white spots on top */}
         
         {/* TERMINATOR SHADOW - REDUCED for daylight feel */}
         <div 
@@ -150,23 +134,7 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           }}
         />
         
-        {/* SUN RIM LIGHT - upper-right daylight edge */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `
-              radial-gradient(ellipse 45% 50% at 78% 18%, 
-                hsl(45 35% 95% / 0.18) 0%,
-                hsl(40 30% 90% / 0.08) 35%,
-                transparent 65%
-              ),
-              radial-gradient(ellipse 30% 35% at 85% 25%, 
-                hsl(50 25% 92% / 0.12) 0%,
-                transparent 50%
-              )
-            `,
-          }}
-        />
+        {/* Removed: SUN RIM LIGHT - was creating white spots on upper-right */}
         
         {/* Terminator edge glow (sunrise line) - enhanced */}
         <div 
