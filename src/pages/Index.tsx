@@ -588,32 +588,11 @@ const Index = () => {
     }
   }, [handleAnalyze, handleImageAnalysis]);
 
-  // Simple text validation - blocks obvious gibberish while supporting non-Latin languages
-  const isValidTextInput = useCallback((input: string, uiLang: string): boolean => {
+  // Simple text validation - "non analyzable" if empty, whitespace only, or < 12 chars
+  const isValidTextInput = useCallback((input: string): boolean => {
     const text = input.trim();
-    
-    // Rule 1: Minimum length (10 chars)
-    if (text.length < 10) return false;
-    
-    // Rule 2: Minimum letters using Unicode (4 letters)
-    const letters = (text.match(/\p{L}/gu) || []).length;
-    if (letters < 4) return false;
-    
-    // Rule 3: For space-based languages, require at least 2 real words
-    const spaceLangs = ['en', 'fr', 'es', 'de', 'it', 'pt'];
-    
-    if (spaceLangs.includes(uiLang)) {
-      const tokens = text.split(/\s+/);
-      const realWords = tokens.filter(token => {
-        const tokenLetters = (token.match(/\p{L}/gu) || []).length;
-        return tokenLetters >= 2;
-      });
-      
-      if (realWords.length < 2) return false;
-    }
-    
-    // Rule 4: Non-space languages (ja, zh, ko) only need rules 1 and 2
-    return true;
+    // Non-analyzable: empty, whitespace only, or less than 12 characters
+    return text.length >= 12;
   }, []);
 
   // Unified analyze handler - supports text only, image only, or both (multimodal)
@@ -628,14 +607,14 @@ const Index = () => {
     }
     
     if (text) {
-      if (!isValidTextInput(text, resolvedLanguage)) {
+      if (!isValidTextInput(text)) {
         setValidationMessage(i18nT('form.validationNotAnalyzable'));
         return;
       }
       setValidationMessage(null);
       await handleAnalyze(text);
     }
-  }, [handleImageAnalysis, handleAnalyze, isValidTextInput, i18nT, resolvedLanguage]);
+  }, [handleImageAnalysis, handleAnalyze, isValidTextInput, i18nT]);
   
   // Clear validation message when input is emptied
   const handleClearValidation = useCallback(() => {

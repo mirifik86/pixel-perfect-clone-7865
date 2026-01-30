@@ -145,11 +145,11 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setInputText(newValue);
-    // Clear validation if input is emptied (user deleted all text)
+    // Validation message persists until next successful analyze attempt
+    // Only clear if input is completely emptied
     if (newValue.trim().length === 0 && validationMessage) {
       onClearValidation?.();
     }
-    // Otherwise keep validation visible until next Analyze attempt
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -413,72 +413,48 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               {/* Validation message - premium centered beam between text and image */}
               {validationMessage && (
                 <div 
-                  className="flex items-center justify-center animate-fade-in"
+                  className="flex items-center justify-center"
                   style={{ 
                     padding: 'var(--space-2) 0',
+                    animation: 'validation-fade-in 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
                   }}
                 >
                   <div
-                    className="relative rounded-2xl text-center w-full"
+                    className="relative rounded-xl text-center"
                     style={{
-                      padding: 'var(--space-3) var(--space-4)',
-                      background: 'linear-gradient(165deg, hsl(35 30% 10% / 0.92), hsl(35 25% 7% / 0.96))',
-                      border: '1px solid hsl(35 50% 45% / 0.35)',
+                      padding: 'var(--space-3) var(--space-5)',
+                      background: 'linear-gradient(165deg, hsl(35 25% 12% / 0.95), hsl(35 20% 8% / 0.98))',
+                      border: '1px solid hsl(35 45% 50% / 0.3)',
                       boxShadow: `
-                        0 0 50px hsl(35 60% 50% / 0.18),
-                        0 4px 24px hsl(0 0% 0% / 0.25),
-                        inset 0 0 25px hsl(35 50% 50% / 0.06),
-                        inset 0 1px 0 hsl(0 0% 100% / 0.08)
+                        0 0 40px hsl(35 55% 50% / 0.15),
+                        0 4px 20px hsl(0 0% 0% / 0.3),
+                        inset 0 1px 0 hsl(0 0% 100% / 0.06)
                       `,
                       backdropFilter: 'blur(16px)',
-                      maxWidth: '680px',
                     }}
                   >
                     {/* Breathing halo/beam effect */}
                     <div 
-                      className="absolute -inset-3 rounded-3xl pointer-events-none"
+                      className="absolute -inset-2 rounded-2xl pointer-events-none"
                       style={{
-                        background: 'radial-gradient(ellipse at center, hsl(35 55% 50% / 0.15), transparent 65%)',
-                        filter: 'blur(16px)',
-                        animation: 'validation-beam 3s ease-in-out infinite',
+                        background: 'radial-gradient(ellipse at center, hsl(35 50% 50% / 0.12), transparent 60%)',
+                        filter: 'blur(12px)',
+                        animation: 'validation-breathing 2.5s ease-in-out infinite',
                       }}
                     />
                     
-                    {/* Main validation title */}
+                    {/* Single-line validation message */}
                     <p 
-                      className="relative font-semibold leading-snug"
+                      className="relative font-medium leading-snug"
                       style={{
                         fontSize: 'var(--text-sm)',
-                        color: 'hsl(35 70% 75%)',
-                        textShadow: '0 0 20px hsl(35 55% 50% / 0.35)',
-                        letterSpacing: '0.02em',
+                        color: 'hsl(35 60% 72%)',
+                        textShadow: '0 0 16px hsl(35 50% 50% / 0.3)',
+                        letterSpacing: '0.015em',
+                        animation: 'validation-text-breathing 2.5s ease-in-out infinite',
                       }}
                     >
                       {t('form.validationTitle')}
-                    </p>
-                    
-                    {/* Subline guidance */}
-                    <p 
-                      className="relative mt-1"
-                      style={{
-                        fontSize: 'var(--text-xs)',
-                        color: 'hsl(35 55% 65% / 0.9)',
-                        letterSpacing: '0.01em',
-                      }}
-                    >
-                      {t('form.validationSubline')}
-                    </p>
-                    
-                    {/* Micro-hint */}
-                    <p 
-                      className="relative mt-1.5"
-                      style={{
-                        fontSize: '0.68rem',
-                        color: 'hsl(35 40% 55% / 0.65)',
-                        letterSpacing: '0.01em',
-                      }}
-                    >
-                      {t('form.validationHint')}
                     </p>
                   </div>
                 </div>
