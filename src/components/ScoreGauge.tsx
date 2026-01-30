@@ -939,9 +939,31 @@ export const ScoreGauge = ({
                 }}
               />
               
-              {/* Activation particle burst - triggers when transitioning to valid */}
+              {/* Activation effects - ring pulse + particle burst */}
               {showActivationParticles && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  {/* Expanding ring pulse */}
+                  <div
+                    className="absolute rounded-full"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: '2px solid hsl(174 60% 55% / 0.6)',
+                      boxShadow: '0 0 12px hsl(174 55% 50% / 0.4), inset 0 0 8px hsl(174 50% 45% / 0.2)',
+                      animation: 'cta-ring-expand 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    }}
+                  />
+                  {/* Secondary delayed ring */}
+                  <div
+                    className="absolute rounded-full"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: '1px solid hsl(174 55% 50% / 0.4)',
+                      animation: 'cta-ring-expand 700ms cubic-bezier(0.16, 1, 0.3, 1) 100ms forwards',
+                    }}
+                  />
+                  {/* Particle burst */}
                   {[...Array(8)].map((_, i) => {
                     const angle = (i / 8) * 360;
                     const delay = i * 30;
