@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef, memo } from 'react';
-import earthBg from '@/assets/earth-cosmic-bg.jpg';
+import { useEffect, useState, memo, useMemo } from 'react';
+import earthBgHQ from '@/assets/earth-cosmic-bg-hq.jpg';
 
 interface AnimatedEarthBackgroundProps {
   isAnalyzing: boolean;
@@ -8,11 +8,16 @@ interface AnimatedEarthBackgroundProps {
 }
 
 /**
- * Premium animated Earth globe background with:
- * - Idle state: Ultra-slow rotation (~90s per cycle)
- * - Analyze state: Faster rotation + radar sweep + grid overlay
+ * Pro Premium MAX Earth Globe Background
+ * 
+ * Features:
+ * - Cinematic "far camera" framing (smaller Earth, more space)
+ * - Premium atmospheric rim glow with teal/cyan palette
+ * - Idle: Ultra-slow rotation (~100s per cycle)
+ * - Analyze: 3-4x faster + radar sweep + grid + network arcs + particles
+ * - Smooth transitions between states
  * - Respects prefers-reduced-motion
- * - Pauses when tab is not visible
+ * - Pauses when tab is hidden
  */
 export const AnimatedEarthBackground = memo(({ 
   isAnalyzing, 
@@ -21,7 +26,7 @@ export const AnimatedEarthBackground = memo(({
 }: AnimatedEarthBackgroundProps) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [analyzeTransition, setAnalyzeTransition] = useState(false);
   
   // Detect reduced motion preference
   useEffect(() => {
@@ -40,71 +45,120 @@ export const AnimatedEarthBackground = memo(({
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
   
-  // Determine animation state
+  // Smooth transition for analyze state
+  useEffect(() => {
+    if (isAnalyzing) {
+      // Slight delay for smooth intensity ramp
+      const timer = setTimeout(() => setAnalyzeTransition(true), 100);
+      return () => clearTimeout(timer);
+    } else {
+      setAnalyzeTransition(false);
+    }
+  }, [isAnalyzing]);
+  
+  // Animation control
   const shouldAnimate = !prefersReducedMotion && isVisible;
-  const animationSpeed = isAnalyzing ? '25s' : '90s'; // Faster during analysis
+  const animationSpeed = isAnalyzing ? '28s' : '100s'; // ~100s idle, ~28s analyze (3.5x faster)
   
-  // Opacity based on state
-  const baseOpacity = hasContent && !isAnalyzing && !hasResults ? 0.72 : 0.80;
+  // Intensity levels
+  const globeOpacity = isAnalyzing ? 0.88 : (hasContent && !hasResults ? 0.75 : 0.82);
+  const glowIntensity = analyzeTransition ? 1.3 : 1;
   
+  // Generate star positions (memoized for performance)
+  const stars = useMemo(() => 
+    Array.from({ length: 40 }, (_, i) => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 0.5 + Math.random() * 1.5,
+      opacity: 0.15 + Math.random() * 0.4,
+      delay: Math.random() * 4,
+      duration: 3 + Math.random() * 3,
+    }))
+  , []);
+  
+  // Particle positions for analyze state
+  const particles = useMemo(() =>
+    Array.from({ length: 12 }, (_, i) => ({
+      x: 15 + (i * 7) % 70,
+      y: 20 + (i * 11) % 45,
+      size: 2 + (i % 3),
+      delay: i * 0.15,
+      duration: 2.2 + (i % 4) * 0.4,
+      isTeal: i % 2 === 0,
+    }))
+  , []);
+
   return (
     <div 
-      ref={containerRef}
       className="pointer-events-none fixed inset-0 overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* Deep space gradient base */}
+      {/* ========== DEEP SPACE BASE ========== */}
       <div 
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(ellipse 120% 100% at 50% 30%, hsl(220 40% 8%) 0%, hsl(240 30% 4%) 70%, hsl(260 25% 3%) 100%)',
-        }}
-      />
-      
-      {/* Subtle star field */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-            radial-gradient(1px 1px at 20% 30%, hsl(0 0% 100% / 0.3) 0%, transparent 100%),
-            radial-gradient(1px 1px at 40% 70%, hsl(0 0% 100% / 0.25) 0%, transparent 100%),
-            radial-gradient(1px 1px at 80% 20%, hsl(0 0% 100% / 0.35) 0%, transparent 100%),
-            radial-gradient(1px 1px at 65% 85%, hsl(0 0% 100% / 0.2) 0%, transparent 100%),
-            radial-gradient(1px 1px at 10% 60%, hsl(0 0% 100% / 0.28) 0%, transparent 100%),
-            radial-gradient(1px 1px at 90% 50%, hsl(0 0% 100% / 0.22) 0%, transparent 100%)
+          background: `
+            radial-gradient(ellipse 140% 120% at 50% 20%, 
+              hsl(215 45% 7%) 0%, 
+              hsl(230 35% 5%) 40%, 
+              hsl(245 30% 4%) 70%, 
+              hsl(260 25% 3%) 100%
+            )
           `,
-          opacity: 0.8,
         }}
       />
       
-      {/* Main Earth globe with rotation */}
+      {/* ========== PREMIUM STAR FIELD ========== */}
+      <div className="absolute inset-0">
+        {stars.map((star, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              background: 'hsl(0 0% 100%)',
+              opacity: star.opacity,
+              animation: shouldAnimate 
+                ? `star-twinkle ${star.duration}s ease-in-out infinite`
+                : 'none',
+              animationDelay: `${star.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* ========== EARTH GLOBE (CINEMATIC FAR FRAME) ========== */}
       <div 
         className="absolute transition-all duration-700 ease-out"
         style={{
-          top: '25%',
+          // Positioned higher and smaller for "global overview" feel
+          top: '15%',
           left: '50%',
-          width: '140vmax',
-          height: '140vmax',
-          transform: 'translate(-50%, -30%)',
-          opacity: baseOpacity,
-          filter: hasContent && !isAnalyzing && !hasResults ? 'brightness(0.94)' : 'brightness(1)',
+          width: '95vmax',  // Smaller = more cinematic, global feel
+          height: '95vmax',
+          transform: 'translate(-50%, -20%)',
+          opacity: globeOpacity,
+          filter: `brightness(${hasContent && !isAnalyzing && !hasResults ? 0.92 : 1}) contrast(1.05)`,
         }}
       >
-        {/* Globe container with horizontal pan animation */}
+        {/* Globe surface with horizontal pan */}
         <div
           className="relative w-full h-full rounded-full overflow-hidden"
           style={{
-            willChange: shouldAnimate ? 'auto' : 'auto',
+            boxShadow: `
+              inset -30px -20px 60px hsl(220 40% 3% / 0.7),
+              inset 20px 15px 40px hsl(200 30% 20% / 0.15)
+            `,
           }}
         >
-          {/* Earth image - tripled width for seamless loop, starts on Europe */}
           <div 
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${earthBg})`,
+              backgroundImage: `url(${earthBgHQ})`,
               backgroundSize: '300% 100%',
-              // Start position: Europe centered (roughly 33% from left on a 300% wide image)
-              // Animation moves background RIGHT → continents drift LEFT on screen
               backgroundPosition: shouldAnimate ? undefined : '33% center',
               backgroundRepeat: 'repeat-x',
               animation: shouldAnimate 
@@ -115,183 +169,250 @@ export const AnimatedEarthBackground = memo(({
           />
         </div>
         
-        {/* Atmosphere glow - teal/cyan rim */}
+        {/* Multi-layer atmospheric rim glow */}
+        <div 
+          className="absolute inset-0 rounded-full pointer-events-none transition-all duration-500"
+          style={{
+            background: `
+              radial-gradient(circle at 25% 25%, 
+                transparent 40%, 
+                hsl(174 55% 50% / ${0.06 * glowIntensity}) 50%, 
+                hsl(174 65% 45% / ${0.12 * glowIntensity}) 60%, 
+                hsl(190 55% 40% / ${0.08 * glowIntensity}) 75%, 
+                transparent 100%
+              )
+            `,
+            boxShadow: isAnalyzing 
+              ? `
+                inset 0 0 100px hsl(174 60% 50% / 0.15),
+                0 0 80px hsl(174 55% 48% / 0.3),
+                0 0 150px hsl(174 50% 45% / 0.2),
+                0 0 250px hsl(190 45% 40% / 0.12)
+              `
+              : `
+                inset 0 0 70px hsl(174 55% 50% / 0.1),
+                0 0 50px hsl(174 50% 45% / 0.18),
+                0 0 100px hsl(190 45% 40% / 0.1),
+                0 0 180px hsl(200 40% 35% / 0.06)
+              `,
+          }}
+        />
+        
+        {/* Subtle fresnel rim light (edge highlight) */}
         <div 
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle at 30% 30%, transparent 45%, hsl(174 60% 50% / 0.08) 55%, hsl(174 70% 45% / 0.15) 65%, hsl(200 60% 40% / 0.1) 80%, transparent 100%)',
-            boxShadow: isAnalyzing 
-              ? 'inset 0 0 80px hsl(174 60% 50% / 0.2), 0 0 120px hsl(174 55% 45% / 0.25), 0 0 200px hsl(200 50% 40% / 0.15)'
-              : 'inset 0 0 60px hsl(174 60% 50% / 0.12), 0 0 80px hsl(174 55% 45% / 0.15), 0 0 150px hsl(200 50% 40% / 0.08)',
-            transition: 'box-shadow 0.5s ease-out',
+            background: 'radial-gradient(circle at 70% 30%, transparent 60%, hsl(200 50% 70% / 0.06) 75%, hsl(200 40% 60% / 0.1) 90%, transparent 100%)',
           }}
         />
       </div>
       
-      {/* === ANALYZE STATE OVERLAYS === */}
-      {isAnalyzing && shouldAnimate && (
-        <>
-          {/* Radar sweep arc */}
-          <div 
-            className="absolute pointer-events-none"
+      {/* ========== ANALYZE STATE: WORLD SEARCH OVERLAYS ========== */}
+      <div 
+        className="absolute inset-0 pointer-events-none transition-opacity duration-500"
+        style={{ opacity: analyzeTransition && shouldAnimate ? 1 : 0 }}
+      >
+        {/* Primary radar sweep */}
+        <div 
+          className="absolute"
+          style={{
+            top: '12%',
+            left: '50%',
+            width: '70vmax',
+            height: '70vmax',
+            transform: 'translate(-50%, -15%)',
+            borderRadius: '50%',
+            background: `conic-gradient(
+              from 0deg, 
+              transparent 0%, 
+              transparent 82%, 
+              hsl(174 65% 50% / 0.12) 88%, 
+              hsl(174 75% 55% / 0.22) 94%, 
+              hsl(174 80% 58% / 0.08) 98%, 
+              transparent 100%
+            )`,
+            animation: isAnalyzing && shouldAnimate ? 'radar-sweep 4s linear infinite' : 'none',
+          }}
+        />
+        
+        {/* Secondary sweep (counter-rotate, subtle) */}
+        <div 
+          className="absolute"
+          style={{
+            top: '14%',
+            left: '50%',
+            width: '65vmax',
+            height: '65vmax',
+            transform: 'translate(-50%, -15%)',
+            borderRadius: '50%',
+            background: `conic-gradient(
+              from 180deg, 
+              transparent 0%, 
+              transparent 86%, 
+              hsl(200 55% 50% / 0.08) 92%, 
+              hsl(200 65% 55% / 0.14) 97%, 
+              transparent 100%
+            )`,
+            animation: isAnalyzing && shouldAnimate ? 'radar-sweep-reverse 5.5s linear infinite' : 'none',
+            opacity: 0.6,
+          }}
+        />
+        
+        {/* Latitude/longitude grid overlay */}
+        <div 
+          className="absolute"
+          style={{
+            top: '12%',
+            left: '50%',
+            width: '75vmax',
+            height: '75vmax',
+            transform: 'translate(-50%, -15%)',
+            borderRadius: '50%',
+            backgroundImage: `
+              linear-gradient(0deg, hsl(174 45% 55% / 0.025) 1px, transparent 1px),
+              linear-gradient(90deg, hsl(174 45% 55% / 0.025) 1px, transparent 1px)
+            `,
+            backgroundSize: '6% 6%',
+            animation: isAnalyzing && shouldAnimate ? 'grid-pulse 2.5s ease-in-out infinite' : 'none',
+            maskImage: 'radial-gradient(circle, white 40%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(circle, white 40%, transparent 70%)',
+          }}
+        />
+        
+        {/* Network intelligence arcs */}
+        <svg 
+          className="absolute"
+          style={{
+            top: '8%',
+            left: '50%',
+            width: '60vmax',
+            height: '60vmax',
+            transform: 'translate(-50%, -10%)',
+          }}
+          viewBox="0 0 100 100"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {/* Arc 1: Long intercontinental */}
+          <path
+            d="M 18 52 Q 50 12 82 48"
+            fill="none"
+            stroke="hsl(174 70% 55%)"
+            strokeWidth="0.35"
+            strokeLinecap="round"
+            strokeDasharray="2 4"
             style={{
-              top: '20%',
-              left: '50%',
-              width: '80vmax',
-              height: '80vmax',
-              transform: 'translate(-50%, -25%)',
-              borderRadius: '50%',
-              background: 'conic-gradient(from 0deg, transparent 0%, transparent 85%, hsl(174 70% 50% / 0.15) 92%, hsl(174 80% 55% / 0.25) 97%, transparent 100%)',
-              animation: 'radar-sweep 3s linear infinite',
-              opacity: 0.7,
+              animation: isAnalyzing && shouldAnimate ? 'arc-fade 3s ease-in-out infinite' : 'none',
             }}
           />
-          
-          {/* Secondary radar sweep (counter-rotate) */}
-          <div 
-            className="absolute pointer-events-none"
+          {/* Arc 2: Medium route */}
+          <path
+            d="M 28 68 Q 52 38 78 62"
+            fill="none"
+            stroke="hsl(200 60% 55%)"
+            strokeWidth="0.28"
+            strokeLinecap="round"
+            strokeDasharray="1.5 3"
             style={{
-              top: '22%',
-              left: '50%',
-              width: '75vmax',
-              height: '75vmax',
-              transform: 'translate(-50%, -25%)',
-              borderRadius: '50%',
-              background: 'conic-gradient(from 180deg, transparent 0%, transparent 88%, hsl(200 60% 50% / 0.1) 94%, hsl(200 70% 55% / 0.18) 98%, transparent 100%)',
-              animation: 'radar-sweep-reverse 4.5s linear infinite',
-              opacity: 0.5,
-            }}
-          />
-          
-          {/* World grid overlay */}
-          <div 
-            className="absolute pointer-events-none"
-            style={{
-              top: '20%',
-              left: '50%',
-              width: '90vmax',
-              height: '90vmax',
-              transform: 'translate(-50%, -25%)',
-              borderRadius: '50%',
-              backgroundImage: `
-                linear-gradient(0deg, hsl(174 50% 50% / 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, hsl(174 50% 50% / 0.03) 1px, transparent 1px)
-              `,
-              backgroundSize: '8% 8%',
-              animation: 'grid-pulse 2s ease-in-out infinite',
-              opacity: 0.6,
-            }}
-          />
-          
-          {/* Network route arcs */}
-          <svg 
-            className="absolute pointer-events-none"
-            style={{
-              top: '15%',
-              left: '50%',
-              width: '70vmax',
-              height: '70vmax',
-              transform: 'translate(-50%, -20%)',
-              opacity: 0.4,
-            }}
-            viewBox="0 0 100 100"
-            preserveAspectRatio="xMidYMid meet"
-          >
-            {/* Arc 1 */}
-            <path
-              d="M 20 50 Q 50 15 80 50"
-              fill="none"
-              stroke="hsl(174 70% 55%)"
-              strokeWidth="0.3"
-              strokeLinecap="round"
-              style={{
-                animation: 'arc-fade 2.5s ease-in-out infinite',
-                animationDelay: '0s',
-              }}
-            />
-            {/* Arc 2 */}
-            <path
-              d="M 30 70 Q 50 40 75 65"
-              fill="none"
-              stroke="hsl(200 60% 55%)"
-              strokeWidth="0.25"
-              strokeLinecap="round"
-              style={{
-                animation: 'arc-fade 3s ease-in-out infinite',
-                animationDelay: '0.8s',
-              }}
-            />
-            {/* Arc 3 */}
-            <path
-              d="M 15 40 Q 45 25 60 45"
-              fill="none"
-              stroke="hsl(174 60% 50%)"
-              strokeWidth="0.2"
-              strokeLinecap="round"
-              style={{
-                animation: 'arc-fade 2.8s ease-in-out infinite',
-                animationDelay: '1.5s',
-              }}
-            />
-          </svg>
-          
-          {/* Floating scan particles */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                  width: '3px',
-                  height: '3px',
-                  background: i % 2 === 0 ? 'hsl(174 70% 60%)' : 'hsl(200 60% 55%)',
-                  boxShadow: `0 0 6px ${i % 2 === 0 ? 'hsl(174 70% 55%)' : 'hsl(200 60% 50%)'}`,
-                  top: `${25 + (i * 7) % 40}%`,
-                  left: `${20 + (i * 11) % 60}%`,
-                  animation: `particle-float ${2.5 + (i * 0.3)}s ease-in-out infinite`,
-                  animationDelay: `${i * 0.2}s`,
-                  opacity: 0.6,
-                }}
-              />
-            ))}
-          </div>
-          
-          {/* Scanning pulse rings */}
-          <div 
-            className="absolute pointer-events-none"
-            style={{
-              top: '35%',
-              left: '50%',
-              width: '50vmax',
-              height: '50vmax',
-              transform: 'translate(-50%, -30%)',
-              borderRadius: '50%',
-              border: '1px solid hsl(174 60% 50% / 0.2)',
-              animation: 'scan-ring 2s ease-out infinite',
-            }}
-          />
-          <div 
-            className="absolute pointer-events-none"
-            style={{
-              top: '35%',
-              left: '50%',
-              width: '50vmax',
-              height: '50vmax',
-              transform: 'translate(-50%, -30%)',
-              borderRadius: '50%',
-              border: '1px solid hsl(200 50% 50% / 0.15)',
-              animation: 'scan-ring 2s ease-out infinite',
+              animation: isAnalyzing && shouldAnimate ? 'arc-fade 3.5s ease-in-out infinite' : 'none',
               animationDelay: '1s',
             }}
           />
-        </>
-      )}
+          {/* Arc 3: Short regional */}
+          <path
+            d="M 22 38 Q 40 22 58 42"
+            fill="none"
+            stroke="hsl(174 55% 52%)"
+            strokeWidth="0.22"
+            strokeLinecap="round"
+            strokeDasharray="1 2"
+            style={{
+              animation: isAnalyzing && shouldAnimate ? 'arc-fade 2.8s ease-in-out infinite' : 'none',
+              animationDelay: '1.8s',
+            }}
+          />
+          
+          {/* Node points at arc endpoints */}
+          <circle cx="18" cy="52" r="1" fill="hsl(174 70% 60%)" opacity="0.5" />
+          <circle cx="82" cy="48" r="1" fill="hsl(174 70% 60%)" opacity="0.5" />
+          <circle cx="28" cy="68" r="0.8" fill="hsl(200 60% 58%)" opacity="0.4" />
+          <circle cx="78" cy="62" r="0.8" fill="hsl(200 60% 58%)" opacity="0.4" />
+        </svg>
+        
+        {/* Floating scan particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {particles.map((p, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                background: p.isTeal ? 'hsl(174 70% 60%)' : 'hsl(200 60% 58%)',
+                boxShadow: `0 0 ${p.size * 2}px ${p.isTeal ? 'hsl(174 65% 55%)' : 'hsl(200 55% 52%)'}`,
+                top: `${p.y}%`,
+                left: `${p.x}%`,
+                animation: isAnalyzing && shouldAnimate 
+                  ? `particle-float ${p.duration}s ease-in-out infinite` 
+                  : 'none',
+                animationDelay: `${p.delay}s`,
+                opacity: 0.5,
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Expanding scan pulse rings */}
+        <div 
+          className="absolute"
+          style={{
+            top: '25%',
+            left: '50%',
+            width: '40vmax',
+            height: '40vmax',
+            transform: 'translate(-50%, -15%)',
+            borderRadius: '50%',
+            border: '1px solid hsl(174 55% 50% / 0.18)',
+            animation: isAnalyzing && shouldAnimate ? 'scan-ring 2.5s ease-out infinite' : 'none',
+          }}
+        />
+        <div 
+          className="absolute"
+          style={{
+            top: '25%',
+            left: '50%',
+            width: '40vmax',
+            height: '40vmax',
+            transform: 'translate(-50%, -15%)',
+            borderRadius: '50%',
+            border: '1px solid hsl(200 50% 52% / 0.12)',
+            animation: isAnalyzing && shouldAnimate ? 'scan-ring 2.5s ease-out infinite' : 'none',
+            animationDelay: '1.25s',
+          }}
+        />
+      </div>
       
-      {/* Vignette overlay - always present for depth */}
+      {/* ========== CINEMATIC OVERLAYS ========== */}
+      
+      {/* Premium multi-stop vignette */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 100% 80% at 50% 30%, transparent 30%, hsl(240 30% 5% / 0.4) 70%, hsl(240 30% 4% / 0.8) 100%)',
+          background: `
+            radial-gradient(ellipse 110% 90% at 50% 25%, 
+              transparent 25%, 
+              hsl(235 30% 6% / 0.25) 50%, 
+              hsl(240 30% 5% / 0.55) 70%, 
+              hsl(245 28% 4% / 0.85) 100%
+            )
+          `,
+        }}
+      />
+      
+      {/* Filmic contrast overlay (very subtle) */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, hsl(220 30% 8% / 0.15) 0%, transparent 30%, transparent 70%, hsl(240 25% 5% / 0.25) 100%)',
         }}
       />
       
@@ -299,17 +420,24 @@ export const AnimatedEarthBackground = memo(({
       <div 
         className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
-          height: '40%',
-          background: 'linear-gradient(to top, hsl(240 30% 5% / 0.9) 0%, hsl(240 30% 5% / 0.5) 40%, transparent 100%)',
+          height: '50%',
+          background: `linear-gradient(to top, 
+            hsl(240 30% 5% / 0.95) 0%, 
+            hsl(240 30% 5% / 0.7) 25%,
+            hsl(240 30% 5% / 0.35) 50%, 
+            transparent 100%
+          )`,
         }}
       />
       
-      {/* Content blur layer - subtle depth behind panels */}
+      {/* Content area subtle blur/dim (behind text panels) */}
       <div 
-        className="absolute inset-0 pointer-events-none transition-opacity duration-500"
+        className="absolute inset-0 pointer-events-none transition-opacity duration-700"
         style={{
-          backdropFilter: hasResults ? 'blur(2px)' : 'none',
-          opacity: hasResults ? 0.3 : 0,
+          background: hasResults 
+            ? 'radial-gradient(ellipse 80% 60% at 50% 50%, hsl(235 30% 6% / 0.3) 0%, transparent 70%)'
+            : 'none',
+          opacity: hasResults ? 1 : 0,
         }}
       />
     </div>
