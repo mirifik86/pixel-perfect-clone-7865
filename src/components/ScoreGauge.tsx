@@ -935,6 +935,30 @@ export const ScoreGauge = ({
         >
           {/* Rotating Globe - always visible behind other content */}
           <RotatingGlobe size={size} isAnalyzing={isLoading} />
+          
+          {/* ========== POWERED BY IA11 SIGNATURE - Premium subtle branding ========== */}
+          <div 
+            className="absolute pointer-events-none select-none"
+            style={{
+              bottom: size * 0.18,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1,
+            }}
+          >
+            <span
+              className="uppercase font-medium"
+              style={{
+                fontSize: 'clamp(0.5rem, 1.4vw, 0.6rem)',
+                letterSpacing: '0.18em',
+                color: 'hsl(200 20% 52%)',
+                textShadow: '0 0 8px hsl(200 30% 20% / 0.5)',
+                opacity: 0.7,
+              }}
+            >
+              Powered by IA11
+            </span>
+          </div>
           {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT with morph reveal */}
           {uiState === 'result' && (
             <div 
