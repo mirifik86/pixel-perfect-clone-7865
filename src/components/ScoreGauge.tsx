@@ -876,27 +876,40 @@ export const ScoreGauge = ({
             
             return (
               <g key={`mid-divider-${i}`}>
-                {/* Subtle glow */}
+                {/* Outer subtle glow */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 40% 65% / 0.18)"
-                  strokeWidth={3}
+                  stroke="hsl(180 45% 68% / 0.25)"
+                  strokeWidth={4}
                   strokeLinecap="round"
                   style={{
-                    filter: 'blur(1.5px)',
+                    filter: 'blur(1.8px)',
                   }}
                 />
-                {/* Subtle mid-segment line */}
+                {/* Mid glow layer */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(185 45% 75% / 0.35)"
-                  strokeWidth={1.2}
+                  stroke="hsl(185 48% 78% / 0.4)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  style={{
+                    filter: 'blur(0.5px)',
+                  }}
+                />
+                {/* Core mid-segment line */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(185 50% 82% / 0.5)"
+                  strokeWidth={1}
                   strokeLinecap="round"
                 />
               </g>
