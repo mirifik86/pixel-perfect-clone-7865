@@ -2,22 +2,22 @@ import { memo, useMemo } from 'react';
 import earthSunriseBg from '@/assets/earth-sunrise-space.jpg';
 
 /**
- * Premium Space Background - Layered Cinematic Composition
+ * Premium Space Background - Earth from Space with Sunrise
  * 
- * Layer 1: Dark cinematic Earth-from-space sunrise (blurred, dimmed)
- * Layer 2: Dark overlay to ensure center globe dominance
- * Layer 3: Subtle static stars for depth
+ * Layer 1: Cinematic Earth-from-space with sun (blurred, dimmed)
+ * Layer 2: Dark overlays for center globe dominance
+ * Layer 3: Subtle static stars for cosmic depth
  * 
- * Performance optimized for mobile devices
+ * The background creates atmosphere while the center globe remains the focus
  */
 export const StarfieldBackground = memo(() => {
   // Generate subtle static star positions
   const stars = useMemo(() => 
-    Array.from({ length: 25 }, (_, i) => ({
+    Array.from({ length: 30 }, (_, i) => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: 0.4 + Math.random() * 0.6, // Very small: 0.4-1px
-      opacity: 0.1 + Math.random() * 0.15, // Very dim: 0.1-0.25
+      size: 0.3 + Math.random() * 0.7, // Very small: 0.3-1px
+      opacity: 0.08 + Math.random() * 0.12, // Very dim: 0.08-0.2
     }))
   , []);
   
@@ -26,62 +26,64 @@ export const StarfieldBackground = memo(() => {
       className="fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* ========== LAYER 1: Cinematic Earth-from-space sunrise ========== */}
+      {/* ========== LAYER 1: Earth from space with sunrise ========== */}
       <div 
         className="absolute inset-0"
         style={{
           backgroundImage: `url(${earthSunriseBg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 60%',
+          backgroundPosition: 'center 55%',
           backgroundRepeat: 'no-repeat',
-          // Strongly reduced brightness and contrast, soft blur
-          filter: 'blur(3px) brightness(0.25) contrast(0.7) saturate(0.6)',
-          transform: 'scale(1.05)', // Prevent blur edge artifacts
+          // Strongly reduced - atmospheric background only
+          filter: 'blur(4px) brightness(0.2) contrast(0.65) saturate(0.5)',
+          transform: 'scale(1.08)', // Prevent blur edge artifacts
         }}
       />
       
-      {/* ========== LAYER 2: Dark overlay for center dominance ========== */}
+      {/* ========== LAYER 2: Dark center vignette ========== */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 50% 50% at 50% 45%, 
-              hsl(220 30% 4% / 0.7) 0%,
-              hsl(220 25% 3% / 0.85) 50%,
-              hsl(220 20% 2% / 0.92) 100%
+            radial-gradient(ellipse 45% 45% at 50% 42%, 
+              hsl(220 35% 3% / 0.85) 0%,
+              hsl(220 30% 4% / 0.7) 40%,
+              hsl(225 25% 5% / 0.5) 70%,
+              transparent 100%
             )
           `,
         }}
       />
       
-      {/* Deep space vignette for depth */}
+      {/* Deep space vignette edges */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 120% 100% at 50% 50%, 
-              transparent 30%,
-              hsl(225 30% 3% / 0.6) 70%,
-              hsl(230 35% 2%) 100%
+            radial-gradient(ellipse 130% 110% at 50% 50%, 
+              transparent 25%,
+              hsl(225 35% 4% / 0.5) 60%,
+              hsl(230 40% 3%) 100%
             )
           `,
         }}
       />
       
-      {/* Subtle sunrise glow hint at bottom */}
+      {/* Subtle sunrise glow at bottom (from background image sun) */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 80% 30% at 50% 100%, 
-              hsl(200 40% 15% / 0.08) 0%,
-              transparent 60%
+            radial-gradient(ellipse 100% 40% at 50% 110%, 
+              hsl(35 50% 25% / 0.06) 0%,
+              hsl(200 40% 20% / 0.04) 40%,
+              transparent 70%
             )
           `,
         }}
       />
       
-      {/* ========== LAYER 3: Subtle static stars ========== */}
+      {/* ========== LAYER 3: Subtle cosmic stars ========== */}
       {stars.map((star, i) => (
         <div
           key={i}
@@ -91,7 +93,7 @@ export const StarfieldBackground = memo(() => {
             top: `${star.y}%`,
             width: `${star.size}px`,
             height: `${star.size}px`,
-            background: 'hsl(210 20% 80%)',
+            background: 'hsl(210 25% 85%)',
             opacity: star.opacity,
           }}
         />
@@ -99,5 +101,7 @@ export const StarfieldBackground = memo(() => {
     </div>
   );
 });
+
+StarfieldBackground.displayName = 'StarfieldBackground';
 
 StarfieldBackground.displayName = 'StarfieldBackground';
