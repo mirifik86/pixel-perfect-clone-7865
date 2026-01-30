@@ -818,6 +818,35 @@ export const ScoreGauge = ({
           )}
         </svg>
 
+        {/* ========== PREMIUM SEPARATOR RING - Floating instrument effect ========== */}
+        {/* Thin inner separator between gauge ring and globe */}
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            // Position just inside the gauge ring with a small gap
+            inset: strokeWidth + 4, // 4px gap between gauge ring and separator
+            border: '1.5px solid hsl(180 40% 75% / 0.18)',
+            boxShadow: `
+              0 0 3px hsl(180 45% 70% / 0.12),
+              inset 0 0 8px hsl(220 30% 8% / 0.25)
+            `,
+            filter: 'blur(0.3px)',
+          }}
+        />
+        
+        {/* Inner vignette shadow for depth at globe edge */}
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            inset: strokeWidth + 6,
+            background: 'transparent',
+            boxShadow: `
+              inset 0 0 15px hsl(220 35% 6% / 0.35),
+              inset 0 0 25px hsl(220 30% 4% / 0.2)
+            `,
+          }}
+        />
+
         {/* ========== CENTER CONTENT - The single source of action ========== */}
         <div 
           className="absolute inset-0 flex items-center justify-center"
