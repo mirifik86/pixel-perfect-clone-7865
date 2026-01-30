@@ -791,8 +791,9 @@ export const ScoreGauge = ({
           })}
           
           {/* MICRO-DIVIDERS between segments - premium instrument-grade separation */}
-          {[0, 1, 2, 3, 4].map((i) => {
-            // Divider at the START of each segment (creates 5 dividers including between last and first arc endpoints)
+          {/* 6 dividers: 5 at segment starts + 1 at end of last segment */}
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            // Divider positions: 0-4 at segment starts, 5 at end of arc
             const dividerAngle = 135 + i * 54; // 54 = 270/5 degrees per segment
             const dividerRad = dividerAngle * (Math.PI / 180);
             
