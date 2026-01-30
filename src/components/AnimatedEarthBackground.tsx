@@ -127,7 +127,7 @@ export const AnimatedEarthBackground = memo(({
             bottom: '-20%',
             backgroundImage: `url(${earthBgHQ})`,
             backgroundSize: '200% auto',
-            backgroundPosition: shouldAnimate ? undefined : '25% 40%',
+            backgroundPosition: shouldAnimate ? undefined : '25% 55%',
             backgroundRepeat: 'repeat-x',
             animation: shouldAnimate 
               ? `earth-pan-seamless ${animationSpeed} linear infinite` 
