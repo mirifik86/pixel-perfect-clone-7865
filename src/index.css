@@ -627,67 +627,67 @@
 }
 
 /* ============================================
-   GLOBE BACKGROUND KEYFRAMES
-   Centered full-circle rotating globe (no drift)
+   PRO PREMIUM MAX EARTH BACKGROUND KEYFRAMES
+   Full-bleed seamless animations
    ============================================ */
 
-/* Globe texture rotation - scrolls horizontally inside fixed circle */
-@keyframes globe-rotate-texture {
+/* Earth seamless horizontal pan - Europe starts visible, drifts LEFT */
+@keyframes earth-pan-seamless {
   0% {
-    background-position: 0% center;
+    background-position: 25% 40%;
   }
   100% {
-    background-position: 100% center;
+    background-position: 125% 40%;
   }
 }
 
-/* Star twinkle */
-@keyframes globe-star-twinkle {
+/* Star twinkle - subtle brightness pulse */
+@keyframes star-twinkle {
   0%, 100% {
-    opacity: 0.1;
+    opacity: 0.15;
     transform: scale(1);
   }
   50% {
-    opacity: 0.5;
-    transform: scale(1.06);
+    opacity: 0.6;
+    transform: scale(1.1);
   }
 }
 
-/* Radar sweep around globe */
-@keyframes globe-radar-sweep {
+/* Radar sweep - centered rotation */
+@keyframes radar-sweep-center {
   0% {
-    transform: rotate(0deg);
+    transform: translate(-50%, -50%) rotate(0deg);
   }
   100% {
-    transform: rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 
-/* Radar sweep reverse */
-@keyframes globe-radar-sweep-reverse {
+/* Radar sweep reverse - centered counter-clockwise */
+@keyframes radar-sweep-center-reverse {
   0% {
-    transform: rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
   }
   100% {
-    transform: rotate(0deg);
+    transform: translate(-50%, -50%) rotate(0deg);
   }
 }
 
-/* Grid pulse */
-@keyframes globe-grid-pulse {
+/* Grid pulse - gentle opacity breathing */
+@keyframes grid-pulse {
   0%, 100% {
-    opacity: 0.2;
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
   }
 }
 
-/* Network arc fade */
-@keyframes globe-arc-fade {
+/* Network arc fade with dash animation */
+@keyframes arc-fade {
   0%, 100% {
     opacity: 0.1;
-    stroke-dashoffset: 10;
+    stroke-dashoffset: 15;
   }
   50% {
     opacity: 0.6;
@@ -695,14 +695,34 @@
   }
 }
 
-/* Pulse ring expansion */
-@keyframes globe-pulse-ring {
+/* Floating particle - organic drift */
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px) scale(1.12);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-16px) translateX(-3px) scale(0.92);
+    opacity: 0.45;
+  }
+  75% {
+    transform: translateY(-6px) translateX(8px) scale(1.05);
+    opacity: 0.55;
+  }
+}
+
+/* Scanning ring expansion - centered */
+@keyframes scan-ring-center {
   0% {
-    transform: scale(1);
-    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.45;
   }
   100% {
-    transform: scale(2);
+    transform: translate(-50%, -50%) scale(1.7);
     opacity: 0;
   }
 }
