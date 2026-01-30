@@ -92,7 +92,7 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           }}
         />
         
-        {/* PRIMARY ROTATING EARTH TEXTURE - CRISP */}
+        {/* PRIMARY ROTATING EARTH TEXTURE - DAYLIGHT ENHANCED */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
@@ -101,7 +101,7 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
             backgroundPosition: '0% 50%',
             backgroundRepeat: 'repeat-x',
             animation: shouldAnimate ? `globe-rotate ${rotationSpeed} linear infinite` : 'none',
-            filter: 'saturate(1) brightness(0.95) contrast(1.08)', // Full saturation, crisp
+            filter: 'saturate(1.05) brightness(1.12) contrast(1.02)', // +15% brightness, lifted midtones
           }}
         />
         
@@ -123,16 +123,16 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           }}
         />
         
-        {/* TERMINATOR SHADOW - day/night for 3D depth */}
+        {/* TERMINATOR SHADOW - REDUCED for daylight feel */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: `linear-gradient(128deg, 
-              transparent 28%, 
-              hsl(240 40% 8% / 0.22) 45%,
-              hsl(240 45% 5% / 0.42) 60%,
-              hsl(245 50% 3% / 0.62) 78%,
-              hsl(250 55% 2% / 0.78) 100%
+              transparent 35%, 
+              hsl(240 35% 10% / 0.12) 50%,
+              hsl(240 40% 6% / 0.28) 65%,
+              hsl(245 45% 4% / 0.45) 82%,
+              hsl(250 50% 3% / 0.58) 100%
             )`,
           }}
         />
@@ -144,40 +144,58 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
             boxShadow: `
               inset 0 0 ${globeSize * 0.12}px hsl(190 65% 60% / 0.15),
               inset ${globeSize * 0.025}px ${globeSize * 0.02}px ${globeSize * 0.08}px hsl(180 60% 70% / 0.1),
-              inset -${globeSize * 0.07}px -${globeSize * 0.06}px ${globeSize * 0.14}px hsl(240 45% 4% / 0.55)
+              inset -${globeSize * 0.07}px -${globeSize * 0.06}px ${globeSize * 0.14}px hsl(240 45% 4% / 0.45)
             `,
           }}
         />
         
-        {/* Terminator edge glow (sunrise line) */}
+        {/* SUN RIM LIGHT - upper-right daylight edge */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `
+              radial-gradient(ellipse 45% 50% at 78% 18%, 
+                hsl(45 35% 95% / 0.18) 0%,
+                hsl(40 30% 90% / 0.08) 35%,
+                transparent 65%
+              ),
+              radial-gradient(ellipse 30% 35% at 85% 25%, 
+                hsl(50 25% 92% / 0.12) 0%,
+                transparent 50%
+              )
+            `,
+          }}
+        />
+        
+        {/* Terminator edge glow (sunrise line) - enhanced */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: `linear-gradient(122deg, 
-              transparent 40%,
-              hsl(30 60% 60% / 0.08) 48%,
-              hsl(25 55% 55% / 0.04) 54%,
-              transparent 62%
+              transparent 42%,
+              hsl(35 50% 65% / 0.1) 50%,
+              hsl(30 45% 60% / 0.06) 56%,
+              transparent 64%
             )`,
           }}
         />
       </div>
       
-      {/* ========== SUBTLE TEXT READABILITY OVERLAY ========== */}
+      {/* ========== SUBTLE TEXT READABILITY OVERLAY - REDUCED ========== */}
       <div 
         className="absolute rounded-full pointer-events-none"
         style={{
-          width: '75%',
-          height: '45%',
+          width: '70%',
+          height: '40%',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: `radial-gradient(ellipse 100% 100% at center, 
-            hsl(235 40% 6% / 0.55) 0%, 
-            hsl(235 35% 5% / 0.3) 60%,
+            hsl(235 35% 8% / 0.4) 0%, 
+            hsl(235 30% 6% / 0.2) 60%,
             transparent 100%
           )`,
-          filter: 'blur(8px)',
+          filter: 'blur(10px)',
           zIndex: 1,
         }}
       />
