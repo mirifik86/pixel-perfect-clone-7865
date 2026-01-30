@@ -677,7 +677,7 @@ const Index = () => {
   };
 
   // Premium gauge size - hero-level imposing presence (~14% larger)
-  const gaugeSize = isMobile ? 205 : 250;
+  const gaugeSize = isMobile ? 225 : 275; // Increased ~10% for visual signature
 
   return (
     <div 
@@ -864,22 +864,23 @@ const Index = () => {
             />
           )}
 
-          {/* Minimal separator between gauge and form */}
+          {/* Minimal pulsing dot indicator between gauge and form */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
               className="flex items-center justify-center"
               style={{ 
-                marginTop: 'var(--space-3)',
-                marginBottom: 'var(--space-3)',
-                height: '1px',
-                width: '60px',
+                marginTop: 'var(--space-2)',
+                marginBottom: 'var(--space-2)',
               }}
             >
               <div 
+                className="rounded-full"
                 style={{
-                  width: '100%',
-                  height: '1px',
-                  background: 'linear-gradient(90deg, transparent, hsl(174 50% 50% / 0.3), transparent)',
+                  width: '5px',
+                  height: '5px',
+                  background: 'hsl(174 60% 55% / 0.5)',
+                  boxShadow: '0 0 8px hsl(174 55% 55% / 0.4), 0 0 16px hsl(174 50% 50% / 0.2)',
+                  animation: 'indicator-pulse 2.5s ease-in-out infinite',
                 }}
               />
             </div>
@@ -889,7 +890,13 @@ const Index = () => {
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
               className="container-content w-full animate-fade-in"
-              style={{ animationDelay: '350ms', animationFillMode: 'both', marginTop: '0' }}
+              style={{ 
+                animationDelay: '350ms', 
+                animationFillMode: 'both', 
+                marginTop: '0',
+                transform: 'scale(0.96)', // Slightly scaled down to balance with larger globe
+                transformOrigin: 'top center',
+              }}
             >
               <UnifiedAnalysisForm 
                 ref={formRef}
