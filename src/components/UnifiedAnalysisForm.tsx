@@ -7,6 +7,7 @@ interface UnifiedAnalysisFormProps {
   onAnalyze: (input: string, image: { file: File; preview: string } | null) => void;
   isLoading: boolean;
   onContentChange?: (hasContent: boolean) => void;
+  onTypingStateChange?: (state: 'idle' | 'typing' | 'valid') => void; // New: typing feedback
   highlightInput?: boolean; // Triggered when chevrons complete a cycle (idle state)
   captureGlow?: boolean; // Triggered when idle→ready transfer starts
   validationMessage?: string | null; // Inline validation message to display
@@ -21,7 +22,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 
 export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, UnifiedAnalysisFormProps>(
-  ({ onAnalyze, isLoading, onContentChange, highlightInput, captureGlow, validationMessage, onClearValidation }, ref) => {
+  ({ onAnalyze, isLoading, onContentChange, onTypingStateChange, highlightInput, captureGlow, validationMessage, onClearValidation }, ref) => {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [attachedImage, setAttachedImage] = useState<{ file: File; preview: string } | null>(null);
@@ -54,6 +55,24 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
   const hasText = inputText.trim().length > 0;
   const hasContent = hasText || hasImage;
   const isActive = isDragOver;
+  
+  // Validation states for CTA button
+  const trimmedLength = inputText.trim().length;
+  const isTyping = trimmedLength >= 3 && trimmedLength < 8;
+  const isValidText = trimmedLength >= 8 || hasImage; // Valid if >= 8 chars OR has image
+  
+  // Notify parent about typing state changes
+  useEffect(() => {
+    if (!hasContent) {
+      onTypingStateChange?.('idle');
+    } else if (isValidText) {
+      onTypingStateChange?.('valid');
+    } else if (isTyping) {
+      onTypingStateChange?.('typing');
+    } else {
+      onTypingStateChange?.('idle');
+    }
+  }, [hasContent, isTyping, isValidText, onTypingStateChange]);
 
   // Expose submit method to parent via ref
   const triggerSubmit = useCallback(() => {
@@ -626,6 +645,87 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
         </div>
       </div>
       
+      {/* ========== PRIMARY CTA BUTTON - BELOW INPUT ========== */}
+      <div 
+        className="w-full flex flex-col items-center transition-all duration-300"
+        style={{ 
+          marginTop: 'var(--space-4)',
+          opacity: isValidText ? 1 : 0.4,
+          transform: isValidText ? 'translateY(0)' : 'translateY(4px)',
+        }}
+      >
+        {/* Helper line - only visible when valid */}
+        <div 
+          className="flex items-center justify-center transition-all duration-300"
+          style={{
+            marginBottom: 'var(--space-2)',
+            opacity: isValidText ? 1 : 0,
+            transform: isValidText ? 'translateY(0)' : 'translateY(-4px)',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'hsl(174 60% 65%)',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {t('form.inputDetected')} <span style={{ color: 'hsl(174 50% 55%)' }}>•</span> {t('form.readyToAnalyze')}
+          </span>
+        </div>
+        
+        {/* CTA Button with premium glow */}
+        <button
+          type="submit"
+          disabled={!isValidText || isLoading}
+          className="relative w-full rounded-full font-semibold uppercase tracking-wider transition-all duration-300 focus:outline-none"
+          style={{
+            maxWidth: '400px',
+            padding: 'var(--space-3) var(--space-6)',
+            fontSize: 'var(--text-sm)',
+            background: isValidText
+              ? 'linear-gradient(135deg, hsl(174 70% 42%) 0%, hsl(174 60% 38%) 100%)'
+              : 'linear-gradient(135deg, hsl(174 40% 30%) 0%, hsl(174 35% 25%) 100%)',
+            color: isValidText ? 'hsl(0 0% 100%)' : 'hsl(0 0% 100% / 0.5)',
+            border: isValidText 
+              ? '1.5px solid hsl(174 60% 55% / 0.5)'
+              : '1px solid hsl(174 40% 40% / 0.3)',
+            boxShadow: isValidText
+              ? '0 0 35px hsl(174 65% 50% / 0.35), 0 4px 16px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
+              : '0 2px 8px hsl(0 0% 0% / 0.2)',
+            cursor: isValidText && !isLoading ? 'pointer' : 'not-allowed',
+          }}
+          onMouseEnter={(e) => {
+            if (isValidText && !isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px) scale(1.02)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 50px hsl(174 70% 55% / 0.45), 0 8px 24px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.2)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (isValidText) {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0) scale(1)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 35px hsl(174 65% 50% / 0.35), 0 4px 16px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15)';
+            }
+          }}
+        >
+          {/* Ambient glow behind button when valid */}
+          {isValidText && (
+            <div 
+              className="absolute -inset-2 rounded-full pointer-events-none -z-10"
+              style={{
+                background: 'radial-gradient(ellipse at center, hsl(174 60% 50% / 0.2) 0%, transparent 70%)',
+                filter: 'blur(12px)',
+                animation: 'cta-breathing-glow 3s ease-in-out infinite',
+              }}
+            />
+          )}
+          
+          <span className="relative z-10">
+            {t('form.launchAnalysis')}
+          </span>
+        </button>
+      </div>
       {/* CSS for animations */}
       <style>{`
         @keyframes card-glow {
@@ -696,6 +796,17 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           50% { 
             opacity: 1;
             transform: scale(1.01);
+          }
+        }
+        /* CTA button breathing glow */
+        @keyframes cta-breathing-glow {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: scale(0.98);
+          }
+          50% { 
+            opacity: 1;
+            transform: scale(1.02);
           }
         }
       `}</style>

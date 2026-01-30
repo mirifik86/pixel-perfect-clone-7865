@@ -9,6 +9,7 @@ interface ScoreGaugeProps {
   size?: number;
   className?: string;
   hasContent?: boolean; // When true, shows ANALYZE button instead of READY status
+  typingState?: 'idle' | 'typing' | 'valid'; // Typing feedback state from form
   onAnalyze?: () => void; // Callback when ANALYZE button is clicked
   isLoading?: boolean; // Loading state for the button
   onChevronCycleComplete?: () => void; // Callback when chevron cascade completes (for input highlight)
@@ -34,6 +35,7 @@ export const ScoreGauge = ({
   size = 160,
   className,
   hasContent = false,
+  typingState = 'idle',
   onAnalyze,
   isLoading = false,
   onChevronCycleComplete,
@@ -350,7 +352,7 @@ export const ScoreGauge = ({
         </>
       )}
       
-      {/* ULTRA-PREMIUM SOFT RADIAL HALO - intensifies on hover for click affordance */}
+      {/* ULTRA-PREMIUM SOFT RADIAL HALO - intensifies based on typing state */}
       <div 
         className="absolute rounded-full pointer-events-none transition-all duration-300"
         style={{
@@ -363,13 +365,15 @@ export const ScoreGauge = ({
             ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')} 0%, ${getCurrentColor(animatedScore).replace(')', ' / 0.06)')} 40%, transparent 70%)`
             : isLoading
               ? 'radial-gradient(circle, hsl(174 75% 55% / 0.2) 0%, hsl(174 65% 50% / 0.08) 40%, transparent 70%)'
-              : hasContent
-                ? (isHovering || isFocused)
-                  ? 'radial-gradient(circle, hsl(174 85% 58% / 0.28) 0%, hsl(174 75% 52% / 0.12) 40%, transparent 70%)'
-                  : 'radial-gradient(circle, hsl(174 80% 55% / 0.18) 0%, hsl(174 70% 50% / 0.07) 40%, transparent 70%)'
-                : 'radial-gradient(circle, hsl(174 55% 50% / 0.1) 0%, hsl(200 45% 45% / 0.04) 40%, transparent 70%)',
+              : typingState === 'valid'
+                ? 'radial-gradient(circle, hsl(174 85% 58% / 0.25) 0%, hsl(174 75% 52% / 0.1) 40%, transparent 70%)'
+                : typingState === 'typing'
+                  ? 'radial-gradient(circle, hsl(174 70% 52% / 0.15) 0%, hsl(174 60% 48% / 0.06) 40%, transparent 70%)'
+                  : 'radial-gradient(circle, hsl(174 55% 50% / 0.1) 0%, hsl(200 45% 45% / 0.04) 40%, transparent 70%)',
           filter: 'blur(30px)',
-          animation: score === null ? 'idle-glow-pulse 4.5s ease-in-out infinite' : 'none',
+          animation: typingState === 'typing' || typingState === 'valid' 
+            ? 'idle-glow-pulse 3s ease-in-out infinite' 
+            : (score === null ? 'idle-glow-pulse 4.5s ease-in-out infinite' : 'none'),
         }}
       />
       
@@ -386,11 +390,11 @@ export const ScoreGauge = ({
             ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.22)')} 0%, transparent 65%)`
             : isLoading
               ? 'radial-gradient(circle, hsl(174 72% 52% / 0.22) 0%, hsl(174 62% 48% / 0.1) 45%, transparent 70%)'
-              : hasContent
-                ? (isHovering || isFocused)
-                  ? 'radial-gradient(circle, hsl(174 85% 58% / 0.32) 0%, hsl(174 72% 52% / 0.14) 45%, transparent 70%)'
-                  : 'radial-gradient(circle, hsl(174 78% 55% / 0.2) 0%, hsl(174 68% 50% / 0.08) 45%, transparent 70%)'
-                : 'radial-gradient(circle, hsl(174 50% 48% / 0.08) 0%, hsl(200 42% 42% / 0.03) 45%, transparent 70%)',
+              : typingState === 'valid'
+                ? 'radial-gradient(circle, hsl(174 85% 58% / 0.28) 0%, hsl(174 72% 52% / 0.12) 45%, transparent 70%)'
+                : typingState === 'typing'
+                  ? 'radial-gradient(circle, hsl(174 65% 52% / 0.15) 0%, hsl(174 55% 48% / 0.06) 45%, transparent 70%)'
+                  : 'radial-gradient(circle, hsl(174 50% 48% / 0.08) 0%, hsl(200 42% 42% / 0.03) 45%, transparent 70%)',
           filter: 'blur(15px)',
           animation: score === null 
             ? (isLoading ? 'analyzing-ambient-glow 3.5s ease-in-out infinite' : 'idle-glow-pulse 3.8s ease-in-out 200ms infinite') 

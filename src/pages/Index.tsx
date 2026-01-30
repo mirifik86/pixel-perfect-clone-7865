@@ -236,6 +236,7 @@ const Index = () => {
   const [screenshotData, setScreenshotData] = useState<ScreenshotAnalysisData | null>(null);
   const [isRerunning, setIsRerunning] = useState(false);
   const [hasFormContent, setHasFormContent] = useState(false);
+  const [typingState, setTypingState] = useState<'idle' | 'typing' | 'valid'>('idle');
   const [inputHighlight, setInputHighlight] = useState(false);
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
@@ -766,6 +767,7 @@ const Index = () => {
                   score={score} 
                   size={gaugeSize} 
                   hasContent={hasFormContent}
+                  typingState={typingState}
                   onAnalyze={handleGaugeAnalyze}
                   isLoading={isLoading && !isImageAnalysis}
                   onChevronCycleComplete={handleChevronCycleComplete}
@@ -892,6 +894,7 @@ const Index = () => {
                 onAnalyze={handleUnifiedAnalyze}
                 isLoading={isLoading} 
                 onContentChange={setHasFormContent}
+                onTypingStateChange={setTypingState}
                 highlightInput={inputHighlight}
                 captureGlow={inputCaptureGlow}
                 validationMessage={validationMessage}
