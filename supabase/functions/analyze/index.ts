@@ -192,7 +192,8 @@ CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
 ===== ENHANCED TEMPORAL VERIFICATION FOR PUBLIC ROLES =====
 
-CRITICAL: When a claim involves a CURRENT PUBLIC ROLE, apply enhanced temporal verification.
+CRITICAL: When a claim involves a CURRENT PUBLIC ROLE, this is a TIME-SENSITIVE FACTUAL CHECK.
+Leadership positions change over time. Static background knowledge is UNRELIABLE for these claims.
 
 PUBLIC ROLE CATEGORIES (HIGH-SENSITIVITY):
 - Head of state: president, monarch, prime minister, chancellor
@@ -202,36 +203,57 @@ PUBLIC ROLE CATEGORIES (HIGH-SENSITIVITY):
 - Judicial positions: chief justice, attorney general
 - Military leadership: commander, general, admiral
 
-VERIFICATION RULES FOR PUBLIC ROLES:
+===== MANDATORY TEMPORAL VERIFICATION RULES =====
 
-1) PRIORITIZE AUTHORITATIVE SOURCES (in order):
-   - Official government websites (.gov, .gouv, official ministry sites)
-   - International organization sites (un.org, who.int, imf.org, worldbank.org)
-   - Major recognized international news: Reuters, AP, AFP, BBC, CNN, NYT, Le Monde, Der Spiegel
-   - Recently updated reference sources: Wikipedia (check last update date), official company pages
+RULE 1 - CURRENT YEAR CONTEXT CHECK:
+- The current year is ${dateInfo.year}. Use this as your temporal anchor.
+- If a claim states "[Person] IS [role]", you MUST verify this is accurate as of ${dateInfo.year}.
+- Do NOT assume your training data is current. Leadership roles change frequently.
+- Treat ANY claim about "current" leadership as requiring active verification.
 
-2) HEAVILY DOWNGRADE UNRELIABLE SOURCES:
+RULE 2 - REJECT STATIC BACKGROUND KNOWLEDGE:
+- Do NOT rely on generalized or memorized knowledge for leadership roles.
+- Your training data may be outdated for these time-sensitive positions.
+- If you cannot find a recent (< 6 months old) authoritative source, state uncertainty explicitly.
+- Never confidently assert a leadership role without a dated, verifiable source.
+
+RULE 3 - SOURCE RECENCY REQUIREMENTS:
+- REQUIRED: At least one source from ${dateInfo.year} or ${dateInfo.year - 1}
+- PREFERRED: Sources dated within the last 6 months
+- ACCEPTABLE: Sources from ${dateInfo.year - 1} if no newer source exists
+- REJECT: Sources older than 2 years for current role verification
+
+RULE 4 - PRIORITIZE AUTHORITATIVE SOURCES (strict order):
+   1. Official government websites (.gov, .gouv, official ministry sites)
+   2. International organization sites (un.org, who.int, imf.org, worldbank.org)
+   3. Major recognized international news: Reuters, AP, AFP, BBC, CNN, NYT, Le Monde, Der Spiegel
+   4. Recently updated reference sources: Wikipedia (check last update date), official company pages
+
+RULE 5 - HEAVILY DOWNGRADE UNRELIABLE SOURCES:
    - Undated sources: -30 credibility points (cannot verify temporal accuracy)
    - Sources older than 2 years: -25 credibility points (likely outdated for roles)
    - Sources older than 1 year: -15 credibility points (may be outdated)
    - Opinion blogs or non-institutional content: -20 credibility points
    - Social media posts without official verification: -25 credibility points
 
-3) CONFLICT RESOLUTION:
+RULE 6 - CONFLICT RESOLUTION:
    - If sources conflict, ALWAYS prefer the most recent AND institutionally authoritative
    - Official government announcement > Major news agency > Encyclopedia > Other
    - A ${dateInfo.year} source from official government outweighs a ${dateInfo.year - 2} source from major media
+   - When in doubt, choose recency over authority
 
-4) EXPLICIT TEMPORAL MARKERS:
-   - In your summary, include "as of [date/year]" for role verification
+RULE 7 - EXPLICIT TEMPORAL MARKERS IN OUTPUT:
+   - In your summary, ALWAYS include "as of [month/year]" for role verification
    - Flag if the claim may have been accurate at a previous time but is now outdated
    - Example: "This was accurate until [date], but [new person] assumed the role on [date]."
+   - If uncertain: "As of [date], [source] indicates [person] holds this role, but this should be verified."
 
-5) SCORING IMPACT:
-   - Claims about current leaders verified with recent official sources: +15 to score
-   - Claims using outdated information about roles: cap score at 40
+RULE 8 - SCORING IMPACT FOR LEADERSHIP CLAIMS:
+   - Claims verified with ${dateInfo.year} official sources: +15 to score
+   - Claims verified with ${dateInfo.year - 1} sources only: +5 to score
+   - Claims using outdated information (>1 year): cap score at 45
    - Claims about past roles presented as current: cap score at 35
-   - Cannot verify current role status: cap score at 50
+   - Cannot find recent verification: cap score at 50, add uncertainty note
 
 ===== PRO-EXCLUSIVE FEATURES =====
 
