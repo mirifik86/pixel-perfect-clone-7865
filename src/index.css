@@ -631,7 +631,17 @@
    Full-bleed seamless animations
    ============================================ */
 
-/* Earth seamless horizontal pan - Europe starts visible, drifts LEFT */
+/* Globe axial rotation - surface texture pans horizontally inside fixed globe */
+@keyframes globe-axial-rotate {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+/* Legacy: Earth seamless horizontal pan (kept for compatibility) */
 @keyframes earth-pan-seamless {
   0% {
     background-position: 25% 40%;
