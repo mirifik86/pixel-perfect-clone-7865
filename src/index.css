@@ -627,12 +627,12 @@
 }
 
 /* ============================================
-   PRO PREMIUM MAX EARTH GLOBE KEYFRAMES
-   Centered axial rotation (no drift)
+   GLOBE BACKGROUND KEYFRAMES
+   Centered full-circle rotating globe (no drift)
    ============================================ */
 
-/* Globe texture scroll - simulates rotation inside fixed circle */
-@keyframes globe-texture-scroll {
+/* Globe texture rotation - scrolls horizontally inside fixed circle */
+@keyframes globe-rotate-texture {
   0% {
     background-position: 0% center;
   }
@@ -641,90 +641,68 @@
   }
 }
 
-/* Cloud layer scroll - slightly faster than surface */
-@keyframes globe-clouds-scroll {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 100% 0%;
-  }
-}
-
 /* Star twinkle */
-@keyframes star-twinkle {
+@keyframes globe-star-twinkle {
   0%, 100% {
-    opacity: 0.12;
+    opacity: 0.1;
     transform: scale(1);
   }
   50% {
-    opacity: 0.55;
-    transform: scale(1.08);
+    opacity: 0.5;
+    transform: scale(1.06);
   }
 }
 
 /* Radar sweep around globe */
-@keyframes radar-sweep-globe {
+@keyframes globe-radar-sweep {
   0% {
-    transform: translate(-50%, -55%) rotate(0deg);
+    transform: rotate(0deg);
   }
   100% {
-    transform: translate(-50%, -55%) rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
 /* Radar sweep reverse */
-@keyframes radar-sweep-globe-reverse {
+@keyframes globe-radar-sweep-reverse {
   0% {
-    transform: translate(-50%, -55%) rotate(360deg);
+    transform: rotate(360deg);
   }
   100% {
-    transform: translate(-50%, -55%) rotate(0deg);
+    transform: rotate(0deg);
   }
 }
 
 /* Grid pulse */
-@keyframes grid-pulse {
+@keyframes globe-grid-pulse {
   0%, 100% {
-    opacity: 0.25;
+    opacity: 0.2;
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.5;
   }
 }
 
 /* Network arc fade */
-@keyframes arc-fade {
+@keyframes globe-arc-fade {
   0%, 100% {
-    opacity: 0.12;
-    stroke-dashoffset: 12;
+    opacity: 0.1;
+    stroke-dashoffset: 10;
   }
   50% {
-    opacity: 0.65;
+    opacity: 0.6;
     stroke-dashoffset: 0;
   }
 }
 
-/* Particle orbit pulse */
-@keyframes particle-orbit {
-  0%, 100% {
-    opacity: 0.35;
-    transform: var(--base-transform) scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: var(--base-transform) scale(1.15);
-  }
-}
-
-/* Scan pulse ring expansion */
-@keyframes scan-pulse-ring {
+/* Pulse ring expansion */
+@keyframes globe-pulse-ring {
   0% {
-    transform: translate(-50%, -55%) scale(0.85);
-    opacity: 0.4;
+    transform: scale(1);
+    opacity: 0.35;
   }
   100% {
-    transform: translate(-50%, -55%) scale(1.8);
+    transform: scale(2);
     opacity: 0;
   }
 }

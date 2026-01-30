@@ -16,7 +16,7 @@ import { MissionControlLoader } from '@/components/MissionControlLoader';
 import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { AnimatedEarthBackground } from '@/components/AnimatedEarthBackground';
+import { GlobeBackground } from '@/components/GlobeBackground';
 
 interface AnalysisBreakdown {
   sources: {
@@ -685,8 +685,8 @@ const Index = () => {
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
     >
-      {/* Animated Earth background with idle/analyze states */}
-      <AnimatedEarthBackground 
+      {/* Centered rotating globe background */}
+      <GlobeBackground 
         isAnalyzing={isLoading || isProLoading}
         hasContent={hasFormContent}
         hasResults={hasAnyAnalysis}
