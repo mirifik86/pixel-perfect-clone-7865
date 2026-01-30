@@ -936,37 +936,38 @@ export const ScoreGauge = ({
           {/* Rotating Globe - always visible behind other content */}
           <RotatingGlobe size={size} isAnalyzing={isLoading} />
           
-          {/* ========== POWERED BY IA11 SIGNATURE - Premium curved bottom placement ========== */}
+          {/* ========== POWERED BY IA11 SIGNATURE - Positioned IN the ring arc bottom ========== */}
           <div 
             className="absolute pointer-events-none select-none"
             style={{
-              bottom: size * 0.06,
+              // Position at the bottom of the ring arc (where there's no color)
+              bottom: -(strokeWidth / 2) - 2,
               left: '50%',
               transform: 'translateX(-50%)',
-              zIndex: 2,
+              zIndex: 10,
             }}
           >
             {/* Subtle glow backdrop for high-tech effect */}
             <div 
-              className="absolute inset-0 -inset-x-4 -inset-y-1"
+              className="absolute -inset-x-6 -inset-y-2"
               style={{
-                background: 'radial-gradient(ellipse 120% 200% at 50% 50%, hsl(174 60% 45% / 0.12) 0%, transparent 60%)',
-                filter: 'blur(4px)',
+                background: 'radial-gradient(ellipse 140% 300% at 50% 50%, hsl(174 55% 42% / 0.2) 0%, transparent 55%)',
+                filter: 'blur(5px)',
                 animation: 'ia11-signature-pulse 4s ease-in-out infinite',
               }}
             />
             <span
-              className="relative uppercase font-medium"
+              className="relative uppercase font-medium whitespace-nowrap"
               style={{
-                fontSize: 'clamp(0.45rem, 1.2vw, 0.55rem)',
-                letterSpacing: '0.22em',
-                color: 'hsl(180 25% 62%)',
+                fontSize: 'clamp(0.4rem, 1.1vw, 0.5rem)',
+                letterSpacing: '0.2em',
+                color: 'hsl(180 30% 68%)',
                 textShadow: `
-                  0 0 6px hsl(174 50% 50% / 0.5),
-                  0 0 12px hsl(174 45% 45% / 0.25),
-                  0 1px 2px hsl(220 20% 8% / 0.8)
+                  0 0 8px hsl(174 55% 50% / 0.6),
+                  0 0 16px hsl(174 50% 45% / 0.3),
+                  0 1px 3px hsl(220 25% 5% / 0.9)
                 `,
-                opacity: 0.85,
+                opacity: 0.9,
               }}
             >
               Powered by IA11
@@ -976,8 +977,8 @@ export const ScoreGauge = ({
           {/* Keyframes for signature glow pulse */}
           <style>{`
             @keyframes ia11-signature-pulse {
-              0%, 100% { opacity: 0.6; transform: scale(1); }
-              50% { opacity: 1; transform: scale(1.05); }
+              0%, 100% { opacity: 0.5; transform: scale(1); }
+              50% { opacity: 1; transform: scale(1.08); }
             }
           `}</style>
           {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT with morph reveal */}
