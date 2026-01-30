@@ -36,6 +36,7 @@ interface NormalizedSource {
   trustTier?: 'high' | 'medium' | 'low';
   stance?: 'corroborating' | 'neutral' | 'contradicting';
   whyItMatters: string;
+  isGenericUrl?: boolean; // True if URL is a homepage/generic section
 }
 
 interface BestSourcesSectionProps {
@@ -66,6 +67,63 @@ const getDomainFromUrl = (url: string): string => {
   }
 };
 
+// Normalize URL for deduplication - remove tracking params, lowercase hostname, trim trailing slash
+const normalizeUrlForDedup = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    // Remove tracking params
+    const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid', 'ref', 'source'];
+    trackingParams.forEach(param => parsed.searchParams.delete(param));
+    // Normalize
+    const normalizedHost = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    const normalizedPath = parsed.pathname.replace(/\/$/, '');
+    return `${normalizedHost}${normalizedPath}${parsed.search}`.toLowerCase();
+  } catch {
+    return url.toLowerCase();
+  }
+};
+
+// Check if URL is a homepage or generic section (too general for article link)
+const isHomepageOrGenericUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.replace(/\/$/, '');
+    
+    // Homepage or root
+    if (pathname === '' || pathname === '/') return true;
+    
+    // Very short path (e.g., /news, /about)
+    const segments = pathname.split('/').filter(s => s.length > 0);
+    if (segments.length === 1 && segments[0].length < 10) return true;
+    
+    // Known hub/section paths
+    const hubPaths = ['/news', '/world', '/politics', '/business', '/sport', '/sports', '/entertainment', '/health', '/science', '/tech', '/technology', '/video', '/videos', '/live', '/latest', '/breaking', '/search', '/tag', '/tags', '/topic', '/topics', '/category', '/categories', '/hub', '/section', '/sections', '/home', '/about', '/contact'];
+    if (hubPaths.includes(pathname.toLowerCase())) return true;
+    
+    return false;
+  } catch {
+    return true;
+  }
+};
+
+// Get the best available URL (prefer articleUrl > canonicalUrl > url)
+const getBestUrl = (source: { url: string; articleUrl?: string; canonicalUrl?: string }): { url: string; isGeneric: boolean } => {
+  // Try articleUrl first
+  if (source.articleUrl && !isHomepageOrGenericUrl(source.articleUrl)) {
+    return { url: source.articleUrl, isGeneric: false };
+  }
+  // Try canonicalUrl
+  if (source.canonicalUrl && !isHomepageOrGenericUrl(source.canonicalUrl)) {
+    return { url: source.canonicalUrl, isGeneric: false };
+  }
+  // Try main url
+  if (source.url && !isHomepageOrGenericUrl(source.url)) {
+    return { url: source.url, isGeneric: false };
+  }
+  // All are generic
+  return { url: source.url || source.articleUrl || source.canonicalUrl || '', isGeneric: true };
+};
+
 const derivePublisher = (url: string): string | undefined => {
   const domain = getDomainFromUrl(url);
   if (!domain) return undefined;
@@ -77,13 +135,27 @@ const derivePublisher = (url: string): string | undefined => {
   return undefined;
 };
 
-const inferTrustTier = (name: string, url: string): 'high' | 'medium' | 'low' => {
+// Trust tier inference from score or domain
+const inferTrustTierFromScore = (score?: number): 'high' | 'medium' | 'low' | null => {
+  if (score === undefined || score === null) return null;
+  if (score >= 80) return 'high';
+  if (score >= 55) return 'medium';
+  return 'low';
+};
+
+const inferTrustTier = (name: string, url: string, score?: number): 'high' | 'medium' | 'low' => {
+  // First check if backend provided a score
+  const fromScore = inferTrustTierFromScore(score);
+  if (fromScore) return fromScore;
+  
+  // Fallback to domain-based inference
   const combined = (name + ' ' + url).toLowerCase();
   const highTrustPatterns = /\.(gov|gouv|edu|int)\b|wikipedia|britannica|reuters|associated\s*press|afp|bbc|cnn|new\s*york\s*times|washington\s*post|wall\s*street|nature\.com|science\.org|pubmed|who\.int|un\.org|nasa|nih|cdc|fda/i;
   if (highTrustPatterns.test(combined)) return 'high';
   const majorMediaPatterns = /guardian|telegraph|le\s*monde|figaro|economist|bloomberg|politico|npr|pbs|time\.com|forbes|wired/i;
   if (majorMediaPatterns.test(combined)) return 'medium';
-  return 'medium';
+  // When unsure, default to low for conservative approach
+  return 'low';
 };
 
 // Normalize any source format to NormalizedSource
@@ -95,29 +167,38 @@ const normalizeSource = (
 
   // New PRO format: has title + whyItMatters + stance
   if ('title' in source && 'whyItMatters' in source) {
-    const proSource = source as NewProSource;
+    const proSource = source as NewProSource & { articleUrl?: string; canonicalUrl?: string; score?: number };
     if (!proSource.url) return null;
+    
+    // Get best URL (prefer articleUrl > canonicalUrl > url)
+    const { url: bestUrl, isGeneric } = getBestUrl(proSource);
+    
     return {
-      title: proSource.title || getDomainFromUrl(proSource.url),
-      publisher: proSource.publisher || derivePublisher(proSource.url),
-      url: proSource.url,
-      trustTier: proSource.trustTier,
+      title: proSource.title || getDomainFromUrl(bestUrl),
+      publisher: proSource.publisher || derivePublisher(bestUrl),
+      url: bestUrl,
+      trustTier: proSource.trustTier || inferTrustTier(proSource.title, bestUrl, proSource.score),
       stance: proSource.stance,
       whyItMatters: proSource.whyItMatters || '',
+      isGenericUrl: isGeneric,
     };
   }
 
   // Legacy format: has name + snippet
   if ('name' in source && 'url' in source) {
-    const legacySource = source as LegacySourceDetail;
+    const legacySource = source as LegacySourceDetail & { articleUrl?: string; canonicalUrl?: string; score?: number };
     if (!legacySource.url) return null;
+    
+    const { url: bestUrl, isGeneric } = getBestUrl(legacySource);
+    
     return {
-      title: legacySource.name || getDomainFromUrl(legacySource.url),
-      publisher: derivePublisher(legacySource.url),
-      url: legacySource.url,
-      trustTier: legacySource.trustTier || inferTrustTier(legacySource.name, legacySource.url),
+      title: legacySource.name || getDomainFromUrl(bestUrl),
+      publisher: derivePublisher(bestUrl),
+      url: bestUrl,
+      trustTier: legacySource.trustTier || inferTrustTier(legacySource.name, bestUrl, legacySource.score),
       stance: inferredStance,
       whyItMatters: legacySource.snippet || '',
+      isGenericUrl: isGeneric,
     };
   }
 
@@ -210,6 +291,42 @@ const isValidSource = (source: NormalizedSource): boolean => {
 
 const TRUST_TIER_PRIORITY: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
+// Deduplicate sources using normalized URLs (removes tracking params, etc.)
+// Also prioritizes non-generic URLs over generic ones
+const deduplicateSources = (sources: NormalizedSource[]): NormalizedSource[] => {
+  const byNormalizedUrl = new Map<string, NormalizedSource>();
+  
+  for (const src of sources) {
+    const normalizedUrl = normalizeUrlForDedup(src.url);
+    if (!normalizedUrl) continue;
+    
+    const existing = byNormalizedUrl.get(normalizedUrl);
+    if (!existing) {
+      byNormalizedUrl.set(normalizedUrl, src);
+      continue;
+    }
+    
+    // Prefer non-generic URLs
+    if (existing.isGenericUrl && !src.isGenericUrl) {
+      byNormalizedUrl.set(normalizedUrl, src);
+      continue;
+    }
+    if (!existing.isGenericUrl && src.isGenericUrl) {
+      continue; // Keep existing non-generic
+    }
+    
+    // Same generic status - prefer higher trust tier
+    const existingTier = TRUST_TIER_PRIORITY[existing.trustTier || 'low'] ?? 2;
+    const newTier = TRUST_TIER_PRIORITY[src.trustTier || 'low'] ?? 2;
+    if (newTier < existingTier || (newTier === existingTier && src.whyItMatters.length > existing.whyItMatters.length)) {
+      byNormalizedUrl.set(normalizedUrl, src);
+    }
+  }
+  
+  return Array.from(byNormalizedUrl.values());
+};
+
+// Legacy domain-based dedup (fallback)
 const deduplicateByDomain = (sources: NormalizedSource[]): NormalizedSource[] => {
   const byDomain = new Map<string, NormalizedSource>();
   for (const src of sources) {
@@ -220,8 +337,13 @@ const deduplicateByDomain = (sources: NormalizedSource[]): NormalizedSource[] =>
       byDomain.set(domain, src);
       continue;
     }
-    const existingTier = TRUST_TIER_PRIORITY[existing.trustTier || 'medium'] ?? 1;
-    const newTier = TRUST_TIER_PRIORITY[src.trustTier || 'medium'] ?? 1;
+    // Prefer non-generic URLs
+    if (existing.isGenericUrl && !src.isGenericUrl) {
+      byDomain.set(domain, src);
+      continue;
+    }
+    const existingTier = TRUST_TIER_PRIORITY[existing.trustTier || 'low'] ?? 2;
+    const newTier = TRUST_TIER_PRIORITY[src.trustTier || 'low'] ?? 2;
     if (newTier < existingTier || (newTier === existingTier && src.whyItMatters.length > existing.whyItMatters.length)) {
       byDomain.set(domain, src);
     }
@@ -292,10 +414,9 @@ const SourceCard = ({
   isPrimary?: boolean;
 }) => {
   const [copied, setCopied] = useState(false);
-  const classification = classifySourceType(source);
   const faviconUrl = getFaviconUrl(source.url);
   const isContradicting = source.stance === 'contradicting';
-  const openLabel = language === 'fr' ? 'Ouvrir' : 'Open';
+  const isGeneric = source.isGenericUrl;
   
   const handleCopyLink = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -327,6 +448,78 @@ const SourceCard = ({
     },
   };
   
+  const genericLinkNote = language === 'fr' 
+    ? 'Lien trop général (article introuvable)' 
+    : 'Link too general (article not found)';
+  const openLabel = language === 'fr' ? 'Ouvrir' : 'Open';
+  
+  // If URL is generic, render as non-clickable card
+  if (isGeneric) {
+    return (
+      <div
+        key={`source-${idx}`}
+        className={`block rounded-xl border p-4 shadow-sm
+                   ${isPrimary
+                     ? 'border-slate-200 bg-gradient-to-br from-white to-slate-50/80'
+                     : 'border-slate-100 bg-slate-50/50'
+                   }`}
+      >
+        <div className="flex items-start gap-3">
+          {/* Favicon */}
+          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center shadow-sm overflow-hidden opacity-60">
+            {faviconUrl ? (
+              <img src={faviconUrl} alt="" className="w-5 h-5 object-contain grayscale" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            ) : (
+              <ExternalLink className="w-4 h-4 text-slate-400" />
+            )}
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1.5">
+              {/* Title */}
+              <span className="font-semibold text-sm text-slate-700">
+                {source.title}
+              </span>
+              
+              {/* Trust Tier Badge */}
+              {source.trustTier && (
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border cursor-help
+                                       ${trustTierBadgeStyles[source.trustTier].bg} 
+                                       ${trustTierBadgeStyles[source.trustTier].text} 
+                                       ${trustTierBadgeStyles[source.trustTier].border}`}>
+                        {language === 'fr' ? trustTierLabels[source.trustTier].fr : trustTierLabels[source.trustTier].en}
+                        <Info className="w-3 h-3 opacity-60" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs text-xs">
+                      <p>{language === 'fr' ? trustTierTooltips[source.trustTier].fr : trustTierTooltips[source.trustTier].en}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+            
+            {/* Publisher */}
+            {source.publisher && (
+              <p className="text-xs text-slate-500 mb-1">{source.publisher}</p>
+            )}
+            
+            {/* Excerpt */}
+            <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">{source.whyItMatters}</p>
+            
+            {/* Generic link note */}
+            <p className="mt-2 text-xs text-amber-600 italic">{genericLinkNote}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Normal clickable card
   return (
     <a
       key={`source-${idx}`}
@@ -381,22 +574,6 @@ const SourceCard = ({
               </TooltipProvider>
             )}
             
-            {/* Stance Badge */}
-            {source.stance && (
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border
-                               ${stanceBadgeStyles[source.stance].bg} 
-                               ${stanceBadgeStyles[source.stance].text} 
-                               ${stanceBadgeStyles[source.stance].border}`}>
-                {language === 'fr' ? stanceBadgeStyles[source.stance].labelFr : stanceBadgeStyles[source.stance].labelEn}
-              </span>
-            )}
-            
-            {/* Type Badge */}
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${classification.style}`}>
-              {classification.icon}
-              {language === 'fr' ? classification.labelFr : classification.label}
-            </span>
-            
             {/* Verified Badge */}
             {isVerified && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
@@ -411,25 +588,16 @@ const SourceCard = ({
             <p className="text-xs text-slate-500 mb-1">{source.publisher}</p>
           )}
           
-          {/* Why It Matters */}
+          {/* Excerpt (1-2 lines max) */}
           <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">{source.whyItMatters}</p>
         </div>
         
-        {/* Action buttons */}
-        <div className="flex-shrink-0 self-center flex items-center gap-2">
-          <button
-            onClick={handleCopyLink}
-            className={`inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
-                       ${copied ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
-            title={language === 'fr' ? 'Copier le lien' : 'Copy link'}
-          >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
-          
+        {/* Action button - single "Ouvrir" button */}
+        <div className="flex-shrink-0 self-center">
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all duration-200
                            ${isContradicting 
                              ? 'bg-slate-100 text-slate-600 group-hover:bg-red-600 group-hover:text-white' 
-                             : 'bg-slate-100 text-slate-600 group-hover:bg-cyan-600 group-hover:text-white'}`}>
+                             : 'bg-cyan-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white'}`}>
             {openLabel}
             <ExternalLink className="w-3.5 h-3.5" />
           </span>
@@ -468,14 +636,14 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
   const [verificationComplete, setVerificationComplete] = useState(false);
   
   const t = {
-    bestEvidence: language === 'fr' ? 'Meilleures preuves' : 'Best Evidence',
-    showAll: language === 'fr' ? 'Voir toutes les sources (jusqu\'à 10)' : 'Show all sources (up to 10)',
-    hideAll: language === 'fr' ? 'Masquer les sources supplémentaires' : 'Hide additional sources',
-    noCorroboration: language === 'fr' 
-      ? 'Aucune corroboration externe forte n\'a été trouvée pour cette affirmation.'
-      : 'No strong external corroboration was found for this claim.',
+    corroborationSources: language === 'fr' ? 'Sources de corroboration' : 'Corroboration Sources',
+    showAll: language === 'fr' ? 'Voir toutes les sources' : 'Show all sources',
+    hideAll: language === 'fr' ? 'Masquer les sources' : 'Hide sources',
+    noDirectSources: language === 'fr' 
+      ? 'Aucune source directe trouvée. Lancez une vérification plus large ou reformulez la demande.'
+      : 'No direct sources found. Try a broader search or rephrase your request.',
     verifying: language === 'fr' ? 'Vérification des liens…' : 'Verifying links…',
-    open: language === 'fr' ? 'Ouvrir' : 'Open',
+    refutingSources: language === 'fr' ? 'Sources réfutantes' : 'Refuting Sources',
   };
   
   // ===== NORMALIZE ALL SOURCES =====
@@ -520,9 +688,9 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
       all = all.filter(isValidSource);
     }
     
-    // Dedup by domain
-    best = deduplicateByDomain(best);
-    all = deduplicateByDomain(all);
+    // Dedup using normalized URLs (removes tracking params, prefers non-generic)
+    best = deduplicateSources(best);
+    all = deduplicateSources(all);
     
     // Sort by trust tier
     best = sortByTrustTier(best);
@@ -694,7 +862,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
             <div className="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center">
               <Shield className="w-4 h-4 text-cyan-600" />
             </div>
-            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{t.bestEvidence}</h4>
+            <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{t.corroborationSources}</h4>
           </div>
           <FilterStatsIndicator displayed={finalSupporting.length} total={supportingSources.length} language={language} />
         </div>
@@ -714,7 +882,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
       return (
         <div className="mt-6 pt-5 border-t border-slate-200/80">
           <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-slate-50/80 p-5 shadow-sm">
-            <p className="text-sm text-slate-600 leading-relaxed">{t.noCorroboration}</p>
+            <p className="text-sm text-slate-600 leading-relaxed">{t.noDirectSources}</p>
           </div>
         </div>
       );
@@ -730,7 +898,7 @@ export const BestSourcesSection = ({ sources, bestLinks, allSources, language, o
           <div className="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center">
             <Shield className="w-4 h-4 text-cyan-600" />
           </div>
-          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{t.bestEvidence}</h4>
+          <h4 className="font-serif text-base font-semibold text-slate-800 tracking-tight">{t.corroborationSources}</h4>
         </div>
         <FilterStatsIndicator displayed={finalBestLinks.length} total={normalizedBestLinks.length} language={language} />
       </div>
