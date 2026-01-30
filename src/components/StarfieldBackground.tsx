@@ -32,22 +32,23 @@ export const StarfieldBackground = memo(() => {
         style={{
           backgroundImage: `url(${earthSunriseBg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 40%', // Monté pour voir plus de l'espace
+          backgroundPosition: 'center 40%',
           backgroundRepeat: 'no-repeat',
-          // Maximum visibilité - effet WOW
-          filter: 'blur(0px) brightness(0.65) contrast(0.95) saturate(0.85)',
+          // 20% darker for premium tech focus
+          filter: 'blur(0px) brightness(0.52) contrast(0.92) saturate(0.8)',
           transform: 'scale(1.02)',
         }}
       />
       
-      {/* ========== LAYER 2: Vignette légère pour focus central ========== */}
+      {/* ========== LAYER 2: Center focus vignette - stronger for gauge prominence ========== */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 35% 35% at 50% 45%, 
-              hsl(220 35% 3% / 0.5) 0%,
-              hsl(220 30% 4% / 0.2) 50%,
+            radial-gradient(ellipse 30% 30% at 50% 42%, 
+              hsl(220 40% 2% / 0.7) 0%,
+              hsl(220 35% 4% / 0.4) 40%,
+              hsl(225 30% 5% / 0.15) 70%,
               transparent 100%
             )
           `,
@@ -68,17 +69,37 @@ export const StarfieldBackground = memo(() => {
         }}
       />
       
-      {/* Lueur sunrise subtile renforcée */}
+      {/* Subtle sunrise warmth at bottom */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 80% 50% at 50% 105%, 
-              hsl(35 60% 40% / 0.12) 0%,
-              hsl(200 50% 30% / 0.08) 40%,
+            radial-gradient(ellipse 70% 45% at 50% 105%, 
+              hsl(35 55% 35% / 0.1) 0%,
+              hsl(200 45% 25% / 0.06) 40%,
               transparent 70%
             )
           `,
+        }}
+      />
+      
+      {/* ========== LAYER 4: Soft cyan "active system" halo under gauge ========== */}
+      <div 
+        className="absolute"
+        style={{
+          width: '280px',
+          height: '80px',
+          left: '50%',
+          top: '55%',
+          transform: 'translateX(-50%)',
+          background: `
+            radial-gradient(ellipse 100% 100% at 50% 0%, 
+              hsl(174 60% 45% / 0.08) 0%,
+              hsl(174 50% 40% / 0.04) 50%,
+              transparent 100%
+            )
+          `,
+          filter: 'blur(12px)',
         }}
       />
       

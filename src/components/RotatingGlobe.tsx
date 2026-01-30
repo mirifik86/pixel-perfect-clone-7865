@@ -40,33 +40,34 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           width: '100%',
           height: '100%',
           boxShadow: `
-            0 0 30px hsl(200 50% 20% / 0.3),
-            0 0 60px hsl(200 40% 15% / 0.15)
+            0 0 25px hsl(200 45% 18% / 0.35),
+            0 0 50px hsl(200 35% 12% / 0.2),
+            0 0 80px hsl(174 50% 35% / 0.12)
           `,
         }}
       >
-        {/* Ocean base gradient */}
+        {/* Ocean base gradient - slightly darker */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: `radial-gradient(circle at 35% 30%, 
-              hsl(200 55% 40%) 0%, 
-              hsl(210 50% 30%) 40%, 
-              hsl(220 45% 18%) 100%
+              hsl(200 48% 35%) 0%, 
+              hsl(210 45% 25%) 40%, 
+              hsl(220 40% 14%) 100%
             )`,
           }}
         />
         
-        {/* STATIC EARTH TEXTURE - No animation */}
+        {/* STATIC EARTH TEXTURE - Reduced saturation, tech-refined */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             backgroundImage: `url(${earthTexture})`,
             backgroundSize: '200% 100%',
-            backgroundPosition: '25% 50%', // Fixed position showing Americas/Atlantic
+            backgroundPosition: '25% 50%',
             backgroundRepeat: 'no-repeat',
-            // Sharp, vivid look
-            filter: 'saturate(1.15) brightness(1.1) contrast(1.05)',
+            // Refined: less saturation, slightly darker for tech look
+            filter: 'saturate(0.9) brightness(1.0) contrast(1.08)',
           }}
         />
         
@@ -96,11 +97,15 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           }}
         />
         
-        {/* Subtle atmospheric glow */}
+        {/* Subtle atmospheric glow + outer cyan tech glow */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            boxShadow: 'inset 0 0 20px hsl(200 60% 50% / 0.1)',
+            boxShadow: `
+              inset 0 0 20px hsl(200 50% 45% / 0.08),
+              0 0 35px hsl(174 55% 45% / 0.15),
+              0 0 60px hsl(174 45% 40% / 0.08)
+            `,
           }}
         />
       </div>
