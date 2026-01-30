@@ -49,6 +49,8 @@ export const ScoreGauge = ({
   const [showTransferBeam, setShowTransferBeam] = useState(false);
   const [buttonCharged, setButtonCharged] = useState(false);
   const [isRevealingScore, setIsRevealingScore] = useState(false); // Loader → Score morph transition
+  const [isHovering, setIsHovering] = useState(false); // Hover state for gauge-as-button
+  const [isFocused, setIsFocused] = useState(false); // Focus state for accessibility
   const animationRef = useRef<number | null>(null);
   const prevUiStateRef = useRef<string>('idle');
   
@@ -348,9 +350,9 @@ export const ScoreGauge = ({
         </>
       )}
       
-      {/* ULTRA-PREMIUM SOFT RADIAL HALO - subtle hero enhancement */}
+      {/* ULTRA-PREMIUM SOFT RADIAL HALO - intensifies on hover for click affordance */}
       <div 
-        className="absolute rounded-full pointer-events-none"
+        className="absolute rounded-full pointer-events-none transition-all duration-300"
         style={{
           width: size * 1.6,
           height: size * 1.6,
@@ -362,7 +364,9 @@ export const ScoreGauge = ({
             : isLoading
               ? 'radial-gradient(circle, hsl(174 75% 55% / 0.2) 0%, hsl(174 65% 50% / 0.08) 40%, transparent 70%)'
               : hasContent
-                ? 'radial-gradient(circle, hsl(174 80% 55% / 0.18) 0%, hsl(174 70% 50% / 0.07) 40%, transparent 70%)'
+                ? (isHovering || isFocused)
+                  ? 'radial-gradient(circle, hsl(174 85% 58% / 0.28) 0%, hsl(174 75% 52% / 0.12) 40%, transparent 70%)'
+                  : 'radial-gradient(circle, hsl(174 80% 55% / 0.18) 0%, hsl(174 70% 50% / 0.07) 40%, transparent 70%)'
                 : 'radial-gradient(circle, hsl(174 55% 50% / 0.1) 0%, hsl(200 45% 45% / 0.04) 40%, transparent 70%)',
           filter: 'blur(30px)',
           animation: score === null ? 'idle-glow-pulse 4.5s ease-in-out infinite' : 'none',
@@ -371,7 +375,7 @@ export const ScoreGauge = ({
       
       {/* Secondary inner halo - tighter, more focused glow */}
       <div 
-        className="absolute rounded-full pointer-events-none"
+        className="absolute rounded-full pointer-events-none transition-all duration-300"
         style={{
           width: size * 1.25,
           height: size * 1.25,
@@ -383,7 +387,9 @@ export const ScoreGauge = ({
             : isLoading
               ? 'radial-gradient(circle, hsl(174 72% 52% / 0.22) 0%, hsl(174 62% 48% / 0.1) 45%, transparent 70%)'
               : hasContent
-                ? 'radial-gradient(circle, hsl(174 78% 55% / 0.2) 0%, hsl(174 68% 50% / 0.08) 45%, transparent 70%)'
+                ? (isHovering || isFocused)
+                  ? 'radial-gradient(circle, hsl(174 85% 58% / 0.32) 0%, hsl(174 72% 52% / 0.14) 45%, transparent 70%)'
+                  : 'radial-gradient(circle, hsl(174 78% 55% / 0.2) 0%, hsl(174 68% 50% / 0.08) 45%, transparent 70%)'
                 : 'radial-gradient(circle, hsl(174 50% 48% / 0.08) 0%, hsl(200 42% 42% / 0.03) 45%, transparent 70%)',
           filter: 'blur(15px)',
           animation: score === null 
@@ -392,12 +398,68 @@ export const ScoreGauge = ({
         }}
       />
       
-      {/* Gauge container */}
+      {/* INNER GLOW PULSE - slow elegant breathing for premium click affordance in ready state */}
+      {uiState === 'ready' && (
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: size * 0.92,
+            height: size * 0.92,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'radial-gradient(circle, hsl(174 80% 55% / 0.12) 0%, hsl(174 70% 50% / 0.04) 60%, transparent 85%)',
+            filter: 'blur(8px)',
+            animation: 'capture-inner-pulse 3.5s ease-in-out infinite',
+          }}
+        />
+      )}
+      
+      {/* FOCUS RING - accessible keyboard focus indicator */}
+      {isFocused && uiState === 'ready' && (
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: size + 8,
+            height: size + 8,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            border: '2px solid hsl(174 75% 55% / 0.8)',
+            boxShadow: '0 0 12px hsl(174 70% 55% / 0.5), 0 0 24px hsl(174 65% 50% / 0.3)',
+          }}
+        />
+      )}
+      
+      {/* Gauge container - PREMIUM CLICKABLE CTA when ready */}
       <div 
-        className="relative" 
+        className={`relative ${uiState === 'ready' ? 'cursor-pointer' : ''}`}
         style={{ 
           width: size, 
           height: size,
+          outline: 'none',
+        }}
+        tabIndex={uiState === 'ready' ? 0 : -1}
+        role={uiState === 'ready' ? 'button' : undefined}
+        aria-label={uiState === 'ready' ? t('gauge.startAnalysis') : undefined}
+        onClick={uiState === 'ready' && !isLoading ? handleAnalyzeClick : undefined}
+        onKeyDown={(e) => {
+          if (uiState === 'ready' && !isLoading && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            handleAnalyzeClick();
+          }
+        }}
+        onMouseEnter={() => {
+          if (uiState === 'ready') setIsHovering(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovering(false);
+        }}
+        onFocus={() => {
+          if (uiState === 'ready') setIsFocused(true);
+        }}
+        onBlur={() => {
+          setIsFocused(false);
         }}
       >
         {/* GLASS LENS HIGHLIGHT on ring - premium subtle reflection */}
@@ -866,177 +928,74 @@ export const ScoreGauge = ({
             </div>
           )}
           
-          {/* TRANSITIONING STATE: Text fading out with blur */}
-          {uiState === 'ready' && isTransitioning && (
+          {/* READY STATE: "PRÊT À ANALYSER" text with premium glass pill - gauge is the CTA */}
+          {uiState === 'ready' && (
             <div 
-              className="flex flex-col items-center justify-center text-center absolute inset-0"
-              style={{ animation: 'idle-text-exit 450ms ease-out forwards' }}
+              className="flex flex-col items-center justify-center text-center relative"
+              style={{ 
+                padding: 'var(--space-2)',
+                animation: isTransitioning ? 'idle-text-enter 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards' : 'none',
+              }}
             >
+              {/* Premium glass pill backdrop - elegant frosted glass effect */}
+              <div 
+                className="absolute rounded-full pointer-events-none transition-all duration-300"
+                style={{
+                  width: size * 0.72,
+                  height: size * 0.22,
+                  background: (isHovering || isFocused)
+                    ? 'linear-gradient(135deg, hsl(200 35% 22% / 0.55) 0%, hsl(220 30% 18% / 0.45) 50%, hsl(200 35% 20% / 0.5) 100%)'
+                    : 'linear-gradient(135deg, hsl(200 30% 20% / 0.45) 0%, hsl(220 25% 15% / 0.35) 50%, hsl(200 30% 18% / 0.4) 100%)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: (isHovering || isFocused)
+                    ? '1px solid hsl(174 50% 65% / 0.25)'
+                    : '1px solid hsl(174 40% 60% / 0.15)',
+                  boxShadow: (isHovering || isFocused)
+                    ? `
+                      inset 0 1px 1px hsl(0 0% 100% / 0.12),
+                      inset 0 -1px 1px hsl(0 0% 0% / 0.15),
+                      0 4px 20px hsl(200 50% 10% / 0.5),
+                      0 0 3px hsl(174 60% 60% / 0.35)
+                    `
+                    : `
+                      inset 0 1px 1px hsl(0 0% 100% / 0.08),
+                      inset 0 -1px 1px hsl(0 0% 0% / 0.15),
+                      0 4px 16px hsl(200 50% 10% / 0.4),
+                      0 0 1px hsl(174 50% 60% / 0.2)
+                    `,
+                }}
+              />
+              
+              {/* Subtle inner glow for premium depth */}
+              <div 
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: size * 0.68,
+                  height: size * 0.18,
+                  background: (isHovering || isFocused)
+                    ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 45% 60% / 0.14) 0%, transparent 70%)'
+                    : 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.08) 0%, transparent 70%)',
+                  filter: 'blur(4px)',
+                  animation: 'idle-halo-pulse 3.8s ease-in-out infinite',
+                }}
+              />
+              
+              {/* Text with elegant shadow for readability - intensifies on hover */}
               <span
-                className="relative uppercase font-medium tracking-[0.18em] text-center"
+                className="relative uppercase font-medium tracking-[0.18em] text-center transition-all duration-300"
                 style={{
                   fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
                   lineHeight: 1.4,
-                  color: 'hsl(0 0% 94%)',
+                  color: (isHovering || isFocused) ? 'hsl(0 0% 100%)' : 'hsl(0 0% 96%)',
+                  textShadow: (isHovering || isFocused)
+                    ? '0 1px 4px hsl(0 0% 0% / 0.6), 0 0 18px hsl(174 60% 58% / 0.4)'
+                    : '0 1px 3px hsl(0 0% 0% / 0.5), 0 0 12px hsl(174 50% 55% / 0.25)',
+                  animation: 'idle-text-brightness 3.8s ease-in-out infinite',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
               </span>
-            </div>
-          )}
-
-          {/* READY STATE: ANALYZE button - Premium signature control with entrance animation */}
-          {uiState === 'ready' && !buttonAbsorbed && (
-            <div 
-              className="relative group"
-              style={{ 
-                width: size * 0.65, 
-                maxWidth: '150px',
-                animation: isTransitioning 
-                  ? 'button-ready-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards' 
-                  : 'none',
-                opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.96)' : 'scale(1)',
-              }}
-            >
-              {/* Floating particles around button - reduced count for cleaner look */}
-              {!isTransitioning && (
-                <>
-                  {[...Array(6)].map((_, i) => {
-                    const angle = (i / 6) * 360;
-                    const distance = 30 + (i % 2) * 6;
-                    const particleSize = 1.5 + (i % 2);
-                    const delay = i * 0.5;
-                    const duration = 3.5 + (i % 2) * 0.5;
-                    
-                    return (
-                      <div
-                        key={i}
-                        className="absolute pointer-events-none"
-                        style={{
-                          left: '50%',
-                          top: '50%',
-                          width: `${particleSize}px`,
-                          height: `${particleSize}px`,
-                          borderRadius: '50%',
-                          background: 'radial-gradient(circle, hsl(180 75% 70%) 0%, hsl(174 70% 60%) 50%, transparent 100%)',
-                          boxShadow: `0 0 ${particleSize * 2}px hsl(174 70% 60% / 0.5)`,
-                          transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${distance}px)`,
-                          animation: `particle-float ${duration}s ease-in-out ${delay}s infinite`,
-                          opacity: 0.6,
-                        }}
-                      />
-                    );
-                  })}
-                </>
-              )}
-              
-              {/* Outer halo - static in ready state (no pulse) */}
-              <div 
-                className="absolute -inset-4 rounded-full pointer-events-none"
-                style={{
-                  background: 'radial-gradient(circle, hsl(174 70% 55% / 0.35) 0%, hsl(174 60% 50% / 0.12) 50%, transparent 80%)',
-                  filter: 'blur(12px)',
-                  animation: buttonCharged 
-                    ? 'button-charge-glow 260ms ease-out forwards' 
-                    : 'none',
-                }}
-              />
-              
-              {/* Crisp glass border ring - brightest element */}
-              <div 
-                className="absolute -inset-[2px] rounded-full overflow-hidden"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(174 85% 60%), hsl(180 80% 55%), hsl(174 85% 60%))',
-                  boxShadow: buttonCharged 
-                    ? '0 0 20px hsl(174 80% 62% / 0.8), 0 0 40px hsl(174 75% 58% / 0.5)' 
-                    : '0 0 14px hsl(174 75% 58% / 0.6), 0 0 28px hsl(174 70% 55% / 0.3)',
-                }}
-              >
-                {/* Single entrance sheen sweep (not looping) + charge sheen */}
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.25) 45%, hsl(0 0% 100% / 0.7) 50%, hsl(0 0% 100% / 0.25) 55%, transparent 70%)',
-                    animation: buttonCharged 
-                      ? 'charge-sheen-sweep 200ms ease-out forwards' 
-                      : (isTransitioning ? 'none' : 'entrance-sheen-sweep 600ms ease-out 100ms forwards'),
-                  }}
-                />
-              </div>
-              
-              {/* Inner glow ring */}
-              <div 
-                className="absolute inset-0 rounded-full pointer-events-none"
-                style={{
-                  boxShadow: buttonCharged 
-                    ? 'inset 0 0 20px hsl(174 70% 65% / 0.45), inset 0 1px 0 hsl(0 0% 100% / 0.35)' 
-                    : 'inset 0 0 14px hsl(174 65% 60% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.25)',
-                  transition: 'box-shadow 200ms ease-out',
-                }}
-              />
-              
-              <Button
-                type="button"
-                onClick={handleAnalyzeClick}
-                disabled={isLoading}
-                className="relative w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white border-0 focus:outline-none overflow-hidden transition-all duration-200"
-                style={{
-                  background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
-                  boxShadow: buttonCharged 
-                    ? '0 0 30px hsl(174 70% 58% / 0.55), 0 6px 20px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.35), inset 0 -1px 3px hsl(0 0% 0% / 0.2)' 
-                    : '0 0 22px hsl(174 65% 55% / 0.4), 0 5px 16px hsl(0 0% 0% / 0.28), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)',
-                  textShadow: '0 1px 3px hsl(0 0% 0% / 0.5)',
-                  letterSpacing: '0.08em',
-                  transform: 'scale(1)',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.04) translateY(-1px)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 35px hsl(174 70% 58% / 0.6), 0 8px 22px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.4), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 22px hsl(174 65% 55% / 0.4), 0 5px 16px hsl(0 0% 0% / 0.28), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 2px hsl(0 0% 0% / 0.15)';
-                }}
-                onMouseDown={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)';
-                }}
-                onMouseUp={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                }}
-              >
-                {/* Inner shine sweep */}
-                <div 
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.12) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.12) 55%, transparent 70%)',
-                    animation: 'center-inner-shine 4.5s ease-in-out infinite 2s',
-                  }}
-                />
-                <span className="relative z-10">{t('gauge.startAnalysis')}</span>
-              </Button>
-            </div>
-          )}
-          
-          {/* Button absorption animation when clicked */}
-          {uiState === 'ready' && buttonAbsorbed && (
-            <div 
-              className="relative flex items-center justify-center"
-              style={{ 
-                width: size * 0.65, 
-                maxWidth: '150px',
-                animation: 'button-absorb 400ms cubic-bezier(0.4, 0, 1, 1) forwards',
-              }}
-            >
-              <div 
-                className="w-full rounded-full py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-white flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(145deg, hsl(174 70% 50%) 0%, hsl(180 62% 44%) 50%, hsl(174 68% 47%) 100%)',
-                  boxShadow: '0 0 30px hsl(174 70% 58% / 0.6), 0 0 15px hsl(174 65% 55% / 0.4)',
-                }}
-              >
-                <span>{t('gauge.startAnalysis')}</span>
-              </div>
             </div>
           )}
         </div>
