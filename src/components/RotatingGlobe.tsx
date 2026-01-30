@@ -101,7 +101,7 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
             backgroundPosition: '0% 50%',
             backgroundRepeat: 'repeat-x',
             animation: shouldAnimate ? `globe-rotate ${rotationSpeed} linear infinite` : 'none',
-            filter: 'saturate(1.05) brightness(1.12) contrast(1.02)', // +15% brightness, lifted midtones
+            filter: 'saturate(1.08) brightness(1.18) contrast(1.0)', // More brightness, lifted midtones
           }}
         />
         
