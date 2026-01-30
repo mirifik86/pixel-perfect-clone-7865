@@ -936,51 +936,88 @@ export const ScoreGauge = ({
           {/* Rotating Globe - always visible behind other content */}
           <RotatingGlobe size={size} isAnalyzing={isLoading} />
           
-          {/* ========== POWERED BY IA11 SIGNATURE - Positioned IN the ring arc bottom ========== */}
-          <div 
-            className="absolute pointer-events-none select-none"
+          {/* ========== POWERED BY IA11 SIGNATURE - Curved text in arc ========== */}
+          <svg
+            className="absolute pointer-events-none"
+            width={size}
+            height={size}
             style={{
-              // Position at the bottom of the ring arc (where there's no color)
-              bottom: -(strokeWidth / 2) - 2,
-              left: '50%',
-              transform: 'translateX(-50%)',
+              top: 0,
+              left: 0,
               zIndex: 10,
             }}
           >
-            {/* Subtle glow backdrop for high-tech effect */}
-            <div 
-              className="absolute -inset-x-6 -inset-y-2"
+            <defs>
+              {/* Arc path for curved text - follows the inner edge of the ring at the bottom */}
+              <path
+                id="ia11-arc-path"
+                d={(() => {
+                  const arcRadius = radius - strokeWidth / 2 + 2;
+                  const centerX = size / 2;
+                  const centerY = size / 2;
+                  // Arc from about 70° to 110° (bottom portion)
+                  const startAngle = 60 * (Math.PI / 180);
+                  const endAngle = 120 * (Math.PI / 180);
+                  const startX = centerX + arcRadius * Math.cos(startAngle);
+                  const startY = centerY + arcRadius * Math.sin(startAngle);
+                  const endX = centerX + arcRadius * Math.cos(endAngle);
+                  const endY = centerY + arcRadius * Math.sin(endAngle);
+                  return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
+                })()}
+                fill="none"
+              />
+              {/* Glow filter for high-tech effect */}
+              <filter id="ia11-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feFlood floodColor="hsl(174, 55%, 50%)" floodOpacity="0.6" />
+                <feComposite in2="blur" operator="in" />
+                <feMerge>
+                  <feMergeNode />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            
+            {/* Glow layer */}
+            <text
+              fill="hsl(174 50% 50% / 0.4)"
               style={{
-                background: 'radial-gradient(ellipse 140% 300% at 50% 50%, hsl(174 55% 42% / 0.2) 0%, transparent 55%)',
-                filter: 'blur(5px)',
-                animation: 'ia11-signature-pulse 4s ease-in-out infinite',
-              }}
-            />
-            <span
-              className="relative uppercase font-medium whitespace-nowrap"
-              style={{
-                fontSize: 'clamp(0.4rem, 1.1vw, 0.5rem)',
-                letterSpacing: '0.2em',
-                color: 'hsl(180 30% 68%)',
-                textShadow: `
-                  0 0 8px hsl(174 55% 50% / 0.6),
-                  0 0 16px hsl(174 50% 45% / 0.3),
-                  0 1px 3px hsl(220 25% 5% / 0.9)
-                `,
-                opacity: 0.9,
+                fontSize: 'clamp(0.38rem, 1vw, 0.48rem)',
+                fontWeight: 500,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                filter: 'blur(3px)',
               }}
             >
-              Powered by IA11
-            </span>
-          </div>
-          
-          {/* Keyframes for signature glow pulse */}
-          <style>{`
-            @keyframes ia11-signature-pulse {
-              0%, 100% { opacity: 0.5; transform: scale(1); }
-              50% { opacity: 1; transform: scale(1.08); }
-            }
-          `}</style>
+              <textPath
+                href="#ia11-arc-path"
+                startOffset="50%"
+                textAnchor="middle"
+              >
+                Powered by IA11
+              </textPath>
+            </text>
+            
+            {/* Main text */}
+            <text
+              fill="hsl(180 35% 72%)"
+              style={{
+                fontSize: 'clamp(0.38rem, 1vw, 0.48rem)',
+                fontWeight: 500,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+              }}
+              filter="url(#ia11-glow)"
+            >
+              <textPath
+                href="#ia11-arc-path"
+                startOffset="50%"
+                textAnchor="middle"
+              >
+                Powered by IA11
+              </textPath>
+            </text>
+          </svg>
           {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT with morph reveal */}
           {uiState === 'result' && (
             <div 
