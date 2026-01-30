@@ -896,7 +896,7 @@ export const ScoreGauge = ({
             <InGaugeAnalysisLoader size={size} mode={loaderMode} />
           )}
 
-          {/* IDLE/READY STATE: Unified reactive CTA button */}
+          {/* IDLE/READY/ANALYZING STATE: Unified reactive CTA button */}
           {(uiState === 'idle' || uiState === 'ready') && (
             <button
               type="button"
