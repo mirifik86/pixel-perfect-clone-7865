@@ -936,7 +936,7 @@ export const ScoreGauge = ({
           {/* Rotating Globe - always visible behind other content */}
           <RotatingGlobe size={size} isAnalyzing={isLoading} />
           
-          {/* ========== POWERED BY IA11 SIGNATURE - Curved text in arc ========== */}
+          {/* ========== POWERED BY IA11 SIGNATURE - Curved text in arc (flipped for readability) ========== */}
           <svg
             className="absolute pointer-events-none"
             width={size}
@@ -948,28 +948,30 @@ export const ScoreGauge = ({
             }}
           >
             <defs>
-              {/* Arc path for curved text - follows the inner edge of the ring at the bottom */}
+              {/* Arc path for curved text - REVERSED direction so text reads correctly */}
               <path
                 id="ia11-arc-path"
                 d={(() => {
-                  const arcRadius = radius - strokeWidth / 2 + 2;
+                  // Position in the ring band itself
+                  const arcRadius = radius;
                   const centerX = size / 2;
                   const centerY = size / 2;
-                  // Arc from about 70° to 110° (bottom portion)
-                  const startAngle = 60 * (Math.PI / 180);
-                  const endAngle = 120 * (Math.PI / 180);
+                  // Arc from 120° to 60° (reversed - right to left) for correct text orientation
+                  const startAngle = 115 * (Math.PI / 180);
+                  const endAngle = 65 * (Math.PI / 180);
                   const startX = centerX + arcRadius * Math.cos(startAngle);
                   const startY = centerY + arcRadius * Math.sin(startAngle);
                   const endX = centerX + arcRadius * Math.cos(endAngle);
                   const endY = centerY + arcRadius * Math.sin(endAngle);
-                  return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
+                  // sweep-flag = 0 for counter-clockwise (text reads left-to-right at bottom)
+                  return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 0 ${endX} ${endY}`;
                 })()}
                 fill="none"
               />
               {/* Glow filter for high-tech effect */}
               <filter id="ia11-glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="2" result="blur" />
-                <feFlood floodColor="hsl(174, 55%, 50%)" floodOpacity="0.6" />
+                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                <feFlood floodColor="hsl(174, 55%, 50%)" floodOpacity="0.5" />
                 <feComposite in2="blur" operator="in" />
                 <feMerge>
                   <feMergeNode />
@@ -980,11 +982,11 @@ export const ScoreGauge = ({
             
             {/* Glow layer */}
             <text
-              fill="hsl(174 50% 50% / 0.4)"
+              fill="hsl(174 50% 50% / 0.35)"
               style={{
-                fontSize: 'clamp(0.38rem, 1vw, 0.48rem)',
+                fontSize: `${size * 0.042}px`,
                 fontWeight: 500,
-                letterSpacing: '0.18em',
+                letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 filter: 'blur(3px)',
               }}
@@ -1002,9 +1004,9 @@ export const ScoreGauge = ({
             <text
               fill="hsl(180 35% 72%)"
               style={{
-                fontSize: 'clamp(0.38rem, 1vw, 0.48rem)',
+                fontSize: `${size * 0.042}px`,
                 fontWeight: 500,
-                letterSpacing: '0.18em',
+                letterSpacing: '0.15em',
                 textTransform: 'uppercase',
               }}
               filter="url(#ia11-glow)"
