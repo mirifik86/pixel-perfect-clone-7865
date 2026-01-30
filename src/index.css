@@ -627,7 +627,8 @@
 }
 
 /* ============================================
-   ROTATING GLOBE KEYFRAMES (inside ScoreGauge)
+   MINI EARTH + SOLAR SYSTEM KEYFRAMES
+   Premium subtle orbital animations
    ============================================ */
 
 /* Globe rotation - horizontal scroll of world map texture */
@@ -640,14 +641,38 @@
   }
 }
 
-/* Globe analyzing pulse - subtle glow */
-@keyframes globe-analyze-pulse {
-  0%, 100% {
-    opacity: 0.6;
-    box-shadow: 0 0 15px hsl(174 60% 50% / 0.3), 0 0 30px hsl(174 50% 45% / 0.15);
+/* Moon orbit - inner ring, clockwise */
+@keyframes orbit-moon {
+  0% {
+    transform: rotate(0deg) translateX(calc(var(--orbit-radius, 26%) * 0.5)) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(calc(var(--orbit-radius, 26%) * 0.5)) rotate(-360deg);
+  }
+}
+
+/* Satellite orbit - outer ring, counter-clockwise */
+@keyframes orbit-satellite {
+  0% {
+    transform: rotate(180deg) translateX(calc(var(--orbit-radius, 31%) * 0.5)) rotate(-180deg);
+  }
+  100% {
+    transform: rotate(-180deg) translateX(calc(var(--orbit-radius, 31%) * 0.5)) rotate(180deg);
+  }
+}
+
+/* Scan pulse ring - subtle expanding ring during analysis */
+@keyframes scan-pulse {
+  0% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    opacity: 1;
-    box-shadow: 0 0 25px hsl(174 70% 55% / 0.5), 0 0 45px hsl(174 60% 50% / 0.25);
+    opacity: 0.15;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.3);
   }
 }
