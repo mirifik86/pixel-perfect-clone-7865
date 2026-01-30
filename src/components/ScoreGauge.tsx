@@ -1009,14 +1009,16 @@ export const ScoreGauge = ({
                     ? (isHovering || isFocused)
                       ? 'linear-gradient(135deg, hsl(200 40% 24% / 0.6) 0%, hsl(220 35% 20% / 0.5) 50%, hsl(200 40% 22% / 0.55) 100%)'
                       : 'linear-gradient(135deg, hsl(200 35% 22% / 0.55) 0%, hsl(220 30% 18% / 0.45) 50%, hsl(200 35% 20% / 0.5) 100%)'
-                    : 'linear-gradient(135deg, hsl(200 20% 16% / 0.3) 0%, hsl(220 15% 12% / 0.25) 50%, hsl(200 20% 14% / 0.28) 100%)',
+                    // DISABLED: Lighter, more visible pill
+                    : 'linear-gradient(135deg, hsl(200 22% 22% / 0.45) 0%, hsl(220 18% 18% / 0.38) 50%, hsl(200 22% 20% / 0.42) 100%)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   border: typingState === 'valid'
                     ? (isHovering || isFocused)
                       ? '1px solid hsl(174 55% 65% / 0.35)'
                       : '1px solid hsl(174 50% 60% / 0.25)'
-                    : '1px solid hsl(174 25% 45% / 0.08)',
+                    // DISABLED: Subtle cyan border for premium feel
+                    : '1px solid hsl(174 35% 55% / 0.15)',
                   boxShadow: typingState === 'valid'
                     ? (isHovering || isFocused)
                       ? `
@@ -1033,16 +1035,19 @@ export const ScoreGauge = ({
                         0 0 16px hsl(174 60% 55% / 0.25),
                         0 0 32px hsl(174 55% 50% / 0.1)
                       `
+                    // DISABLED: Subtle static premium halo (NOT animated)
                     : `
-                      inset 0 1px 1px hsl(0 0% 100% / 0.04),
-                      inset 0 -1px 1px hsl(0 0% 0% / 0.1),
-                      0 4px 12px hsl(200 50% 10% / 0.25)
+                      inset 0 1px 1px hsl(0 0% 100% / 0.06),
+                      inset 0 -1px 1px hsl(0 0% 0% / 0.12),
+                      0 4px 16px hsl(200 45% 12% / 0.35),
+                      0 0 12px hsl(174 45% 52% / 0.12),
+                      0 0 24px hsl(174 40% 48% / 0.06)
                     `,
                   animation: typingState === 'valid' && !isHovering ? 'cta-halo-pulse 2.2s ease-in-out infinite' : 'none',
                 }}
               />
               
-              {/* Inner glow - intensifies when valid */}
+              {/* Inner glow - intensifies when valid, subtle static for disabled */}
               <div 
                 className="absolute rounded-full pointer-events-none transition-all duration-500"
                 style={{
@@ -1052,13 +1057,14 @@ export const ScoreGauge = ({
                     ? (isHovering || isFocused)
                       ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 55% 60% / 0.22) 0%, transparent 70%)'
                       : 'radial-gradient(ellipse 100% 100% at center, hsl(174 50% 58% / 0.16) 0%, transparent 70%)'
-                    : 'radial-gradient(ellipse 100% 100% at center, hsl(174 25% 50% / 0.03) 0%, transparent 70%)',
+                    // DISABLED: Very subtle static glow for premium feel
+                    : 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.08) 0%, transparent 70%)',
                   filter: 'blur(4px)',
                   animation: typingState === 'valid' ? 'cta-inner-glow 2.2s ease-in-out infinite' : 'none',
                 }}
               />
               
-              {/* Text - reactive styling with opacity for disabled state */}
+              {/* Text - reactive styling, brighter for disabled readability */}
               <span
                 className="relative uppercase font-semibold tracking-[0.16em] text-center transition-all duration-300"
                 style={{
@@ -1066,13 +1072,16 @@ export const ScoreGauge = ({
                   lineHeight: 1.4,
                   color: typingState === 'valid'
                     ? (isHovering || isFocused) ? 'hsl(0 0% 100%)' : 'hsl(0 0% 98%)'
-                    : 'hsl(0 0% 70%)',
-                  opacity: typingState === 'valid' ? 1 : 0.6,
+                    // DISABLED: Brighter text (was 70% opacity), now clearer
+                    : 'hsl(0 0% 82%)',
+                  // DISABLED: Higher opacity for readability (was 0.6)
+                  opacity: typingState === 'valid' ? 1 : 0.85,
                   textShadow: typingState === 'valid'
                     ? (isHovering || isFocused)
                       ? '0 1px 4px hsl(0 0% 0% / 0.6), 0 0 20px hsl(174 65% 58% / 0.45)'
                       : '0 1px 3px hsl(0 0% 0% / 0.5), 0 0 14px hsl(174 55% 55% / 0.3)'
-                    : '0 1px 2px hsl(0 0% 0% / 0.3)',
+                    // DISABLED: Subtle shadow for depth without glow
+                    : '0 1px 3px hsl(0 0% 0% / 0.4), 0 0 8px hsl(174 40% 50% / 0.1)',
                   animation: typingState === 'valid' ? 'cta-text-brightness 2.2s ease-in-out infinite' : 'none',
                 }}
               >
