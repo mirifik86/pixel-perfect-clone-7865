@@ -90,22 +90,27 @@ export const AnimatedEarthBackground = memo(({
           filter: hasContent && !isAnalyzing && !hasResults ? 'brightness(0.94)' : 'brightness(1)',
         }}
       >
-        {/* Globe container with rotation */}
+        {/* Globe container with horizontal pan animation */}
         <div
           className="relative w-full h-full rounded-full overflow-hidden"
           style={{
-            animation: shouldAnimate ? `globe-rotate ${animationSpeed} linear infinite` : 'none',
-            willChange: shouldAnimate ? 'transform' : 'auto',
+            willChange: shouldAnimate ? 'auto' : 'auto',
           }}
         >
-          {/* Earth image - doubled for seamless loop */}
+          {/* Earth image - tripled width for seamless loop, starts on Europe */}
           <div 
             className="absolute inset-0"
             style={{
               backgroundImage: `url(${earthBg})`,
-              backgroundSize: '200% 100%',
-              backgroundPosition: 'center',
+              backgroundSize: '300% 100%',
+              // Start position: Europe centered (roughly 33% from left on a 300% wide image)
+              // Animation moves background RIGHT → continents drift LEFT on screen
+              backgroundPosition: shouldAnimate ? undefined : '33% center',
               backgroundRepeat: 'repeat-x',
+              animation: shouldAnimate 
+                ? `globe-pan-left ${animationSpeed} linear infinite` 
+                : 'none',
+              willChange: shouldAnimate ? 'background-position' : 'auto',
             }}
           />
         </div>
