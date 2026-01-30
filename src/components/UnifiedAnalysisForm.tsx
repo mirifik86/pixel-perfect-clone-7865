@@ -372,6 +372,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               {/* Text input zone with centered placeholder */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 {/* Custom placeholder overlay - centered at top with premium effect */}
+                {/* Custom centered placeholder - HIGHER CONTRAST */}
                 {!inputText && (
                   <div 
                     className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
@@ -381,8 +382,8 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       className="text-center font-medium tracking-wide"
                       style={{
                         fontSize: 'var(--text-sm)',
-                        color: 'hsl(174 45% 65% / 0.7)',
-                        textShadow: '0 0 20px hsl(174 60% 50% / 0.3), 0 0 40px hsl(174 50% 45% / 0.15)',
+                        color: 'hsl(174 55% 72% / 0.88)', // HIGHER CONTRAST
+                        textShadow: '0 0 25px hsl(174 65% 55% / 0.4), 0 0 45px hsl(174 55% 50% / 0.2)',
                         animation: 'placeholder-glow 3s ease-in-out infinite',
                       }}
                     >
@@ -405,7 +406,11 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     minHeight: '80px',
                     padding: 'var(--space-4) var(--space-3) var(--space-3)',
                     fontSize: 'var(--text-sm)',
-                    boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                    boxShadow: isFocused 
+                      ? 'inset 0 2px 4px hsl(0 0% 0% / 0.1), 0 0 0 2px hsl(174 70% 52% / 0.4), 0 0 25px hsl(174 65% 50% / 0.18)'
+                      : 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
+                    border: isFocused ? '1px solid hsl(174 65% 55% / 0.45)' : '1px solid transparent',
+                    transition: 'box-shadow 0.3s ease-out, border 0.3s ease-out',
                   }}
                 />
               </div>
