@@ -16,7 +16,7 @@ import { MissionControlLoader } from '@/components/MissionControlLoader';
 import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-// AnimatedEarthBackground removed - globe now inside ScoreGauge
+import { StarfieldBackground } from '@/components/StarfieldBackground';
 
 interface AnalysisBreakdown {
   sources: {
@@ -685,8 +685,8 @@ const Index = () => {
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
     >
-      {/* Globe now inside ScoreGauge - no full-page Earth background */}
-      
+      {/* Premium starfield background across entire page */}
+      <StarfieldBackground />
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
       <main className="container-unified relative z-10 flex flex-1 flex-col items-center overflow-x-hidden py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div className="flex w-full max-w-full flex-col items-center overflow-hidden">
