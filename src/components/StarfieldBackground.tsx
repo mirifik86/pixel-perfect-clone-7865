@@ -6,10 +6,10 @@ import earthCosmicBg from '@/assets/earth-cosmic-bg-hq.jpg';
  * 
  * Full-page Earth-from-space background:
  * - High-res orbital view with clouds/atmosphere
- * - Dark gradient overlays for text readability
- * - Subtle blur to avoid visual distraction
+ * - Darkened 25% more for premium depth
+ * - Centered radial dark gradient behind gauge area
+ * - Soft diffused cyan glow for high-tech feel
  * - Zero animation, optimized for mobile
- * - UI elements float above this layer
  */
 export const StarfieldBackground = memo(() => {
   return (
@@ -17,7 +17,7 @@ export const StarfieldBackground = memo(() => {
       className="fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* Cinematic Earth background image */}
+      {/* Cinematic Earth background image - DARKENED 25% more */}
       <div 
         className="absolute inset-0"
         style={{
@@ -25,42 +25,72 @@ export const StarfieldBackground = memo(() => {
           backgroundSize: 'cover',
           backgroundPosition: 'center 40%',
           backgroundRepeat: 'no-repeat',
-          filter: 'blur(1.5px) brightness(0.35) saturate(0.9)',
+          filter: 'blur(2px) brightness(0.25) saturate(0.85)',
         }}
       />
       
-      {/* Dark gradient overlay - top */}
+      {/* Dark gradient overlay - top (stronger) */}
       <div 
         className="absolute inset-0"
         style={{
           background: `linear-gradient(to bottom, 
-            hsl(225 30% 3% / 0.85) 0%,
-            hsl(225 25% 4% / 0.5) 30%,
+            hsl(225 35% 2% / 0.92) 0%,
+            hsl(225 30% 3% / 0.65) 25%,
             transparent 50%
           )`,
         }}
       />
       
-      {/* Dark gradient overlay - bottom */}
+      {/* Dark gradient overlay - bottom (stronger) */}
       <div 
         className="absolute inset-0"
         style={{
           background: `linear-gradient(to top, 
-            hsl(225 30% 2% / 0.9) 0%,
-            hsl(225 25% 3% / 0.6) 25%,
+            hsl(225 35% 2% / 0.95) 0%,
+            hsl(225 30% 2% / 0.7) 25%,
             transparent 50%
           )`,
         }}
       />
       
-      {/* Radial vignette for depth */}
+      {/* CENTERED DARK RADIAL GRADIENT - Focus attention on gauge area */}
       <div 
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse 80% 70% at 50% 45%, 
-            transparent 20%,
-            hsl(225 30% 3% / 0.4) 60%,
-            hsl(225 35% 2% / 0.7) 100%
+          background: `radial-gradient(ellipse 60% 50% at 50% 35%, 
+            hsl(225 40% 2% / 0.85) 0%,
+            hsl(225 35% 3% / 0.5) 40%,
+            transparent 70%
+          )`,
+        }}
+      />
+      
+      {/* SOFT DIFFUSED CYAN GLOW - High-tech equipment feel */}
+      <div 
+        className="absolute"
+        style={{
+          top: '20%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '50%',
+          height: '40%',
+          background: `radial-gradient(ellipse 100% 80% at 50% 50%, 
+            hsl(180 50% 45% / 0.06) 0%,
+            hsl(180 45% 40% / 0.03) 40%,
+            transparent 70%
+          )`,
+          filter: 'blur(40px)',
+        }}
+      />
+      
+      {/* Radial vignette for depth (enhanced) */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse 75% 65% at 50% 40%, 
+            transparent 15%,
+            hsl(225 35% 2% / 0.5) 55%,
+            hsl(225 40% 1% / 0.8) 100%
           )`,
         }}
       />
@@ -69,13 +99,13 @@ export const StarfieldBackground = memo(() => {
       <div 
         className="absolute"
         style={{
-          bottom: '20%',
-          left: '30%',
-          width: '60%',
-          height: '50%',
+          bottom: '25%',
+          left: '25%',
+          width: '55%',
+          height: '45%',
           background: `radial-gradient(ellipse 100% 80% at 30% 70%, 
-            hsl(180 40% 30% / 0.06) 0%,
-            transparent 60%
+            hsl(180 35% 28% / 0.04) 0%,
+            transparent 55%
           )`,
         }}
       />
