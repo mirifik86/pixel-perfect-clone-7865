@@ -384,9 +384,9 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           )}
 
           {/* Main content area */}
-          <div style={{ padding: 'var(--space-4)' }}>
+          <div style={{ padding: 'var(--space-3) var(--space-4)' }}>
             {/* Text input + Image upload as visually distinct options */}
-            <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
+            <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
               
               {/* Text input zone with centered placeholder */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -498,7 +498,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               )}
               
               {/* Minimal premium divider */}
-              <div className="flex items-center justify-center" style={{ padding: 'var(--space-1) 0' }}>
+              <div className="flex items-center justify-center" style={{ padding: '0' }}>
                 <div 
                   className="relative flex items-center justify-center"
                   style={{ 
@@ -561,7 +561,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     onClick={handleAddImageClick}
                     className="relative w-full rounded-xl transition-all duration-300 group-hover/dropzone:scale-[1.008] cursor-pointer"
                     style={{
-                      padding: 'var(--space-4) var(--space-4)',
+                      padding: 'var(--space-3) var(--space-4)',
                       background: isDragOver
                         ? 'linear-gradient(165deg, hsl(174 32% 16% / 0.55), hsl(174 28% 12% / 0.5))'
                         : 'linear-gradient(165deg, hsl(200 22% 13% / 0.45), hsl(200 18% 9% / 0.4))',
@@ -584,7 +584,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
-                    <div className="flex flex-col items-center" style={{ gap: 'var(--space-3)' }}>
+                    <div className="flex flex-col items-center" style={{ gap: 'var(--space-2)' }}>
                       {/* Icon */}
                       <div 
                         className="rounded-full transition-all duration-300"
