@@ -689,11 +689,11 @@ const Index = () => {
       {/* Premium starfield background across entire page */}
       <StarfieldBackground />
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
-      <main className="container-unified relative z-10 flex flex-1 flex-col items-center overflow-x-hidden py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <div className="flex w-full max-w-full flex-col items-center overflow-hidden">
+      <main className="container-unified relative z-10 flex flex-1 flex-col items-center justify-start overflow-x-hidden py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex w-full max-w-full flex-col items-center overflow-hidden text-center">
           {/* Logo & branding - CLEAN HIERARCHY */}
           <div 
-            className="relative flex animate-fade-in flex-col items-center overflow-visible" 
+            className="relative flex animate-fade-in flex-col items-center justify-center overflow-visible w-full" 
             style={{ animationDelay: '0ms', animationFillMode: 'both', marginBottom: '0' }}
           >
             {/* Unified halo effect behind logo */}
@@ -708,8 +708,11 @@ const Index = () => {
             <LeenScoreLogo />
           </div>
 
-          {/* Value proposition + Language toggle - inverted order */}
-          <div style={{ marginTop: 'clamp(0.5rem, 1.5vh, 1rem)', marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
+          {/* Value proposition + Language toggle - centered */}
+          <div 
+            className="flex flex-col items-center justify-center w-full"
+            style={{ marginTop: 'clamp(0.5rem, 1.5vh, 1rem)', marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)' }}
+          >
             <ValueProposition>
               <LanguageToggle 
                 mode={languageMode} 
@@ -719,13 +722,13 @@ const Index = () => {
             </ValueProposition>
           </div>
 
-          {/* Score gauge - MOBILE: reduced height to keep button above fold */}
+          {/* Score gauge - centered and aligned */}
           <div 
-            className="relative flex flex-col justify-center items-center mb-2 md:mb-6"
+            className="relative flex flex-col justify-center items-center w-full mb-2 md:mb-6"
             style={{ 
               minHeight: isLoading && isImageAnalysis 
-                ? 'clamp(280px, 45vh, 400px)' // MOBILE: larger container for image loader
-                : `clamp(${gaugeSize}px, 18vh, ${gaugeSize + 40}px)` // MOBILE: dynamic height
+                ? 'clamp(280px, 45vh, 400px)'
+                : `clamp(${gaugeSize}px, 18vh, ${gaugeSize + 40}px)`
             }}
           >
             {/* External Loader - ONLY for image analysis (MissionControlLoader) */}
@@ -864,10 +867,10 @@ const Index = () => {
             />
           )}
 
-          {/* Minimal pulsing dot indicator between gauge and form */}
+          {/* Minimal pulsing dot indicator between gauge and form - centered */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
-              className="flex items-center justify-center"
+              className="flex items-center justify-center w-full"
               style={{ 
                 marginTop: 'var(--space-2)',
                 marginBottom: 'var(--space-2)',
@@ -886,16 +889,16 @@ const Index = () => {
             </div>
           )}
 
-          {/* Unified Analysis Form - hidden during loading, after analysis, or during error */}
+          {/* Unified Analysis Form - centered */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
             <div 
-              className="container-content w-full animate-fade-in"
+              className="container-content w-full animate-fade-in flex flex-col items-center"
               style={{ 
                 animationDelay: '350ms', 
                 animationFillMode: 'both', 
                 marginTop: '0',
-                transform: 'scale(0.96)', // Slightly scaled down to balance with larger globe
-                transformOrigin: 'top center',
+                transform: 'scale(0.96)',
+                transformOrigin: 'center center',
               }}
             >
               <UnifiedAnalysisForm 
