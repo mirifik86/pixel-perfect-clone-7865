@@ -54,14 +54,18 @@
     "validationTitle": "Contenu non analysable, veuillez corriger ou entrer de nouveau.",
     "validationSubline": "",
     "validationHint": "",
-    "validationNotAnalyzable": "Contenu non analysable, veuillez corriger ou entrer de nouveau."
+    "validationNotAnalyzable": "Contenu non analysable — veuillez corriger ou entrer de nouveau",
+    "launchAnalysis": "Lancer l'analyse",
+    "inputDetected": "Entrée détectée",
+    "readyToAnalyze": "prêt à analyser"
   },
   "gauge": {
     "pending": "En attente",
     "ready": "Prêt",
     "readyToAnalyze": "PRÊT À ANALYSER",
+    "readyShort": "PRÊT",
+    "analyzing": "ANALYSE…",
     "startAnalysis": "LANCER L'ANALYSE",
-    "analyzing": "Analyse en cours...",
     "methodology": "Ce score de crédibilité est généré à l'aide d'une analyse multi-signaux structurée combinant cohérence du contenu, signaux de vérification contextuelle et indicateurs de risque. Les scores suivent une échelle de crédibilité claire, de faible à haute confiance, et sont accompagnés d'une explication détaillée des facteurs clés influençant le résultat.",
     "credibilityLevels": {
       "veryLow": "Très faible",
