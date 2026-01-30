@@ -986,10 +986,11 @@ export const ScoreGauge = ({
               />
               
               {/* Text with elegant shadow for readability - intensifies on hover */}
+              {/* Show 'PRÊT' when valid input, otherwise full 'PRÊT À ANALYSER' */}
               <span
                 className="relative uppercase font-medium tracking-[0.18em] text-center transition-all duration-300"
                 style={{
-                  fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
+                  fontSize: typingState === 'valid' ? 'clamp(0.8rem, 2.8vw, 1.1rem)' : 'clamp(0.65rem, 2.2vw, 0.85rem)',
                   lineHeight: 1.4,
                   color: (isHovering || isFocused) ? 'hsl(0 0% 100%)' : 'hsl(0 0% 96%)',
                   textShadow: (isHovering || isFocused)
@@ -998,7 +999,7 @@ export const ScoreGauge = ({
                   animation: 'idle-text-brightness 3.8s ease-in-out infinite',
                 }}
               >
-                {t('gauge.readyToAnalyze')}
+                {typingState === 'valid' ? t('gauge.readyShort') : t('gauge.readyToAnalyze')}
               </span>
             </div>
           )}
