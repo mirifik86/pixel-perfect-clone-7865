@@ -348,25 +348,44 @@ export const ScoreGauge = ({
         </>
       )}
       
-      {/* Premium ambient glow behind gauge - subtle activation when content detected */}
+      {/* ULTRA-PREMIUM HALO GLOW behind roulette */}
       <div 
-        className="absolute rounded-full transition-all duration-400 ease-out"
+        className="absolute rounded-full pointer-events-none"
         style={{
-          width: size * 1.3,
-          height: size * 1.3,
+          width: size * 1.5,
+          height: size * 1.5,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: score !== null 
-            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')} 0%, transparent 70%)`
+            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.2)')} 0%, ${getCurrentColor(animatedScore).replace(')', ' / 0.08)')} 35%, transparent 65%)`
             : isLoading
-              ? 'radial-gradient(circle, hsl(174 70% 50% / 0.18) 0%, hsl(174 60% 45% / 0.08) 40%, transparent 70%)'
+              ? 'radial-gradient(circle, hsl(174 80% 55% / 0.25) 0%, hsl(174 70% 50% / 0.12) 35%, transparent 65%)'
               : hasContent
-                // Activated state: increased saturation and brightness with outer glow
-                ? 'radial-gradient(circle, hsl(174 75% 52% / 0.22) 0%, hsl(174 65% 48% / 0.12) 40%, transparent 70%)'
-                // Muted idle state: desaturated and dimmer
-                : 'radial-gradient(circle, hsl(174 40% 38% / 0.08) 0%, hsl(200 35% 35% / 0.04) 40%, transparent 70%)',
-          filter: hasContent && score === null && !isLoading ? 'blur(22px)' : 'blur(20px)',
+                ? 'radial-gradient(circle, hsl(174 85% 55% / 0.22) 0%, hsl(174 75% 50% / 0.1) 35%, transparent 65%)'
+                : 'radial-gradient(circle, hsl(174 60% 50% / 0.12) 0%, hsl(200 50% 45% / 0.05) 35%, transparent 65%)',
+          filter: 'blur(25px)',
+          animation: score === null ? 'idle-glow-pulse 4s ease-in-out infinite' : 'none',
+        }}
+      />
+      
+      {/* Premium ambient glow behind gauge */}
+      <div 
+        className="absolute rounded-full transition-all duration-400 ease-out"
+        style={{
+          width: size * 1.25,
+          height: size * 1.25,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: score !== null 
+            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')} 0%, transparent 70%)`
+            : isLoading
+              ? 'radial-gradient(circle, hsl(174 75% 52% / 0.2) 0%, hsl(174 65% 48% / 0.1) 40%, transparent 70%)'
+              : hasContent
+                ? 'radial-gradient(circle, hsl(174 80% 55% / 0.25) 0%, hsl(174 70% 50% / 0.14) 40%, transparent 70%)'
+                : 'radial-gradient(circle, hsl(174 55% 45% / 0.1) 0%, hsl(200 45% 40% / 0.05) 40%, transparent 70%)',
+          filter: 'blur(18px)',
           pointerEvents: 'none',
           animation: score === null 
             ? (isLoading ? 'analyzing-ambient-glow 3.5s ease-in-out infinite' : 'idle-glow-pulse 3.8s ease-in-out infinite') 
@@ -382,17 +401,31 @@ export const ScoreGauge = ({
           height: size,
         }}
       >
-        {/* Premium outer ring glow - activates subtly when content detected */}
+        {/* GLASS LENS HIGHLIGHT on ring - premium shine */}
+        <div 
+          className="absolute inset-0 rounded-full pointer-events-none"
+          style={{
+            background: `
+              linear-gradient(135deg, 
+                hsl(0 0% 100% / 0.08) 0%, 
+                transparent 30%, 
+                transparent 70%, 
+                hsl(0 0% 100% / 0.03) 100%
+              )
+            `,
+            zIndex: 10,
+          }}
+        />
+        
+        {/* Premium outer ring glow - activates when content detected */}
         <div 
           className="absolute inset-0 rounded-full transition-all duration-400 ease-out"
           style={{
             boxShadow: score !== null 
-              ? `0 0 30px ${getCurrentColor(animatedScore).replace(')', ' / 0.3)')}, 0 0 60px ${getCurrentColor(animatedScore).replace(')', ' / 0.15)')}, inset 0 0 20px ${getCurrentColor(animatedScore).replace(')', ' / 0.1)')}`
+              ? `0 0 35px ${getCurrentColor(animatedScore).replace(')', ' / 0.35)')}, 0 0 70px ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')}, inset 0 0 25px ${getCurrentColor(animatedScore).replace(')', ' / 0.12)')}`
               : hasContent && !isLoading
-                // Activated state: enhanced glow with increased saturation
-                ? '0 0 35px hsl(174 75% 50% / 0.25), 0 0 55px hsl(174 65% 48% / 0.12), inset 0 0 18px hsl(174 65% 45% / 0.12)'
-                // Muted idle state: desaturated, subtle
-                : '0 0 20px hsl(174 40% 40% / 0.1), 0 0 40px hsl(200 35% 40% / 0.05), inset 0 0 12px hsl(174 35% 35% / 0.06)',
+                ? '0 0 40px hsl(174 80% 52% / 0.3), 0 0 65px hsl(174 70% 50% / 0.15), inset 0 0 20px hsl(174 70% 48% / 0.14)'
+                : '0 0 28px hsl(174 55% 48% / 0.15), 0 0 50px hsl(200 45% 45% / 0.08), inset 0 0 15px hsl(174 50% 42% / 0.08)',
             animation: score === null ? 'idle-ring-pulse 3.8s ease-in-out 75ms infinite' : 'none',
           }}
         />
