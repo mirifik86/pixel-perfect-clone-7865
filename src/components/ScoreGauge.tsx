@@ -936,7 +936,7 @@ export const ScoreGauge = ({
           {/* Rotating Globe - always visible behind other content */}
           <RotatingGlobe size={size} isAnalyzing={isLoading} />
           
-          {/* ========== POWERED BY IA11 SIGNATURE - Curved text in arc (flipped for readability) ========== */}
+          {/* ========== POWERED BY IA11 SIGNATURE - Premium curved text with shimmer ========== */}
           <svg
             className="absolute pointer-events-none"
             width={size}
@@ -952,43 +952,52 @@ export const ScoreGauge = ({
               <path
                 id="ia11-arc-path"
                 d={(() => {
-                  // Position in the ring band itself
                   const arcRadius = radius;
                   const centerX = size / 2;
                   const centerY = size / 2;
-                  // Arc from 120° to 60° (reversed - right to left) for correct text orientation
                   const startAngle = 115 * (Math.PI / 180);
                   const endAngle = 65 * (Math.PI / 180);
                   const startX = centerX + arcRadius * Math.cos(startAngle);
                   const startY = centerY + arcRadius * Math.sin(startAngle);
                   const endX = centerX + arcRadius * Math.cos(endAngle);
                   const endY = centerY + arcRadius * Math.sin(endAngle);
-                  // sweep-flag = 0 for counter-clockwise (text reads left-to-right at bottom)
                   return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 0 ${endX} ${endY}`;
                 })()}
                 fill="none"
               />
-              {/* Glow filter for high-tech effect */}
-              <filter id="ia11-glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="1.5" result="blur" />
-                <feFlood floodColor="hsl(174, 55%, 50%)" floodOpacity="0.5" />
+              {/* Premium glow filter */}
+              <filter id="ia11-glow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feFlood floodColor="hsl(174, 70%, 55%)" floodOpacity="0.6" />
                 <feComposite in2="blur" operator="in" />
                 <feMerge>
                   <feMergeNode />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
+              {/* Shimmer gradient for premium effect */}
+              <linearGradient id="ia11-shimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="hsl(180 40% 65%)" stopOpacity="0.7">
+                  <animate attributeName="stop-opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" />
+                </stop>
+                <stop offset="40%" stopColor="hsl(174 65% 75%)" stopOpacity="1">
+                  <animate attributeName="offset" values="0.3;0.5;0.3" dur="3s" repeatCount="indefinite" />
+                </stop>
+                <stop offset="100%" stopColor="hsl(180 40% 65%)" stopOpacity="0.7">
+                  <animate attributeName="stop-opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" />
+                </stop>
+              </linearGradient>
             </defs>
             
-            {/* Glow layer */}
+            {/* Outer glow layer - soft ambient */}
             <text
-              fill="hsl(174 50% 50% / 0.35)"
+              fill="hsl(174 60% 50% / 0.25)"
               style={{
                 fontSize: `${size * 0.034}px`,
-                fontWeight: 500,
-                letterSpacing: '0.12em',
+                fontWeight: 600,
+                letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                filter: 'blur(2.5px)',
+                filter: 'blur(4px)',
               }}
             >
               <textPath
@@ -1000,13 +1009,33 @@ export const ScoreGauge = ({
               </textPath>
             </text>
             
-            {/* Main text */}
+            {/* Inner glow layer - tighter */}
             <text
-              fill="hsl(180 35% 72%)"
+              fill="hsl(174 55% 55% / 0.4)"
               style={{
                 fontSize: `${size * 0.034}px`,
-                fontWeight: 500,
-                letterSpacing: '0.12em',
+                fontWeight: 600,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                filter: 'blur(1.5px)',
+              }}
+            >
+              <textPath
+                href="#ia11-arc-path"
+                startOffset="50%"
+                textAnchor="middle"
+              >
+                Powered by IA11
+              </textPath>
+            </text>
+            
+            {/* Main text with shimmer gradient */}
+            <text
+              fill="url(#ia11-shimmer)"
+              style={{
+                fontSize: `${size * 0.034}px`,
+                fontWeight: 600,
+                letterSpacing: '0.14em',
                 textTransform: 'uppercase',
               }}
               filter="url(#ia11-glow)"
