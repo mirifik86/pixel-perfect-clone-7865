@@ -1,21 +1,39 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 
-interface StaticGlobeProps {
+interface RotatingGlobeProps {
   size: number;
   isAnalyzing?: boolean;
 }
 
 /**
- * Stylized Global Credibility Core
+ * Premium Earth Globe - Optimized for Mobile Performance
  * 
- * Premium symbolic globe - not photo-realistic:
- * - Dark minimal continent silhouettes
- * - Soft cyan/blue atmospheric glow
- * - Clean futuristic aesthetic
- * - Zero animation for performance
+ * Cinematic, slow-rotating Earth with soft lighting:
+ * - Very slow rotation (150s cycle)
+ * - No glows, halos, or bright edges
+ * - Minimal transparency and blur
+ * - Stable, calm visual presence
  */
-export const RotatingGlobe = memo(({ size, isAnalyzing = false }: StaticGlobeProps) => {
-  const globeSize = size * 0.78;
+export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeProps) => {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+  
+  const shouldAnimate = !prefersReducedMotion;
+  // Cinematic slow rotation - 150s normal, 80s when analyzing
+  const rotationSpeed = isAnalyzing ? '80s' : '150s';
+  
+  // Globe size with clean gap from gauge ring
+  const globeSize = size * 0.82;
+  
+  // High-quality Blue Marble Earth texture
+  const earthTexture = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Blue_Marble_2002.png/1280px-Blue_Marble_2002.png';
   
   return (
     <div 
@@ -29,163 +47,91 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: StaticGlobePro
         zIndex: 0,
       }}
     >
-      {/* Outer atmospheric glow - soft cyan */}
-      <div 
-        className="absolute rounded-full"
-        style={{
-          width: '140%',
-          height: '140%',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle at center, 
-            hsl(190 60% 50% / 0.08) 30%,
-            hsl(195 55% 45% / 0.04) 50%,
-            hsl(200 50% 40% / 0.02) 65%,
-            transparent 80%
-          )`,
-          filter: 'blur(12px)',
-          zIndex: -2,
-        }}
-      />
-      
-      {/* Inner atmospheric ring */}
-      <div 
-        className="absolute rounded-full"
-        style={{
-          width: '115%',
-          height: '115%',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle at center, 
-            transparent 60%,
-            hsl(190 50% 55% / 0.06) 75%,
-            hsl(195 45% 50% / 0.03) 85%,
-            transparent 100%
-          )`,
-          zIndex: -1,
-        }}
-      />
-      
-      {/* Globe sphere - stylized dark ocean */}
+      {/* ========== EARTH GLOBE - CLEAN & PERFORMANT ========== */}
       <div 
         className="absolute rounded-full overflow-hidden"
         style={{
           width: '100%',
           height: '100%',
-          background: `radial-gradient(circle at 35% 30%, 
-            hsl(210 45% 18%) 0%,
-            hsl(215 50% 12%) 40%,
-            hsl(220 55% 8%) 70%,
-            hsl(225 60% 5%) 100%
-          )`,
-          boxShadow: `
-            inset 0 0 ${globeSize * 0.15}px hsl(220 50% 6%),
-            0 0 ${globeSize * 0.08}px hsl(195 50% 50% / 0.15),
-            0 0 ${globeSize * 0.2}px hsl(200 45% 45% / 0.08)
-          `,
-          opacity: isAnalyzing ? 0.9 : 0.8,
+          opacity: isAnalyzing ? 0.75 : 0.65,
+          // Minimal shadow - no heavy glow layers
+          boxShadow: '0 0 20px hsl(200 40% 30% / 0.2)',
         }}
       >
-        {/* Stylized continent shapes - abstract, minimal */}
-        <svg 
-          viewBox="0 0 100 100" 
-          className="absolute inset-0 w-full h-full"
-          style={{ opacity: 0.35 }}
-        >
-          {/* North America - simplified */}
-          <ellipse cx="28" cy="32" rx="12" ry="8" fill="hsl(200 30% 25%)" />
-          <ellipse cx="22" cy="38" rx="6" ry="5" fill="hsl(200 30% 25%)" />
-          
-          {/* South America - simplified */}
-          <ellipse cx="35" cy="62" rx="5" ry="10" fill="hsl(200 30% 25%)" />
-          
-          {/* Europe/Africa - simplified */}
-          <ellipse cx="52" cy="35" rx="4" ry="5" fill="hsl(200 30% 25%)" />
-          <ellipse cx="54" cy="52" rx="6" ry="12" fill="hsl(200 30% 25%)" />
-          
-          {/* Asia - simplified */}
-          <ellipse cx="72" cy="35" rx="14" ry="10" fill="hsl(200 30% 25%)" />
-          <ellipse cx="80" cy="50" rx="6" ry="8" fill="hsl(200 30% 25%)" />
-          
-          {/* Australia - simplified */}
-          <ellipse cx="82" cy="68" rx="6" ry="4" fill="hsl(200 30% 25%)" />
-        </svg>
-        
-        {/* Subtle grid lines - futuristic touch */}
+        {/* Ocean base - simple gradient */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `
-              repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 9%,
-                hsl(195 40% 50% / 0.03) 9%,
-                hsl(195 40% 50% / 0.03) 10%
-              ),
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 9%,
-                hsl(195 40% 50% / 0.03) 9%,
-                hsl(195 40% 50% / 0.03) 10%
-              )
-            `,
-            opacity: 0.6,
+            background: `radial-gradient(circle at 30% 25%, 
+              hsl(200 50% 35%) 0%, 
+              hsl(210 45% 25%) 40%, 
+              hsl(220 40% 15%) 100%
+            )`,
           }}
         />
         
-        {/* Atmospheric edge highlight */}
+        {/* PRIMARY ROTATING EARTH TEXTURE */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `
-              linear-gradient(135deg, 
-                hsl(195 50% 60% / 0.08) 0%, 
-                transparent 25%
-              ),
-              linear-gradient(315deg, 
-                transparent 70%,
-                hsl(220 45% 8% / 0.4) 100%
-              )
-            `,
+            backgroundImage: `url(${earthTexture})`,
+            backgroundSize: '200% 100%',
+            backgroundPosition: '0% 50%',
+            backgroundRepeat: 'repeat-x',
+            animation: shouldAnimate ? `globe-rotate ${rotationSpeed} linear infinite` : 'none',
+            // Soft, realistic look - no oversaturation
+            filter: 'saturate(1.0) brightness(1.05) contrast(0.95)',
           }}
         />
         
-        {/* Rim light - top edge */}
+        {/* SOFT TERMINATOR SHADOW - Low contrast day/night */}
         <div 
-          className="absolute rounded-full"
+          className="absolute inset-0 rounded-full"
           style={{
-            top: '2%',
-            left: '20%',
-            width: '60%',
-            height: '15%',
-            background: `radial-gradient(ellipse 100% 100% at 50% 0%, 
-              hsl(195 50% 60% / 0.12) 0%,
-              transparent 70%
+            background: `linear-gradient(125deg, 
+              transparent 40%, 
+              hsl(230 30% 10% / 0.15) 55%,
+              hsl(235 35% 8% / 0.3) 70%,
+              hsl(240 40% 6% / 0.45) 100%
             )`,
           }}
         />
       </div>
       
-      {/* Center overlay for text readability */}
+      {/* ========== MINIMAL CENTER OVERLAY FOR TEXT READABILITY ========== */}
       <div 
         className="absolute rounded-full pointer-events-none"
         style={{
-          width: '55%',
-          height: '30%',
+          width: '65%',
+          height: '35%',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: `radial-gradient(ellipse 100% 100% at center, 
-            hsl(225 40% 6% / 0.5) 0%, 
+            hsl(230 30% 8% / 0.35) 0%, 
             transparent 100%
           )`,
+          // No blur for performance
           zIndex: 1,
         }}
       />
+      
+      {/* ========== SCAN RING (analysis mode only) - No pulse animation ========== */}
+      {isAnalyzing && shouldAnimate && (
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: '102%',
+            height: '102%',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            border: '1px solid hsl(174 50% 50% / 0.25)',
+            animation: 'scan-pulse 3.5s ease-out infinite',
+            zIndex: 2,
+          }}
+        />
+      )}
     </div>
   );
 });
