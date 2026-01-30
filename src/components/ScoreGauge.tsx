@@ -922,10 +922,10 @@ export const ScoreGauge = ({
             <path
               id="ia11-arc-path"
               d={(() => {
-                // Arc in the lower neutral zone - drawn right to left so text reads correctly
-                const arcRadius = radius - strokeWidth / 2 - 8;
-                const startAngle = 125 * (Math.PI / 180);  // Start at 125° (right side)
-                const endAngle = 55 * (Math.PI / 180);     // End at 55° (left side)
+                // Arc positioned lower in the gauge - closer to true bottom (90°)
+                const arcRadius = radius - strokeWidth / 2 - 12;
+                const startAngle = 115 * (Math.PI / 180);  // Start at 115° (right side, lower)
+                const endAngle = 65 * (Math.PI / 180);     // End at 65° (left side, lower)
                 const startX = size / 2 + arcRadius * Math.cos(startAngle);
                 const startY = size / 2 + arcRadius * Math.sin(startAngle);
                 const endX = size / 2 + arcRadius * Math.cos(endAngle);
