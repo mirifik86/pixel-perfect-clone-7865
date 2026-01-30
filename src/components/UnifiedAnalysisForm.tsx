@@ -422,8 +422,8 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                   placeholder=""
                   className="w-full resize-none rounded-xl text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                   style={{
-                    minHeight: '80px',
-                    padding: 'var(--space-4) var(--space-3) var(--space-3)',
+                    minHeight: '100px',
+                    padding: 'var(--space-5) var(--space-4) var(--space-4)',
                     fontSize: 'var(--text-sm)',
                     background: isFocused
                       ? 'hsl(200 20% 12% / 0.5)'
@@ -561,7 +561,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                     onClick={handleAddImageClick}
                     className="relative w-full rounded-xl transition-all duration-300 group-hover/dropzone:scale-[1.008] cursor-pointer"
                     style={{
-                      padding: 'var(--space-3) var(--space-4)',
+                      padding: 'var(--space-2) var(--space-3)',
                       background: isDragOver
                         ? 'linear-gradient(165deg, hsl(174 32% 16% / 0.55), hsl(174 28% 12% / 0.5))'
                         : 'linear-gradient(165deg, hsl(200 22% 13% / 0.45), hsl(200 18% 9% / 0.4))',
@@ -584,29 +584,29 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
-                    <div className="flex flex-col items-center" style={{ gap: 'var(--space-2)' }}>
+                    <div className="flex flex-col items-center" style={{ gap: 'var(--space-1)' }}>
                       {/* Icon */}
                       <div 
                         className="rounded-full transition-all duration-300"
                         style={{
-                          padding: 'var(--space-3)',
+                          padding: 'var(--space-2)',
                           background: isDragOver
                             ? 'linear-gradient(135deg, hsl(174 60% 35% / 0.5), hsl(174 55% 30% / 0.4))'
                             : 'linear-gradient(135deg, hsl(174 50% 30% / 0.35), hsl(174 45% 25% / 0.25))',
                           boxShadow: isDragOver
-                            ? '0 0 20px hsl(174 60% 55% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
-                            : '0 0 12px hsl(174 55% 50% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.1)',
+                            ? '0 0 16px hsl(174 60% 55% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
+                            : '0 0 10px hsl(174 55% 50% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.1)',
                         }}
                       >
                         <Upload 
                           className="transition-all duration-300"
                           style={{ 
-                            width: '24px',
-                            height: '24px',
+                            width: '18px',
+                            height: '18px',
                             color: isDragOver ? 'hsl(174 85% 70%)' : 'hsl(174 70% 65%)',
                             filter: isDragOver 
-                              ? 'drop-shadow(0 0 10px hsl(174 75% 60% / 0.8))'
-                              : 'drop-shadow(0 0 6px hsl(174 65% 55% / 0.5))',
+                              ? 'drop-shadow(0 0 8px hsl(174 75% 60% / 0.8))'
+                              : 'drop-shadow(0 0 4px hsl(174 65% 55% / 0.5))',
                           }} 
                         />
                       </div>
@@ -615,11 +615,11 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       <p 
                         className="font-medium text-center transition-all duration-300"
                         style={{ 
-                          fontSize: 'var(--text-sm)',
+                          fontSize: '12px',
                           color: isDragOver ? 'hsl(174 75% 75%)' : 'hsl(174 60% 70%)',
                           textShadow: isDragOver 
-                            ? '0 0 15px hsl(174 65% 55% / 0.5)'
-                            : '0 0 10px hsl(174 55% 50% / 0.3)',
+                            ? '0 0 12px hsl(174 65% 55% / 0.5)'
+                            : '0 0 8px hsl(174 55% 50% / 0.3)',
                           letterSpacing: '0.01em',
                         }}
                       >
@@ -630,8 +630,8 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       <p 
                         className="text-center"
                         style={{ 
-                          fontSize: '11px',
-                          color: 'hsl(0 0% 100% / 0.45)',
+                          fontSize: '10px',
+                          color: 'hsl(0 0% 100% / 0.4)',
                           letterSpacing: '0.02em',
                         }}
                       >
