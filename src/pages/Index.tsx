@@ -16,7 +16,7 @@ import { MissionControlLoader } from '@/components/MissionControlLoader';
 import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import earthBg from '@/assets/earth-cosmic-bg.jpg';
+import { AnimatedEarthBackground } from '@/components/AnimatedEarthBackground';
 
 interface AnalysisBreakdown {
   sources: {
@@ -685,17 +685,11 @@ const Index = () => {
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
     >
-      {/* Earth background - dims when ready for action */}
-      <div 
-        className="pointer-events-none fixed inset-0 transition-all duration-500 ease-out" 
-        style={{
-          backgroundImage: `url(${earthBg})`,
-          backgroundPosition: 'center 40%',
-          backgroundSize: 'cover',
-          backgroundAttachment: 'fixed',
-          opacity: hasFormContent && !isLoading && !hasAnyAnalysis ? 0.72 : 0.80,
-          filter: hasFormContent && !isLoading && !hasAnyAnalysis ? 'brightness(0.94)' : 'brightness(1)',
-        }} 
+      {/* Animated Earth background with idle/analyze states */}
+      <AnimatedEarthBackground 
+        isAnalyzing={isLoading || isProLoading}
+        hasContent={hasFormContent}
+        hasResults={hasAnyAnalysis}
       />
       
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
