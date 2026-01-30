@@ -36,7 +36,7 @@
     "newAnalysis": "New Analysis"
   },
   "form": {
-    "placeholder": "Write a claim or paste text…",
+    "placeholder": "Type a claim, paste some text… (or add an image)",
     "placeholderHint": "then",
     "description": "We analyze source credibility, linguistic patterns, and context to help you understand online information.",
     "urlDetected": "URL detected",
