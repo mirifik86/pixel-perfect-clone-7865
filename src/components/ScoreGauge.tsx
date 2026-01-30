@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { useLanguage } from '@/i18n/useLanguage';
 import { Button } from '@/components/ui/button';
 import { InGaugeAnalysisLoader } from '@/components/InGaugeAnalysisLoader';
+import { RotatingGlobe } from '@/components/RotatingGlobe';
 
 interface ScoreGaugeProps {
   score: number | null; // 0-100 or null for pending
@@ -682,6 +683,8 @@ export const ScoreGauge = ({
           className="absolute inset-0 flex items-center justify-center"
           style={{ marginTop: -verticalOffset }}
         >
+          {/* Rotating Globe - always visible behind other content */}
+          <RotatingGlobe size={size} isAnalyzing={isLoading} />
           {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT with morph reveal */}
           {uiState === 'result' && (
             <div 
