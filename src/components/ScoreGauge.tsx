@@ -794,8 +794,8 @@ export const ScoreGauge = ({
           {/* 6 dividers: 5 at segment boundaries + 1 at end of arc */}
           {[0, 1, 2, 3, 4, 5].map((i) => {
             // Offset to center dividers exactly in the visual gaps between segments
-            // Gap is ~4px which corresponds to ~1.8 degrees, offset by half to center
-            const gapOffsetDegrees = 2.2; // Increased offset to properly center in gaps
+            // Each segment rotates at 135 + i*54, gap is 4px, offset centers in gap
+            const gapOffsetDegrees = 0.8; // Small offset to center in visual gap
             const dividerAngle = 135 + i * 54 - gapOffsetDegrees;
             const dividerRad = dividerAngle * (Math.PI / 180);
             
