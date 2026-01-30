@@ -47,24 +47,7 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
         zIndex: 0,
       }}
     >
-      {/* ========== ATMOSPHERIC OUTER GLOW ========== */}
-      <div 
-        className="absolute rounded-full transition-all duration-700"
-        style={{
-          width: '115%',
-          height: '115%',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle, 
-            transparent 45%,
-            hsl(190 60% 50% / ${isAnalyzing ? 0.2 : 0.12}) 65%,
-            hsl(180 55% 45% / ${isAnalyzing ? 0.28 : 0.18}) 80%,
-            hsl(174 50% 40% / ${isAnalyzing ? 0.15 : 0.08}) 100%
-          )`,
-          filter: 'blur(4px)',
-        }}
-      />
+      {/* Removed: ATMOSPHERIC OUTER GLOW - keeping globe clean */}
       
       {/* ========== EARTH GLOBE - PREMIUM VISIBLE ========== */}
       <div 
@@ -122,32 +105,9 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           }}
         />
         
-        {/* ATMOSPHERIC RIM LIGHT */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            boxShadow: `
-              inset 0 0 ${globeSize * 0.12}px hsl(190 65% 60% / 0.15),
-              inset ${globeSize * 0.025}px ${globeSize * 0.02}px ${globeSize * 0.08}px hsl(180 60% 70% / 0.1),
-              inset -${globeSize * 0.07}px -${globeSize * 0.06}px ${globeSize * 0.14}px hsl(240 45% 4% / 0.45)
-            `,
-          }}
-        />
+        {/* Removed: ATMOSPHERIC RIM LIGHT - keeping globe clean */}
         
-        {/* Removed: SUN RIM LIGHT - was creating white spots on upper-right */}
-        
-        {/* Terminator edge glow (sunrise line) - enhanced */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `linear-gradient(122deg, 
-              transparent 42%,
-              hsl(35 50% 65% / 0.1) 50%,
-              hsl(30 45% 60% / 0.06) 56%,
-              transparent 64%
-            )`,
-          }}
-        />
+        {/* Removed: Terminator edge glow - keeping globe clean */}
       </div>
       
       {/* ========== SUBTLE TEXT READABILITY OVERLAY - REDUCED ========== */}
