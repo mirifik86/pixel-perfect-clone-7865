@@ -627,102 +627,104 @@
 }
 
 /* ============================================
-   PRO PREMIUM MAX EARTH BACKGROUND KEYFRAMES
-   Full-bleed seamless animations
+   PRO PREMIUM MAX EARTH GLOBE KEYFRAMES
+   Centered axial rotation (no drift)
    ============================================ */
 
-/* Earth seamless horizontal pan - Europe starts visible, drifts LEFT */
-@keyframes earth-pan-seamless {
+/* Globe texture scroll - simulates rotation inside fixed circle */
+@keyframes globe-texture-scroll {
   0% {
-    background-position: 25% 40%;
+    background-position: 0% center;
   }
   100% {
-    background-position: 125% 40%;
+    background-position: 100% center;
   }
 }
 
-/* Star twinkle - subtle brightness pulse */
+/* Cloud layer scroll - slightly faster than surface */
+@keyframes globe-clouds-scroll {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
+/* Star twinkle */
 @keyframes star-twinkle {
   0%, 100% {
-    opacity: 0.15;
+    opacity: 0.12;
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
-    transform: scale(1.1);
+    opacity: 0.55;
+    transform: scale(1.08);
   }
 }
 
-/* Radar sweep - centered rotation */
-@keyframes radar-sweep-center {
+/* Radar sweep around globe */
+@keyframes radar-sweep-globe {
   0% {
-    transform: translate(-50%, -50%) rotate(0deg);
+    transform: translate(-50%, -55%) rotate(0deg);
   }
   100% {
-    transform: translate(-50%, -50%) rotate(360deg);
+    transform: translate(-50%, -55%) rotate(360deg);
   }
 }
 
-/* Radar sweep reverse - centered counter-clockwise */
-@keyframes radar-sweep-center-reverse {
+/* Radar sweep reverse */
+@keyframes radar-sweep-globe-reverse {
   0% {
-    transform: translate(-50%, -50%) rotate(360deg);
+    transform: translate(-50%, -55%) rotate(360deg);
   }
   100% {
-    transform: translate(-50%, -50%) rotate(0deg);
+    transform: translate(-50%, -55%) rotate(0deg);
   }
 }
 
-/* Grid pulse - gentle opacity breathing */
+/* Grid pulse */
 @keyframes grid-pulse {
   0%, 100% {
-    opacity: 0.3;
+    opacity: 0.25;
   }
   50% {
-    opacity: 0.6;
-  }
-}
-
-/* Network arc fade with dash animation */
-@keyframes arc-fade {
-  0%, 100% {
-    opacity: 0.1;
-    stroke-dashoffset: 15;
-  }
-  50% {
-    opacity: 0.6;
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Floating particle - organic drift */
-@keyframes particle-float {
-  0%, 100% {
-    transform: translateY(0) translateX(0) scale(1);
-    opacity: 0.3;
-  }
-  25% {
-    transform: translateY(-10px) translateX(5px) scale(1.12);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-16px) translateX(-3px) scale(0.92);
-    opacity: 0.45;
-  }
-  75% {
-    transform: translateY(-6px) translateX(8px) scale(1.05);
     opacity: 0.55;
   }
 }
 
-/* Scanning ring expansion - centered */
-@keyframes scan-ring-center {
+/* Network arc fade */
+@keyframes arc-fade {
+  0%, 100% {
+    opacity: 0.12;
+    stroke-dashoffset: 12;
+  }
+  50% {
+    opacity: 0.65;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Particle orbit pulse */
+@keyframes particle-orbit {
+  0%, 100% {
+    opacity: 0.35;
+    transform: var(--base-transform) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: var(--base-transform) scale(1.15);
+  }
+}
+
+/* Scan pulse ring expansion */
+@keyframes scan-pulse-ring {
   0% {
-    transform: translate(-50%, -50%) scale(0.8);
-    opacity: 0.45;
+    transform: translate(-50%, -55%) scale(0.85);
+    opacity: 0.4;
   }
   100% {
-    transform: translate(-50%, -50%) scale(1.7);
+    transform: translate(-50%, -55%) scale(1.8);
     opacity: 0;
   }
 }
