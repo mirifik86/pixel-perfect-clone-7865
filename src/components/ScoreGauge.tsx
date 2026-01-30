@@ -849,41 +849,17 @@ export const ScoreGauge = ({
           )}
         </svg>
 
-        {/* ========== CLEAN PHYSICAL SEPARATION - Transparent gap zone ========== */}
-        {/* This creates a neutral transparent ring between the gauge and globe */}
+        {/* ========== SINGLE GLASS SEPARATOR RING - Clean physical separation ========== */}
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
-            // Position inside the gauge ring - transparent gap zone
             inset: strokeWidth + 3,
-            background: 'transparent',
-          }}
-        />
-        
-        {/* Glass inner ring on gauge side - premium edge definition */}
-        <div 
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            inset: strokeWidth + 2,
             border: '1px solid hsl(180 40% 80% / 0.12)',
             boxShadow: `
-              inset 0 0 4px hsl(220 35% 4% / 0.2),
-              inset 0 0 8px hsl(220 30% 3% / 0.12)
+              inset 0 0 6px hsl(220 35% 3% / 0.18),
+              inset 0 0 12px hsl(220 30% 2% / 0.1)
             `,
             filter: 'blur(0.2px)',
-          }}
-        />
-        
-        {/* Inner vignette - subtle depth at globe boundary */}
-        <div 
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            inset: strokeWidth + 6,
-            background: 'transparent',
-            boxShadow: `
-              inset 0 0 8px hsl(220 40% 3% / 0.2),
-              inset 0 0 16px hsl(220 35% 2% / 0.12)
-            `,
           }}
         />
 
