@@ -630,13 +630,15 @@
    ANIMATED EARTH BACKGROUND KEYFRAMES
    ============================================ */
 
-/* Globe rotation - seamless horizontal pan */
-@keyframes globe-rotate {
+/* Globe horizontal pan - Europe starts centered, drifts LEFT (Americas appear from RIGHT) */
+@keyframes globe-pan-left {
   0% {
-    transform: rotate(0deg);
+    /* Start: Europe centered (33% of 300% width) */
+    background-position: 33% center;
   }
   100% {
-    transform: rotate(360deg);
+    /* End: Full loop back to Europe (133% = 33% + 100%) */
+    background-position: 133% center;
   }
 }
 
