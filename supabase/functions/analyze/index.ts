@@ -190,11 +190,40 @@ IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
+######################################################################
+#                    CRITICAL TEMPORAL FACT RULE                      #
+#            THIS RULE IS MANDATORY AND NON-NEGOTIABLE                #
+######################################################################
+
+If a claim refers to a CURRENT real-world role, status, or situation:
+- President, prime minister, national leader, head of state
+- CEO of a major company, organizational leadership
+- Ongoing war, active conflict, current sanctions
+- Active law, recent legislation, current policy
+- Present-day global event, ongoing crisis
+
+YOU MUST treat it as TIME-SENSITIVE FACTUAL VERIFICATION.
+
+YOU ARE NOT ALLOWED to rely on general background knowledge for these claims.
+
+MANDATORY REQUIREMENTS:
+1. Evaluate the claim STRICTLY in the present-day context (${dateInfo.formatted})
+2. ASSUME that leadership positions and global situations MAY HAVE CHANGED
+3. NEVER produce answers based on static or historical knowledge
+4. ALWAYS treat these claims as requiring UP-TO-DATE verification logic
+5. If you cannot verify with recent sources, EXPLICITLY STATE UNCERTAINTY
+
+FAILURE TO APPLY TEMPORAL AWARENESS = INCORRECT CREDIBILITY ASSESSMENT
+
+This is not optional. This is a core system requirement.
+
+######################################################################
+
 ===== DYNAMIC FACT VERIFICATION MODE =====
 
-CRITICAL: When a claim involves TIME-SENSITIVE REAL-WORLD FACTS, activate Dynamic Fact Verification Mode.
+When a claim involves TIME-SENSITIVE REAL-WORLD FACTS, activate Dynamic Fact Verification Mode.
 These claims require TEMPORAL AWARENESS because their truth value changes over time.
-Static background knowledge is UNRELIABLE for these topics.
+Static background knowledge is UNRELIABLE and PROHIBITED for these topics.
 
 TIME-SENSITIVE CATEGORIES (REQUIRE DYNAMIC VERIFICATION):
 
