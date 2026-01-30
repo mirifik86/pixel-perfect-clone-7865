@@ -935,8 +935,8 @@ export const ScoreGauge = ({
             <InGaugeAnalysisLoader size={size} mode={loaderMode} />
           )}
 
-          {/* IDLE/READY/ANALYZING STATE: Unified reactive CTA button */}
-          {(uiState === 'idle' || uiState === 'ready') && (
+          {/* READY STATE ONLY: Premium CTA button - appears with fade + scale animation */}
+          {uiState === 'ready' && (
             <button
               type="button"
               onClick={typingState === 'valid' && onAnalyze ? onAnalyze : undefined}
@@ -950,35 +950,30 @@ export const ScoreGauge = ({
                 padding: 'var(--space-2)',
                 cursor: typingState === 'valid' ? 'pointer' : 'default',
                 pointerEvents: typingState === 'valid' ? 'auto' : 'none',
-                // Premium 10% zoom pulse with reduced motion support
+                // Premium entrance animation
+                animation: 'cta-entrance 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                // Hover/press transforms
                 transform: prefersReducedMotion
-                  ? (typingState === 'valid' ? 'scale(1.05)' : 'scale(1)') // Static scale for reduced motion
+                  ? 'scale(1)'
                   : isPressed && typingState === 'valid'
-                    ? 'scale(0.97)' // Snappy press feedback
+                    ? 'scale(0.97)'
                     : isHovering && typingState === 'valid'
-                      ? 'scale(1.10)' // Hold at peak on hover
-                      : 'scale(1)', // Base scale (animation handles the rest when valid)
+                      ? 'scale(1.06)'
+                      : 'scale(1)',
                 transition: isPressed 
-                  ? 'transform 80ms cubic-bezier(0.34, 1.56, 0.64, 1)' // Snappy bounce-back on press
-                  : 'transform 180ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease',
-                // Premium breathing pulse: only when valid, not hovering/pressing, and motion allowed
-                animation: typingState === 'valid' && !isHovering && !isPressed && !prefersReducedMotion
-                  ? 'cta-attractor-pulse 2.2s ease-in-out infinite'
-                  : 'none',
+                  ? 'transform 80ms cubic-bezier(0.34, 1.56, 0.64, 1)'
+                  : 'transform 180ms cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             >
-              {/* Spark accent - radial glow behind button (only when valid) */}
+              {/* Tight glow around CTA pill only (no big halo) */}
               <div 
-                className="absolute rounded-full pointer-events-none transition-all duration-500"
+                className="absolute rounded-full pointer-events-none"
                 style={{
-                  width: size * 0.9,
-                  height: size * 0.35,
-                  background: typingState === 'valid'
-                    ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 65% 50% / 0.18) 0%, hsl(174 60% 45% / 0.08) 40%, transparent 70%)'
-                    : 'transparent',
-                  filter: 'blur(12px)',
-                  opacity: typingState === 'valid' ? 1 : 0,
-                  animation: typingState === 'valid' ? 'cta-spark-pulse 2.2s ease-in-out infinite' : 'none',
+                  width: size * 0.76,
+                  height: size * 0.26,
+                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(174 60% 52% / 0.2) 0%, hsl(174 55% 48% / 0.08) 50%, transparent 80%)',
+                  filter: 'blur(8px)',
+                  animation: 'cta-glow-pulse 2.5s ease-in-out infinite',
                 }}
               />
               
@@ -1028,93 +1023,68 @@ export const ScoreGauge = ({
                 </div>
               )}
               
-              {/* Premium glass pill backdrop - reactive to state */}
+              {/* Premium glass pill backdrop */}
               <div 
                 className="absolute rounded-full pointer-events-none transition-all duration-300 overflow-hidden"
                 style={{
                   width: size * 0.72,
                   height: size * 0.22,
-                  background: typingState === 'valid'
-                    ? (isHovering || isFocused)
-                      ? 'linear-gradient(135deg, hsl(200 40% 24% / 0.65) 0%, hsl(220 35% 20% / 0.55) 50%, hsl(200 40% 22% / 0.6) 100%)'
-                      : 'linear-gradient(135deg, hsl(200 35% 22% / 0.55) 0%, hsl(220 30% 18% / 0.45) 50%, hsl(200 35% 20% / 0.5) 100%)'
-                    : 'linear-gradient(135deg, hsl(200 22% 22% / 0.45) 0%, hsl(220 18% 18% / 0.38) 50%, hsl(200 22% 20% / 0.42) 100%)',
+                  background: (isHovering || isFocused)
+                    ? 'linear-gradient(135deg, hsl(200 40% 24% / 0.65) 0%, hsl(220 35% 20% / 0.55) 50%, hsl(200 40% 22% / 0.6) 100%)'
+                    : 'linear-gradient(135deg, hsl(200 35% 22% / 0.55) 0%, hsl(220 30% 18% / 0.45) 50%, hsl(200 35% 20% / 0.5) 100%)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
-                  border: typingState === 'valid'
-                    ? (isHovering || isFocused)
-                      ? '1.5px solid hsl(174 60% 68% / 0.45)'
-                      : '1px solid hsl(174 55% 62% / 0.3)'
-                    : '1px solid hsl(174 40% 55% / 0.18)',
-                  boxShadow: typingState === 'valid'
-                    ? (isHovering || isFocused)
-                      ? `
-                        inset 0 1px 2px hsl(0 0% 100% / 0.18),
-                        inset 0 -1px 1px hsl(0 0% 0% / 0.12),
-                        0 4px 16px hsl(200 50% 8% / 0.45),
-                        0 0 12px hsl(174 60% 55% / 0.25)
-                      `
-                      : `
-                        inset 0 1px 2px hsl(0 0% 100% / 0.12),
-                        inset 0 -1px 1px hsl(0 0% 0% / 0.1),
-                        0 4px 14px hsl(200 50% 10% / 0.4),
-                        0 0 8px hsl(174 55% 55% / 0.15)
-                      `
+                  border: (isHovering || isFocused)
+                    ? '1.5px solid hsl(174 60% 68% / 0.45)'
+                    : '1px solid hsl(174 55% 62% / 0.3)',
+                  boxShadow: (isHovering || isFocused)
+                    ? `
+                      inset 0 1px 2px hsl(0 0% 100% / 0.18),
+                      inset 0 -1px 1px hsl(0 0% 0% / 0.12),
+                      0 4px 16px hsl(200 50% 8% / 0.45),
+                      0 0 12px hsl(174 60% 55% / 0.25)
+                    `
                     : `
-                      inset 0 1px 1px hsl(0 0% 100% / 0.06),
-                      inset 0 -1px 1px hsl(0 0% 0% / 0.08),
-                      0 4px 12px hsl(200 45% 12% / 0.3)
+                      inset 0 1px 2px hsl(0 0% 100% / 0.12),
+                      inset 0 -1px 1px hsl(0 0% 0% / 0.1),
+                      0 4px 14px hsl(200 50% 10% / 0.4),
+                      0 0 8px hsl(174 55% 55% / 0.15)
                     `,
                 }}
               >
-                {/* One-time diagonal sheen on ready state */}
-                {typingState === 'valid' && (
-                  <div 
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(115deg, transparent 0%, transparent 40%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.3) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 60%, transparent 100%)',
-                      animation: 'cta-sheen 1s ease-out forwards',
-                    }}
-                  />
-                )}
+                {/* One-time diagonal sheen on entrance */}
+                <div 
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(115deg, transparent 0%, transparent 40%, hsl(0 0% 100% / 0.2) 45%, hsl(0 0% 100% / 0.3) 50%, hsl(0 0% 100% / 0.2) 55%, transparent 60%, transparent 100%)',
+                    animation: 'cta-sheen 800ms ease-out 200ms forwards',
+                  }}
+                />
               </div>
               
-              {/* Inner glow - intensifies when valid, subtle static for disabled */}
+              {/* Inner glow */}
               <div 
                 className="absolute rounded-full pointer-events-none transition-all duration-500"
                 style={{
                   width: size * 0.68,
                   height: size * 0.18,
-                  background: typingState === 'valid'
-                    ? (isHovering || isFocused)
-                      ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 55% 60% / 0.22) 0%, transparent 70%)'
-                      : 'radial-gradient(ellipse 100% 100% at center, hsl(174 50% 58% / 0.16) 0%, transparent 70%)'
-                    // DISABLED: Very subtle static glow for premium feel
-                    : 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.08) 0%, transparent 70%)',
+                  background: (isHovering || isFocused)
+                    ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 55% 60% / 0.22) 0%, transparent 70%)'
+                    : 'radial-gradient(ellipse 100% 100% at center, hsl(174 50% 58% / 0.16) 0%, transparent 70%)',
                   filter: 'blur(4px)',
-                  animation: typingState === 'valid' ? 'cta-inner-glow 2.2s ease-in-out infinite' : 'none',
                 }}
               />
               
-              {/* Text - reactive styling, brighter for disabled readability */}
+              {/* CTA Text */}
               <span
                 className="relative uppercase font-semibold tracking-[0.16em] text-center transition-all duration-300"
                 style={{
                   fontSize: 'clamp(0.62rem, 2.1vw, 0.8rem)',
                   lineHeight: 1.4,
-                  color: typingState === 'valid'
-                    ? (isHovering || isFocused) ? 'hsl(0 0% 100%)' : 'hsl(0 0% 98%)'
-                    // DISABLED: Brighter text (was 70% opacity), now clearer
-                    : 'hsl(0 0% 82%)',
-                  // DISABLED: Higher opacity for readability (was 0.6)
-                  opacity: typingState === 'valid' ? 1 : 0.85,
-                  textShadow: typingState === 'valid'
-                    ? (isHovering || isFocused)
-                      ? '0 1px 4px hsl(0 0% 0% / 0.6), 0 0 20px hsl(174 65% 58% / 0.45)'
-                      : '0 1px 3px hsl(0 0% 0% / 0.5), 0 0 14px hsl(174 55% 55% / 0.3)'
-                    // DISABLED: Subtle shadow for depth without glow
-                    : '0 1px 3px hsl(0 0% 0% / 0.4), 0 0 8px hsl(174 40% 50% / 0.1)',
-                  animation: typingState === 'valid' ? 'cta-text-brightness 2.2s ease-in-out infinite' : 'none',
+                  color: (isHovering || isFocused) ? 'hsl(0 0% 100%)' : 'hsl(0 0% 98%)',
+                  textShadow: (isHovering || isFocused)
+                    ? '0 1px 4px hsl(0 0% 0% / 0.6), 0 0 20px hsl(174 65% 58% / 0.45)'
+                    : '0 1px 3px hsl(0 0% 0% / 0.5), 0 0 14px hsl(174 55% 55% / 0.3)',
                 }}
               >
                 {t('gauge.readyToAnalyze')}
@@ -1731,6 +1701,26 @@ export const ScoreGauge = ({
           }
           100% { 
             transform: translateX(150%);
+          }
+        }
+        /* CTA entrance animation - fade + scale */
+        @keyframes cta-entrance {
+          0% { 
+            opacity: 0;
+            transform: scale(0.85);
+          }
+          100% { 
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        /* CTA glow pulse - tight around pill */
+        @keyframes cta-glow-pulse {
+          0%, 100% { 
+            opacity: 0.7;
+          }
+          50% { 
+            opacity: 1;
           }
         }
       `}</style>
