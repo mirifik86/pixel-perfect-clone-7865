@@ -32,51 +32,50 @@ export const StarfieldBackground = memo(() => {
         style={{
           backgroundImage: `url(${earthSunriseBg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 55%',
+          backgroundPosition: 'center 40%', // Monté pour voir plus de l'espace
           backgroundRepeat: 'no-repeat',
-          // Fond spatial visible mais atmosphérique
-          filter: 'blur(0.5px) brightness(0.45) contrast(0.85) saturate(0.7)',
-          transform: 'scale(1.08)', // Prevent blur edge artifacts
+          // Maximum visibilité - effet WOW
+          filter: 'blur(0px) brightness(0.65) contrast(0.95) saturate(0.85)',
+          transform: 'scale(1.02)',
         }}
       />
       
-      {/* ========== LAYER 2: Dark center vignette ========== */}
+      {/* ========== LAYER 2: Vignette légère pour focus central ========== */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 40% 40% at 50% 42%, 
-              hsl(220 35% 3% / 0.6) 0%,
-              hsl(220 30% 4% / 0.4) 40%,
-              hsl(225 25% 5% / 0.25) 70%,
+            radial-gradient(ellipse 35% 35% at 50% 45%, 
+              hsl(220 35% 3% / 0.5) 0%,
+              hsl(220 30% 4% / 0.2) 50%,
               transparent 100%
             )
           `,
         }}
       />
       
-      {/* Deep space vignette edges */}
+      {/* Vignette bords - très légère */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 130% 110% at 50% 50%, 
-              transparent 30%,
-              hsl(225 35% 4% / 0.3) 65%,
-              hsl(230 40% 3% / 0.7) 100%
+            radial-gradient(ellipse 140% 120% at 50% 50%, 
+              transparent 40%,
+              hsl(225 35% 4% / 0.15) 70%,
+              hsl(230 40% 3% / 0.4) 100%
             )
           `,
         }}
       />
       
-      {/* Subtle sunrise glow at bottom (from background image sun) */}
+      {/* Lueur sunrise subtile renforcée */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 100% 40% at 50% 110%, 
-              hsl(35 50% 25% / 0.06) 0%,
-              hsl(200 40% 20% / 0.04) 40%,
+            radial-gradient(ellipse 80% 50% at 50% 105%, 
+              hsl(35 60% 40% / 0.12) 0%,
+              hsl(200 50% 30% / 0.08) 40%,
               transparent 70%
             )
           `,
