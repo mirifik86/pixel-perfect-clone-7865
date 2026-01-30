@@ -631,13 +631,13 @@
    Full-bleed seamless animations
    ============================================ */
 
-/* Globe rotation via background-position (seamless repeat-x) */
-@keyframes globe-rotate-texture {
+/* Earth seamless horizontal pan - Europe starts visible, drifts LEFT */
+@keyframes earth-pan-seamless {
   0% {
-    background-position: 0% 50%;
+    background-position: 25% 55%;
   }
   100% {
-    background-position: -200% 50%;
+    background-position: 125% 55%;
   }
 }
 
