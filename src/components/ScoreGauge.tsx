@@ -948,17 +948,17 @@ export const ScoreGauge = ({
             }}
           >
             <defs>
-              {/* Arc path for curved text - positioned at bottom center of ring */}
+              {/* Arc path for curved text - REVERSED direction so text reads correctly */}
               <path
                 id="ia11-arc-path"
                 d={(() => {
-                  // Position exactly in the middle of the ring band
-                  const arcRadius = radius + 1;
+                  // Position in the ring band itself
+                  const arcRadius = radius;
                   const centerX = size / 2;
                   const centerY = size / 2;
-                  // Wider arc from 110° to 70° for better text spread
-                  const startAngle = 108 * (Math.PI / 180);
-                  const endAngle = 72 * (Math.PI / 180);
+                  // Arc from 120° to 60° (reversed - right to left) for correct text orientation
+                  const startAngle = 115 * (Math.PI / 180);
+                  const endAngle = 65 * (Math.PI / 180);
                   const startX = centerX + arcRadius * Math.cos(startAngle);
                   const startY = centerY + arcRadius * Math.sin(startAngle);
                   const endX = centerX + arcRadius * Math.cos(endAngle);
@@ -969,9 +969,9 @@ export const ScoreGauge = ({
                 fill="none"
               />
               {/* Glow filter for high-tech effect */}
-              <filter id="ia11-glow" x="-100%" y="-100%" width="300%" height="300%">
-                <feGaussianBlur stdDeviation="2" result="blur" />
-                <feFlood floodColor="hsl(174, 60%, 55%)" floodOpacity="0.6" />
+              <filter id="ia11-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                <feFlood floodColor="hsl(174, 55%, 50%)" floodOpacity="0.5" />
                 <feComposite in2="blur" operator="in" />
                 <feMerge>
                   <feMergeNode />
@@ -980,15 +980,15 @@ export const ScoreGauge = ({
               </filter>
             </defs>
             
-            {/* Outer glow layer */}
+            {/* Glow layer */}
             <text
-              fill="hsl(174 55% 50% / 0.3)"
+              fill="hsl(174 50% 50% / 0.35)"
               style={{
-                fontSize: `${size * 0.052}px`,
-                fontWeight: 600,
-                letterSpacing: '0.12em',
+                fontSize: `${size * 0.042}px`,
+                fontWeight: 500,
+                letterSpacing: '0.15em',
                 textTransform: 'uppercase',
-                filter: 'blur(4px)',
+                filter: 'blur(3px)',
               }}
             >
               <textPath
@@ -1000,13 +1000,13 @@ export const ScoreGauge = ({
               </textPath>
             </text>
             
-            {/* Main text with glow */}
+            {/* Main text */}
             <text
-              fill="hsl(180 40% 78%)"
+              fill="hsl(180 35% 72%)"
               style={{
-                fontSize: `${size * 0.052}px`,
-                fontWeight: 600,
-                letterSpacing: '0.12em',
+                fontSize: `${size * 0.042}px`,
+                fontWeight: 500,
+                letterSpacing: '0.15em',
                 textTransform: 'uppercase',
               }}
               filter="url(#ia11-glow)"
