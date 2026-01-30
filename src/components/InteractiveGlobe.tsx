@@ -336,15 +336,11 @@ export const InteractiveGlobe = memo(({ size, isAnalyzing = false }: Interactive
           }}
         />
         
-        {/* Atmospheric glow */}
+        {/* Subtle outer glow only - no inner effects */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            boxShadow: `
-              inset 0 0 20px hsl(200 50% 45% / 0.08),
-              0 0 35px hsl(174 55% 45% / 0.15),
-              0 0 60px hsl(174 45% 40% / 0.08)
-            `,
+            boxShadow: '0 0 30px hsl(174 50% 45% / 0.1)',
           }}
         />
       </div>
