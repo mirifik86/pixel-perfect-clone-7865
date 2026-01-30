@@ -916,43 +916,6 @@ export const ScoreGauge = ({
               <circle cx={indicatorX} cy={indicatorY} r={2.5} fill="hsl(0 0% 100%)" />
             </g>
           )}
-          
-          {/* ========== POWERED BY IA11 - Curved text in lower neutral arc ========== */}
-          <defs>
-            <path
-              id="ia11-arc-path"
-              d={(() => {
-                // Arc positioned lower in the gauge - closer to true bottom (90°)
-                const arcRadius = radius - strokeWidth / 2 - 12;
-                const startAngle = 115 * (Math.PI / 180);  // Start at 115° (right side, lower)
-                const endAngle = 65 * (Math.PI / 180);     // End at 65° (left side, lower)
-                const startX = size / 2 + arcRadius * Math.cos(startAngle);
-                const startY = size / 2 + arcRadius * Math.sin(startAngle);
-                const endX = size / 2 + arcRadius * Math.cos(endAngle);
-                const endY = size / 2 + arcRadius * Math.sin(endAngle);
-                // Sweep flag 0 = counter-clockwise (text readable from bottom)
-                return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 0 ${endX} ${endY}`;
-              })()}
-              fill="none"
-            />
-          </defs>
-          <text
-            style={{
-              fontSize: size * 0.055,
-              fontWeight: 500,
-              letterSpacing: '0.22em',
-              fontFamily: 'var(--font-sans)',
-            }}
-          >
-            <textPath
-              href="#ia11-arc-path"
-              startOffset="50%"
-              textAnchor="middle"
-              fill="hsl(210 15% 42%)"
-            >
-              POWERED BY IA11
-            </textPath>
-          </text>
         </svg>
 
         {/* ========== DARK SEPARATOR RING - Black like background ========== */}
@@ -973,6 +936,29 @@ export const ScoreGauge = ({
           {/* Rotating Globe - always visible behind other content */}
           <RotatingGlobe size={size} isAnalyzing={isLoading} />
           
+          {/* ========== POWERED BY IA11 SIGNATURE - Premium subtle branding ========== */}
+          <div 
+            className="absolute pointer-events-none select-none"
+            style={{
+              bottom: size * 0.18,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1,
+            }}
+          >
+            <span
+              className="uppercase font-medium"
+              style={{
+                fontSize: 'clamp(0.5rem, 1.4vw, 0.6rem)',
+                letterSpacing: '0.18em',
+                color: 'hsl(200 20% 52%)',
+                textShadow: '0 0 8px hsl(200 30% 20% / 0.5)',
+                opacity: 0.7,
+              }}
+            >
+              Powered by IA11
+            </span>
+          </div>
           {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT with morph reveal */}
           {uiState === 'result' && (
             <div 
