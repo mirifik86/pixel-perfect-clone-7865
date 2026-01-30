@@ -116,23 +116,23 @@ export const ScoreGauge = ({
     }
   }, [score]);
 
-  // Premium gradient colors with smooth transitions
-  // Leen Blue is the signature color - intensified saturation for premium feel
-  // Muted colors when idle (no content), activated (+40% saturation) when typing starts
+  // PREMIUM VIBRANT gradient colors - MUCH MORE VISIBLE
+  // Higher saturation and brightness for premium punch
+  // Muted colors when idle, VIVID when activated
   const colorPairsMuted = [
-    { base: 'hsl(0 40% 38%)', light: 'hsl(0 45% 45%)' },        // Red - Very Low (muted)
-    { base: 'hsl(28 45% 42%)', light: 'hsl(32 50% 48%)' },      // Orange - Low (muted)
-    { base: 'hsl(45 42% 40%)', light: 'hsl(50 48% 46%)' },      // Yellow - Moderate (muted)
-    { base: 'hsl(145 32% 35%)', light: 'hsl(150 38% 42%)' },    // Green - Good (muted)
-    { base: 'hsl(174 48% 38%)', light: 'hsl(174 55% 45%)' }     // Leen Blue - High (muted)
+    { base: 'hsl(0 55% 45%)', light: 'hsl(0 60% 52%)' },        // Red - Very Low (visible muted)
+    { base: 'hsl(28 60% 48%)', light: 'hsl(32 65% 55%)' },      // Orange - Low (visible muted)
+    { base: 'hsl(48 58% 48%)', light: 'hsl(50 65% 55%)' },      // Yellow - Moderate (visible muted)
+    { base: 'hsl(145 48% 42%)', light: 'hsl(150 55% 50%)' },    // Green - Good (visible muted)
+    { base: 'hsl(174 65% 45%)', light: 'hsl(174 72% 52%)' }     // Leen Blue - High (visible muted)
   ];
   
   const colorPairsActive = [
-    { base: 'hsl(0 65% 42%)', light: 'hsl(0 70% 52%)' },        // Red - Very Low (activated)
-    { base: 'hsl(28 75% 46%)', light: 'hsl(32 80% 55%)' },      // Orange - Low (activated)
-    { base: 'hsl(45 70% 44%)', light: 'hsl(50 75% 54%)' },      // Yellow - Moderate (activated)
-    { base: 'hsl(145 50% 38%)', light: 'hsl(150 55% 48%)' },    // Green - Good (activated)
-    { base: 'hsl(174 78% 44%)', light: 'hsl(174 85% 52%)' }     // Leen Blue - High (activated)
+    { base: 'hsl(0 80% 50%)', light: 'hsl(0 85% 58%)' },        // Red - VIVID
+    { base: 'hsl(28 90% 52%)', light: 'hsl(32 95% 60%)' },      // Orange - VIVID
+    { base: 'hsl(48 88% 50%)', light: 'hsl(50 92% 58%)' },      // Yellow - VIVID
+    { base: 'hsl(145 70% 45%)', light: 'hsl(150 75% 52%)' },    // Green - VIVID
+    { base: 'hsl(174 90% 48%)', light: 'hsl(174 95% 55%)' }     // Leen Blue - VIVID PREMIUM
   ];
   
   // Use activated colors when content is detected or score is shown
@@ -174,13 +174,14 @@ export const ScoreGauge = ({
   const getCurrentColor = (value: number) => colors[getSegmentIndex(value)];
 
   // Calculate which segments should be filled based on score
+  // HIGHER BASE OPACITY for premium visibility
   const getSegmentOpacity = (segmentIndex: number) => {
     const segmentStart = segmentIndex * 20;
     const segmentEnd = (segmentIndex + 1) * 20;
-    if (score === null) return 0.15;
+    if (score === null) return 0.45; // MUCH MORE VISIBLE in idle (was 0.15)
     if (animatedScore >= segmentEnd) return 1;
-    if (animatedScore <= segmentStart) return 0.15;
-    return 0.15 + 0.85 * ((animatedScore - segmentStart) / 20);
+    if (animatedScore <= segmentStart) return 0.25; // More visible unfilled (was 0.15)
+    return 0.25 + 0.75 * ((animatedScore - segmentStart) / 20);
   };
 
   // Calculate indicator position
@@ -630,7 +631,7 @@ export const ScoreGauge = ({
             const isActive = opacity > 0.5;
             const isIdle = score === null && !isLoading;
             const isAnalyzing = isLoading;
-            const idleOpacity = 0.35 + (i * 0.04);
+            const idleOpacity = 0.55 + (i * 0.08); // MUCH MORE VISIBLE idle (was 0.35 + 0.04)
             
             // During analyzing, the Leen Blue segment (index 4) gets a breathing glow
             const isLeenBlueSegment = i === 4;
