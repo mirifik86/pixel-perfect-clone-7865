@@ -1,21 +1,23 @@
 import { memo, useMemo } from 'react';
 
 /**
- * Premium Starfield Background
+ * Starfield Background - Optimized for Mobile Performance
  * 
- * Elegant, subtle star pattern for the entire page.
- * Respects the cosmic aesthetic without being noisy.
+ * Static, subtle star texture:
+ * - Fewer stars (40 instead of 80)
+ * - Smaller, dimmer stars
+ * - NO twinkling animation
+ * - Static deep space gradient
+ * - Minimal transparency layers
  */
 export const StarfieldBackground = memo(() => {
-  // Generate elegant star positions
+  // Generate static star positions - fewer, smaller stars
   const stars = useMemo(() => 
-    Array.from({ length: 80 }, (_, i) => ({
+    Array.from({ length: 40 }, (_, i) => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: 0.5 + Math.random() * 1.5,
-      opacity: 0.1 + Math.random() * 0.35,
-      twinkleDelay: Math.random() * 5,
-      twinkleDuration: 3 + Math.random() * 4,
+      size: 0.5 + Math.random() * 0.8, // Smaller: 0.5-1.3px
+      opacity: 0.15 + Math.random() * 0.25, // Dimmer: 0.15-0.4
     }))
   , []);
   
@@ -24,49 +26,42 @@ export const StarfieldBackground = memo(() => {
       className="fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* Deep space gradient base */}
+      {/* Static deep space gradient - no animation */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
             radial-gradient(ellipse 100% 60% at 50% 0%, 
-              hsl(230 30% 10% / 0.4) 0%, 
+              hsl(225 25% 8%) 0%, 
               transparent 50%
             ),
             radial-gradient(ellipse 80% 50% at 20% 80%, 
-              hsl(260 25% 8% / 0.25) 0%, 
+              hsl(235 20% 6%) 0%, 
               transparent 45%
-            ),
-            radial-gradient(ellipse 70% 40% at 85% 60%, 
-              hsl(200 25% 8% / 0.2) 0%, 
-              transparent 40%
             )
           `,
         }}
       />
       
-      {/* Subtle sunrise glow - atmospheric depth behind globe area */}
+      {/* Subtle depth glow behind globe area - static, no blur */}
       <div 
         className="absolute"
         style={{
-          top: '15%',
-          left: '35%',
-          width: '65%',
-          height: '55%',
+          top: '20%',
+          left: '40%',
+          width: '50%',
+          height: '45%',
           background: `
-            radial-gradient(ellipse 100% 80% at 40% 55%, 
-              hsl(174 55% 35% / 0.08) 0%,
-              hsl(180 50% 30% / 0.05) 25%,
-              hsl(185 45% 25% / 0.03) 45%,
+            radial-gradient(ellipse 100% 80% at 50% 50%, 
+              hsl(180 30% 20% / 0.06) 0%,
               transparent 70%
             )
           `,
-          filter: 'blur(40px)',
           pointerEvents: 'none',
         }}
       />
       
-      {/* Stars */}
+      {/* Static stars - no animation */}
       {stars.map((star, i) => (
         <div
           key={i}
@@ -76,11 +71,9 @@ export const StarfieldBackground = memo(() => {
             top: `${star.y}%`,
             width: `${star.size}px`,
             height: `${star.size}px`,
-            background: 'hsl(210 20% 95%)',
+            background: 'hsl(210 15% 85%)',
             opacity: star.opacity,
-            boxShadow: star.size > 1 ? `0 0 ${star.size * 1.5}px hsl(200 30% 80% / 0.3)` : 'none',
-            animation: `twinkle ${star.twinkleDuration}s ease-in-out infinite`,
-            animationDelay: `${star.twinkleDelay}s`,
+            // No animation, no box-shadow for performance
           }}
         />
       ))}

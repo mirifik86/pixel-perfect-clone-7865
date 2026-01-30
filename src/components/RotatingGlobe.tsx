@@ -6,13 +6,13 @@ interface RotatingGlobeProps {
 }
 
 /**
- * Premium Earth Globe - CLEARLY VISIBLE in roulette center
+ * Premium Earth Globe - Optimized for Mobile Performance
  * 
- * Large, vibrant Earth behind the gauge:
- * - High visibility (65-75% opacity)
- * - No blur - crisp and premium
- * - Rich atmospheric effects
- * - Smooth rotation
+ * Cinematic, slow-rotating Earth with soft lighting:
+ * - Very slow rotation (150s cycle)
+ * - No glows, halos, or bright edges
+ * - Minimal transparency and blur
+ * - Stable, calm visual presence
  */
 export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeProps) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -26,10 +26,10 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
   }, []);
   
   const shouldAnimate = !prefersReducedMotion;
-  const rotationSpeed = isAnalyzing ? '28s' : '100s';
+  // Cinematic slow rotation - 150s normal, 80s when analyzing
+  const rotationSpeed = isAnalyzing ? '80s' : '150s';
   
-  // Globe size with gap for physical separation from gauge ring
-  // Reduced from 88% to 82% to create ~3-4px visible gap
+  // Globe size with clean gap from gauge ring
   const globeSize = size * 0.82;
   
   // High-quality Blue Marble Earth texture
@@ -47,36 +47,30 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
         zIndex: 0,
       }}
     >
-      {/* Removed: ATMOSPHERIC OUTER GLOW - keeping globe clean */}
-      
-      {/* ========== EARTH GLOBE - PREMIUM VISIBLE ========== */}
+      {/* ========== EARTH GLOBE - CLEAN & PERFORMANT ========== */}
       <div 
-        className="absolute rounded-full overflow-hidden transition-all duration-500"
+        className="absolute rounded-full overflow-hidden"
         style={{
           width: '100%',
           height: '100%',
-          opacity: isAnalyzing ? 0.8 : 0.68, // HIGH VISIBILITY
-          boxShadow: `
-            0 0 ${isAnalyzing ? 30 : 20}px hsl(190 60% 50% / ${isAnalyzing ? 0.4 : 0.25}),
-            0 0 ${isAnalyzing ? 50 : 35}px hsl(180 55% 45% / ${isAnalyzing ? 0.25 : 0.15}),
-            0 0 ${isAnalyzing ? 80 : 55}px hsl(174 50% 40% / ${isAnalyzing ? 0.12 : 0.08})
-          `,
+          opacity: isAnalyzing ? 0.75 : 0.65,
+          // Minimal shadow - no heavy glow layers
+          boxShadow: '0 0 20px hsl(200 40% 30% / 0.2)',
         }}
       >
-        {/* Ocean base gradient - rich blue */}
+        {/* Ocean base - simple gradient */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(circle at 28% 22%, 
-              hsl(200 65% 42%) 0%, 
-              hsl(210 60% 32%) 30%, 
-              hsl(215 55% 22%) 60%,
-              hsl(225 50% 14%) 100%
+            background: `radial-gradient(circle at 30% 25%, 
+              hsl(200 50% 35%) 0%, 
+              hsl(210 45% 25%) 40%, 
+              hsl(220 40% 15%) 100%
             )`,
           }}
         />
         
-        {/* PRIMARY ROTATING EARTH TEXTURE - DAYLIGHT ENHANCED */}
+        {/* PRIMARY ROTATING EARTH TEXTURE */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
@@ -85,62 +79,55 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
             backgroundPosition: '0% 50%',
             backgroundRepeat: 'repeat-x',
             animation: shouldAnimate ? `globe-rotate ${rotationSpeed} linear infinite` : 'none',
-            filter: 'saturate(1.08) brightness(1.18) contrast(1.0)', // More brightness, lifted midtones
+            // Soft, realistic look - no oversaturation
+            filter: 'saturate(1.0) brightness(1.05) contrast(0.95)',
           }}
         />
         
-        {/* Removed: SPECULAR HIGHLIGHT - was creating white spots on top */}
-        
-        {/* TERMINATOR SHADOW - REDUCED for daylight feel */}
+        {/* SOFT TERMINATOR SHADOW - Low contrast day/night */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `linear-gradient(128deg, 
-              transparent 35%, 
-              hsl(240 35% 10% / 0.12) 50%,
-              hsl(240 40% 6% / 0.28) 65%,
-              hsl(245 45% 4% / 0.45) 82%,
-              hsl(250 50% 3% / 0.58) 100%
+            background: `linear-gradient(125deg, 
+              transparent 40%, 
+              hsl(230 30% 10% / 0.15) 55%,
+              hsl(235 35% 8% / 0.3) 70%,
+              hsl(240 40% 6% / 0.45) 100%
             )`,
           }}
         />
-        
-        {/* Removed: ATMOSPHERIC RIM LIGHT - keeping globe clean */}
-        
-        {/* Removed: Terminator edge glow - keeping globe clean */}
       </div>
       
-      {/* ========== SUBTLE TEXT READABILITY OVERLAY - REDUCED ========== */}
+      {/* ========== MINIMAL CENTER OVERLAY FOR TEXT READABILITY ========== */}
       <div 
         className="absolute rounded-full pointer-events-none"
         style={{
-          width: '70%',
-          height: '40%',
+          width: '65%',
+          height: '35%',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: `radial-gradient(ellipse 100% 100% at center, 
-            hsl(235 35% 8% / 0.4) 0%, 
-            hsl(235 30% 6% / 0.2) 60%,
+            hsl(230 30% 8% / 0.35) 0%, 
             transparent 100%
           )`,
-          filter: 'blur(10px)',
+          // No blur for performance
           zIndex: 1,
         }}
       />
       
-      {/* ========== SCAN PULSE (analysis mode) ========== */}
+      {/* ========== SCAN RING (analysis mode only) - No pulse animation ========== */}
       {isAnalyzing && shouldAnimate && (
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
-            width: '105%',
-            height: '105%',
+            width: '102%',
+            height: '102%',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            border: '1.5px solid hsl(174 60% 55% / 0.35)',
-            animation: 'scan-pulse 2.8s ease-out infinite',
+            border: '1px solid hsl(174 50% 50% / 0.25)',
+            animation: 'scan-pulse 3.5s ease-out infinite',
             zIndex: 2,
           }}
         />
