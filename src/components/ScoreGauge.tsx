@@ -53,6 +53,7 @@ export const ScoreGauge = ({
   const [isRevealingScore, setIsRevealingScore] = useState(false); // Loader → Score morph transition
   const [isHovering, setIsHovering] = useState(false); // Hover state for gauge-as-button
   const [isFocused, setIsFocused] = useState(false); // Focus state for accessibility
+  const [isPressed, setIsPressed] = useState(false); // Press state for button feedback
   const animationRef = useRef<number | null>(null);
   const prevUiStateRef = useRef<string>('idle');
   
@@ -932,76 +933,131 @@ export const ScoreGauge = ({
             </div>
           )}
           
-          {/* READY STATE: "PRÊT À ANALYSER" text with premium glass pill - gauge is the CTA */}
+          {/* READY STATE: Premium reactive CTA button inside globe */}
           {uiState === 'ready' && (
-            <div 
-              className="flex flex-col items-center justify-center text-center relative"
+            <button
+              type="button"
+              onClick={typingState === 'valid' && onAnalyze ? onAnalyze : undefined}
+              disabled={typingState !== 'valid' || isLoading}
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => { setIsHovering(false); setIsPressed(false); }}
+              onMouseDown={() => setIsPressed(true)}
+              onMouseUp={() => setIsPressed(false)}
+              className="flex flex-col items-center justify-center text-center relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(174_60%_50%)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-full"
               style={{ 
                 padding: 'var(--space-2)',
-                animation: isTransitioning ? 'idle-text-enter 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards' : 'none',
+                cursor: typingState === 'valid' ? 'pointer' : 'default',
+                pointerEvents: typingState === 'valid' ? 'auto' : 'none',
+                transform: isPressed && typingState === 'valid'
+                  ? 'scale(0.98)'
+                  : isHovering && typingState === 'valid'
+                    ? 'scale(1.05)'
+                    : typingState === 'valid'
+                      ? 'scale(1.035)'
+                      : 'scale(1)',
+                transition: 'transform 150ms cubic-bezier(0.22, 1, 0.36, 1)',
+                animation: isTransitioning 
+                  ? 'idle-text-enter 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards' 
+                  : typingState === 'valid' && !isHovering && !isPressed
+                    ? 'cta-breathing-scale 2.2s ease-in-out infinite'
+                    : 'none',
               }}
             >
-              {/* Premium glass pill backdrop - elegant frosted glass effect */}
+              {/* Spark accent - radial glow behind button (only when valid) */}
+              <div 
+                className="absolute rounded-full pointer-events-none transition-all duration-500"
+                style={{
+                  width: size * 0.9,
+                  height: size * 0.35,
+                  background: typingState === 'valid'
+                    ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 65% 50% / 0.18) 0%, hsl(174 60% 45% / 0.08) 40%, transparent 70%)'
+                    : 'transparent',
+                  filter: 'blur(12px)',
+                  opacity: typingState === 'valid' ? 1 : 0,
+                  animation: typingState === 'valid' ? 'cta-spark-pulse 2.2s ease-in-out infinite' : 'none',
+                }}
+              />
+              
+              {/* Premium glass pill backdrop - reactive to state */}
               <div 
                 className="absolute rounded-full pointer-events-none transition-all duration-300"
                 style={{
                   width: size * 0.72,
                   height: size * 0.22,
-                  background: (isHovering || isFocused)
-                    ? 'linear-gradient(135deg, hsl(200 35% 22% / 0.55) 0%, hsl(220 30% 18% / 0.45) 50%, hsl(200 35% 20% / 0.5) 100%)'
-                    : 'linear-gradient(135deg, hsl(200 30% 20% / 0.45) 0%, hsl(220 25% 15% / 0.35) 50%, hsl(200 30% 18% / 0.4) 100%)',
+                  background: typingState === 'valid'
+                    ? (isHovering || isFocused)
+                      ? 'linear-gradient(135deg, hsl(200 40% 24% / 0.6) 0%, hsl(220 35% 20% / 0.5) 50%, hsl(200 40% 22% / 0.55) 100%)'
+                      : 'linear-gradient(135deg, hsl(200 35% 22% / 0.55) 0%, hsl(220 30% 18% / 0.45) 50%, hsl(200 35% 20% / 0.5) 100%)'
+                    : 'linear-gradient(135deg, hsl(200 25% 18% / 0.35) 0%, hsl(220 20% 14% / 0.28) 50%, hsl(200 25% 16% / 0.32) 100%)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
-                  border: (isHovering || isFocused)
-                    ? '1px solid hsl(174 50% 65% / 0.25)'
-                    : '1px solid hsl(174 40% 60% / 0.15)',
-                  boxShadow: (isHovering || isFocused)
-                    ? `
-                      inset 0 1px 1px hsl(0 0% 100% / 0.12),
-                      inset 0 -1px 1px hsl(0 0% 0% / 0.15),
-                      0 4px 20px hsl(200 50% 10% / 0.5),
-                      0 0 3px hsl(174 60% 60% / 0.35)
-                    `
+                  border: typingState === 'valid'
+                    ? (isHovering || isFocused)
+                      ? '1px solid hsl(174 55% 65% / 0.35)'
+                      : '1px solid hsl(174 50% 60% / 0.25)'
+                    : '1px solid hsl(174 30% 50% / 0.1)',
+                  boxShadow: typingState === 'valid'
+                    ? (isHovering || isFocused)
+                      ? `
+                        inset 0 1px 1px hsl(0 0% 100% / 0.14),
+                        inset 0 -1px 1px hsl(0 0% 0% / 0.15),
+                        0 4px 24px hsl(200 50% 10% / 0.5),
+                        0 0 20px hsl(174 65% 55% / 0.35),
+                        0 0 40px hsl(174 60% 50% / 0.15)
+                      `
+                      : `
+                        inset 0 1px 1px hsl(0 0% 100% / 0.1),
+                        inset 0 -1px 1px hsl(0 0% 0% / 0.15),
+                        0 4px 20px hsl(200 50% 10% / 0.45),
+                        0 0 16px hsl(174 60% 55% / 0.25),
+                        0 0 32px hsl(174 55% 50% / 0.1)
+                      `
                     : `
-                      inset 0 1px 1px hsl(0 0% 100% / 0.08),
-                      inset 0 -1px 1px hsl(0 0% 0% / 0.15),
-                      0 4px 16px hsl(200 50% 10% / 0.4),
-                      0 0 1px hsl(174 50% 60% / 0.2)
+                      inset 0 1px 1px hsl(0 0% 100% / 0.05),
+                      inset 0 -1px 1px hsl(0 0% 0% / 0.12),
+                      0 4px 12px hsl(200 50% 10% / 0.3)
                     `,
+                  animation: typingState === 'valid' && !isHovering ? 'cta-halo-pulse 2.2s ease-in-out infinite' : 'none',
                 }}
               />
               
-              {/* Subtle inner glow for premium depth */}
+              {/* Inner glow - intensifies when valid */}
               <div 
-                className="absolute rounded-full pointer-events-none"
+                className="absolute rounded-full pointer-events-none transition-all duration-500"
                 style={{
                   width: size * 0.68,
                   height: size * 0.18,
-                  background: (isHovering || isFocused)
-                    ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 45% 60% / 0.14) 0%, transparent 70%)'
-                    : 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.08) 0%, transparent 70%)',
+                  background: typingState === 'valid'
+                    ? (isHovering || isFocused)
+                      ? 'radial-gradient(ellipse 100% 100% at center, hsl(174 55% 60% / 0.22) 0%, transparent 70%)'
+                      : 'radial-gradient(ellipse 100% 100% at center, hsl(174 50% 58% / 0.16) 0%, transparent 70%)'
+                    : 'radial-gradient(ellipse 100% 100% at center, hsl(174 30% 50% / 0.04) 0%, transparent 70%)',
                   filter: 'blur(4px)',
-                  animation: 'idle-halo-pulse 3.8s ease-in-out infinite',
+                  animation: typingState === 'valid' ? 'cta-inner-glow 2.2s ease-in-out infinite' : 'none',
                 }}
               />
               
-              {/* Text with elegant shadow for readability - intensifies on hover */}
-              {/* Show 'PRÊT' when valid input, otherwise full 'PRÊT À ANALYSER' */}
+              {/* Text - reactive styling */}
               <span
-                className="relative uppercase font-medium tracking-[0.18em] text-center transition-all duration-300"
+                className="relative uppercase font-semibold tracking-[0.16em] text-center transition-all duration-300"
                 style={{
-                  fontSize: typingState === 'valid' ? 'clamp(0.8rem, 2.8vw, 1.1rem)' : 'clamp(0.65rem, 2.2vw, 0.85rem)',
+                  fontSize: typingState === 'valid' ? 'clamp(0.72rem, 2.5vw, 0.95rem)' : 'clamp(0.62rem, 2.1vw, 0.8rem)',
                   lineHeight: 1.4,
-                  color: (isHovering || isFocused) ? 'hsl(0 0% 100%)' : 'hsl(0 0% 96%)',
-                  textShadow: (isHovering || isFocused)
-                    ? '0 1px 4px hsl(0 0% 0% / 0.6), 0 0 18px hsl(174 60% 58% / 0.4)'
-                    : '0 1px 3px hsl(0 0% 0% / 0.5), 0 0 12px hsl(174 50% 55% / 0.25)',
-                  animation: 'idle-text-brightness 3.8s ease-in-out infinite',
+                  color: typingState === 'valid'
+                    ? (isHovering || isFocused) ? 'hsl(0 0% 100%)' : 'hsl(0 0% 98%)'
+                    : 'hsl(0 0% 75%)',
+                  opacity: typingState === 'valid' ? 1 : 0.65,
+                  textShadow: typingState === 'valid'
+                    ? (isHovering || isFocused)
+                      ? '0 1px 4px hsl(0 0% 0% / 0.6), 0 0 20px hsl(174 65% 58% / 0.45)'
+                      : '0 1px 3px hsl(0 0% 0% / 0.5), 0 0 14px hsl(174 55% 55% / 0.3)'
+                    : '0 1px 2px hsl(0 0% 0% / 0.4)',
+                  animation: typingState === 'valid' ? 'cta-text-brightness 2.2s ease-in-out infinite' : 'none',
                 }}
               >
-                {typingState === 'valid' ? t('gauge.readyShort') : t('gauge.readyToAnalyze')}
+                {t('gauge.readyToAnalyze')}
               </span>
-            </div>
+            </button>
           )}
         </div>
         
@@ -1128,6 +1184,37 @@ export const ScoreGauge = ({
           </div>
         )}
       </div>
+      
+      {/* Helper text under globe - appears when valid input */}
+      {uiState === 'ready' && typingState === 'valid' && (
+        <div 
+          className="flex items-center justify-center gap-2 text-center"
+          style={{
+            marginTop: 'var(--space-2)',
+            animation: 'cta-helper-fade-in 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          }}
+        >
+          <span
+            className="text-xs uppercase tracking-[0.12em] font-medium"
+            style={{
+              color: 'hsl(174 50% 60%)',
+              textShadow: '0 0 8px hsl(174 50% 50% / 0.3)',
+            }}
+          >
+            {t('form.inputDetected')}
+          </span>
+          <span style={{ color: 'hsl(174 40% 50% / 0.5)' }}>•</span>
+          <span
+            className="text-xs uppercase tracking-[0.12em] font-medium"
+            style={{
+              color: 'hsl(174 45% 55%)',
+              textShadow: '0 0 8px hsl(174 50% 50% / 0.25)',
+            }}
+          >
+            {t('form.readyToAnalyze')}
+          </span>
+        </div>
+      )}
       
       {/* Credibility label BELOW gauge - PREMIUM AUTHORITY PRESENTATION */}
       {score !== null && (
