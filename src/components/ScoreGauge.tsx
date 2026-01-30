@@ -379,7 +379,7 @@ export const ScoreGauge = ({
         </>
       )}
       
-      {/* ULTRA-PREMIUM SOFT RADIAL HALO - intensifies based on typing state */}
+      {/* ULTRA-PREMIUM SOFT RADIAL HALO - DISABLED in ready state for clean luxury look */}
       <div 
         className="absolute rounded-full pointer-events-none transition-all duration-300"
         style={{
@@ -392,19 +392,20 @@ export const ScoreGauge = ({
             ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')} 0%, ${getCurrentColor(animatedScore).replace(')', ' / 0.06)')} 40%, transparent 70%)`
             : isLoading
               ? 'radial-gradient(circle, hsl(174 75% 55% / 0.2) 0%, hsl(174 65% 50% / 0.08) 40%, transparent 70%)'
-              : typingState === 'valid'
-                ? 'radial-gradient(circle, hsl(174 85% 58% / 0.25) 0%, hsl(174 75% 52% / 0.1) 40%, transparent 70%)'
+              : typingState === 'valid' || hasContent
+                ? 'none' // REMOVED: no big halo in ready state
                 : typingState === 'typing'
-                  ? 'radial-gradient(circle, hsl(174 70% 52% / 0.15) 0%, hsl(174 60% 48% / 0.06) 40%, transparent 70%)'
+                  ? 'radial-gradient(circle, hsl(174 70% 52% / 0.12) 0%, hsl(174 60% 48% / 0.04) 40%, transparent 70%)'
                   : 'radial-gradient(circle, hsl(174 55% 50% / 0.1) 0%, hsl(200 45% 45% / 0.04) 40%, transparent 70%)',
           filter: 'blur(30px)',
-          animation: typingState === 'typing' || typingState === 'valid' 
+          opacity: (typingState === 'valid' || hasContent) && !isLoading && score === null ? 0 : 1,
+          animation: typingState === 'typing' 
             ? 'idle-glow-pulse 3s ease-in-out infinite' 
-            : (score === null ? 'idle-glow-pulse 4.5s ease-in-out infinite' : 'none'),
+            : (score === null && !hasContent ? 'idle-glow-pulse 4.5s ease-in-out infinite' : 'none'),
         }}
       />
       
-      {/* Secondary inner halo - tighter, more focused glow */}
+      {/* Secondary inner halo - DISABLED in ready state */}
       <div 
         className="absolute rounded-full pointer-events-none transition-all duration-300"
         style={{
@@ -417,34 +418,21 @@ export const ScoreGauge = ({
             ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.22)')} 0%, transparent 65%)`
             : isLoading
               ? 'radial-gradient(circle, hsl(174 72% 52% / 0.22) 0%, hsl(174 62% 48% / 0.1) 45%, transparent 70%)'
-              : typingState === 'valid'
-                ? 'radial-gradient(circle, hsl(174 85% 58% / 0.28) 0%, hsl(174 72% 52% / 0.12) 45%, transparent 70%)'
+              : typingState === 'valid' || hasContent
+                ? 'none' // REMOVED: no secondary halo in ready state
                 : typingState === 'typing'
-                  ? 'radial-gradient(circle, hsl(174 65% 52% / 0.15) 0%, hsl(174 55% 48% / 0.06) 45%, transparent 70%)'
+                  ? 'radial-gradient(circle, hsl(174 65% 52% / 0.1) 0%, hsl(174 55% 48% / 0.04) 45%, transparent 70%)'
                   : 'radial-gradient(circle, hsl(174 50% 48% / 0.08) 0%, hsl(200 42% 42% / 0.03) 45%, transparent 70%)',
           filter: 'blur(15px)',
-          animation: score === null 
+          opacity: (typingState === 'valid' || hasContent) && !isLoading && score === null ? 0 : 1,
+          animation: score === null && !hasContent
             ? (isLoading ? 'analyzing-ambient-glow 3.5s ease-in-out infinite' : 'idle-glow-pulse 3.8s ease-in-out 200ms infinite') 
             : 'none',
         }}
       />
       
-      {/* INNER GLOW PULSE - slow elegant breathing for premium click affordance in ready state */}
-      {uiState === 'ready' && (
-        <div 
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: size * 0.92,
-            height: size * 0.92,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(circle, hsl(174 80% 55% / 0.12) 0%, hsl(174 70% 50% / 0.04) 60%, transparent 85%)',
-            filter: 'blur(8px)',
-            animation: 'capture-inner-pulse 3.5s ease-in-out infinite',
-          }}
-        />
-      )}
+      {/* INNER GLOW PULSE - REMOVED for clean luxury look in ready state */}
+      {/* Focus is now on the CTA pill only, not the entire gauge */}
       
       {/* FOCUS RING - accessible keyboard focus indicator */}
       {isFocused && uiState === 'ready' && (
@@ -527,16 +515,16 @@ export const ScoreGauge = ({
           />
         </div>
         
-        {/* Premium outer ring glow - activates when content detected */}
+        {/* Premium outer ring glow - REDUCED in ready state for clean luxury */}
         <div 
           className="absolute inset-0 rounded-full transition-all duration-400 ease-out"
           style={{
             boxShadow: score !== null 
               ? `0 0 35px ${getCurrentColor(animatedScore).replace(')', ' / 0.35)')}, 0 0 70px ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')}, inset 0 0 25px ${getCurrentColor(animatedScore).replace(')', ' / 0.12)')}`
               : hasContent && !isLoading
-                ? '0 0 40px hsl(174 80% 52% / 0.3), 0 0 65px hsl(174 70% 50% / 0.15), inset 0 0 20px hsl(174 70% 48% / 0.14)'
+                ? '0 0 20px hsl(174 65% 50% / 0.15), inset 0 0 12px hsl(174 60% 48% / 0.08)' // REDUCED: subtle ring only
                 : '0 0 28px hsl(174 55% 48% / 0.15), 0 0 50px hsl(200 45% 45% / 0.08), inset 0 0 15px hsl(174 50% 42% / 0.08)',
-            animation: score === null ? 'idle-ring-pulse 3.8s ease-in-out 75ms infinite' : 'none',
+            animation: score === null && !hasContent ? 'idle-ring-pulse 3.8s ease-in-out 75ms infinite' : 'none',
           }}
         />
         
