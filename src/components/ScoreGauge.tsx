@@ -54,8 +54,10 @@ export const ScoreGauge = ({
   const [isHovering, setIsHovering] = useState(false); // Hover state for gauge-as-button
   const [isFocused, setIsFocused] = useState(false); // Focus state for accessibility
   const [isPressed, setIsPressed] = useState(false); // Press state for button feedback
+  const [showActivationParticles, setShowActivationParticles] = useState(false); // Particle burst on activation
   const animationRef = useRef<number | null>(null);
   const prevUiStateRef = useRef<string>('idle');
+  const prevTypingStateRef = useRef<string>('idle'); // Track typing state changes
   
   // Memoize sparkles to prevent regeneration on each render
   const sparkles = useMemo(() => generateSparkles(16), []);
@@ -272,6 +274,20 @@ export const ScoreGauge = ({
     
     prevUiStateRef.current = uiState;
   }, [uiState, onTransferStart]);
+  
+  // Track typing state transitions for particle effect
+  useEffect(() => {
+    const prevTypingState = prevTypingStateRef.current;
+    
+    // Trigger particle burst when transitioning to valid
+    if (prevTypingState !== 'valid' && typingState === 'valid') {
+      setShowActivationParticles(true);
+      // Clear particles after animation completes
+      setTimeout(() => setShowActivationParticles(false), 800);
+    }
+    
+    prevTypingStateRef.current = typingState;
+  }, [typingState]);
   
   // Handle analyze click with absorption animation
   const handleAnalyzeClick = () => {
@@ -922,6 +938,30 @@ export const ScoreGauge = ({
                   animation: typingState === 'valid' ? 'cta-spark-pulse 2.2s ease-in-out infinite' : 'none',
                 }}
               />
+              
+              {/* Activation particle burst - triggers when transitioning to valid */}
+              {showActivationParticles && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  {[...Array(8)].map((_, i) => {
+                    const angle = (i / 8) * 360;
+                    const delay = i * 30;
+                    return (
+                      <div
+                        key={i}
+                        className="absolute rounded-full"
+                        style={{
+                          width: 4,
+                          height: 4,
+                          background: 'hsl(174 65% 60%)',
+                          boxShadow: '0 0 6px hsl(174 60% 55% / 0.8), 0 0 12px hsl(174 55% 50% / 0.4)',
+                          animation: `cta-particle-burst 600ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms forwards`,
+                          '--particle-angle': `${angle}deg`,
+                        } as React.CSSProperties}
+                      />
+                    );
+                  })}
+                </div>
+              )}
               
               {/* Premium glass pill backdrop - reactive to state */}
               <div 
