@@ -162,31 +162,6 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           }}
         />
         
-        {/* SUNRISE RIM LIGHT - Right side glow */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `
-              radial-gradient(ellipse 40% 80% at 95% 50%, 
-                hsl(45 80% 70% / 0.15) 0%,
-                hsl(35 70% 60% / 0.08) 30%,
-                transparent 60%
-              )
-            `,
-          }}
-        />
-        
-        {/* SOFT TERMINATOR SHADOW - Left side */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `linear-gradient(100deg, 
-              hsl(230 30% 8% / 0.4) 0%,
-              hsl(230 25% 10% / 0.2) 25%,
-              transparent 50%
-            )`,
-          }}
-        />
         
         {/* Subtle atmospheric glow + outer cyan tech glow */}
         <div 
