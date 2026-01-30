@@ -289,15 +289,11 @@ export const InteractiveGlobe = memo(({ size, isAnalyzing = false }: Interactive
           pointerEvents: 'none',
         }}
       >
-        {/* Ocean base gradient */}
+        {/* Deep ocean base - solid dark blue for clean look */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(circle at 35% 30%, 
-              hsl(200 48% 35%) 0%, 
-              hsl(210 45% 25%) 40%, 
-              hsl(220 40% 14%) 100%
-            )`,
+            background: 'hsl(220 40% 12%)',
           }}
         />
         
