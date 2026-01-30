@@ -807,17 +807,17 @@ export const ScoreGauge = ({
             
             return (
               <g key={`divider-${i}`}>
-                {/* Outer glow layer - soft diffused */}
+                {/* Outer glow layer - more visible */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 40% 70% / 0.12)"
-                  strokeWidth={4}
+                  stroke="hsl(180 50% 65% / 0.2)"
+                  strokeWidth={5}
                   strokeLinecap="round"
                   style={{
-                    filter: 'blur(2px)',
+                    filter: 'blur(2.5px)',
                   }}
                 />
                 {/* Main divider line - brighter, thicker */}
@@ -826,21 +826,21 @@ export const ScoreGauge = ({
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(185 35% 75% / 0.35)"
-                  strokeWidth={1.8}
+                  stroke="hsl(185 40% 80% / 0.5)"
+                  strokeWidth={2.2}
                   strokeLinecap="round"
                   style={{
-                    filter: 'blur(0.2px)',
+                    filter: 'blur(0.15px)',
                   }}
                 />
-                {/* Sharp center highlight */}
+                {/* Sharp center highlight - more visible */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 30% 90% / 0.2)"
-                  strokeWidth={0.8}
+                  stroke="hsl(180 35% 95% / 0.35)"
+                  strokeWidth={1}
                   strokeLinecap="round"
                 />
               </g>
