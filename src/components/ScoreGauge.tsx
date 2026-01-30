@@ -837,17 +837,13 @@ export const ScoreGauge = ({
           )}
         </svg>
 
-        {/* ========== SINGLE GLASS SEPARATOR RING - Clean physical separation ========== */}
+        {/* ========== DARK SEPARATOR RING - Black like background ========== */}
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
             inset: strokeWidth + 3,
-            border: '1px solid hsl(180 40% 80% / 0.12)',
-            boxShadow: `
-              inset 0 0 6px hsl(220 35% 3% / 0.18),
-              inset 0 0 12px hsl(220 30% 2% / 0.1)
-            `,
-            filter: 'blur(0.2px)',
+            border: '1.5px solid hsl(220 25% 8%)',
+            background: 'transparent',
           }}
         />
 
