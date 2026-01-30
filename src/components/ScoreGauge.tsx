@@ -806,19 +806,44 @@ export const ScoreGauge = ({
             const y2 = size / 2 + outerRadius * Math.sin(dividerRad);
             
             return (
-              <line
-                key={`divider-${i}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="hsl(180 30% 85% / 0.18)"
-                strokeWidth={1.5}
-                strokeLinecap="round"
-                style={{
-                  filter: 'blur(0.3px)',
-                }}
-              />
+              <g key={`divider-${i}`}>
+                {/* Outer glow layer - soft diffused */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(180 40% 70% / 0.12)"
+                  strokeWidth={4}
+                  strokeLinecap="round"
+                  style={{
+                    filter: 'blur(2px)',
+                  }}
+                />
+                {/* Main divider line - brighter, thicker */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(185 35% 75% / 0.35)"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  style={{
+                    filter: 'blur(0.2px)',
+                  }}
+                />
+                {/* Sharp center highlight */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(180 30% 90% / 0.2)"
+                  strokeWidth={0.8}
+                  strokeLinecap="round"
+                />
+              </g>
             );
           })}
 
