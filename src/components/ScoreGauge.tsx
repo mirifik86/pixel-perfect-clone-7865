@@ -936,29 +936,50 @@ export const ScoreGauge = ({
           {/* Rotating Globe - always visible behind other content */}
           <RotatingGlobe size={size} isAnalyzing={isLoading} />
           
-          {/* ========== POWERED BY IA11 SIGNATURE - Premium subtle branding ========== */}
+          {/* ========== POWERED BY IA11 SIGNATURE - Premium curved bottom placement ========== */}
           <div 
             className="absolute pointer-events-none select-none"
             style={{
-              bottom: size * 0.18,
+              bottom: size * 0.06,
               left: '50%',
               transform: 'translateX(-50%)',
-              zIndex: 1,
+              zIndex: 2,
             }}
           >
-            <span
-              className="uppercase font-medium"
+            {/* Subtle glow backdrop for high-tech effect */}
+            <div 
+              className="absolute inset-0 -inset-x-4 -inset-y-1"
               style={{
-                fontSize: 'clamp(0.5rem, 1.4vw, 0.6rem)',
-                letterSpacing: '0.18em',
-                color: 'hsl(200 20% 52%)',
-                textShadow: '0 0 8px hsl(200 30% 20% / 0.5)',
-                opacity: 0.7,
+                background: 'radial-gradient(ellipse 120% 200% at 50% 50%, hsl(174 60% 45% / 0.12) 0%, transparent 60%)',
+                filter: 'blur(4px)',
+                animation: 'ia11-signature-pulse 4s ease-in-out infinite',
+              }}
+            />
+            <span
+              className="relative uppercase font-medium"
+              style={{
+                fontSize: 'clamp(0.45rem, 1.2vw, 0.55rem)',
+                letterSpacing: '0.22em',
+                color: 'hsl(180 25% 62%)',
+                textShadow: `
+                  0 0 6px hsl(174 50% 50% / 0.5),
+                  0 0 12px hsl(174 45% 45% / 0.25),
+                  0 1px 2px hsl(220 20% 8% / 0.8)
+                `,
+                opacity: 0.85,
               }}
             >
               Powered by IA11
             </span>
           </div>
+          
+          {/* Keyframes for signature glow pulse */}
+          <style>{`
+            @keyframes ia11-signature-pulse {
+              0%, 100% { opacity: 0.6; transform: scale(1); }
+              50% { opacity: 1; transform: scale(1.05); }
+            }
+          `}</style>
           {/* RESULT STATE: Display score - PREMIUM VISUAL FOCAL POINT with morph reveal */}
           {uiState === 'result' && (
             <div 
