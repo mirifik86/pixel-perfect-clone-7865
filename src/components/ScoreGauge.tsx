@@ -790,16 +790,15 @@ export const ScoreGauge = ({
             );
           })}
           
-          {/* MICRO-DIVIDERS between segments - premium instrument-grade separation */}
+          {/* MAIN DIVIDERS between segments - premium instrument-grade separation */}
           {/* 6 dividers: 5 at segment boundaries + 1 at end of arc */}
           {[0, 1, 2, 3, 4, 5].map((i) => {
             // Offset to center dividers exactly in the visual gaps between segments
-            // Each segment rotates at 135 + i*54, gap is 4px, offset centers in gap
-            const gapOffsetDegrees = 0.8; // Small offset to center in visual gap
+            const gapOffsetDegrees = 0.8;
             const dividerAngle = 135 + i * 54 - gapOffsetDegrees;
             const dividerRad = dividerAngle * (Math.PI / 180);
             
-            // Inner and outer points of the divider line - extend slightly beyond ring
+            // Inner and outer points of the divider line
             const innerRadius = radius - strokeWidth / 2;
             const outerRadius = radius + strokeWidth / 2;
             
@@ -810,40 +809,40 @@ export const ScoreGauge = ({
             
             return (
               <g key={`divider-${i}`}>
-                {/* Outer ambient glow - soft cyan halo */}
+                {/* Outer ambient glow - MORE VISIBLE */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 50% 65% / 0.22)"
-                  strokeWidth={5}
+                  stroke="hsl(180 55% 70% / 0.35)"
+                  strokeWidth={6}
                   strokeLinecap="round"
                   style={{
                     filter: 'blur(2.5px)',
                   }}
                 />
-                {/* Mid glow layer - refined */}
+                {/* Mid glow layer - enhanced */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(185 45% 78% / 0.38)"
-                  strokeWidth={3}
+                  stroke="hsl(185 50% 80% / 0.55)"
+                  strokeWidth={3.5}
                   strokeLinecap="round"
                   style={{
                     filter: 'blur(0.8px)',
                   }}
                 />
-                {/* Main divider line - premium visibility */}
+                {/* Main divider line - MORE VISIBLE */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(185 55% 88% / 0.55)"
-                  strokeWidth={1.8}
+                  stroke="hsl(185 60% 90% / 0.75)"
+                  strokeWidth={2.2}
                   strokeLinecap="round"
                 />
                 {/* Sharp bright center core */}
@@ -852,8 +851,52 @@ export const ScoreGauge = ({
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 45% 97% / 0.4)"
-                  strokeWidth={0.6}
+                  stroke="hsl(180 50% 98% / 0.6)"
+                  strokeWidth={0.8}
+                  strokeLinecap="round"
+                />
+              </g>
+            );
+          })}
+          
+          {/* MID-SEGMENT subtle dividers - lighter marks at halfway point of each segment */}
+          {[0, 1, 2, 3, 4].map((i) => {
+            // Each segment spans 54 degrees, so midpoint is at 27 degrees from start
+            const midDividerAngle = 135 + i * 54 + 27; // Halfway through each segment
+            const midDividerRad = midDividerAngle * (Math.PI / 180);
+            
+            // Shorter lines - only inside the ring
+            const innerRadius = radius - strokeWidth / 2 + 2;
+            const outerRadius = radius + strokeWidth / 2 - 2;
+            
+            const x1 = size / 2 + innerRadius * Math.cos(midDividerRad);
+            const y1 = size / 2 + innerRadius * Math.sin(midDividerRad);
+            const x2 = size / 2 + outerRadius * Math.cos(midDividerRad);
+            const y2 = size / 2 + outerRadius * Math.sin(midDividerRad);
+            
+            return (
+              <g key={`mid-divider-${i}`}>
+                {/* Subtle glow */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(180 40% 65% / 0.18)"
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  style={{
+                    filter: 'blur(1.5px)',
+                  }}
+                />
+                {/* Subtle mid-segment line */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(185 45% 75% / 0.35)"
+                  strokeWidth={1.2}
                   strokeLinecap="round"
                 />
               </g>
