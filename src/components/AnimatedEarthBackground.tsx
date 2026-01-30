@@ -8,16 +8,13 @@ interface AnimatedEarthBackgroundProps {
 }
 
 /**
- * Centered Globe with Axial Surface Rotation
+ * Centered Globe with Axial Rotation (Plan B)
  * 
- * Features:
- * - FULL circular globe, fixed in center (no panning/movement)
- * - Axial rotation via horizontal texture scroll (all continents visible over time)
- * - Idle: Ultra-slow rotation (~100s per full cycle)
- * - Analyze: 3-4x faster rotation + radar sweep + grid + network arcs
- * - Smooth transitions between states
- * - Respects prefers-reduced-motion
- * - Pauses when tab is hidden
+ * Implementation:
+ * - Full circular globe, fixed in viewport center
+ * - Equirectangular texture with repeat-x
+ * - Rotation via background-position animation (seamless loop)
+ * - All continents visible over one full rotation cycle
  */
 export const AnimatedEarthBackground = memo(({ 
   isAnalyzing, 
@@ -28,24 +25,20 @@ export const AnimatedEarthBackground = memo(({
   const [isVisible, setIsVisible] = useState(true);
   const [analyzeTransition, setAnalyzeTransition] = useState(false);
   
-  // Detect reduced motion preference
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
-    
     const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
   
-  // Pause animation when tab is not visible
   useEffect(() => {
     const handleVisibility = () => setIsVisible(!document.hidden);
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
   
-  // Smooth transition for analyze state
   useEffect(() => {
     if (isAnalyzing) {
       const timer = setTimeout(() => setAnalyzeTransition(true), 100);
@@ -55,37 +48,33 @@ export const AnimatedEarthBackground = memo(({
     }
   }, [isAnalyzing]);
   
-  // Animation control
   const shouldAnimate = !prefersReducedMotion && isVisible;
-  const rotationSpeed = isAnalyzing ? '28s' : '100s';
+  const rotationSpeed = isAnalyzing ? '25s' : '90s';
   
-  // Intensity levels
-  const globeOpacity = isAnalyzing ? 0.95 : (hasContent && !hasResults ? 0.82 : 0.88);
-  const glowIntensity = analyzeTransition ? 1.4 : 1;
+  const globeOpacity = isAnalyzing ? 0.95 : (hasContent && !hasResults ? 0.8 : 0.88);
+  const glowIntensity = analyzeTransition ? 1.5 : 1;
   
-  // Globe sizing - responsive, centered
-  const globeSize = 'min(85vh, 85vw)';
+  // Globe sizing - large centered sphere
+  const globeSize = 'min(75vh, 75vw)';
   
-  // Generate star positions (memoized)
   const stars = useMemo(() => 
-    Array.from({ length: 40 }, (_, i) => ({
+    Array.from({ length: 45 }, (_, i) => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: 0.5 + Math.random() * 1.2,
-      opacity: 0.15 + Math.random() * 0.4,
-      delay: Math.random() * 4,
-      duration: 3 + Math.random() * 3,
+      size: 0.4 + Math.random() * 1.4,
+      opacity: 0.12 + Math.random() * 0.4,
+      delay: Math.random() * 5,
+      duration: 2.5 + Math.random() * 4,
     }))
   , []);
   
-  // Particle positions for analyze state
   const particles = useMemo(() =>
-    Array.from({ length: 10 }, (_, i) => ({
-      angle: (i / 10) * 360,
-      distance: 35 + (i % 3) * 8,
+    Array.from({ length: 12 }, (_, i) => ({
+      angle: (i / 12) * 360,
+      distance: 38 + (i % 3) * 6,
       size: 2 + (i % 3),
-      delay: i * 0.18,
-      duration: 2.4 + (i % 4) * 0.35,
+      delay: i * 0.15,
+      duration: 2.2 + (i % 4) * 0.4,
       isTeal: i % 2 === 0,
     }))
   , []);
@@ -95,23 +84,23 @@ export const AnimatedEarthBackground = memo(({
       className="pointer-events-none fixed inset-0 overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* ========== DEEP SPACE BASE ========== */}
+      {/* ========== DEEP SPACE ========== */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 150% 130% at 50% 50%, 
-              hsl(210 50% 8%) 0%, 
-              hsl(225 40% 6%) 25%, 
-              hsl(240 35% 5%) 45%, 
-              hsl(250 30% 4%) 65%,
-              hsl(260 25% 3%) 100%
+            radial-gradient(ellipse 140% 120% at 50% 50%, 
+              hsl(215 45% 7%) 0%, 
+              hsl(225 40% 5%) 30%, 
+              hsl(235 35% 4%) 55%, 
+              hsl(245 30% 3%) 80%,
+              hsl(255 25% 2%) 100%
             )
           `,
         }}
       />
       
-      {/* ========== PREMIUM STAR FIELD ========== */}
+      {/* ========== STAR FIELD ========== */}
       <div className="absolute inset-0">
         {stars.map((star, i) => (
           <div
@@ -133,7 +122,7 @@ export const AnimatedEarthBackground = memo(({
         ))}
       </div>
       
-      {/* ========== CENTERED CIRCULAR GLOBE ========== */}
+      {/* ========== CENTERED GLOBE ========== */}
       <div 
         className="absolute transition-opacity duration-700"
         style={{
@@ -145,82 +134,78 @@ export const AnimatedEarthBackground = memo(({
           opacity: globeOpacity,
         }}
       >
-        {/* Globe container - circular with overflow hidden */}
+        {/* Globe sphere container */}
         <div
           className="relative w-full h-full rounded-full overflow-hidden"
           style={{
             boxShadow: `
-              inset -30px -20px 60px hsl(220 40% 5% / 0.7),
-              inset 20px 15px 50px hsl(174 50% 50% / ${0.08 * glowIntensity}),
-              0 0 80px hsl(174 60% 45% / ${0.15 * glowIntensity}),
-              0 0 150px hsl(200 50% 40% / ${0.08 * glowIntensity})
+              inset -25px -15px 50px hsl(220 45% 4% / 0.8),
+              inset 15px 10px 40px hsl(174 50% 50% / ${0.06 * glowIntensity}),
+              0 0 60px hsl(174 55% 48% / ${0.12 * glowIntensity}),
+              0 0 120px hsl(200 45% 42% / ${0.06 * glowIntensity})
             `,
           }}
         >
-          {/* Rotating texture layer - scrolls horizontally for axial rotation */}
+          {/* Rotating equirectangular texture - background-position animation */}
           <div
-            className="absolute"
+            className="absolute inset-0"
             style={{
-              top: '-5%',
-              left: 0,
-              width: '200%',
-              height: '110%',
               backgroundImage: `url(${earthBgHQ})`,
-              backgroundSize: '50% 100%',
-              backgroundPosition: '0% 50%',
+              backgroundSize: '200% 100%',
               backgroundRepeat: 'repeat-x',
+              backgroundPosition: '0% 50%',
               animation: shouldAnimate 
-                ? `globe-axial-rotate ${rotationSpeed} linear infinite` 
+                ? `globe-rotate-texture ${rotationSpeed} linear infinite` 
                 : 'none',
-              willChange: shouldAnimate ? 'transform' : 'auto',
-              filter: `brightness(1.05) contrast(1.1) saturate(1.15)`,
+              willChange: shouldAnimate ? 'background-position' : 'auto',
+              filter: 'brightness(1.08) contrast(1.12) saturate(1.18)',
             }}
           />
           
-          {/* Spherical shading overlay - creates 3D depth */}
+          {/* Spherical depth shading */}
           <div 
             className="absolute inset-0 rounded-full"
             style={{
               background: `
-                radial-gradient(circle at 35% 30%,
+                radial-gradient(circle at 38% 32%,
                   transparent 0%,
-                  transparent 45%,
-                  hsl(220 50% 8% / 0.3) 65%,
-                  hsl(230 45% 6% / 0.6) 80%,
-                  hsl(240 40% 4% / 0.85) 100%
+                  transparent 40%,
+                  hsl(220 50% 6% / 0.35) 60%,
+                  hsl(230 45% 5% / 0.65) 78%,
+                  hsl(240 40% 4% / 0.88) 100%
                 )
               `,
             }}
           />
           
-          {/* Atmospheric rim glow */}
+          {/* Atmospheric rim light */}
           <div 
             className="absolute inset-0 rounded-full transition-opacity duration-500"
             style={{
               background: `
                 radial-gradient(circle at 50% 50%,
-                  transparent 42%,
-                  hsl(174 50% 55% / ${0.06 * glowIntensity}) 55%,
-                  hsl(190 45% 50% / ${0.12 * glowIntensity}) 70%,
-                  hsl(200 40% 45% / ${0.18 * glowIntensity}) 85%,
-                  hsl(210 35% 40% / ${0.08 * glowIntensity}) 100%
+                  transparent 40%,
+                  hsl(174 55% 55% / ${0.05 * glowIntensity}) 52%,
+                  hsl(190 50% 52% / ${0.1 * glowIntensity}) 68%,
+                  hsl(200 45% 48% / ${0.15 * glowIntensity}) 82%,
+                  hsl(210 40% 42% / ${0.06 * glowIntensity}) 100%
                 )
               `,
             }}
           />
           
-          {/* Terminator line (day/night edge) - subtle */}
+          {/* Day/night terminator */}
           <div 
             className="absolute inset-0 rounded-full"
             style={{
               background: `
-                linear-gradient(105deg,
+                linear-gradient(108deg,
                   transparent 0%,
-                  transparent 48%,
-                  hsl(220 40% 8% / 0.25) 52%,
-                  hsl(230 35% 6% / 0.5) 60%,
-                  hsl(240 30% 5% / 0.7) 75%,
-                  hsl(250 25% 4% / 0.85) 100%
+                  transparent 45%,
+                  hsl(220 45% 6% / 0.3) 52%,
+                  hsl(230 40% 5% / 0.55) 62%,
+                  hsl(240 35% 4% / 0.75) 78%,
+                  hsl(250 30% 3% / 0.9) 100%
                 )
               `,
             }}
@@ -229,78 +214,77 @@ export const AnimatedEarthBackground = memo(({
         
         {/* Outer atmospheric halo */}
         <div 
-          className="absolute rounded-full transition-opacity duration-500"
+          className="absolute rounded-full pointer-events-none transition-opacity duration-500"
           style={{
-            top: '-8%',
-            left: '-8%',
-            width: '116%',
-            height: '116%',
+            top: '-10%',
+            left: '-10%',
+            width: '120%',
+            height: '120%',
             background: `
               radial-gradient(circle at 50% 50%,
-                transparent 40%,
-                hsl(174 55% 50% / ${0.04 * glowIntensity}) 50%,
-                hsl(190 50% 48% / ${0.08 * glowIntensity}) 60%,
-                hsl(200 45% 45% / ${0.04 * glowIntensity}) 72%,
-                transparent 85%
+                transparent 38%,
+                hsl(174 60% 52% / ${0.035 * glowIntensity}) 48%,
+                hsl(190 55% 50% / ${0.07 * glowIntensity}) 58%,
+                hsl(200 50% 46% / ${0.035 * glowIntensity}) 70%,
+                transparent 82%
               )
             `,
-            pointerEvents: 'none',
           }}
         />
       </div>
       
-      {/* ========== ANALYZE STATE: WORLD SEARCH OVERLAYS ========== */}
+      {/* ========== ANALYZE OVERLAYS ========== */}
       <div 
         className="absolute inset-0 pointer-events-none transition-opacity duration-500"
         style={{ opacity: analyzeTransition && shouldAnimate ? 1 : 0 }}
       >
-        {/* Primary radar sweep - centered on globe */}
+        {/* Primary radar sweep */}
         <div 
           className="absolute"
           style={{
             top: '50%',
             left: '50%',
-            width: `calc(${globeSize} * 1.1)`,
-            height: `calc(${globeSize} * 1.1)`,
+            width: `calc(${globeSize} * 1.15)`,
+            height: `calc(${globeSize} * 1.15)`,
             transform: 'translate(-50%, -50%)',
             borderRadius: '50%',
             background: `conic-gradient(
               from 0deg, 
               transparent 0%, 
-              transparent 80%, 
-              hsl(174 60% 50% / 0.12) 87%, 
-              hsl(174 70% 55% / 0.2) 93%, 
-              hsl(174 75% 58% / 0.08) 97%, 
+              transparent 78%, 
+              hsl(174 65% 52% / 0.1) 85%, 
+              hsl(174 70% 55% / 0.22) 92%, 
+              hsl(174 75% 58% / 0.06) 97%, 
               transparent 100%
             )`,
-            animation: isAnalyzing && shouldAnimate ? 'radar-sweep-center 4.5s linear infinite' : 'none',
+            animation: isAnalyzing && shouldAnimate ? 'radar-sweep-center 4s linear infinite' : 'none',
           }}
         />
         
-        {/* Secondary sweep (counter-rotate) */}
+        {/* Counter-rotating sweep */}
         <div 
           className="absolute"
           style={{
             top: '50%',
             left: '50%',
-            width: `calc(${globeSize} * 0.95)`,
-            height: `calc(${globeSize} * 0.95)`,
+            width: globeSize,
+            height: globeSize,
             transform: 'translate(-50%, -50%)',
             borderRadius: '50%',
             background: `conic-gradient(
               from 180deg, 
               transparent 0%, 
-              transparent 84%, 
-              hsl(200 50% 50% / 0.08) 90%, 
-              hsl(200 60% 55% / 0.14) 96%, 
+              transparent 82%, 
+              hsl(200 55% 52% / 0.06) 88%, 
+              hsl(200 60% 55% / 0.12) 95%, 
               transparent 100%
             )`,
-            animation: isAnalyzing && shouldAnimate ? 'radar-sweep-center-reverse 6s linear infinite' : 'none',
-            opacity: 0.6,
+            animation: isAnalyzing && shouldAnimate ? 'radar-sweep-center-reverse 5.5s linear infinite' : 'none',
+            opacity: 0.55,
           }}
         />
         
-        {/* Latitude/longitude grid overlay - constrained to globe area */}
+        {/* Grid overlay */}
         <div 
           className="absolute rounded-full overflow-hidden"
           style={{
@@ -315,16 +299,16 @@ export const AnimatedEarthBackground = memo(({
             className="absolute inset-0"
             style={{
               backgroundImage: `
-                linear-gradient(0deg, hsl(174 40% 55% / 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, hsl(174 40% 55% / 0.04) 1px, transparent 1px)
+                linear-gradient(0deg, hsl(174 45% 55% / 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, hsl(174 45% 55% / 0.035) 1px, transparent 1px)
               `,
-              backgroundSize: '8% 8%',
-              animation: isAnalyzing && shouldAnimate ? 'grid-pulse 2.5s ease-in-out infinite' : 'none',
+              backgroundSize: '10% 10%',
+              animation: isAnalyzing && shouldAnimate ? 'grid-pulse 2.2s ease-in-out infinite' : 'none',
             }}
           />
         </div>
         
-        {/* Network intelligence arcs */}
+        {/* Network arcs */}
         <svg 
           className="absolute"
           style={{
@@ -337,53 +321,40 @@ export const AnimatedEarthBackground = memo(({
           viewBox="0 0 100 100"
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* Arc 1: Long intercontinental */}
           <path
-            d="M 20 50 Q 50 15 80 50"
+            d="M 18 48 Q 50 12 82 48"
             fill="none"
             stroke="hsl(174 70% 55%)"
-            strokeWidth="0.4"
+            strokeWidth="0.35"
             strokeLinecap="round"
-            strokeDasharray="2 4"
-            style={{
-              animation: isAnalyzing && shouldAnimate ? 'arc-fade 3.2s ease-in-out infinite' : 'none',
-            }}
+            strokeDasharray="2.5 4"
+            style={{ animation: isAnalyzing && shouldAnimate ? 'arc-fade 3s ease-in-out infinite' : 'none' }}
           />
-          {/* Arc 2: Medium route */}
           <path
-            d="M 25 65 Q 50 35 75 60"
+            d="M 22 62 Q 50 32 78 58"
             fill="none"
             stroke="hsl(200 55% 55%)"
-            strokeWidth="0.3"
+            strokeWidth="0.28"
             strokeLinecap="round"
-            strokeDasharray="1.5 3"
-            style={{
-              animation: isAnalyzing && shouldAnimate ? 'arc-fade 3.8s ease-in-out infinite' : 'none',
-              animationDelay: '1.2s',
-            }}
+            strokeDasharray="1.8 3.2"
+            style={{ animation: isAnalyzing && shouldAnimate ? 'arc-fade 3.5s ease-in-out infinite' : 'none', animationDelay: '1s' }}
           />
-          {/* Arc 3: Short regional */}
           <path
-            d="M 30 40 Q 45 25 60 38"
+            d="M 28 38 Q 42 22 58 36"
             fill="none"
             stroke="hsl(174 55% 52%)"
-            strokeWidth="0.25"
+            strokeWidth="0.22"
             strokeLinecap="round"
-            strokeDasharray="1 2"
-            style={{
-              animation: isAnalyzing && shouldAnimate ? 'arc-fade 3s ease-in-out infinite' : 'none',
-              animationDelay: '2s',
-            }}
+            strokeDasharray="1.2 2.4"
+            style={{ animation: isAnalyzing && shouldAnimate ? 'arc-fade 2.8s ease-in-out infinite' : 'none', animationDelay: '1.8s' }}
           />
-          
-          {/* Node points */}
-          <circle cx="20" cy="50" r="1" fill="hsl(174 70% 60%)" opacity="0.5" />
-          <circle cx="80" cy="50" r="1" fill="hsl(174 70% 60%)" opacity="0.5" />
-          <circle cx="25" cy="65" r="0.8" fill="hsl(200 55% 58%)" opacity="0.4" />
-          <circle cx="75" cy="60" r="0.8" fill="hsl(200 55% 58%)" opacity="0.4" />
+          <circle cx="18" cy="48" r="0.9" fill="hsl(174 70% 60%)" opacity="0.45" />
+          <circle cx="82" cy="48" r="0.9" fill="hsl(174 70% 60%)" opacity="0.45" />
+          <circle cx="22" cy="62" r="0.7" fill="hsl(200 55% 58%)" opacity="0.38" />
+          <circle cx="78" cy="58" r="0.7" fill="hsl(200 55% 58%)" opacity="0.38" />
         </svg>
         
-        {/* Floating scan particles - orbit around globe */}
+        {/* Orbiting particles */}
         <div className="absolute inset-0 overflow-hidden">
           {particles.map((p, i) => {
             const x = 50 + Math.cos((p.angle * Math.PI) / 180) * p.distance;
@@ -396,7 +367,7 @@ export const AnimatedEarthBackground = memo(({
                   width: `${p.size}px`,
                   height: `${p.size}px`,
                   background: p.isTeal ? 'hsl(174 65% 58%)' : 'hsl(200 55% 55%)',
-                  boxShadow: `0 0 ${p.size * 2}px ${p.isTeal ? 'hsl(174 60% 52%)' : 'hsl(200 50% 50%)'}`,
+                  boxShadow: `0 0 ${p.size * 2.5}px ${p.isTeal ? 'hsl(174 60% 52%)' : 'hsl(200 50% 50%)'}`,
                   top: `${y}%`,
                   left: `${x}%`,
                   transform: 'translate(-50%, -50%)',
@@ -404,24 +375,24 @@ export const AnimatedEarthBackground = memo(({
                     ? `particle-float ${p.duration}s ease-in-out infinite` 
                     : 'none',
                   animationDelay: `${p.delay}s`,
-                  opacity: 0.5,
+                  opacity: 0.55,
                 }}
               />
             );
           })}
         </div>
         
-        {/* Expanding scan pulse rings - centered on globe */}
+        {/* Scan rings */}
         <div 
           className="absolute rounded-full"
           style={{
             top: '50%',
             left: '50%',
-            width: `calc(${globeSize} * 0.6)`,
-            height: `calc(${globeSize} * 0.6)`,
+            width: `calc(${globeSize} * 0.55)`,
+            height: `calc(${globeSize} * 0.55)`,
             transform: 'translate(-50%, -50%)',
-            border: '1px solid hsl(174 50% 50% / 0.18)',
-            animation: isAnalyzing && shouldAnimate ? 'scan-ring-center 2.8s ease-out infinite' : 'none',
+            border: '1px solid hsl(174 55% 52% / 0.2)',
+            animation: isAnalyzing && shouldAnimate ? 'scan-ring-center 2.5s ease-out infinite' : 'none',
           }}
         />
         <div 
@@ -429,37 +400,37 @@ export const AnimatedEarthBackground = memo(({
           style={{
             top: '50%',
             left: '50%',
-            width: `calc(${globeSize} * 0.6)`,
-            height: `calc(${globeSize} * 0.6)`,
+            width: `calc(${globeSize} * 0.55)`,
+            height: `calc(${globeSize} * 0.55)`,
             transform: 'translate(-50%, -50%)',
-            border: '1px solid hsl(200 45% 52% / 0.12)',
-            animation: isAnalyzing && shouldAnimate ? 'scan-ring-center 2.8s ease-out infinite' : 'none',
-            animationDelay: '1.4s',
+            border: '1px solid hsl(200 50% 52% / 0.14)',
+            animation: isAnalyzing && shouldAnimate ? 'scan-ring-center 2.5s ease-out infinite' : 'none',
+            animationDelay: '1.25s',
           }}
         />
       </div>
       
-      {/* ========== SOFT BOTTOM VIGNETTE (text readability) ========== */}
+      {/* ========== BOTTOM VIGNETTE ========== */}
       <div 
         className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
-          height: '50%',
+          height: '45%',
           background: `linear-gradient(to top, 
-            hsl(240 30% 5% / 0.95) 0%, 
-            hsl(240 30% 5% / 0.8) 20%,
-            hsl(240 30% 5% / 0.5) 45%,
-            hsl(240 30% 5% / 0.2) 70%, 
+            hsl(240 30% 4% / 0.95) 0%, 
+            hsl(240 28% 4% / 0.75) 25%,
+            hsl(240 26% 4% / 0.45) 50%,
+            hsl(240 24% 4% / 0.15) 75%, 
             transparent 100%
           )`,
         }}
       />
       
-      {/* Content dim overlay when showing results */}
+      {/* Results overlay */}
       <div 
         className="absolute inset-0 pointer-events-none transition-opacity duration-700"
         style={{
           background: hasResults 
-            ? 'radial-gradient(ellipse 90% 70% at 50% 50%, hsl(235 30% 6% / 0.3) 0%, transparent 60%)'
+            ? 'radial-gradient(ellipse 85% 65% at 50% 50%, hsl(235 30% 5% / 0.35) 0%, transparent 55%)'
             : 'none',
           opacity: hasResults ? 1 : 0,
         }}

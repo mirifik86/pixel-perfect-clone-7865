@@ -631,13 +631,13 @@
    Full-bleed seamless animations
    ============================================ */
 
-/* Globe axial rotation - texture scrolls horizontally (full 360° cycle) */
-@keyframes globe-axial-rotate {
+/* Globe rotation via background-position (seamless repeat-x) */
+@keyframes globe-rotate-texture {
   0% {
-    transform: translateX(0%);
+    background-position: 0% 50%;
   }
   100% {
-    transform: translateX(-50%);
+    background-position: -200% 50%;
   }
 }
 
