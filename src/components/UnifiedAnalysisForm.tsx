@@ -390,7 +390,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               
               {/* Text input zone with centered placeholder */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
-                {/* Custom placeholder - brighter, premium, single instruction */}
+                {/* Custom placeholder - HIGHER CONTRAST for readability */}
                 {!inputText && (
                   <div 
                     className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
@@ -400,10 +400,11 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       className="text-center font-medium tracking-wide"
                       style={{
                         fontSize: 'var(--text-sm)',
-                        color: 'hsl(174 50% 78% / 0.92)',
-                        textShadow: '0 0 20px hsl(174 55% 55% / 0.3), 0 0 40px hsl(174 50% 50% / 0.15)',
-                        animation: 'placeholder-glow 3s ease-in-out infinite',
-                        letterSpacing: '0.01em',
+                        // HIGHER CONTRAST: brighter base color for dark bg readability
+                        color: 'hsl(180 35% 72%)',
+                        textShadow: '0 0 16px hsl(174 50% 55% / 0.25), 0 1px 2px hsl(0 0% 0% / 0.4)',
+                        animation: 'placeholder-glow 3.5s ease-in-out infinite',
+                        letterSpacing: '0.015em',
                       }}
                     >
                       {t('form.placeholder')}

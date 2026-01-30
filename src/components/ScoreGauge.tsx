@@ -818,31 +818,35 @@ export const ScoreGauge = ({
           )}
         </svg>
 
-        {/* ========== PREMIUM SEPARATOR RING - Floating instrument effect ========== */}
-        {/* Thin inner separator between gauge ring and globe */}
+        {/* ========== ULTRA-PRO GLASS SEPARATOR RING - Floating instrument effect ========== */}
+        {/* Thin glass separator between gauge ring and globe - creates depth */}
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
-            // Position just inside the gauge ring with a small gap
-            inset: strokeWidth + 4, // 4px gap between gauge ring and separator
-            border: '1.5px solid hsl(180 40% 75% / 0.18)',
+            // Position just inside the gauge ring with a 6px gap for clean separation
+            inset: strokeWidth + 6,
+            // Ultra-thin glass-like border with low opacity
+            border: '1px solid hsl(180 45% 80% / 0.15)',
+            // Subtle outer softness + inner shadow for floating effect
             boxShadow: `
-              0 0 3px hsl(180 45% 70% / 0.12),
-              inset 0 0 8px hsl(220 30% 8% / 0.25)
+              0 0 2px hsl(180 40% 75% / 0.1),
+              inset 0 0 6px hsl(220 35% 5% / 0.3),
+              inset 0 0 12px hsl(220 30% 3% / 0.2)
             `,
-            filter: 'blur(0.3px)',
+            // Slight blur for glass feel without being harsh
+            filter: 'blur(0.25px)',
           }}
         />
         
-        {/* Inner vignette shadow for depth at globe edge */}
+        {/* Secondary inner vignette - very subtle depth shadow at contact edge */}
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
-            inset: strokeWidth + 6,
+            inset: strokeWidth + 8,
             background: 'transparent',
             boxShadow: `
-              inset 0 0 15px hsl(220 35% 6% / 0.35),
-              inset 0 0 25px hsl(220 30% 4% / 0.2)
+              inset 0 0 10px hsl(220 40% 4% / 0.25),
+              inset 0 0 20px hsl(220 35% 3% / 0.15)
             `,
           }}
         />
@@ -1142,34 +1146,12 @@ export const ScoreGauge = ({
           </div>
         )}
         
-        {/* Premium single dot indicator - IDLE state */}
-        {uiState === 'idle' && (
+        {/* Premium single dot indicator - ULTRA MINIMAL (both idle and ready) */}
+        {(uiState === 'idle' || uiState === 'ready') && (
           <div 
             className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
             style={{ 
-              top: size + 16,
-            }}
-          >
-            <div
-              className="rounded-full"
-              style={{
-                width: '6px',
-                height: '6px',
-                background: 'hsl(174 55% 58% / 0.6)',
-                boxShadow: '0 0 8px hsl(174 50% 55% / 0.4), 0 0 16px hsl(174 45% 50% / 0.2)',
-                animation: 'indicator-dot-pulse 3s ease-in-out infinite',
-              }}
-              onAnimationIteration={() => onChevronCycleComplete?.()}
-            />
-          </div>
-        )}
-        
-        {/* Premium single dot indicator - READY state */}
-        {uiState === 'ready' && (
-          <div 
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
-            style={{ 
-              bottom: -24,
+              top: size + 18,
             }}
           >
             <div
@@ -1177,10 +1159,12 @@ export const ScoreGauge = ({
               style={{
                 width: '5px',
                 height: '5px',
-                background: 'hsl(174 60% 55% / 0.5)',
-                boxShadow: '0 0 6px hsl(174 55% 55% / 0.35), 0 0 12px hsl(174 50% 50% / 0.15)',
-                animation: 'indicator-dot-pulse 2.5s ease-in-out infinite',
+                background: 'hsl(174 50% 55% / 0.55)',
+                boxShadow: '0 0 6px hsl(174 45% 52% / 0.3)',
+                // Very slow, subtle opacity pulse only (no movement)
+                animation: 'indicator-dot-subtle-pulse 4s ease-in-out infinite',
               }}
+              onAnimationIteration={() => uiState === 'idle' && onChevronCycleComplete?.()}
             />
           </div>
         )}
@@ -1718,7 +1702,16 @@ export const ScoreGauge = ({
             transform: scale(1.02);
           }
         }
-        /* Premium single dot indicator pulse */
+        /* Premium single dot indicator - ULTRA SUBTLE opacity-only pulse */
+        @keyframes indicator-dot-subtle-pulse {
+          0%, 100% { 
+            opacity: 0.45;
+          }
+          50% { 
+            opacity: 0.7;
+          }
+        }
+        /* Legacy pulse (kept for compatibility) */
         @keyframes indicator-dot-pulse {
           0%, 100% { 
             opacity: 0.5;
