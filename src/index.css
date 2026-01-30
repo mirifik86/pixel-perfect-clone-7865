@@ -378,6 +378,22 @@
   }
 }
 
+/* CTA particle burst - radial explosion on activation */
+@keyframes cta-particle-burst {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--particle-angle)) translateX(0) scale(1);
+  }
+  60% {
+    opacity: 0.8;
+    transform: rotate(var(--particle-angle)) translateX(35px) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--particle-angle)) translateX(50px) scale(0.3);
+  }
+}
+
 @keyframes shine {
   0% {
     transform: translateX(-100%) skewX(-15deg);
