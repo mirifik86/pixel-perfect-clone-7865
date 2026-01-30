@@ -791,15 +791,17 @@ export const ScoreGauge = ({
           })}
           
           {/* MICRO-DIVIDERS between segments - premium instrument-grade separation */}
-          {/* 6 dividers: 5 at segment starts + 1 at end of last segment */}
+          {/* 6 dividers: 5 at segment boundaries + 1 at end of arc */}
           {[0, 1, 2, 3, 4, 5].map((i) => {
-            // Divider positions: 0-4 at segment starts, 5 at end of arc
-            const dividerAngle = 135 + i * 54; // 54 = 270/5 degrees per segment
+            // Offset to center dividers exactly in the visual gaps between segments
+            // Each segment rotates at 135 + i*54, gap is 4px, offset centers in gap
+            const gapOffsetDegrees = 0.8; // Small offset to center in visual gap
+            const dividerAngle = 135 + i * 54 - gapOffsetDegrees;
             const dividerRad = dividerAngle * (Math.PI / 180);
             
-            // Inner and outer points of the divider line
-            const innerRadius = radius - strokeWidth / 2 + 1;
-            const outerRadius = radius + strokeWidth / 2 - 1;
+            // Inner and outer points of the divider line - extend slightly beyond ring
+            const innerRadius = radius - strokeWidth / 2;
+            const outerRadius = radius + strokeWidth / 2;
             
             const x1 = size / 2 + innerRadius * Math.cos(dividerRad);
             const y1 = size / 2 + innerRadius * Math.sin(dividerRad);
