@@ -984,11 +984,11 @@ export const ScoreGauge = ({
             <text
               fill="hsl(174 50% 50% / 0.35)"
               style={{
-                fontSize: `${size * 0.042}px`,
+                fontSize: `${size * 0.034}px`,
                 fontWeight: 500,
-                letterSpacing: '0.15em',
+                letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                filter: 'blur(3px)',
+                filter: 'blur(2.5px)',
               }}
             >
               <textPath
@@ -1004,9 +1004,9 @@ export const ScoreGauge = ({
             <text
               fill="hsl(180 35% 72%)"
               style={{
-                fontSize: `${size * 0.042}px`,
+                fontSize: `${size * 0.034}px`,
                 fontWeight: 500,
-                letterSpacing: '0.15em',
+                letterSpacing: '0.12em',
                 textTransform: 'uppercase',
               }}
               filter="url(#ia11-glow)"
