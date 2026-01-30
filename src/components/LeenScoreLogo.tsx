@@ -31,13 +31,28 @@ export const LeenScoreLogo = () => {
         willChange: 'transform, opacity',
       }}
     >
-      {/* Title - ultra-premium 3D depth effect with embossed look */}
+      {/* Subtle cyan bloom behind title - premium tech glow */}
+      <div 
+        className="absolute pointer-events-none"
+        style={{
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -60%)',
+          width: 'clamp(280px, 50vw, 500px)',
+          height: 'clamp(100px, 15vw, 180px)',
+          background: 'radial-gradient(ellipse 100% 80% at center, hsl(174 60% 50% / 0.12), hsl(174 55% 45% / 0.05) 50%, transparent 80%)',
+          filter: 'blur(30px)',
+        }}
+      />
+      
+      {/* Title - ultra-premium with +12% size, refined spacing, luxury polish */}
       <h1 
-        className="font-semibold tracking-tight"
+        className="relative font-semibold tracking-tight whitespace-nowrap"
         style={{ 
-          letterSpacing: '-0.02em', 
-          fontSize: 'clamp(3rem, 3rem + 4vw, 6.5rem)',
+          letterSpacing: '-0.025em', 
+          fontSize: 'clamp(3.35rem, 3.35rem + 4.5vw, 7.3rem)', // +12% from previous
           fontFamily: 'var(--font-display)',
+          lineHeight: 0.95,
         }}
       >
         <span 
@@ -45,9 +60,10 @@ export const LeenScoreLogo = () => {
           style={{
             color: 'hsl(174 65% 52%)',
             textShadow: `
-              0 0 25px hsl(174 70% 50% / 0.4),
-              0 0 50px hsl(174 65% 45% / 0.2),
-              0 2px 4px hsl(0 0% 0% / 0.35)
+              0 0 35px hsl(174 70% 50% / 0.35),
+              0 0 70px hsl(174 60% 45% / 0.15),
+              0 3px 6px hsl(0 0% 0% / 0.4),
+              0 1px 0 hsl(0 0% 0% / 0.2)
             `,
           }}
         >
@@ -57,9 +73,11 @@ export const LeenScoreLogo = () => {
           className="not-italic" 
           style={{
             color: 'hsl(0 0% 98%)',
+            letterSpacing: '0.025em', // Subtle luxury spacing for "Score" only
             textShadow: `
-              0 0 12px hsl(0 0% 100% / 0.1),
-              0 2px 4px hsl(0 0% 0% / 0.3)
+              0 0 20px hsl(0 0% 100% / 0.08),
+              0 3px 6px hsl(0 0% 0% / 0.35),
+              0 1px 0 hsl(0 0% 0% / 0.15)
             `,
           }}
         >
