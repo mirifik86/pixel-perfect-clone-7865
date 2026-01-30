@@ -55,9 +55,19 @@ export const ScoreGauge = ({
   const [isFocused, setIsFocused] = useState(false); // Focus state for accessibility
   const [isPressed, setIsPressed] = useState(false); // Press state for button feedback
   const [showActivationParticles, setShowActivationParticles] = useState(false); // Particle burst on activation
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false); // Accessibility: reduced motion
   const animationRef = useRef<number | null>(null);
   const prevUiStateRef = useRef<string>('idle');
   const prevTypingStateRef = useRef<string>('idle'); // Track typing state changes
+  
+  // Detect reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
   
   // Memoize sparkles to prevent regeneration on each render
   const sparkles = useMemo(() => generateSparkles(16), []);
@@ -911,16 +921,20 @@ export const ScoreGauge = ({
                 padding: 'var(--space-2)',
                 cursor: typingState === 'valid' ? 'pointer' : 'default',
                 pointerEvents: typingState === 'valid' ? 'auto' : 'none',
-                transform: isPressed && typingState === 'valid'
-                  ? 'scale(0.98)'
-                  : isHovering && typingState === 'valid'
-                    ? 'scale(1.05)'
-                    : typingState === 'valid'
-                      ? 'scale(1.035)'
-                      : 'scale(1)',
-                transition: 'transform 150ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease',
-                animation: typingState === 'valid' && !isHovering && !isPressed
-                  ? 'cta-breathing-scale 2.2s ease-in-out infinite'
+                // Premium 10% zoom pulse with reduced motion support
+                transform: prefersReducedMotion
+                  ? (typingState === 'valid' ? 'scale(1.05)' : 'scale(1)') // Static scale for reduced motion
+                  : isPressed && typingState === 'valid'
+                    ? 'scale(0.97)' // Snappy press feedback
+                    : isHovering && typingState === 'valid'
+                      ? 'scale(1.10)' // Hold at peak on hover
+                      : 'scale(1)', // Base scale (animation handles the rest when valid)
+                transition: isPressed 
+                  ? 'transform 80ms cubic-bezier(0.34, 1.56, 0.64, 1)' // Snappy bounce-back on press
+                  : 'transform 180ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease',
+                // Premium breathing pulse: only when valid, not hovering/pressing, and motion allowed
+                animation: typingState === 'valid' && !isHovering && !isPressed && !prefersReducedMotion
+                  ? 'cta-attractor-pulse 2.2s ease-in-out infinite'
                   : 'none',
               }}
             >
