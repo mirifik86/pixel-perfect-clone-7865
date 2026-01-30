@@ -1112,22 +1112,39 @@ export const ScoreGauge = ({
           </div>
         )}
         
-        {/* Premium single dot indicator - ULTRA MINIMAL (both idle and ready) */}
+        {/* TECH ACCENT: Premium soft cyan light dot below gauge */}
         {(uiState === 'idle' || uiState === 'ready') && (
           <div 
             className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
             style={{ 
-              top: size + 18,
+              top: size + 20,
             }}
           >
+            {/* Soft diffused glow behind dot */}
             <div
-              className="rounded-full"
+              className="absolute rounded-full"
               style={{
-                width: '5px',
-                height: '5px',
-                background: 'hsl(174 50% 55% / 0.55)',
-                boxShadow: '0 0 6px hsl(174 45% 52% / 0.3)',
-                // Very slow, subtle opacity pulse only (no movement)
+                width: '20px',
+                height: '10px',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                background: 'radial-gradient(ellipse at center, hsl(180 55% 55% / 0.25) 0%, transparent 70%)',
+                filter: 'blur(6px)',
+              }}
+            />
+            {/* Core dot */}
+            <div
+              className="relative rounded-full"
+              style={{
+                width: '4px',
+                height: '4px',
+                background: 'hsl(180 60% 60%)',
+                boxShadow: `
+                  0 0 4px hsl(180 55% 55% / 0.6),
+                  0 0 10px hsl(180 50% 50% / 0.3),
+                  0 0 16px hsl(180 45% 48% / 0.15)
+                `,
                 animation: 'indicator-dot-subtle-pulse 4s ease-in-out infinite',
               }}
               onAnimationIteration={() => uiState === 'idle' && onChevronCycleComplete?.()}

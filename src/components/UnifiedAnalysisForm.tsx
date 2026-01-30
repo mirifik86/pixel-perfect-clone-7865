@@ -249,28 +249,57 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           }}
         />
         
-        {/* Glass card container - ULTRA PREMIUM with refined borders */}
+        {/* PREMIUM GLASS CARD - Enhanced depth with soft shadow and gradient border */}
         <div 
           className="relative rounded-2xl transition-all duration-300"
           style={{
+            // Cyan-to-transparent gradient border effect via pseudo-element simulation
             border: showCaptureGlow
-              ? '2px solid hsl(174 80% 60% / 0.7)'
+              ? '1.5px solid hsl(180 75% 60% / 0.65)'
               : isActive 
-              ? '2px solid hsl(174 70% 55% / 0.55)' 
+              ? '1.5px solid hsl(180 65% 55% / 0.5)' 
               : hasContent 
-              ? '2px solid hsl(174 65% 52% / 0.45)'
-              : '1.5px solid hsl(174 55% 48% / 0.3)',
+              ? '1.5px solid hsl(180 55% 52% / 0.4)'
+              : '1px solid hsl(180 45% 48% / 0.25)',
             background: isActive
-              ? 'linear-gradient(165deg, hsl(220 28% 14% / 0.96), hsl(220 32% 9% / 0.98))'
-              : 'linear-gradient(165deg, hsl(220 28% 12% / 0.94), hsl(220 32% 8% / 0.97))',
-            backdropFilter: 'blur(28px)',
+              ? 'linear-gradient(165deg, hsl(220 28% 12% / 0.92), hsl(225 35% 7% / 0.95))'
+              : 'linear-gradient(165deg, hsl(220 28% 10% / 0.88), hsl(225 35% 6% / 0.92))',
+            backdropFilter: 'blur(20px)',
             boxShadow: showCaptureGlow
-              ? '0 0 80px hsl(174 80% 58% / 0.45), 0 20px 60px hsl(0 0% 0% / 0.55), inset 0 0 30px hsl(174 70% 58% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.28), inset 0 -1px 0 hsl(174 60% 50% / 0.1)'
+              ? `
+                0 0 60px hsl(180 70% 55% / 0.35),
+                0 25px 50px hsl(0 0% 0% / 0.6),
+                0 8px 24px hsl(0 0% 0% / 0.4),
+                inset 0 0 25px hsl(180 60% 55% / 0.12),
+                inset 0 1px 0 hsl(0 0% 100% / 0.2),
+                inset 0 -1px 0 hsl(180 50% 45% / 0.08)
+              `
               : isActive
-              ? '0 0 70px hsl(174 70% 52% / 0.35), 0 18px 55px hsl(0 0% 0% / 0.52), inset 0 0 25px hsl(174 60% 55% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.22), inset 0 -1px 0 hsl(174 55% 48% / 0.08)'
+              ? `
+                0 0 50px hsl(180 60% 50% / 0.25),
+                0 22px 45px hsl(0 0% 0% / 0.55),
+                0 8px 22px hsl(0 0% 0% / 0.35),
+                inset 0 0 20px hsl(180 50% 52% / 0.08),
+                inset 0 1px 0 hsl(0 0% 100% / 0.18),
+                inset 0 -1px 0 hsl(180 45% 45% / 0.06)
+              `
               : hasContent
-              ? '0 0 55px hsl(174 65% 48% / 0.28), 0 14px 45px hsl(0 0% 0% / 0.5), inset 0 0 20px hsl(174 55% 50% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.18), inset 0 -1px 0 hsl(174 50% 45% / 0.06)'
-              : '0 0 45px hsl(174 60% 48% / 0.18), 0 14px 42px hsl(0 0% 0% / 0.48), inset 0 0 15px hsl(174 50% 45% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(174 45% 42% / 0.04)',
+              ? `
+                0 0 40px hsl(180 55% 48% / 0.2),
+                0 18px 40px hsl(0 0% 0% / 0.5),
+                0 6px 18px hsl(0 0% 0% / 0.3),
+                inset 0 0 16px hsl(180 45% 48% / 0.06),
+                inset 0 1px 0 hsl(0 0% 100% / 0.14),
+                inset 0 -1px 0 hsl(180 40% 42% / 0.04)
+              `
+              : `
+                0 0 30px hsl(180 50% 45% / 0.12),
+                0 16px 35px hsl(0 0% 0% / 0.45),
+                0 6px 16px hsl(0 0% 0% / 0.25),
+                inset 0 0 12px hsl(180 40% 42% / 0.04),
+                inset 0 1px 0 hsl(0 0% 100% / 0.1),
+                inset 0 -1px 0 hsl(180 35% 38% / 0.03)
+              `,
           }}
         >
           {/* Capture glow inner pulse - triggered during idle→ready transfer */}
