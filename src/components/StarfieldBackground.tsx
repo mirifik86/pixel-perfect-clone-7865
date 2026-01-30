@@ -34,8 +34,8 @@ export const StarfieldBackground = memo(() => {
           backgroundSize: 'cover',
           backgroundPosition: 'center 55%',
           backgroundRepeat: 'no-repeat',
-          // Strongly reduced - atmospheric background only
-          filter: 'blur(4px) brightness(0.2) contrast(0.65) saturate(0.5)',
+          // 95% netteté - flou minimal, atmosphérique
+          filter: 'blur(0.5px) brightness(0.22) contrast(0.75) saturate(0.55)',
           transform: 'scale(1.08)', // Prevent blur edge artifacts
         }}
       />
