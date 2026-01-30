@@ -53,7 +53,8 @@
     "validationError": "Contenu non analysable, veuillez corriger ou entrer de nouveau.",
     "validationTitle": "Contenu non analysable, veuillez corriger ou entrer de nouveau.",
     "validationSubline": "",
-    "validationHint": ""
+    "validationHint": "",
+    "validationNotAnalyzable": "Contenu non analysable, veuillez corriger ou entrer de nouveau."
   },
   "gauge": {
     "pending": "En attente",

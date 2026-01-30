@@ -53,7 +53,8 @@
     "validationError": "Content not analyzable, please correct it or enter new content.",
     "validationTitle": "Content not analyzable, please correct it or enter new content.",
     "validationSubline": "",
-    "validationHint": ""
+    "validationHint": "",
+    "validationNotAnalyzable": "Content not analyzable, please correct it or enter new content."
   },
   "gauge": {
     "pending": "Pending",
