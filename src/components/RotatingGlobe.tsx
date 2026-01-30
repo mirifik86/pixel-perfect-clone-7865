@@ -6,14 +6,16 @@ interface RotatingGlobeProps {
 }
 
 /**
- * Premium Mini Earth Globe - High-end visual inside score gauge
+ * Premium Pro Mini Earth Globe
  * 
- * Features:
- * - Refined Earth with premium atmospheric effects
- * - Dual-layer rotation for depth
- * - Sophisticated lighting (sun rim, atmosphere glow)
- * - Deep space starfield with nebula hints
- * - Orbital rings with satellite dots
+ * Hero-level visual inside score gauge:
+ * - Large, prominent Earth (65% of gauge)
+ * - Realistic terminator shadow (day/night)
+ * - Atmospheric rim glow (cyan/teal)
+ * - Specular highlight for photoreal depth
+ * - Deep space starfield backdrop
+ * - Inner vignette blend
+ * - Dark overlay for text readability
  */
 export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeProps) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -27,25 +29,26 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
   }, []);
   
   const shouldAnimate = !prefersReducedMotion;
-  const rotationSpeed = isAnalyzing ? '22s' : '90s';
+  // Smooth slow rotation: 100s idle, 28s analyzing
+  const rotationSpeed = isAnalyzing ? '28s' : '100s';
   
-  // Premium sizing
-  const globeSize = Math.max(size * 0.52, 85);
-  const containerSize = globeSize * 1.7;
+  // HERO SIZE: 65% of gauge for prominent visual presence
+  const globeSize = Math.max(size * 0.65, 100);
+  const containerSize = globeSize * 1.5;
   
-  // Deep space stars with varied brightness
+  // Premium starfield with depth variation
   const stars = useMemo(() => 
-    Array.from({ length: 30 }, (_, i) => ({
+    Array.from({ length: 40 }, (_, i) => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: 0.6 + Math.random() * 1.8,
-      brightness: 0.2 + Math.random() * 0.6,
-      twinkleSpeed: 2 + Math.random() * 4,
-      delay: Math.random() * 3,
+      size: 0.5 + Math.random() * 2,
+      brightness: 0.15 + Math.random() * 0.45,
+      twinkleSpeed: 2.5 + Math.random() * 4,
+      delay: Math.random() * 4,
     }))
   , []);
   
-  // High-quality Earth texture
+  // High-quality Blue Marble Earth texture
   const earthTexture = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Blue_Marble_2002.png/1280px-Blue_Marble_2002.png';
   
   return (
@@ -60,28 +63,28 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
         zIndex: 0,
       }}
     >
-      {/* ========== DEEP SPACE BACKGROUND ========== */}
+      {/* ========== DEEP SPACE BACKGROUND WITH STARFIELD ========== */}
       <div 
         className="absolute inset-0 rounded-full overflow-hidden"
         style={{
           background: `
-            radial-gradient(ellipse 80% 60% at 30% 30%, 
-              hsl(260 40% 12% / 0.4) 0%, 
-              transparent 50%
-            ),
-            radial-gradient(ellipse 70% 50% at 70% 70%, 
-              hsl(200 35% 10% / 0.3) 0%, 
+            radial-gradient(ellipse 70% 50% at 25% 25%, 
+              hsl(260 35% 10% / 0.25) 0%, 
               transparent 45%
             ),
+            radial-gradient(ellipse 60% 40% at 75% 70%, 
+              hsl(200 30% 8% / 0.2) 0%, 
+              transparent 40%
+            ),
             radial-gradient(circle, 
-              hsl(230 35% 8%) 0%, 
-              hsl(240 30% 5%) 60%,
-              hsl(250 25% 3%) 100%
+              hsl(225 35% 7%) 0%, 
+              hsl(235 32% 5%) 50%,
+              hsl(245 28% 3%) 100%
             )
           `,
         }}
       >
-        {/* Premium starfield */}
+        {/* Premium starfield - very low opacity for subtlety */}
         {stars.map((star, i) => (
           <div
             key={i}
@@ -91,13 +94,9 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
               top: `${star.y}%`,
               width: `${star.size}px`,
               height: `${star.size}px`,
-              background: `radial-gradient(circle, 
-                hsl(210 30% 95%) 0%, 
-                hsl(220 25% 80%) 50%, 
-                transparent 100%
-              )`,
+              background: 'hsl(210 20% 95%)',
               opacity: star.brightness,
-              boxShadow: star.size > 1.5 ? `0 0 ${star.size * 2}px hsl(200 40% 80% / 0.3)` : 'none',
+              boxShadow: star.size > 1.2 ? `0 0 ${star.size}px hsl(200 30% 85% / 0.4)` : 'none',
               animation: shouldAnimate ? `twinkle ${star.twinkleSpeed}s ease-in-out infinite` : 'none',
               animationDelay: `${star.delay}s`,
             }}
@@ -105,104 +104,37 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
         ))}
       </div>
       
-      {/* ========== OUTER ORBITAL RING ========== */}
+      {/* ========== INNER VIGNETTE (blend globe into UI) ========== */}
       <div 
-        className="absolute rounded-full transition-all duration-700"
+        className="absolute inset-0 rounded-full pointer-events-none"
         style={{
-          width: globeSize * 1.5,
-          height: globeSize * 1.5,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) rotateX(70deg) rotateZ(15deg)',
-          border: `1px solid hsl(200 45% 60% / ${isAnalyzing ? 0.3 : 0.12})`,
-          boxShadow: isAnalyzing ? '0 0 8px hsl(200 50% 55% / 0.2)' : 'none',
-        }}
-      >
-        {/* Satellite dot */}
-        {shouldAnimate && (
-          <div 
-            className="absolute rounded-full"
-            style={{
-              width: '3px',
-              height: '3px',
-              background: 'hsl(200 60% 70%)',
-              boxShadow: '0 0 6px hsl(200 55% 65% / 0.6)',
-              top: '0%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              animation: `orbit-dot ${isAnalyzing ? '8s' : '20s'} linear infinite`,
-            }}
-          />
-        )}
-      </div>
-      
-      {/* ========== INNER ORBITAL RING ========== */}
-      <div 
-        className="absolute rounded-full transition-all duration-700"
-        style={{
-          width: globeSize * 1.28,
-          height: globeSize * 1.28,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) rotateX(72deg) rotateZ(-25deg)',
-          border: `1px solid hsl(174 50% 55% / ${isAnalyzing ? 0.35 : 0.15})`,
-          boxShadow: isAnalyzing ? '0 0 10px hsl(174 55% 50% / 0.25)' : 'none',
-        }}
-      >
-        {/* Moon dot */}
-        {shouldAnimate && (
-          <div 
-            className="absolute rounded-full"
-            style={{
-              width: '4px',
-              height: '4px',
-              background: 'radial-gradient(circle, hsl(45 20% 85%) 0%, hsl(40 15% 65%) 100%)',
-              boxShadow: '0 0 8px hsl(45 25% 75% / 0.5)',
-              top: '50%',
-              left: '0%',
-              transform: 'translateY(-50%)',
-              animation: `orbit-dot-reverse ${isAnalyzing ? '12s' : '28s'} linear infinite`,
-            }}
-          />
-        )}
-      </div>
-      
-      {/* ========== SUN CORONA GLOW ========== */}
-      <div 
-        className="absolute rounded-full transition-all duration-700"
-        style={{
-          width: globeSize * 1.6,
-          height: globeSize * 1.6,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: `
-            radial-gradient(circle at 25% 30%, 
-              hsl(45 80% 70% / ${isAnalyzing ? 0.18 : 0.08}) 0%, 
-              hsl(40 70% 60% / ${isAnalyzing ? 0.1 : 0.04}) 25%, 
-              transparent 50%
-            )
-          `,
-          filter: 'blur(8px)',
+          background: `radial-gradient(circle, 
+            transparent 40%, 
+            hsl(235 30% 6% / 0.4) 70%, 
+            hsl(240 28% 5% / 0.7) 90%,
+            hsl(240 25% 4% / 0.85) 100%
+          )`,
+          zIndex: 10,
         }}
       />
       
-      {/* ========== ATMOSPHERE OUTER GLOW ========== */}
+      {/* ========== ATMOSPHERIC RIM GLOW ========== */}
       <div 
         className="absolute rounded-full transition-all duration-700"
         style={{
-          width: globeSize * 1.15,
-          height: globeSize * 1.15,
+          width: globeSize * 1.08,
+          height: globeSize * 1.08,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: `radial-gradient(circle, 
-            transparent 65%,
-            hsl(200 70% 60% / ${isAnalyzing ? 0.2 : 0.1}) 80%,
-            hsl(190 60% 55% / ${isAnalyzing ? 0.35 : 0.18}) 90%,
-            hsl(180 50% 50% / ${isAnalyzing ? 0.15 : 0.08}) 100%
+            transparent 70%,
+            hsl(190 65% 55% / ${isAnalyzing ? 0.18 : 0.1}) 82%,
+            hsl(180 60% 50% / ${isAnalyzing ? 0.25 : 0.14}) 90%,
+            hsl(174 55% 45% / ${isAnalyzing ? 0.12 : 0.06}) 100%
           )`,
-          filter: 'blur(3px)',
+          filter: 'blur(2px)',
+          zIndex: 2,
         }}
       />
       
@@ -216,27 +148,28 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
           left: '50%',
           transform: 'translate(-50%, -50%)',
           boxShadow: `
-            0 0 ${isAnalyzing ? 25 : 15}px hsl(200 65% 55% / ${isAnalyzing ? 0.35 : 0.2}),
-            0 0 ${isAnalyzing ? 45 : 30}px hsl(174 55% 50% / ${isAnalyzing ? 0.2 : 0.12}),
-            0 0 ${isAnalyzing ? 70 : 50}px hsl(190 45% 45% / ${isAnalyzing ? 0.1 : 0.06})
+            0 0 ${isAnalyzing ? 20 : 12}px hsl(190 60% 50% / ${isAnalyzing ? 0.3 : 0.18}),
+            0 0 ${isAnalyzing ? 40 : 25}px hsl(180 50% 45% / ${isAnalyzing ? 0.18 : 0.1}),
+            0 0 ${isAnalyzing ? 60 : 40}px hsl(174 45% 40% / ${isAnalyzing ? 0.08 : 0.05})
           `,
           transition: 'box-shadow 0.7s ease-out',
+          zIndex: 3,
         }}
       >
-        {/* Ocean base gradient */}
+        {/* Ocean base - rich blue gradient */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(circle at 30% 25%, 
-              hsl(200 60% 40%) 0%, 
-              hsl(210 55% 30%) 35%, 
-              hsl(220 50% 20%) 70%,
-              hsl(230 45% 12%) 100%
+            background: `radial-gradient(circle at 28% 22%, 
+              hsl(200 65% 42%) 0%, 
+              hsl(210 60% 32%) 30%, 
+              hsl(215 55% 22%) 60%,
+              hsl(225 50% 14%) 100%
             )`,
           }}
         />
         
-        {/* Primary rotating Earth texture */}
+        {/* PRIMARY ROTATING EARTH TEXTURE */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
@@ -245,95 +178,102 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
             backgroundPosition: '0% 50%',
             backgroundRepeat: 'repeat-x',
             animation: shouldAnimate ? `globe-rotate ${rotationSpeed} linear infinite` : 'none',
-            opacity: 0.9,
-            filter: 'saturate(0.85) brightness(0.95) contrast(1.08)',
+            opacity: 0.92,
+            filter: 'saturate(0.9) brightness(0.95) contrast(1.06)',
           }}
         />
         
-        {/* Secondary texture layer (depth effect) */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            backgroundImage: `url(${earthTexture})`,
-            backgroundSize: '200% 100%',
-            backgroundPosition: '0% 50%',
-            backgroundRepeat: 'repeat-x',
-            animation: shouldAnimate ? `globe-rotate ${rotationSpeed} linear infinite` : 'none',
-            opacity: 0.25,
-            filter: 'saturate(0.5) brightness(0.7) blur(0.5px)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-        
-        {/* Sunlit hemisphere highlight */}
+        {/* SPECULAR HIGHLIGHT - photoreal gloss */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: `
-              radial-gradient(circle at 25% 20%, 
-                hsl(180 60% 85% / 0.18) 0%, 
-                hsl(190 50% 70% / 0.08) 25%,
-                transparent 45%
+              radial-gradient(ellipse 45% 35% at 22% 18%, 
+                hsl(180 70% 92% / 0.22) 0%, 
+                hsl(190 60% 85% / 0.1) 35%,
+                transparent 60%
               ),
-              radial-gradient(circle at 35% 35%, 
-                hsl(45 50% 80% / 0.06) 0%, 
-                transparent 30%
+              radial-gradient(ellipse 30% 20% at 28% 25%, 
+                hsl(45 60% 95% / 0.08) 0%, 
+                transparent 50%
               )
             `,
           }}
         />
         
-        {/* Night side shadow */}
+        {/* TERMINATOR SHADOW - day/night gradient for 3D depth */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
-            background: `linear-gradient(130deg, 
-              transparent 35%, 
-              hsl(240 35% 8% / 0.35) 55%, 
-              hsl(240 40% 5% / 0.55) 75%,
-              hsl(245 45% 3% / 0.7) 100%
+            background: `linear-gradient(125deg, 
+              transparent 30%, 
+              hsl(240 40% 8% / 0.25) 48%,
+              hsl(240 45% 6% / 0.45) 60%,
+              hsl(245 50% 4% / 0.65) 75%,
+              hsl(250 55% 3% / 0.8) 100%
             )`,
           }}
         />
         
-        {/* Atmosphere rim light */}
+        {/* ATMOSPHERIC RIM LIGHT - subtle edge glow */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             boxShadow: `
-              inset 0 0 ${globeSize * 0.12}px hsl(200 70% 65% / 0.12),
-              inset ${globeSize * 0.03}px ${globeSize * 0.02}px ${globeSize * 0.08}px hsl(180 60% 70% / 0.08),
-              inset -${globeSize * 0.08}px -${globeSize * 0.06}px ${globeSize * 0.15}px hsl(240 40% 5% / 0.5)
+              inset 0 0 ${globeSize * 0.1}px hsl(190 70% 60% / 0.1),
+              inset ${globeSize * 0.02}px ${globeSize * 0.015}px ${globeSize * 0.06}px hsl(180 65% 70% / 0.08),
+              inset -${globeSize * 0.06}px -${globeSize * 0.05}px ${globeSize * 0.12}px hsl(240 45% 4% / 0.55)
             `,
           }}
         />
         
-        {/* Terminator line glow (day/night boundary) */}
+        {/* Terminator edge glow (sunrise/sunset line) */}
         <div 
           className="absolute inset-0 rounded-full overflow-hidden"
           style={{
-            background: `linear-gradient(115deg, 
-              transparent 42%,
-              hsl(30 60% 60% / 0.08) 48%,
-              hsl(20 50% 50% / 0.04) 52%,
-              transparent 58%
+            background: `linear-gradient(120deg, 
+              transparent 38%,
+              hsl(25 55% 55% / 0.06) 46%,
+              hsl(35 50% 50% / 0.03) 52%,
+              transparent 60%
             )`,
           }}
         />
       </div>
       
-      {/* ========== SCANNING PULSE RING (analysis mode) ========== */}
+      {/* ========== TEXT READABILITY OVERLAY ========== */}
+      {/* Dark gradient overlay centered for text contrast */}
+      <div 
+        className="absolute rounded-full pointer-events-none"
+        style={{
+          width: globeSize * 0.9,
+          height: globeSize * 0.5,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: `radial-gradient(ellipse 100% 100% at center, 
+            hsl(235 35% 8% / 0.55) 0%, 
+            hsl(240 30% 6% / 0.35) 50%,
+            transparent 85%
+          )`,
+          filter: 'blur(6px)',
+          zIndex: 4,
+        }}
+      />
+      
+      {/* ========== SCANNING PULSE (analysis mode) ========== */}
       {isAnalyzing && shouldAnimate && (
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
-            width: globeSize * 1.1,
-            height: globeSize * 1.1,
+            width: globeSize * 1.05,
+            height: globeSize * 1.05,
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            border: '1.5px solid hsl(174 60% 55% / 0.35)',
-            animation: 'scan-pulse 2.8s ease-out infinite',
+            border: '1.5px solid hsl(174 55% 52% / 0.3)',
+            animation: 'scan-pulse 3s ease-out infinite',
+            zIndex: 5,
           }}
         />
       )}
