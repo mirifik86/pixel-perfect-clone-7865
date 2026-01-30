@@ -16,7 +16,7 @@ import { MissionControlLoader } from '@/components/MissionControlLoader';
 import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { GlobeBackground } from '@/components/GlobeBackground';
+import { GlobeCentered } from '@/components/GlobeCentered';
 
 interface AnalysisBreakdown {
   sources: {
@@ -685,12 +685,7 @@ const Index = () => {
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
     >
-      {/* Centered rotating globe background */}
-      <GlobeBackground 
-        isAnalyzing={isLoading || isProLoading}
-        hasContent={hasFormContent}
-        hasResults={hasAnyAnalysis}
-      />
+      <GlobeCentered isAnalyzing={isLoading || isProLoading} />
       
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
       <main className="container-unified relative z-10 flex flex-1 flex-col items-center py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
