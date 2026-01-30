@@ -83,23 +83,47 @@ export const StarfieldBackground = memo(() => {
         }}
       />
       
-      {/* ========== LAYER 4: Soft cyan "active system" halo under gauge ========== */}
+      {/* ========== LAYER 3: Dark radial gradient behind input panels ========== */}
+      {/* Creates floating effect for the input cards */}
       <div 
         className="absolute"
         style={{
-          width: '280px',
-          height: '80px',
+          width: '100%',
+          maxWidth: '720px',
+          height: '320px',
           left: '50%',
-          top: '55%',
+          bottom: '5%',
           transform: 'translateX(-50%)',
           background: `
-            radial-gradient(ellipse 100% 100% at 50% 0%, 
-              hsl(174 60% 45% / 0.08) 0%,
-              hsl(174 50% 40% / 0.04) 50%,
+            radial-gradient(ellipse 100% 100% at 50% 50%, 
+              hsl(220 35% 3% / 0.85) 0%,
+              hsl(220 30% 4% / 0.5) 40%,
+              hsl(225 25% 5% / 0.2) 70%,
               transparent 100%
             )
           `,
-          filter: 'blur(12px)',
+          filter: 'blur(40px)',
+        }}
+      />
+      
+      {/* ========== LAYER 4: Soft cyan "active system" glow under gauge ========== */}
+      {/* Minimal, static accent for depth - barely noticeable */}
+      <div 
+        className="absolute"
+        style={{
+          width: '180px',
+          height: '60px',
+          left: '50%',
+          top: '52%',
+          transform: 'translateX(-50%)',
+          background: `
+            radial-gradient(ellipse 100% 100% at 50% 0%, 
+              hsl(174 55% 50% / 0.06) 0%,
+              hsl(174 50% 45% / 0.03) 50%,
+              transparent 100%
+            )
+          `,
+          filter: 'blur(16px)',
         }}
       />
       
