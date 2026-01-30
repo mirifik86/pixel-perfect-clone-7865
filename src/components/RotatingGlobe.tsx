@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import earthImage from '@/assets/earth-sunrise-space.jpg';
 
 interface StaticGlobeProps {
   size: number;
@@ -7,17 +6,16 @@ interface StaticGlobeProps {
 }
 
 /**
- * Static Earth Globe - Maximum Mobile Performance
+ * Stylized Global Credibility Core
  * 
- * Premium cinematic Earth with zero animations:
- * - High-res static image (no rotation)
- * - Soft blue outer glow
- * - Smooth shadow fade into space
- * - Zero GPU overhead, no continuous rendering
+ * Premium symbolic globe - not photo-realistic:
+ * - Dark minimal continent silhouettes
+ * - Soft cyan/blue atmospheric glow
+ * - Clean futuristic aesthetic
+ * - Zero animation for performance
  */
 export const RotatingGlobe = memo(({ size, isAnalyzing = false }: StaticGlobeProps) => {
-  // Globe size with clean gap from gauge ring
-  const globeSize = size * 0.80;
+  const globeSize = size * 0.78;
   
   return (
     <div 
@@ -31,82 +29,143 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: StaticGlobePro
         zIndex: 0,
       }}
     >
-      {/* Soft blue outer glow - static, no animation */}
+      {/* Outer atmospheric glow - soft cyan */}
       <div 
         className="absolute rounded-full"
         style={{
-          width: '130%',
-          height: '130%',
+          width: '140%',
+          height: '140%',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: `radial-gradient(circle at center, 
-            hsl(200 60% 50% / 0.08) 30%,
-            hsl(210 50% 40% / 0.04) 50%,
-            transparent 70%
+            hsl(190 60% 50% / 0.08) 30%,
+            hsl(195 55% 45% / 0.04) 50%,
+            hsl(200 50% 40% / 0.02) 65%,
+            transparent 80%
+          )`,
+          filter: 'blur(12px)',
+          zIndex: -2,
+        }}
+      />
+      
+      {/* Inner atmospheric ring */}
+      <div 
+        className="absolute rounded-full"
+        style={{
+          width: '115%',
+          height: '115%',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: `radial-gradient(circle at center, 
+            transparent 60%,
+            hsl(190 50% 55% / 0.06) 75%,
+            hsl(195 45% 50% / 0.03) 85%,
+            transparent 100%
           )`,
           zIndex: -1,
         }}
       />
       
-      {/* Shadow fade into space */}
-      <div 
-        className="absolute rounded-full"
-        style={{
-          width: '150%',
-          height: '150%',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle at center, 
-            transparent 35%,
-            hsl(225 30% 3% / 0.6) 60%,
-            hsl(225 30% 2% / 0.9) 80%
-          )`,
-          zIndex: -2,
-        }}
-      />
-      
-      {/* Static Earth Globe Image */}
+      {/* Globe sphere - stylized dark ocean */}
       <div 
         className="absolute rounded-full overflow-hidden"
         style={{
           width: '100%',
           height: '100%',
-          opacity: isAnalyzing ? 0.85 : 0.75,
+          background: `radial-gradient(circle at 35% 30%, 
+            hsl(210 45% 18%) 0%,
+            hsl(215 50% 12%) 40%,
+            hsl(220 55% 8%) 70%,
+            hsl(225 60% 5%) 100%
+          )`,
           boxShadow: `
-            0 0 30px hsl(200 50% 40% / 0.15),
-            0 0 60px hsl(210 40% 30% / 0.08),
-            inset 0 0 40px hsl(220 30% 10% / 0.3)
+            inset 0 0 ${globeSize * 0.15}px hsl(220 50% 6%),
+            0 0 ${globeSize * 0.08}px hsl(195 50% 50% / 0.15),
+            0 0 ${globeSize * 0.2}px hsl(200 45% 45% / 0.08)
           `,
+          opacity: isAnalyzing ? 0.9 : 0.8,
         }}
       >
-        {/* High-res Earth image - static, no animation */}
-        <img 
-          src={earthImage}
-          alt=""
-          className="w-full h-full object-cover"
+        {/* Stylized continent shapes - abstract, minimal */}
+        <svg 
+          viewBox="0 0 100 100" 
+          className="absolute inset-0 w-full h-full"
+          style={{ opacity: 0.35 }}
+        >
+          {/* North America - simplified */}
+          <ellipse cx="28" cy="32" rx="12" ry="8" fill="hsl(200 30% 25%)" />
+          <ellipse cx="22" cy="38" rx="6" ry="5" fill="hsl(200 30% 25%)" />
+          
+          {/* South America - simplified */}
+          <ellipse cx="35" cy="62" rx="5" ry="10" fill="hsl(200 30% 25%)" />
+          
+          {/* Europe/Africa - simplified */}
+          <ellipse cx="52" cy="35" rx="4" ry="5" fill="hsl(200 30% 25%)" />
+          <ellipse cx="54" cy="52" rx="6" ry="12" fill="hsl(200 30% 25%)" />
+          
+          {/* Asia - simplified */}
+          <ellipse cx="72" cy="35" rx="14" ry="10" fill="hsl(200 30% 25%)" />
+          <ellipse cx="80" cy="50" rx="6" ry="8" fill="hsl(200 30% 25%)" />
+          
+          {/* Australia - simplified */}
+          <ellipse cx="82" cy="68" rx="6" ry="4" fill="hsl(200 30% 25%)" />
+        </svg>
+        
+        {/* Subtle grid lines - futuristic touch */}
+        <div 
+          className="absolute inset-0 rounded-full"
           style={{
-            filter: 'saturate(1.1) brightness(1.0) contrast(1.05)',
+            background: `
+              repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 9%,
+                hsl(195 40% 50% / 0.03) 9%,
+                hsl(195 40% 50% / 0.03) 10%
+              ),
+              repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 9%,
+                hsl(195 40% 50% / 0.03) 9%,
+                hsl(195 40% 50% / 0.03) 10%
+              )
+            `,
+            opacity: 0.6,
           }}
-          loading="eager"
-          decoding="async"
         />
         
-        {/* Subtle atmospheric edge highlight */}
+        {/* Atmospheric edge highlight */}
         <div 
           className="absolute inset-0 rounded-full"
           style={{
             background: `
               linear-gradient(135deg, 
-                hsl(200 60% 70% / 0.08) 0%, 
-                transparent 30%
+                hsl(195 50% 60% / 0.08) 0%, 
+                transparent 25%
               ),
               linear-gradient(315deg, 
-                transparent 60%,
-                hsl(220 40% 10% / 0.25) 100%
+                transparent 70%,
+                hsl(220 45% 8% / 0.4) 100%
               )
             `,
+          }}
+        />
+        
+        {/* Rim light - top edge */}
+        <div 
+          className="absolute rounded-full"
+          style={{
+            top: '2%',
+            left: '20%',
+            width: '60%',
+            height: '15%',
+            background: `radial-gradient(ellipse 100% 100% at 50% 0%, 
+              hsl(195 50% 60% / 0.12) 0%,
+              transparent 70%
+            )`,
           }}
         />
       </div>
@@ -115,13 +174,13 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: StaticGlobePro
       <div 
         className="absolute rounded-full pointer-events-none"
         style={{
-          width: '60%',
-          height: '35%',
+          width: '55%',
+          height: '30%',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: `radial-gradient(ellipse 100% 100% at center, 
-            hsl(225 30% 6% / 0.4) 0%, 
+            hsl(225 40% 6% / 0.5) 0%, 
             transparent 100%
           )`,
           zIndex: 1,

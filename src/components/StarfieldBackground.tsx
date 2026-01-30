@@ -1,141 +1,66 @@
-import { memo } from 'react';
-import earthCosmicBg from '@/assets/earth-cosmic-bg-hq.jpg';
+import { memo, useMemo } from 'react';
 
 /**
- * Cinematic Deep Space Background - Ultra Premium & Subtle
+ * Premium Dark Starfield Background
  * 
- * Almost invisible Earth atmosphere:
- * - Heavy blur to eliminate sharp details
- * - Very low brightness/contrast for deep space feel
- * - Strong dark overlays - interface is the focus
- * - Center slightly lighter for depth, edges darkened
- * - Zero animation, optimized for mobile
+ * Subtle, static starfield for global-tech aesthetic:
+ * - Very small, dim stars
+ * - No animation or twinkling
+ * - Deep space dark tones
+ * - Zero GPU overhead
  */
 export const StarfieldBackground = memo(() => {
+  // Generate static star positions - sparse and subtle
+  const stars = useMemo(() => 
+    Array.from({ length: 50 }, (_, i) => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 0.5 + Math.random() * 0.8, // Very small: 0.5-1.3px
+      opacity: 0.08 + Math.random() * 0.15, // Very dim: 0.08-0.23
+    }))
+  , []);
+  
   return (
     <div 
       className="fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* Deep space base - pure dark */}
+      {/* Deep space base */}
       <div 
         className="absolute inset-0"
         style={{
-          background: 'hsl(225 40% 3%)',
-        }}
-      />
-      
-      {/* Earth image - HEAVILY subdued, almost invisible */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `url(${earthCosmicBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
-          backgroundRepeat: 'no-repeat',
-          // Heavy blur + very low brightness = soft atmospheric glow only
-          filter: 'blur(8px) brightness(0.12) contrast(0.7) saturate(0.6)',
-          opacity: 0.7,
-        }}
-      />
-      
-      {/* Primary dark overlay - eliminates most detail */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: 'hsl(225 40% 2% / 0.75)',
-        }}
-      />
-      
-      {/* Top edge darkening */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(to bottom, 
-            hsl(225 45% 2% / 0.95) 0%,
-            hsl(225 40% 2% / 0.7) 15%,
-            transparent 40%
+          background: `radial-gradient(ellipse 80% 60% at 50% 40%, 
+            hsl(225 35% 6%) 0%,
+            hsl(228 40% 4%) 50%,
+            hsl(230 45% 2%) 100%
           )`,
         }}
       />
       
-      {/* Bottom edge darkening */}
+      {/* Static stars - no animation */}
+      {stars.map((star, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            background: 'hsl(210 20% 85%)',
+            opacity: star.opacity,
+          }}
+        />
+      ))}
+      
+      {/* Edge vignette for depth */}
       <div 
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(to top, 
-            hsl(225 45% 2% / 0.98) 0%,
-            hsl(225 40% 2% / 0.8) 15%,
-            transparent 40%
-          )`,
-        }}
-      />
-      
-      {/* Left edge darkening */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(to right, 
-            hsl(225 45% 2% / 0.9) 0%,
-            transparent 25%
-          )`,
-        }}
-      />
-      
-      {/* Right edge darkening */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(to left, 
-            hsl(225 45% 2% / 0.9) 0%,
-            transparent 25%
-          )`,
-        }}
-      />
-      
-      {/* CENTER LIGHTER ZONE - subtle lift behind gauge area */}
-      <div 
-        className="absolute"
-        style={{
-          top: '15%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '60%',
-          height: '50%',
-          background: `radial-gradient(ellipse 100% 80% at 50% 40%, 
-            hsl(220 30% 8% / 0.4) 0%,
-            hsl(225 35% 5% / 0.2) 40%,
-            transparent 70%
-          )`,
-        }}
-      />
-      
-      {/* Soft diffused cyan atmospheric glow - very subtle */}
-      <div 
-        className="absolute"
-        style={{
-          top: '20%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '45%',
-          height: '35%',
-          background: `radial-gradient(ellipse 100% 80% at 50% 50%, 
-            hsl(190 40% 35% / 0.04) 0%,
-            hsl(190 35% 30% / 0.02) 50%,
-            transparent 80%
-          )`,
-          filter: 'blur(30px)',
-        }}
-      />
-      
-      {/* Extreme vignette - focus on center */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse 65% 55% at 50% 40%, 
+          background: `radial-gradient(ellipse 70% 60% at 50% 45%, 
             transparent 0%,
-            hsl(225 45% 2% / 0.4) 50%,
-            hsl(225 50% 1% / 0.85) 100%
+            hsl(228 45% 3% / 0.5) 60%,
+            hsl(230 50% 2% / 0.9) 100%
           )`,
         }}
       />
