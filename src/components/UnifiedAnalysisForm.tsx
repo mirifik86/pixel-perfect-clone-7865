@@ -559,26 +559,27 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                   <button
                     type="button"
                     onClick={handleAddImageClick}
-                    className="relative w-full rounded-xl transition-all duration-300 group-hover/dropzone:scale-[1.01] cursor-pointer"
+                    className="relative w-full rounded-xl transition-all duration-300 group-hover/dropzone:scale-[1.008] cursor-pointer"
                     style={{
-                      padding: 'var(--space-5) var(--space-4)',
+                      padding: 'var(--space-4) var(--space-4)',
                       background: isDragOver
-                        ? 'linear-gradient(165deg, hsl(174 35% 18% / 0.5), hsl(174 30% 14% / 0.45))'
-                        : 'linear-gradient(165deg, hsl(200 25% 14% / 0.4), hsl(200 20% 10% / 0.35))',
+                        ? 'linear-gradient(165deg, hsl(174 32% 16% / 0.55), hsl(174 28% 12% / 0.5))'
+                        : 'linear-gradient(165deg, hsl(200 22% 13% / 0.45), hsl(200 18% 9% / 0.4))',
                       border: isDragOver
-                        ? '1.5px dashed hsl(174 70% 55% / 0.7)'
-                        : '1.5px dashed hsl(174 55% 55% / 0.35)',
+                        ? '1px solid hsl(174 65% 55% / 0.55)'
+                        : '1px solid hsl(174 50% 52% / 0.22)',
                       boxShadow: isDragOver
                         ? `
-                          inset 0 0 30px hsl(174 60% 50% / 0.12),
-                          0 0 0 1px hsl(174 60% 55% / 0.3),
-                          0 0 25px hsl(174 60% 50% / 0.2)
+                          inset 0 0 25px hsl(174 55% 50% / 0.1),
+                          inset 0 1px 0 hsl(0 0% 100% / 0.08),
+                          0 0 0 1px hsl(174 55% 55% / 0.2),
+                          0 0 20px hsl(174 55% 50% / 0.18)
                         `
                         : `
-                          inset 0 0 20px hsl(174 50% 48% / 0.06),
-                          inset 0 2px 6px hsl(0 0% 0% / 0.1),
-                          0 0 0 1px hsl(174 50% 55% / 0.15),
-                          0 0 15px hsl(174 55% 50% / 0.08)
+                          inset 0 0 18px hsl(174 45% 48% / 0.05),
+                          inset 0 1px 0 hsl(0 0% 100% / 0.05),
+                          inset 0 2px 6px hsl(0 0% 0% / 0.08),
+                          0 0 12px hsl(174 50% 50% / 0.06)
                         `,
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}

@@ -830,3 +830,17 @@
     transform: scale(1.1);
   }
 }
+
+/* Indicator pulse - subtle breathing dot */
+@keyframes indicator-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+    box-shadow: 0 0 6px hsl(174 50% 55% / 0.3), 0 0 12px hsl(174 45% 50% / 0.15);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px hsl(174 60% 55% / 0.5), 0 0 20px hsl(174 55% 50% / 0.25);
+  }
+}
