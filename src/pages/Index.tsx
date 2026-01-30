@@ -675,8 +675,8 @@ const Index = () => {
     setLanguageMode(mode);
   };
 
-  // Premium gauge size - larger and more imposing
-  const gaugeSize = isMobile ? 180 : 220;
+  // Premium gauge size - hero-level imposing presence (~14% larger)
+  const gaugeSize = isMobile ? 205 : 250;
 
   return (
     <div 
