@@ -777,23 +777,7 @@ const Index = () => {
               </div>
             )}
             
-            {/* Helper text below gauge - only when disabled (no content) */}
-            {!hasFormContent && !hasAnyAnalysis && !isLoading && !analysisError && (
-              <p
-                className="text-center animate-fade-in pointer-events-none"
-                style={{
-                  marginTop: 'var(--space-4)',
-                  fontSize: 'clamp(0.65rem, 0.6rem + 0.4vw, 0.78rem)',
-                  color: 'hsl(0 0% 100% / 0.5)',
-                  lineHeight: 1.5,
-                  letterSpacing: '0.02em',
-                  animationDelay: '200ms',
-                  animationFillMode: 'both',
-                }}
-              >
-                {i18nT('gauge.helperText')}
-              </p>
-            )}
+            {/* Helper text removed - placeholder provides all guidance */}
           </div>
 
           {/* Post-Analysis: CTA buttons - PRO button hidden after PRO analysis */}

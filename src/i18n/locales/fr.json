@@ -36,7 +36,7 @@
     "newAnalysis": "Nouvelle analyse"
   },
   "form": {
-    "placeholder": "Écrivez un fait ou collez un texte…",
+    "placeholder": "Écrivez un fait, collez un texte… (ou ajoutez une image)",
     "placeholderHint": "puis",
     "description": "Nous analysons la crédibilité des sources, les modèles linguistiques et le contexte pour vous aider à comprendre les informations en ligne.",
     "urlDetected": "URL détectée",

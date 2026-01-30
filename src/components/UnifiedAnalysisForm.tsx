@@ -390,8 +390,7 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
               
               {/* Text input zone with centered placeholder */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
-                {/* Custom placeholder overlay - centered at top with premium effect */}
-                {/* Custom centered placeholder - HIGHER CONTRAST */}
+                {/* Custom placeholder - brighter, premium, single instruction */}
                 {!inputText && (
                   <div 
                     className="absolute inset-0 flex items-start justify-center pointer-events-none z-10"
@@ -401,9 +400,10 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                       className="text-center font-medium tracking-wide"
                       style={{
                         fontSize: 'var(--text-sm)',
-                        color: 'hsl(174 55% 72% / 0.88)', // HIGHER CONTRAST
-                        textShadow: '0 0 25px hsl(174 65% 55% / 0.4), 0 0 45px hsl(174 55% 50% / 0.2)',
+                        color: 'hsl(174 50% 78% / 0.92)',
+                        textShadow: '0 0 20px hsl(174 55% 55% / 0.3), 0 0 40px hsl(174 50% 50% / 0.15)',
                         animation: 'placeholder-glow 3s ease-in-out infinite',
+                        letterSpacing: '0.01em',
                       }}
                     >
                       {t('form.placeholder')}
@@ -420,16 +420,29 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder=""
-                  className="w-full resize-none rounded-xl border-0 bg-white/[0.04] text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
+                  className="w-full resize-none rounded-xl text-center text-white placeholder:text-transparent focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
                   style={{
                     minHeight: '80px',
                     padding: 'var(--space-4) var(--space-3) var(--space-3)',
                     fontSize: 'var(--text-sm)',
+                    background: isFocused
+                      ? 'hsl(200 20% 12% / 0.5)'
+                      : 'hsl(200 15% 10% / 0.35)',
                     boxShadow: isFocused 
-                      ? 'inset 0 2px 4px hsl(0 0% 0% / 0.1), 0 0 0 2px hsl(174 70% 52% / 0.4), 0 0 25px hsl(174 65% 50% / 0.18)'
-                      : 'inset 0 2px 4px hsl(0 0% 0% / 0.1)',
-                    border: isFocused ? '1px solid hsl(174 65% 55% / 0.45)' : '1px solid transparent',
-                    transition: 'box-shadow 0.3s ease-out, border 0.3s ease-out',
+                      ? `
+                        inset 0 2px 8px hsl(0 0% 0% / 0.15),
+                        inset 0 0 20px hsl(174 55% 50% / 0.08),
+                        0 0 0 1.5px hsl(174 60% 52% / 0.5),
+                        0 0 20px hsl(174 60% 50% / 0.2)
+                      `
+                      : `
+                        inset 0 2px 6px hsl(0 0% 0% / 0.12),
+                        inset 0 0 16px hsl(174 45% 48% / 0.04),
+                        0 0 0 1px hsl(174 45% 55% / 0.18),
+                        0 0 12px hsl(174 50% 50% / 0.08)
+                      `,
+                    border: 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 />
               </div>
@@ -484,22 +497,40 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                 </div>
               )}
               
-              {/* Visual separator with "or" */}
-              <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
+              {/* Minimal premium divider */}
+              <div className="flex items-center justify-center" style={{ padding: 'var(--space-1) 0' }}>
                 <div 
-                  className="flex-1 h-px"
-                  style={{ background: 'linear-gradient(to right, transparent, hsl(174 50% 50% / 0.25), transparent)' }}
-                />
-                <span 
-                  className="text-xs font-medium uppercase tracking-widest"
-                  style={{ color: 'hsl(174 50% 55% / 0.6)' }}
+                  className="relative flex items-center justify-center"
+                  style={{ 
+                    width: '100%',
+                    maxWidth: '200px',
+                  }}
                 >
-                  {t('screenshotUpload.or')}
-                </span>
-                <div 
-                  className="flex-1 h-px"
-                  style={{ background: 'linear-gradient(to right, transparent, hsl(174 50% 50% / 0.25), transparent)' }}
-                />
+                  {/* Left gradient line */}
+                  <div 
+                    className="flex-1 h-px"
+                    style={{ 
+                      background: 'linear-gradient(to right, transparent 0%, hsl(174 45% 55% / 0.2) 100%)',
+                    }}
+                  />
+                  {/* Center dot accent */}
+                  <div 
+                    className="mx-3 rounded-full"
+                    style={{ 
+                      width: '4px',
+                      height: '4px',
+                      background: 'hsl(174 55% 55% / 0.4)',
+                      boxShadow: '0 0 8px hsl(174 55% 55% / 0.3)',
+                    }}
+                  />
+                  {/* Right gradient line */}
+                  <div 
+                    className="flex-1 h-px"
+                    style={{ 
+                      background: 'linear-gradient(to left, transparent 0%, hsl(174 45% 55% / 0.2) 100%)',
+                    }}
+                  />
+                </div>
               </div>
               
               {/* Image upload button - ULTRA LUMINOUS premium CTA */}
