@@ -762,7 +762,7 @@ export const ScoreGauge = ({
             />
           )}
 
-          {/* 5 color segments */}
+          {/* 5 color segments with micro-dividers */}
           {colorPairs.map((pair, i) => {
             const segmentLength = segmentArc - gap;
             const rotation = 135 + i * 270 / 5;
@@ -770,9 +770,8 @@ export const ScoreGauge = ({
             const isActive = opacity > 0.5;
             const isIdle = score === null && !isLoading;
             const isAnalyzing = isLoading;
-            const idleOpacity = 0.55 + (i * 0.08); // MUCH MORE VISIBLE idle (was 0.35 + 0.04)
+            const idleOpacity = 0.55 + (i * 0.08);
             
-            // During analyzing, the Leen Blue segment (index 4) gets a breathing glow
             const isLeenBlueSegment = i === 4;
             const analyzingAnimation = isAnalyzing && isLeenBlueSegment 
               ? 'arc-breathing-glow 3.5s ease-in-out infinite' 
@@ -802,6 +801,38 @@ export const ScoreGauge = ({
               />
             );
           })}
+          
+          {/* MICRO-DIVIDERS between segments - premium instrument-grade separation */}
+          {[0, 1, 2, 3, 4].map((i) => {
+            // Divider at the START of each segment (creates 5 dividers including between last and first arc endpoints)
+            const dividerAngle = 135 + i * 54; // 54 = 270/5 degrees per segment
+            const dividerRad = dividerAngle * (Math.PI / 180);
+            
+            // Inner and outer points of the divider line
+            const innerRadius = radius - strokeWidth / 2 + 1;
+            const outerRadius = radius + strokeWidth / 2 - 1;
+            
+            const x1 = size / 2 + innerRadius * Math.cos(dividerRad);
+            const y1 = size / 2 + innerRadius * Math.sin(dividerRad);
+            const x2 = size / 2 + outerRadius * Math.cos(dividerRad);
+            const y2 = size / 2 + outerRadius * Math.sin(dividerRad);
+            
+            return (
+              <line
+                key={`divider-${i}`}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="hsl(180 30% 85% / 0.18)"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                style={{
+                  filter: 'blur(0.3px)',
+                }}
+              />
+            );
+          })}
 
           {/* Position indicator */}
           {score !== null && (
@@ -818,35 +849,40 @@ export const ScoreGauge = ({
           )}
         </svg>
 
-        {/* ========== ULTRA-PRO GLASS SEPARATOR RING - Floating instrument effect ========== */}
-        {/* Thin glass separator between gauge ring and globe - creates depth */}
+        {/* ========== CLEAN PHYSICAL SEPARATION - Transparent gap zone ========== */}
+        {/* This creates a neutral transparent ring between the gauge and globe */}
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
-            // Position just inside the gauge ring with a 6px gap for clean separation
-            inset: strokeWidth + 6,
-            // Ultra-thin glass-like border with low opacity
-            border: '1px solid hsl(180 45% 80% / 0.15)',
-            // Subtle outer softness + inner shadow for floating effect
-            boxShadow: `
-              0 0 2px hsl(180 40% 75% / 0.1),
-              inset 0 0 6px hsl(220 35% 5% / 0.3),
-              inset 0 0 12px hsl(220 30% 3% / 0.2)
-            `,
-            // Slight blur for glass feel without being harsh
-            filter: 'blur(0.25px)',
+            // Position inside the gauge ring - transparent gap zone
+            inset: strokeWidth + 3,
+            background: 'transparent',
           }}
         />
         
-        {/* Secondary inner vignette - very subtle depth shadow at contact edge */}
+        {/* Glass inner ring on gauge side - premium edge definition */}
         <div 
           className="absolute rounded-full pointer-events-none"
           style={{
-            inset: strokeWidth + 8,
+            inset: strokeWidth + 2,
+            border: '1px solid hsl(180 40% 80% / 0.12)',
+            boxShadow: `
+              inset 0 0 4px hsl(220 35% 4% / 0.2),
+              inset 0 0 8px hsl(220 30% 3% / 0.12)
+            `,
+            filter: 'blur(0.2px)',
+          }}
+        />
+        
+        {/* Inner vignette - subtle depth at globe boundary */}
+        <div 
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            inset: strokeWidth + 6,
             background: 'transparent',
             boxShadow: `
-              inset 0 0 10px hsl(220 40% 4% / 0.25),
-              inset 0 0 20px hsl(220 35% 3% / 0.15)
+              inset 0 0 8px hsl(220 40% 3% / 0.2),
+              inset 0 0 16px hsl(220 35% 2% / 0.12)
             `,
           }}
         />
