@@ -348,30 +348,30 @@ export const ScoreGauge = ({
         </>
       )}
       
-      {/* ULTRA-PREMIUM HALO GLOW behind roulette */}
+      {/* ULTRA-PREMIUM SOFT RADIAL HALO - subtle hero enhancement */}
       <div 
         className="absolute rounded-full pointer-events-none"
         style={{
-          width: size * 1.5,
-          height: size * 1.5,
+          width: size * 1.6,
+          height: size * 1.6,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: score !== null 
-            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.2)')} 0%, ${getCurrentColor(animatedScore).replace(')', ' / 0.08)')} 35%, transparent 65%)`
+            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')} 0%, ${getCurrentColor(animatedScore).replace(')', ' / 0.06)')} 40%, transparent 70%)`
             : isLoading
-              ? 'radial-gradient(circle, hsl(174 80% 55% / 0.25) 0%, hsl(174 70% 50% / 0.12) 35%, transparent 65%)'
+              ? 'radial-gradient(circle, hsl(174 75% 55% / 0.2) 0%, hsl(174 65% 50% / 0.08) 40%, transparent 70%)'
               : hasContent
-                ? 'radial-gradient(circle, hsl(174 85% 55% / 0.22) 0%, hsl(174 75% 50% / 0.1) 35%, transparent 65%)'
-                : 'radial-gradient(circle, hsl(174 60% 50% / 0.12) 0%, hsl(200 50% 45% / 0.05) 35%, transparent 65%)',
-          filter: 'blur(25px)',
-          animation: score === null ? 'idle-glow-pulse 4s ease-in-out infinite' : 'none',
+                ? 'radial-gradient(circle, hsl(174 80% 55% / 0.18) 0%, hsl(174 70% 50% / 0.07) 40%, transparent 70%)'
+                : 'radial-gradient(circle, hsl(174 55% 50% / 0.1) 0%, hsl(200 45% 45% / 0.04) 40%, transparent 70%)',
+          filter: 'blur(30px)',
+          animation: score === null ? 'idle-glow-pulse 4.5s ease-in-out infinite' : 'none',
         }}
       />
       
-      {/* Premium ambient glow behind gauge */}
+      {/* Secondary inner halo - tighter, more focused glow */}
       <div 
-        className="absolute rounded-full transition-all duration-400 ease-out"
+        className="absolute rounded-full pointer-events-none"
         style={{
           width: size * 1.25,
           height: size * 1.25,
@@ -379,16 +379,15 @@ export const ScoreGauge = ({
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: score !== null 
-            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.18)')} 0%, transparent 70%)`
+            ? `radial-gradient(circle, ${getCurrentColor(animatedScore).replace(')', ' / 0.22)')} 0%, transparent 65%)`
             : isLoading
-              ? 'radial-gradient(circle, hsl(174 75% 52% / 0.2) 0%, hsl(174 65% 48% / 0.1) 40%, transparent 70%)'
+              ? 'radial-gradient(circle, hsl(174 72% 52% / 0.22) 0%, hsl(174 62% 48% / 0.1) 45%, transparent 70%)'
               : hasContent
-                ? 'radial-gradient(circle, hsl(174 80% 55% / 0.25) 0%, hsl(174 70% 50% / 0.14) 40%, transparent 70%)'
-                : 'radial-gradient(circle, hsl(174 55% 45% / 0.1) 0%, hsl(200 45% 40% / 0.05) 40%, transparent 70%)',
-          filter: 'blur(18px)',
-          pointerEvents: 'none',
+                ? 'radial-gradient(circle, hsl(174 78% 55% / 0.2) 0%, hsl(174 68% 50% / 0.08) 45%, transparent 70%)'
+                : 'radial-gradient(circle, hsl(174 50% 48% / 0.08) 0%, hsl(200 42% 42% / 0.03) 45%, transparent 70%)',
+          filter: 'blur(15px)',
           animation: score === null 
-            ? (isLoading ? 'analyzing-ambient-glow 3.5s ease-in-out infinite' : 'idle-glow-pulse 3.8s ease-in-out infinite') 
+            ? (isLoading ? 'analyzing-ambient-glow 3.5s ease-in-out infinite' : 'idle-glow-pulse 3.8s ease-in-out 200ms infinite') 
             : 'none',
         }}
       />
@@ -401,21 +400,39 @@ export const ScoreGauge = ({
           height: size,
         }}
       >
-        {/* GLASS LENS HIGHLIGHT on ring - premium shine */}
+        {/* GLASS LENS HIGHLIGHT on ring - premium subtle reflection */}
         <div 
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{
-            background: `
-              linear-gradient(135deg, 
-                hsl(0 0% 100% / 0.08) 0%, 
-                transparent 30%, 
-                transparent 70%, 
-                hsl(0 0% 100% / 0.03) 100%
-              )
-            `,
-            zIndex: 10,
-          }}
-        />
+          className="absolute inset-0 rounded-full pointer-events-none overflow-hidden"
+          style={{ zIndex: 10 }}
+        >
+          {/* Primary lens highlight - top-left arc reflection */}
+          <div 
+            className="absolute"
+            style={{
+              top: '3%',
+              left: '8%',
+              width: '45%',
+              height: '25%',
+              background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.12) 0%, hsl(0 0% 100% / 0.04) 50%, transparent 100%)',
+              borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
+              filter: 'blur(1px)',
+              transform: 'rotate(-15deg)',
+            }}
+          />
+          {/* Secondary micro-reflection - bottom edge */}
+          <div 
+            className="absolute"
+            style={{
+              bottom: '6%',
+              right: '12%',
+              width: '30%',
+              height: '8%',
+              background: 'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.04) 50%, transparent 100%)',
+              borderRadius: '50%',
+              filter: 'blur(1px)',
+            }}
+          />
+        </div>
         
         {/* Premium outer ring glow - activates when content detected */}
         <div 
@@ -796,31 +813,51 @@ export const ScoreGauge = ({
             <InGaugeAnalysisLoader size={size} mode={loaderMode} />
           )}
 
-          {/* IDLE STATE: "READY TO ANALYZE" with premium halo pulse */}
+          {/* IDLE STATE: "READY TO ANALYZE" with premium glass pill */}
           {uiState === 'idle' && (
             <div 
               className="flex flex-col items-center justify-center text-center relative"
               style={{ padding: 'var(--space-2)' }}
             >
-              {/* Premium halo - breathing pulse animation */}
+              {/* Premium glass pill backdrop - elegant frosted glass effect */}
               <div 
                 className="absolute rounded-full pointer-events-none"
                 style={{
-                  width: size * 0.55,
-                  height: size * 0.35,
-                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.10) 0%, hsl(174 30% 50% / 0.05) 50%, transparent 80%)',
-                  filter: 'blur(8px)',
+                  width: size * 0.72,
+                  height: size * 0.22,
+                  background: 'linear-gradient(135deg, hsl(200 30% 20% / 0.45) 0%, hsl(220 25% 15% / 0.35) 50%, hsl(200 30% 18% / 0.4) 100%)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid hsl(174 40% 60% / 0.15)',
+                  boxShadow: `
+                    inset 0 1px 1px hsl(0 0% 100% / 0.08),
+                    inset 0 -1px 1px hsl(0 0% 0% / 0.15),
+                    0 4px 16px hsl(200 50% 10% / 0.4),
+                    0 0 1px hsl(174 50% 60% / 0.2)
+                  `,
+                }}
+              />
+              
+              {/* Subtle inner glow for premium depth */}
+              <div 
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: size * 0.68,
+                  height: size * 0.18,
+                  background: 'radial-gradient(ellipse 100% 100% at center, hsl(174 35% 55% / 0.08) 0%, transparent 70%)',
+                  filter: 'blur(4px)',
                   animation: 'idle-halo-pulse 3.8s ease-in-out infinite',
                 }}
               />
               
-              {/* Text with subtle brightness sync */}
+              {/* Text with elegant shadow for readability */}
               <span
                 className="relative uppercase font-medium tracking-[0.18em] text-center"
                 style={{
                   fontSize: 'clamp(0.65rem, 2.2vw, 0.85rem)',
                   lineHeight: 1.4,
-                  color: 'hsl(0 0% 94%)',
+                  color: 'hsl(0 0% 96%)',
+                  textShadow: '0 1px 3px hsl(0 0% 0% / 0.5), 0 0 12px hsl(174 50% 55% / 0.25)',
                   animation: 'idle-text-brightness 3.8s ease-in-out infinite',
                 }}
               >
