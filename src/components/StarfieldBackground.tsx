@@ -45,6 +45,27 @@ export const StarfieldBackground = memo(() => {
         }}
       />
       
+      {/* Subtle sunrise glow - atmospheric depth behind globe area */}
+      <div 
+        className="absolute"
+        style={{
+          top: '15%',
+          left: '35%',
+          width: '65%',
+          height: '55%',
+          background: `
+            radial-gradient(ellipse 100% 80% at 40% 55%, 
+              hsl(174 55% 35% / 0.08) 0%,
+              hsl(180 50% 30% / 0.05) 25%,
+              hsl(185 45% 25% / 0.03) 45%,
+              transparent 70%
+            )
+          `,
+          filter: 'blur(40px)',
+          pointerEvents: 'none',
+        }}
+      />
+      
       {/* Stars */}
       {stars.map((star, i) => (
         <div
