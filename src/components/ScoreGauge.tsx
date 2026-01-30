@@ -814,11 +814,11 @@ export const ScoreGauge = ({
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 55% 60% / 0.25)"
-                  strokeWidth={6}
+                  stroke="hsl(180 50% 65% / 0.22)"
+                  strokeWidth={5}
                   strokeLinecap="round"
                   style={{
-                    filter: 'blur(3px)',
+                    filter: 'blur(2.5px)',
                   }}
                 />
                 {/* Mid glow layer - refined */}
@@ -827,11 +827,11 @@ export const ScoreGauge = ({
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(185 45% 75% / 0.4)"
-                  strokeWidth={3.5}
+                  stroke="hsl(185 45% 78% / 0.38)"
+                  strokeWidth={3}
                   strokeLinecap="round"
                   style={{
-                    filter: 'blur(1px)',
+                    filter: 'blur(0.8px)',
                   }}
                 />
                 {/* Main divider line - premium visibility */}
@@ -840,8 +840,8 @@ export const ScoreGauge = ({
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(185 50% 85% / 0.65)"
-                  strokeWidth={2}
+                  stroke="hsl(185 55% 88% / 0.55)"
+                  strokeWidth={1.8}
                   strokeLinecap="round"
                 />
                 {/* Sharp bright center core */}
@@ -850,8 +850,8 @@ export const ScoreGauge = ({
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 40% 98% / 0.5)"
-                  strokeWidth={0.8}
+                  stroke="hsl(180 45% 97% / 0.4)"
+                  strokeWidth={0.6}
                   strokeLinecap="round"
                 />
               </g>
