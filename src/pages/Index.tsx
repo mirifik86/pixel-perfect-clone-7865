@@ -680,7 +680,7 @@ const Index = () => {
 
   return (
     <div 
-      className="relative flex min-h-screen flex-col overflow-x-hidden" 
+      className="relative flex min-h-screen flex-col" 
       style={{
         background: 'linear-gradient(180deg, hsl(240 30% 5%) 0%, hsl(220 35% 8%) 100%)'
       }}
@@ -693,8 +693,8 @@ const Index = () => {
       />
       
       {/* Main content - MOBILE SCROLL FIX: use min-h-screen + overflow-y-auto on main, not h-screen + overflow-hidden on wrapper */}
-      <main className="container-unified relative z-10 flex flex-1 flex-col items-center overflow-x-hidden py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <div className="flex w-full max-w-full flex-col items-center overflow-hidden">
+      <main className="container-unified relative z-10 flex flex-1 flex-col items-center py-2 md:py-3" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex w-full max-w-full flex-col items-center">
           {/* Logo & branding - CLEAN HIERARCHY */}
           <div 
             className="relative flex animate-fade-in flex-col items-center overflow-visible" 
