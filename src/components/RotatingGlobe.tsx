@@ -157,8 +157,8 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
             backgroundSize: '200% 100%',
             backgroundPosition: backgroundPosition,
             backgroundRepeat: 'no-repeat',
-            // Refined: less saturation, slightly darker for tech look
-            filter: 'saturate(0.9) brightness(1.0) contrast(1.08)',
+            // Clean, vibrant look with balanced colors
+            filter: 'saturate(1.05) brightness(1.08) contrast(1.05)',
           }}
         />
         
