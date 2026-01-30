@@ -807,40 +807,50 @@ export const ScoreGauge = ({
             
             return (
               <g key={`divider-${i}`}>
-                {/* Outer glow layer - more visible */}
+                {/* Outer ambient glow - soft cyan halo */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 50% 65% / 0.2)"
-                  strokeWidth={5}
+                  stroke="hsl(180 55% 60% / 0.25)"
+                  strokeWidth={6}
                   strokeLinecap="round"
                   style={{
-                    filter: 'blur(2.5px)',
+                    filter: 'blur(3px)',
                   }}
                 />
-                {/* Main divider line - brighter, thicker */}
+                {/* Mid glow layer - refined */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(185 40% 80% / 0.5)"
-                  strokeWidth={2.2}
+                  stroke="hsl(185 45% 75% / 0.4)"
+                  strokeWidth={3.5}
                   strokeLinecap="round"
                   style={{
-                    filter: 'blur(0.15px)',
+                    filter: 'blur(1px)',
                   }}
                 />
-                {/* Sharp center highlight - more visible */}
+                {/* Main divider line - premium visibility */}
                 <line
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="hsl(180 35% 95% / 0.35)"
-                  strokeWidth={1}
+                  stroke="hsl(185 50% 85% / 0.65)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                />
+                {/* Sharp bright center core */}
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="hsl(180 40% 98% / 0.5)"
+                  strokeWidth={0.8}
                   strokeLinecap="round"
                 />
               </g>
