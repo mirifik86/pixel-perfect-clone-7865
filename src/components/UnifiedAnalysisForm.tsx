@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Image, X, ImagePlus } from 'lucide-react';
+import { CheckCircle2, Image, X, ImagePlus, Upload, RefreshCw } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/i18n/useLanguage';
 
@@ -533,144 +533,234 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
                 </div>
               </div>
               
-              {/* Image upload button - ULTRA LUMINOUS premium CTA */}
-              <div className="relative">
-                {/* Ambient glow behind button */}
+              {/* Premium Image Dropzone */}
+              <div 
+                className="relative group/dropzone"
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }}
+                onDrop={(e) => { e.stopPropagation(); handleDrop(e); }}
+              >
+                {/* Ambient glow behind dropzone */}
                 <div 
-                  className="absolute -inset-1 rounded-xl transition-all duration-500"
+                  className="absolute -inset-1 rounded-xl transition-all duration-500 pointer-events-none"
                   style={{
                     background: hasImage 
-                      ? 'radial-gradient(ellipse at center, hsl(174 85% 55% / 0.35), transparent 70%)'
-                      : 'radial-gradient(ellipse at center, hsl(174 80% 55% / 0.25), transparent 70%)',
-                    filter: 'blur(8px)',
-                    animation: hasImage ? 'none' : 'image-btn-glow 2.5s ease-in-out infinite',
+                      ? 'radial-gradient(ellipse at center, hsl(174 85% 55% / 0.25), transparent 70%)'
+                      : isDragOver
+                      ? 'radial-gradient(ellipse at center, hsl(174 80% 60% / 0.35), transparent 70%)'
+                      : 'radial-gradient(ellipse at center, hsl(174 70% 55% / 0.15), transparent 70%)',
+                    filter: 'blur(10px)',
+                    animation: hasImage || isDragOver ? 'none' : 'dropzone-glow 3s ease-in-out infinite',
                   }}
                 />
-                
-                <button
-                  type="button"
-                  onClick={handleAddImageClick}
-                  className="relative flex items-center justify-center rounded-xl transition-all duration-300 hover:scale-[1.02] group/img w-full"
-                  style={{
-                    padding: 'var(--space-3) var(--space-4)',
-                    gap: 'var(--space-2)',
-                    background: hasImage 
-                      ? 'linear-gradient(135deg, hsl(174 55% 22% / 0.35), hsl(174 50% 18% / 0.25))'
-                      : 'linear-gradient(135deg, hsl(174 60% 28% / 0.25), hsl(174 55% 22% / 0.18))',
-                    border: hasImage 
-                      ? '1.5px solid hsl(174 75% 55% / 0.55)'
-                      : '1.5px solid hsl(174 70% 55% / 0.4)',
-                    boxShadow: hasImage
-                      ? '0 0 35px hsl(174 75% 55% / 0.3), 0 0 15px hsl(174 70% 52% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 0 12px hsl(174 60% 55% / 0.1)'
-                      : '0 0 30px hsl(174 70% 55% / 0.22), 0 0 12px hsl(174 65% 50% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.12), inset 0 0 10px hsl(174 55% 50% / 0.08)',
-                  }}
-                  title={t('form.addImage')}
-                >
-                  {/* Icon with enhanced glow */}
-                  {hasImage ? (
-                    <CheckCircle2 
-                      className="h-5 w-5 transition-all group-hover/img:scale-110" 
-                      style={{ 
-                        color: 'hsl(174 85% 65%)',
-                        filter: 'drop-shadow(0 0 8px hsl(174 80% 60% / 0.8))',
-                      }} 
-                    />
-                  ) : (
-                    <ImagePlus 
-                      className="h-6 w-6 transition-all group-hover/img:scale-110" 
-                      style={{ 
-                        color: 'hsl(174 80% 65%)',
-                        filter: 'drop-shadow(0 0 10px hsl(174 75% 60% / 0.7)) drop-shadow(0 0 20px hsl(174 70% 55% / 0.4))',
-                      }} 
-                    />
-                  )}
-                  
-                  {/* Label - brighter and more visible */}
-                  <span 
-                    className="font-semibold tracking-wide"
-                    style={{ 
-                      color: hasImage ? 'hsl(174 80% 70%)' : 'hsl(174 75% 68%)', 
-                      fontSize: '12px',
-                      textShadow: hasImage 
-                        ? '0 0 12px hsl(174 75% 60% / 0.5)'
-                        : '0 0 15px hsl(174 70% 58% / 0.6)',
-                    }}
-                  >
-                    {hasImage ? t('form.imageReady') : t('form.imageUpload')}
-                  </span>
-                </button>
-              </div>
-              
-              {/* Attached image preview - shown below text input when image is attached */}
-              {attachedImage && (
-                <div 
-                  className="flex items-center rounded-xl animate-fade-in"
-                  style={{
-                    padding: 'var(--space-2) var(--space-3)',
-                    gap: 'var(--space-3)',
-                    background: 'linear-gradient(135deg, hsl(174 50% 25% / 0.3), hsl(174 40% 20% / 0.2))',
-                    border: '1px solid hsl(174 50% 45% / 0.25)',
-                  }}
-                >
-                  {/* Thumbnail */}
-                  <div className="relative shrink-0">
-                    <img 
-                      src={attachedImage.preview} 
-                      alt="Attached" 
-                      className="rounded-lg object-cover"
-                      style={{ 
-                        width: '48px',
-                        height: '48px',
-                        boxShadow: '0 2px 8px hsl(0 0% 0% / 0.3)',
-                        border: '1px solid hsl(174 50% 50% / 0.2)',
-                      }}
-                    />
-                    {/* Success badge */}
-                    <div 
-                      className="absolute -bottom-1 -right-1 rounded-full"
-                      style={{
-                        padding: '2px',
-                        background: 'linear-gradient(135deg, hsl(174 70% 45%) 0%, hsl(174 60% 40%) 100%)',
-                        boxShadow: '0 1px 4px hsl(0 0% 0% / 0.3)',
-                      }}
-                    >
-                      <CheckCircle2 className="h-3 w-3 text-white" />
-                    </div>
-                  </div>
-                  
-                  {/* File info */}
-                  <div className="flex-1 min-w-0">
-                    <p 
-                      className="font-medium truncate text-white/90" 
-                      style={{ fontSize: 'var(--text-xs)' }}
-                    >
-                      {attachedImage.file.name}
-                    </p>
-                    <p 
-                      className="text-white/50" 
-                      style={{ fontSize: '10px' }}
-                    >
-                      {(attachedImage.file.size / 1024).toFixed(0)} KB
-                    </p>
-                  </div>
-                  
-                  {/* Remove button */}
+
+                {!attachedImage ? (
+                  /* Empty state - Dropzone */
                   <button
                     type="button"
-                    onClick={handleRemoveImage}
-                    className="flex items-center justify-center rounded-full transition-all hover:bg-red-500/20 hover:text-red-400 shrink-0"
-                    style={{ 
-                      width: '28px',
-                      height: '28px',
-                      color: 'hsl(0 0% 100% / 0.5)',
-                      border: '1px solid hsl(0 0% 100% / 0.1)',
+                    onClick={handleAddImageClick}
+                    className="relative w-full rounded-xl transition-all duration-300 group-hover/dropzone:scale-[1.01] cursor-pointer"
+                    style={{
+                      padding: 'var(--space-5) var(--space-4)',
+                      background: isDragOver
+                        ? 'linear-gradient(165deg, hsl(174 35% 18% / 0.5), hsl(174 30% 14% / 0.45))'
+                        : 'linear-gradient(165deg, hsl(200 25% 14% / 0.4), hsl(200 20% 10% / 0.35))',
+                      border: isDragOver
+                        ? '1.5px dashed hsl(174 70% 55% / 0.7)'
+                        : '1.5px dashed hsl(174 55% 55% / 0.35)',
+                      boxShadow: isDragOver
+                        ? `
+                          inset 0 0 30px hsl(174 60% 50% / 0.12),
+                          0 0 0 1px hsl(174 60% 55% / 0.3),
+                          0 0 25px hsl(174 60% 50% / 0.2)
+                        `
+                        : `
+                          inset 0 0 20px hsl(174 50% 48% / 0.06),
+                          inset 0 2px 6px hsl(0 0% 0% / 0.1),
+                          0 0 0 1px hsl(174 50% 55% / 0.15),
+                          0 0 15px hsl(174 55% 50% / 0.08)
+                        `,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
-                    title={t('form.removeImage')}
                   >
-                    <X className="h-4 w-4" />
+                    <div className="flex flex-col items-center" style={{ gap: 'var(--space-3)' }}>
+                      {/* Icon */}
+                      <div 
+                        className="rounded-full transition-all duration-300"
+                        style={{
+                          padding: 'var(--space-3)',
+                          background: isDragOver
+                            ? 'linear-gradient(135deg, hsl(174 60% 35% / 0.5), hsl(174 55% 30% / 0.4))'
+                            : 'linear-gradient(135deg, hsl(174 50% 30% / 0.35), hsl(174 45% 25% / 0.25))',
+                          boxShadow: isDragOver
+                            ? '0 0 20px hsl(174 60% 55% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
+                            : '0 0 12px hsl(174 55% 50% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.1)',
+                        }}
+                      >
+                        <Upload 
+                          className="transition-all duration-300"
+                          style={{ 
+                            width: '24px',
+                            height: '24px',
+                            color: isDragOver ? 'hsl(174 85% 70%)' : 'hsl(174 70% 65%)',
+                            filter: isDragOver 
+                              ? 'drop-shadow(0 0 10px hsl(174 75% 60% / 0.8))'
+                              : 'drop-shadow(0 0 6px hsl(174 65% 55% / 0.5))',
+                          }} 
+                        />
+                      </div>
+                      
+                      {/* Primary text */}
+                      <p 
+                        className="font-medium text-center transition-all duration-300"
+                        style={{ 
+                          fontSize: 'var(--text-sm)',
+                          color: isDragOver ? 'hsl(174 75% 75%)' : 'hsl(174 60% 70%)',
+                          textShadow: isDragOver 
+                            ? '0 0 15px hsl(174 65% 55% / 0.5)'
+                            : '0 0 10px hsl(174 55% 50% / 0.3)',
+                          letterSpacing: '0.01em',
+                        }}
+                      >
+                        {t('form.dropzoneTitle')}
+                      </p>
+                      
+                      {/* Secondary text */}
+                      <p 
+                        className="text-center"
+                        style={{ 
+                          fontSize: '11px',
+                          color: 'hsl(0 0% 100% / 0.45)',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        {t('form.dropzoneSubtitle')}
+                      </p>
+                    </div>
                   </button>
-                </div>
-              )}
+                ) : (
+                  /* Image attached state - Preview card */
+                  <div 
+                    className="relative rounded-xl animate-fade-in"
+                    style={{
+                      padding: 'var(--space-3)',
+                      background: 'linear-gradient(165deg, hsl(174 35% 16% / 0.5), hsl(174 30% 12% / 0.45))',
+                      border: '1.5px solid hsl(174 65% 52% / 0.45)',
+                      boxShadow: `
+                        inset 0 0 25px hsl(174 55% 50% / 0.1),
+                        0 0 0 1px hsl(174 55% 55% / 0.2),
+                        0 0 20px hsl(174 60% 50% / 0.15)
+                      `,
+                    }}
+                  >
+                    <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
+                      {/* Thumbnail */}
+                      <div className="relative shrink-0">
+                        <img 
+                          src={attachedImage.preview} 
+                          alt="Attached" 
+                          className="rounded-lg object-cover"
+                          style={{ 
+                            width: '56px',
+                            height: '56px',
+                            boxShadow: '0 4px 12px hsl(0 0% 0% / 0.4), 0 0 0 1px hsl(174 50% 50% / 0.2)',
+                          }}
+                        />
+                        {/* Success badge */}
+                        <div 
+                          className="absolute -bottom-1 -right-1 rounded-full"
+                          style={{
+                            padding: '3px',
+                            background: 'linear-gradient(135deg, hsl(174 75% 45%) 0%, hsl(174 65% 40%) 100%)',
+                            boxShadow: '0 2px 6px hsl(0 0% 0% / 0.35), 0 0 8px hsl(174 65% 50% / 0.4)',
+                          }}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                        </div>
+                      </div>
+                      
+                      {/* File info + status */}
+                      <div className="flex-1 min-w-0">
+                        {/* Image ready label */}
+                        <div 
+                          className="flex items-center mb-1"
+                          style={{ gap: 'var(--space-1)' }}
+                        >
+                          <span 
+                            className="font-semibold"
+                            style={{ 
+                              fontSize: '12px',
+                              color: 'hsl(174 80% 65%)',
+                              textShadow: '0 0 10px hsl(174 70% 55% / 0.4)',
+                            }}
+                          >
+                            {t('form.imageReady')} ✓
+                          </span>
+                        </div>
+                        
+                        {/* Filename */}
+                        <p 
+                          className="font-medium truncate text-white/80" 
+                          style={{ fontSize: '11px' }}
+                        >
+                          {attachedImage.file.name}
+                        </p>
+                        
+                        {/* File size */}
+                        <p 
+                          className="text-white/45" 
+                          style={{ fontSize: '10px' }}
+                        >
+                          {(attachedImage.file.size / 1024).toFixed(0)} KB
+                        </p>
+                      </div>
+                      
+                      {/* Action buttons */}
+                      <div className="flex items-center shrink-0" style={{ gap: 'var(--space-2)' }}>
+                        {/* Replace button */}
+                        <button
+                          type="button"
+                          onClick={handleAddImageClick}
+                          className="flex items-center rounded-lg transition-all hover:scale-105"
+                          style={{ 
+                            padding: 'var(--space-2) var(--space-2)',
+                            gap: '4px',
+                            background: 'hsl(174 40% 25% / 0.4)',
+                            border: '1px solid hsl(174 50% 50% / 0.25)',
+                            color: 'hsl(174 70% 70%)',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                          }}
+                          title={t('form.replaceImage')}
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{t('form.replaceImage')}</span>
+                        </button>
+                        
+                        {/* Remove button */}
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="flex items-center rounded-lg transition-all hover:scale-105 hover:bg-red-500/20 hover:border-red-400/40"
+                          style={{ 
+                            padding: 'var(--space-2) var(--space-2)',
+                            gap: '4px',
+                            background: 'hsl(0 30% 20% / 0.3)',
+                            border: '1px solid hsl(0 40% 50% / 0.25)',
+                            color: 'hsl(0 60% 70%)',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                          }}
+                          title={t('form.removeImage')}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{t('form.removeImage')}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -758,6 +848,15 @@ export const UnifiedAnalysisForm = forwardRef<UnifiedAnalysisFormHandle, Unified
           50% { 
             opacity: 1;
             transform: scale(1.02);
+          }
+        }
+        /* Dropzone breathing glow */
+        @keyframes dropzone-glow {
+          0%, 100% { 
+            opacity: 0.5;
+          }
+          50% { 
+            opacity: 0.9;
           }
         }
       `}</style>
