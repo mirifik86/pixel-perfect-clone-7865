@@ -28,8 +28,9 @@ export const RotatingGlobe = memo(({ size, isAnalyzing = false }: RotatingGlobeP
   const shouldAnimate = !prefersReducedMotion;
   const rotationSpeed = isAnalyzing ? '28s' : '100s';
   
-  // LARGE: 88% of gauge for prominent presence
-  const globeSize = size * 0.88;
+  // Globe size with gap for physical separation from gauge ring
+  // Reduced from 88% to 82% to create ~3-4px visible gap
+  const globeSize = size * 0.82;
   
   // High-quality Blue Marble Earth texture
   const earthTexture = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Blue_Marble_2002.png/1280px-Blue_Marble_2002.png';
