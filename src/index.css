@@ -627,11 +627,11 @@
 }
 
 /* ============================================
-   MINI EARTH + SOLAR SYSTEM KEYFRAMES
-   Premium subtle orbital animations
+   PREMIUM EARTH GLOBE KEYFRAMES
+   High-end visual animations
    ============================================ */
 
-/* Globe rotation - horizontal scroll of world map texture */
+/* Globe rotation - smooth continuous spin */
 @keyframes globe-rotate {
   0% {
     background-position: 0% 50%;
@@ -641,38 +641,48 @@
   }
 }
 
-/* Moon orbit - inner ring, clockwise */
-@keyframes orbit-moon {
+/* Orbital dot movement */
+@keyframes orbit-dot {
   0% {
-    transform: rotate(0deg) translateX(calc(var(--orbit-radius, 26%) * 0.5)) rotate(0deg);
+    transform: translateX(-50%) rotate(0deg) translateY(-50%);
   }
   100% {
-    transform: rotate(360deg) translateX(calc(var(--orbit-radius, 26%) * 0.5)) rotate(-360deg);
+    transform: translateX(-50%) rotate(360deg) translateY(-50%);
   }
 }
 
-/* Satellite orbit - outer ring, counter-clockwise */
-@keyframes orbit-satellite {
+@keyframes orbit-dot-reverse {
   0% {
-    transform: rotate(180deg) translateX(calc(var(--orbit-radius, 31%) * 0.5)) rotate(-180deg);
+    transform: translateY(-50%) rotate(0deg) translateX(-50%);
   }
   100% {
-    transform: rotate(-180deg) translateX(calc(var(--orbit-radius, 31%) * 0.5)) rotate(180deg);
+    transform: translateY(-50%) rotate(-360deg) translateX(-50%);
   }
 }
 
-/* Scan pulse ring - subtle expanding ring during analysis */
+/* Scan pulse expansion */
 @keyframes scan-pulse {
   0% {
-    opacity: 0.4;
+    opacity: 0.5;
     transform: translate(-50%, -50%) scale(1);
   }
-  50% {
+  60% {
     opacity: 0.15;
-    transform: translate(-50%, -50%) scale(1.15);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.3);
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+}
+
+/* Star twinkle */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
   }
 }
