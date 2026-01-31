@@ -153,13 +153,15 @@
     "counterClaimExplanation": "Multiple authoritative sources clearly state the opposite of this claim, indicating strong scientific or factual consensus against it."
   },
   "loader": {
-    "primary": "Scanning information space",
-    "subtitle": "Orbital analysis active",
+    "primary": "Connecting to IA11 engine…",
+    "subtitle": "Credibility analysis active",
     "processing": "Processing…",
+    "ia11Connecting": "Connecting to IA11 engine…",
+    "ia11Error": "Unable to connect to IA11 engine. Please try again.",
     "secondary": [
-      "Analyzing sources and contextual consistency…",
-      "Evaluating linguistic signals and source reliability…",
-      "Processing structured credibility analysis…"
+      "Analyzing credibility signals…",
+      "Evaluating linguistic patterns…",
+      "Processing IA11 analysis…"
     ]
   },
   "missionControl": {
