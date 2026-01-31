@@ -104,14 +104,12 @@ serve(async (req) => {
 
     try {
       // Call IA11 API - THE SINGLE SOURCE OF TRUTH
-      // Include API key as query parameter (common auth pattern)
-      const ia11Url = `${IA11_API_BASE}?apikey=${encodeURIComponent(ia11ApiKey)}`;
-      
-      const ia11Response = await fetch(ia11Url, {
+      // Use x-ia11-key header format (IA11 specific authentication)
+      const ia11Response = await fetch(IA11_API_BASE, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": ia11ApiKey,
+          "x-ia11-key": ia11ApiKey,
         },
         body: JSON.stringify({
           text: inputText.trim(),
