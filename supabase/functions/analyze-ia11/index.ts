@@ -9,43 +9,34 @@ const corsHeaders = {
 const IA11_API_BASE = "https://ia11-api-1.onrender.com/v1/analyze";
 const IA11_TIMEOUT_MS = 60000; // 60 seconds for IA11 processing
 
-interface IA11Request {
-  text: string;
-  language?: 'en' | 'fr';
-  mode?: 'standard' | 'pro';
-}
-
 interface IA11Response {
-  score: number;
-  riskLevel: 'low' | 'medium' | 'high';
-  summary: string;
-  reasons: string[];
-  confidence: number;
-  sources?: Array<{
-    title: string;
-    url: string;
-    publisher?: string;
-    trustTier?: 'high' | 'medium' | 'low';
-    stance?: 'corroborating' | 'neutral' | 'contradicting';
-  }>;
-  bestLinks?: Array<{
-    title: string;
-    url: string;
-    publisher?: string;
-    trustTier?: 'high' | 'medium' | 'low';
-    stance?: 'corroborating' | 'neutral' | 'contradicting';
-    whyItMatters?: string;
-  }>;
-  articleSummary?: string;
-  analysisType?: 'standard' | 'pro';
+  result: {
+    score: number;
+    riskLevel: 'low' | 'medium' | 'high';
+    summary: string;
+    reasons: string[];
+    confidence: number;
+    sources?: Array<{
+      title: string;
+      url: string;
+      publisher?: string;
+      trustTier?: 'high' | 'medium' | 'low';
+      stance?: 'corroborating' | 'neutral' | 'contradicting';
+    }>;
+  };
 }
 
 /**
  * IA11-ONLY Analysis Engine
  * 
- * LeenScore is now 100% powered by IA11.
+ * LeenScore is 100% powered by IA11.
  * This function acts as a secure proxy to the IA11 API.
  * NO LOCAL SCORING, NO FALLBACKS.
+ * 
+ * Required headers to IA11:
+ * - x-ia11-key: API key (from secret)
+ * - x-ui-lang: UI language code (fr/en/es/it/de/pt/ru/uk/ja)
+ * - x-tier: analysis tier (standard/pro)
  */
 serve(async (req) => {
   // CORS preflight
@@ -63,15 +54,19 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { content, text, language = 'en', analysisType = 'standard' } = body;
+    const { content, text, language = 'fr', analysisType = 'standard' } = body;
     
     // Support both 'content' and 'text' field names for flexibility
     const inputText = content || text;
     
+    // Determine UI language (default to 'fr')
+    const uiLang = language || 'fr';
+    const tier = analysisType || 'standard';
+    
     if (!inputText || typeof inputText !== 'string' || inputText.trim().length === 0) {
       return new Response(
         JSON.stringify({ 
-          error: language === 'fr' 
+          error: uiLang === 'fr' 
             ? "Texte requis pour l'analyse" 
             : "Text required for analysis",
           code: "MISSING_INPUT"
@@ -87,7 +82,7 @@ serve(async (req) => {
       console.error("[IA11] API key not configured");
       return new Response(
         JSON.stringify({ 
-          error: language === 'fr'
+          error: uiLang === 'fr'
             ? "Configuration IA11 manquante"
             : "IA11 configuration missing",
           code: "CONFIG_ERROR"
@@ -96,42 +91,51 @@ serve(async (req) => {
       );
     }
 
-    // Debug: log key info (masked for security)
-    const keyPreview = ia11ApiKey.length > 8 ? `${ia11ApiKey.substring(0, 4)}...${ia11ApiKey.substring(ia11ApiKey.length - 4)}` : '[too short]';
-    console.log(`[IA11] Analyzing text (${inputText.length} chars) | lang=${language} | mode=${analysisType} | key=${keyPreview} (${ia11ApiKey.length} chars)`);
+    // Debug: log request info (key masked for security)
+    const keyPreview = ia11ApiKey.length > 8 
+      ? `${ia11ApiKey.substring(0, 4)}...${ia11ApiKey.substring(ia11ApiKey.length - 4)}` 
+      : '[too short]';
+    console.log(`[IA11] Request | text=${inputText.length} chars | lang=${uiLang} | tier=${tier} | key=${keyPreview}`);
 
     // Create abort controller for timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), IA11_TIMEOUT_MS);
 
     try {
-      // Call IA11 API - THE SINGLE SOURCE OF TRUTH
-      // Use x-ia11-key header format (IA11 specific authentication)
+      // Call IA11 API with required headers
+      // Headers: x-ia11-key, x-ui-lang, x-tier
+      // Body: { "text": "..." }
       const ia11Response = await fetch(IA11_API_BASE, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-ia11-key": ia11ApiKey,
+          "x-ui-lang": uiLang,
+          "x-tier": tier,
         },
         body: JSON.stringify({
           text: inputText.trim(),
-          language: language,
-          mode: analysisType,
         }),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
+      // Log response status for debugging
+      console.log(`[IA11] Response status: ${ia11Response.status}`);
+
       if (!ia11Response.ok) {
         const errorText = await ia11Response.text().catch(() => "Unknown error");
         console.error(`[IA11] API error: ${ia11Response.status} - ${errorText}`);
         
+        // Return IA11-specific error with localized message
+        const errorMessage = uiLang === 'fr'
+          ? "Connexion au moteur IA11 impossible. Veuillez réessayer."
+          : "Unable to connect to IA11 engine. Please try again.";
+        
         return new Response(
           JSON.stringify({ 
-            error: language === 'fr'
-              ? `Erreur IA11: ${ia11Response.status}`
-              : `IA11 error: ${ia11Response.status}`,
+            error: errorMessage,
             code: `IA11_HTTP_${ia11Response.status}`,
             details: errorText
           }),
@@ -139,41 +143,48 @@ serve(async (req) => {
         );
       }
 
-      // Parse IA11 response - USE IT DIRECTLY, NO MODIFICATIONS
+      // Parse IA11 response - USE IT DIRECTLY
       const ia11Data: IA11Response = await ia11Response.json();
 
-      console.log(`[IA11] Success | score=${ia11Data.score} | risk=${ia11Data.riskLevel} | confidence=${ia11Data.confidence}`);
+      console.log(`[IA11] Success | score=${ia11Data.result?.score} | risk=${ia11Data.result?.riskLevel}`);
+
+      // Deduplicate sources by URL if present
+      let deduplicatedSources = ia11Data.result?.sources || [];
+      if (deduplicatedSources.length > 0) {
+        const seen = new Set<string>();
+        deduplicatedSources = deduplicatedSources.filter(source => {
+          if (seen.has(source.url)) return false;
+          seen.add(source.url);
+          return true;
+        });
+      }
 
       // Return IA11 response with consistent structure for frontend
-      // NO LOCAL SCORING OR ADJUSTMENTS - IA11 is the single source of truth
+      // Map directly from response.result.* as specified
       return new Response(
         JSON.stringify({
           status: "ok",
           engine: "IA11",
           
-          // Core fields from IA11 - passed through directly
-          score: ia11Data.score,
-          riskLevel: ia11Data.riskLevel,
-          summary: ia11Data.summary,
-          reasons: ia11Data.reasons || [],
-          confidence: ia11Data.confidence,
-          
-          // PRO-specific fields if present
-          sources: ia11Data.sources || [],
-          bestLinks: ia11Data.bestLinks || [],
+          // Core fields from IA11 response.result - passed through directly
+          score: ia11Data.result?.score ?? 0,
+          riskLevel: ia11Data.result?.riskLevel ?? 'medium',
+          summary: ia11Data.result?.summary ?? '',
+          reasons: ia11Data.result?.reasons ?? [],
+          confidence: ia11Data.result?.confidence ?? 0.5,
+          sources: deduplicatedSources,
           
           // Metadata
-          analysisType: ia11Data.analysisType || analysisType,
-          articleSummary: ia11Data.articleSummary || "",
+          analysisType: tier,
           
-          // Nested result object for PRO compatibility
+          // Nested result object for compatibility
           result: {
-            score: ia11Data.score,
-            riskLevel: ia11Data.riskLevel,
-            summary: ia11Data.summary,
-            confidence: ia11Data.confidence,
-            sources: ia11Data.sources || [],
-            bestLinks: ia11Data.bestLinks || [],
+            score: ia11Data.result?.score ?? 0,
+            riskLevel: ia11Data.result?.riskLevel ?? 'medium',
+            summary: ia11Data.result?.summary ?? '',
+            reasons: ia11Data.result?.reasons ?? [],
+            confidence: ia11Data.result?.confidence ?? 0.5,
+            sources: deduplicatedSources,
           },
           
           // Empty breakdown for UI compatibility (IA11 doesn't use point breakdown)
@@ -193,11 +204,12 @@ serve(async (req) => {
       
       if (fetchError instanceof Error && fetchError.name === "AbortError") {
         console.error("[IA11] Request timeout");
+        const errorMessage = uiLang === 'fr'
+          ? "Délai d'attente IA11 dépassé. Veuillez réessayer."
+          : "IA11 request timed out. Please try again.";
         return new Response(
           JSON.stringify({ 
-            error: language === 'fr'
-              ? "Délai d'attente IA11 dépassé. Veuillez réessayer."
-              : "IA11 request timed out. Please try again.",
+            error: errorMessage,
             code: "IA11_TIMEOUT"
           }),
           { status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" } }

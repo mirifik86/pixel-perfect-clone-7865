@@ -149,13 +149,15 @@
     "counterClaimExplanation": "Plusieurs sources faisant autorité affirment clairement l'inverse de cette affirmation, indiquant un consensus scientifique ou factuel fort en opposition."
   },
   "loader": {
-    "primary": "Scan de l'espace informationnel",
-    "subtitle": "Analyse orbitale active",
+    "primary": "Connexion au moteur IA11…",
+    "subtitle": "Analyse de crédibilité active",
     "processing": "En traitement…",
+    "ia11Connecting": "Connexion au moteur IA11…",
+    "ia11Error": "Connexion au moteur IA11 impossible. Veuillez réessayer.",
     "secondary": [
-      "Analyse des sources et de la cohérence contextuelle…",
-      "Évaluation des signaux linguistiques et de la fiabilité…",
-      "Traitement de l'analyse structurée de crédibilité…"
+      "Analyse des signaux de crédibilité…",
+      "Évaluation des modèles linguistiques…",
+      "Traitement de l'analyse IA11…"
     ]
   },
   "missionControl": {
