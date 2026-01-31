@@ -879,33 +879,41 @@ const Index = () => {
             />
           )}
 
-          {/* Minimal pulsing dot indicator between gauge and form - centered */}
-          {!hasAnyAnalysis && !isLoading && !analysisError && (
-            <div 
-              className="flex items-center justify-center w-full"
-              style={{ 
-                marginTop: 'var(--space-2)',
-                marginBottom: 'var(--space-2)',
-              }}
-            >
-              <div 
-                className="rounded-full"
-                style={{
-                  width: '5px',
-                  height: '5px',
-                  background: 'hsl(174 60% 55% / 0.5)',
-                  boxShadow: '0 0 8px hsl(174 55% 55% / 0.4), 0 0 16px hsl(174 50% 50% / 0.2)',
-                  animation: 'indicator-pulse 2.5s ease-in-out infinite',
-                }}
+          {/* LAYOUT STABILITY: Fixed-height container for dynamic status content */}
+          {/* This prevents layout jitter from IA11 error messages or indicators */}
+          <div 
+            style={{ 
+              height: '56px',
+              minHeight: '56px',
+              maxHeight: '56px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+            }}
+          >
+            {/* IA11 Error Message - premium halo display (has internal fixed height) */}
+            {ia11Error ? (
+              <IA11ErrorMessage 
+                visible={ia11Error && !isLoading} 
+                onFadeOut={() => setIa11Error(false)} 
               />
-            </div>
-          )}
-
-          {/* IA11 Error Message - premium halo display between gauge and form */}
-          <IA11ErrorMessage 
-            visible={ia11Error && !isLoading} 
-            onFadeOut={() => setIa11Error(false)} 
-          />
+            ) : (
+              /* Minimal pulsing dot indicator - only when no error and no analysis */
+              !hasAnyAnalysis && !isLoading && !analysisError && (
+                <div 
+                  className="rounded-full"
+                  style={{
+                    width: '5px',
+                    height: '5px',
+                    background: 'hsl(174 60% 55% / 0.5)',
+                    boxShadow: '0 0 8px hsl(174 55% 55% / 0.4), 0 0 16px hsl(174 50% 50% / 0.2)',
+                    animation: 'indicator-pulse 2.5s ease-in-out infinite',
+                  }}
+                />
+              )
+            )}
+          </div>
 
           {/* Unified Analysis Form - centered */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
