@@ -96,7 +96,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[IA11] Analyzing text (${inputText.length} chars) | lang=${language} | mode=${analysisType}`);
+    // Debug: log key info (masked for security)
+    const keyPreview = ia11ApiKey.length > 8 ? `${ia11ApiKey.substring(0, 4)}...${ia11ApiKey.substring(ia11ApiKey.length - 4)}` : '[too short]';
+    console.log(`[IA11] Analyzing text (${inputText.length} chars) | lang=${language} | mode=${analysisType} | key=${keyPreview} (${ia11ApiKey.length} chars)`);
 
     // Create abort controller for timeout
     const controller = new AbortController();
