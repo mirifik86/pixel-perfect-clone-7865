@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 // IA11 API Configuration
-const IA11_API_URL = "https://ia11-api-1.onrender.com/v1/analyze";
+const IA11_API_BASE = "https://ia11-api-1.onrender.com/v1/analyze";
 const IA11_TIMEOUT_MS = 60000; // 60 seconds for IA11 processing
 
 interface IA11Request {
@@ -104,19 +104,19 @@ serve(async (req) => {
 
     try {
       // Call IA11 API - THE SINGLE SOURCE OF TRUTH
-      // Try multiple auth formats: Authorization header with Bearer, x-api-key, and api_key in body
-      const ia11Response = await fetch(IA11_API_URL, {
+      // Include API key as query parameter (common auth pattern)
+      const ia11Url = `${IA11_API_BASE}?apikey=${encodeURIComponent(ia11ApiKey)}`;
+      
+      const ia11Response = await fetch(ia11Url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${ia11ApiKey}`,
-          "x-api-key": ia11ApiKey,
+          "apikey": ia11ApiKey,
         },
         body: JSON.stringify({
           text: inputText.trim(),
           language: language,
           mode: analysisType,
-          api_key: ia11ApiKey, // Also try in body
         }),
         signal: controller.signal,
       });
