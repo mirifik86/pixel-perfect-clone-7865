@@ -44,16 +44,19 @@ interface AnalysisBreakdown {
 interface AnalysisData {
   score: number;
   analysisType?: 'standard' | 'pro';
+  riskLevel?: 'low' | 'medium' | 'high';
   breakdown: AnalysisBreakdown;
   summary: string;
   articleSummary?: string;
   confidence: 'low' | 'medium' | 'high';
+  reasons?: string[]; // IA11 engine provides detailed reasons
   corroboration?: {
     outcome: string;
     sourcesConsulted: number;
     sourceTypes: string[];
     summary: string;
   };
+  engine?: string; // Track which engine produced the analysis (IA11)
 }
 
 interface ImageSignals {
@@ -100,7 +103,8 @@ const createDefaultBreakdown = (): AnalysisBreakdown => ({
   transparency: { points: 0, reason: '' },
 });
 
-// Normalize any analysis response (legacy or new PRO format) to AnalysisData
+// Normalize any analysis response (IA11 engine format) to AnalysisData
+// IA11 is the SINGLE SOURCE OF TRUTH - no local scoring or fallbacks
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const normalizeAnalysisData = (raw: any): AnalysisData => {
   if (!raw) {
@@ -124,14 +128,22 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     return 'low';
   };
 
-  // Helper: build breakdown with prudence -> tone fallback
+  // Helper: convert riskLevel string to normalized format
+  const normalizeRiskLevel = (risk: unknown): 'low' | 'medium' | 'high' | undefined => {
+    if (risk === 'low' || risk === 'medium' || risk === 'high') {
+      return risk;
+    }
+    if (risk === 'moderate') return 'medium';
+    return undefined;
+  };
+
+  // Helper: build breakdown (IA11 may not provide detailed breakdown)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buildBreakdown = (bd: any): AnalysisBreakdown => {
     if (!bd || typeof bd !== 'object') {
       return createDefaultBreakdown();
     }
     
-    // If tone is missing but prudence exists, map prudence -> tone
     const toneSource = bd.tone ?? bd.prudence;
     
     return {
@@ -143,47 +155,31 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     };
   };
 
-  // New PRO format: { status: "ok", result: { score, riskLevel, summary, confidence, bestLinks, sources } }
-  if (raw.result && typeof raw.result === 'object') {
-    const result = raw.result;
-    const confidenceTier = confidenceToTier(result.confidence);
+  // IA11 engine format: { status: "ok", engine: "IA11", score, riskLevel, summary, reasons, confidence, ... }
+  // Also handles nested result object for PRO mode
+  const result = raw.result || raw;
+  const confidenceTier = confidenceToTier(result.confidence ?? raw.confidence);
+  const riskLevel = normalizeRiskLevel(result.riskLevel ?? raw.riskLevel);
+  const breakdown = buildBreakdown(result.breakdown ?? raw.breakdown);
 
-    // Build breakdown from result or use defaults
-    const breakdown = buildBreakdown(result.breakdown);
-
-    const normalized: AnalysisData = {
-      score: Number(result.score ?? 0),
-      analysisType: raw.analysisType ?? result.analysisType ?? 'pro',
-      breakdown,
-      summary: String(result.summary ?? raw.summary ?? ''),
-      articleSummary: String(raw.articleSummary ?? ''),
-      confidence: confidenceTier,
-      corroboration: raw.corroboration ?? result.corroboration,
-    };
-
-    // Attach raw.result for downstream components (bestLinks, sources, etc.)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (normalized as any).result = result;
-
-    return normalized;
-  }
-
-  // Legacy/Standard format: already matches AnalysisData shape
-  // Handle numeric confidence -> tier conversion
-  const confidenceTier = confidenceToTier(raw.confidence);
-  
-  return {
-    score: Number(raw.score ?? 0),
-    analysisType: raw.analysisType,
-    breakdown: buildBreakdown(raw.breakdown),
-    summary: String(raw.summary ?? ''),
-    articleSummary: String(raw.articleSummary ?? ''),
+  const normalized: AnalysisData = {
+    score: Number(result.score ?? raw.score ?? 0),
+    analysisType: raw.analysisType ?? result.analysisType ?? 'standard',
+    riskLevel,
+    breakdown,
+    summary: String(result.summary ?? raw.summary ?? ''),
+    articleSummary: String(raw.articleSummary ?? result.articleSummary ?? ''),
     confidence: confidenceTier,
-    corroboration: raw.corroboration,
-    // Preserve result if it exists
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...(raw.result ? { result: raw.result } as any : {}),
+    reasons: Array.isArray(raw.reasons) ? raw.reasons : (Array.isArray(result.reasons) ? result.reasons : undefined),
+    corroboration: raw.corroboration ?? result.corroboration,
+    engine: raw.engine ?? 'IA11',
   };
+
+  // Attach raw.result for downstream components (bestLinks, sources, etc.)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (raw.result) (normalized as any).result = raw.result;
+
+  return normalized;
 };
 
 // REMOVED: Local translations object - now using i18n system
@@ -296,8 +292,8 @@ const Index = () => {
   const currentSummaries = summariesByLanguage[language];
   const displayArticleSummary = currentSummaries?.articleSummary || null;
 
-  // Always run the actual analysis once (master), then translate for the other language.
-  // This guarantees identical scoring + web corroboration across the EN/FR toggle.
+  // IA11-ONLY: All credibility analysis is powered exclusively by the IA11 engine.
+  // NO LOCAL SCORING, NO FALLBACKS - IA11 is the single source of truth.
   const runBilingualTextAnalysis = useCallback(async ({
     content,
     analysisType,
@@ -305,22 +301,22 @@ const Index = () => {
     content: string;
     analysisType?: 'standard' | 'pro';
   }): Promise<{ en: AnalysisData; fr: AnalysisData }> => {
-    // Master analysis is always in English for determinism.
-    const master = await supabase.functions.invoke('analyze', {
+    // Call IA11 engine for master analysis (English for determinism)
+    const master = await supabase.functions.invoke('analyze-ia11', {
       body: {
         content,
         language: 'en',
-        ...(analysisType ? { analysisType } : {}),
+        analysisType: analysisType || 'standard',
       },
     });
 
     if (master.error) throw master.error;
     if (master.data?.error) throw new Error(master.data.error);
 
-    // Normalize the response to handle both legacy and new PRO formats
+    // Normalize the IA11 response to AnalysisData format
     const enData = normalizeAnalysisData(master.data);
 
-    // Translate: pass normalized data but preserve raw result (URLs must not be translated)
+    // Translate text fields for French version (preserves IA11 scoring)
     const fr = await supabase.functions.invoke('translate-analysis', {
       body: {
         analysisData: enData,
