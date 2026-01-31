@@ -10,12 +10,15 @@ export const AnalysisLoader = ({
   size = 160, 
   className 
 }: AnalysisLoaderProps) => {
-  const { tArray } = useLanguage();
+  const { t, tArray } = useLanguage();
   const [textIndex, setTextIndex] = useState(0);
   
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const loadingTexts = tArray('loader.secondary');
+  
+  // Primary message: "Connexion au moteur IA11..."
+  const primaryMessage = t('loader.ia11Connecting');
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -50,10 +53,26 @@ export const AnalysisLoader = ({
         </div>
       </div>
 
+      {/* Primary IA11 connection message */}
+      <div className="flex w-full justify-center mt-2">
+        <span
+          className="text-center font-semibold"
+          style={{ 
+            fontSize: labelFontSize * 1.1, 
+            color: 'hsl(174 55% 55%)', 
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase'
+          }}
+        >
+          {primaryMessage}
+        </span>
+      </div>
+
+      {/* Secondary rotating messages */}
       <div className="flex w-full justify-center mt-1">
         <span
           className="text-center transition-opacity duration-700"
-          style={{ fontSize: labelFontSize, color: 'hsl(var(--muted-foreground))', fontWeight: 500, letterSpacing: '0.15em', fontFamily: 'var(--font-sans)', maxWidth: size * 2 }}
+          style={{ fontSize: labelFontSize, color: 'hsl(var(--muted-foreground))', fontWeight: 500, letterSpacing: '0.05em', fontFamily: 'var(--font-sans)', maxWidth: size * 2 }}
         >
           {loadingTexts[textIndex]}
         </span>

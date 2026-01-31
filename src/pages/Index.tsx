@@ -17,6 +17,7 @@ import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { StarfieldBackground } from '@/components/StarfieldBackground';
+import { IA11ErrorMessage } from '@/components/IA11ErrorMessage';
 
 interface AnalysisBreakdown {
   sources: {
@@ -237,6 +238,9 @@ const Index = () => {
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   
+  // IA11-specific error state for premium error display
+  const [ia11Error, setIa11Error] = useState(false);
+  
   // Handle chevron cycle complete - trigger input highlight (idle state beam impact)
   const handleChevronCycleComplete = useCallback(() => {
     setInputHighlight(true);
@@ -340,8 +344,9 @@ const Index = () => {
     setScreenshotData(null);
     setScreenshotLoaderStep(0);
     setIsImageAnalysis(false);
-    setAnalysisError(null);
+  setAnalysisError(null);
     setHasFormContent(false);
+    setIa11Error(false);
     lastInputRef.current = null;
   }, []);
 
@@ -358,6 +363,7 @@ const Index = () => {
     setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent(input);
     setAnalysisError(null);
+    setIa11Error(false); // Clear IA11 error on new analysis
 
     try {
       const { en, fr } = await runBilingualTextAnalysis({ content: input, analysisType: 'standard' });
@@ -368,10 +374,20 @@ const Index = () => {
       });
 
       setAnalysisByLanguage({ en, fr });
+      
+      // Clear IA11 error on successful analysis
+      setIa11Error(false);
     } catch (err) {
       console.error('Unexpected error:', err);
-      // Stay on page, show error panel instead of toast only
+      // Check if this is an IA11-specific error
       const errorMessage = err instanceof Error ? err.message : errorAnalysis;
+      const isIA11Error = errorMessage.includes('IA11') || errorMessage.includes('ia11');
+      
+      if (isIA11Error) {
+        setIa11Error(true);
+      }
+      
+      // Stay on page, show error panel
       const errorCode = `ERR_${Date.now().toString(36).toUpperCase()}`;
       setAnalysisError({ message: errorMessage, code: errorCode });
       toast.error(errorAnalysis);
@@ -884,6 +900,12 @@ const Index = () => {
               />
             </div>
           )}
+
+          {/* IA11 Error Message - premium halo display between gauge and form */}
+          <IA11ErrorMessage 
+            visible={ia11Error && !isLoading} 
+            onFadeOut={() => setIa11Error(false)} 
+          />
 
           {/* Unified Analysis Form - centered */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (
