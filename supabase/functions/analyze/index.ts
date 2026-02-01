@@ -381,12 +381,204 @@ const interpretTemporalContext = (claimText: string): TemporalContext => {
   };
 };
 
+// ============================================================================
+// FEATURE 4: INTELLIGENT CONTRADICTION DETECTOR
+// Weighted, time-aware conflict resolution like an expert analyst
+// ============================================================================
+
+// Claim target structure for verification
+interface ClaimTarget {
+  subject: string | null;       // who/what
+  predicate: string | null;     // is/was/has/does
+  predicateType: 'current_state' | 'past_state' | 'action' | 'attribute' | 'unknown';
+  role: string | null;          // office holder, event, statistic, etc.
+  timeContext: 'current' | 'past' | 'future' | 'specific' | 'unspecified';
+  targetYear: number | null;
+}
+
+// Source statement with parsed stance
+interface SourceStatement {
+  sourceUrl: string;
+  trustTier: 'official' | 'major_news' | 'other';
+  stance: 'supports' | 'contradicts' | 'unclear';
+  timeReference: string | null;  // "as of 2024", "in 2023", etc.
+  targetYear: number | null;
+  addressesSameTarget: boolean;
+}
+
+// Contradiction analysis result
+interface ContradictionAnalysis {
+  hasContradiction: boolean;
+  contradictionType: 'hard' | 'temporal_shift' | 'scope_difference' | 'none';
+  contradictionScore: number;    // 0-100, weighted by trust tiers
+  conflictDetails: ContradictionDetail[];
+  resolution: ContradictionResolution;
+  promptInstructions: string;
+}
+
+interface ContradictionDetail {
+  description: string;
+  supportingSources: string[];
+  contradictingSources: string[];
+  isTemporalConflict: boolean;
+  canBeResolved: boolean;
+}
+
+interface ContradictionResolution {
+  preferredStance: 'supports' | 'contradicts' | 'uncertain';
+  confidence: 'high' | 'medium' | 'low';
+  reasoning: string;
+  recommendedVerdict: 'TRUE' | 'MOSTLY TRUE' | 'MIXED' | 'UNCERTAIN' | 'MOSTLY FALSE' | 'FALSE' | null;
+  scoreCap: number | null;
+}
+
+// Trust tier weights for contradiction scoring
+const TRUST_TIER_WEIGHTS = {
+  official: 3.0,
+  major_news: 2.0,
+  other: 1.0
+};
+
+// Calculate weighted contradiction score
+const calculateContradictionScore = (
+  supportingTiers: string[],
+  contradictingTiers: string[]
+): number => {
+  if (contradictingTiers.length === 0) return 0;
+  if (supportingTiers.length === 0) return 100;
+  
+  let supportWeight = 0;
+  let contradictWeight = 0;
+  
+  for (const tier of supportingTiers) {
+    supportWeight += TRUST_TIER_WEIGHTS[tier as keyof typeof TRUST_TIER_WEIGHTS] || 1;
+  }
+  
+  for (const tier of contradictingTiers) {
+    contradictWeight += TRUST_TIER_WEIGHTS[tier as keyof typeof TRUST_TIER_WEIGHTS] || 1;
+  }
+  
+  const total = supportWeight + contradictWeight;
+  if (total === 0) return 50;
+  
+  // Score based on how much contradiction outweighs support
+  const contradictionRatio = contradictWeight / total;
+  
+  // Official vs Official contradiction is strongest
+  const hasOfficialConflict = 
+    supportingTiers.includes('official') && contradictingTiers.includes('official');
+  
+  const hasMajorNewsConflict = 
+    supportingTiers.includes('major_news') && contradictingTiers.includes('major_news');
+  
+  let score = contradictionRatio * 100;
+  
+  // Boost score for high-tier conflicts
+  if (hasOfficialConflict) {
+    score = Math.min(100, score * 1.5);
+  } else if (hasMajorNewsConflict) {
+    score = Math.min(100, score * 1.25);
+  }
+  
+  return Math.round(score);
+};
+
+// Determine if contradiction is temporal (explainable by time difference)
+const isTemporalContradiction = (
+  supportingYears: (number | null)[],
+  contradictingYears: (number | null)[],
+  claimTimeContext: 'current' | 'past' | 'future' | 'specific' | 'unspecified'
+): boolean => {
+  const validSupportYears = supportingYears.filter(y => y !== null) as number[];
+  const validContradictYears = contradictingYears.filter(y => y !== null) as number[];
+  
+  if (validSupportYears.length === 0 || validContradictYears.length === 0) {
+    return false;
+  }
+  
+  const avgSupport = validSupportYears.reduce((a, b) => a + b, 0) / validSupportYears.length;
+  const avgContradict = validContradictYears.reduce((a, b) => a + b, 0) / validContradictYears.length;
+  
+  // If there's a year difference and claim is about "current" state
+  if (Math.abs(avgSupport - avgContradict) >= 1 && claimTimeContext === 'current') {
+    return true;
+  }
+  
+  return false;
+};
+
+// Build contradiction detection instructions for the prompt
+const buildContradictionDetectorInstructions = (temporalContext: TemporalContext): string => {
+  const dateInfo = getCurrentDateInfo();
+  
+  return `
+===== INTELLIGENT CONTRADICTION DETECTOR =====
+
+You MUST apply expert-level contradiction analysis:
+
+STEP 1 - CLAIM TARGET EXTRACTION:
+Identify the verification targets in the claim:
+- SUBJECT: Who or what is the claim about?
+- PREDICATE: What state/action is claimed (is/was/has)?
+- TIME CONTEXT: Current, past, future, or specific year?
+- ROLE/TYPE: Office holder, event, statistic, etc.?
+
+STEP 2 - SOURCE STATEMENT PARSING:
+For each source you find, determine:
+- Does it address the SAME subject and predicate?
+- What time period does the source refer to?
+- Is the source's statement: SUPPORTS / CONTRADICTS / UNCLEAR?
+⚠️ Do NOT label "contradiction" if the source addresses a different time period or different aspect.
+
+STEP 3 - WEIGHTED CONTRADICTION SCORING:
+Trust tiers have different weights:
+- Official (gov, edu, institutions): Weight 3x
+- Major News (Reuters, BBC, AP, AFP): Weight 2x
+- Other sources: Weight 1x
+
+Contradiction severity:
+- Official vs Official disagreement = HIGHEST severity → Verdict UNCERTAIN
+- Major News vs Major News = HIGH severity → Reduce confidence
+- Other vs Other = MODERATE severity → Note but don't over-penalize
+
+If Official + Major News AGREE: This forms consensus. Prefer this over other sources.
+
+STEP 4 - TIME-AWARE RESOLUTION:
+If sources disagree but the disagreement is explained by TIME:
+- Older sources say X, newer sources say Y
+- This is a "TEMPORAL SHIFT", NOT a hard contradiction
+- For "current" claims: ALWAYS prefer the most recent authoritative source
+- Example: "Biden is president" - older sources confirm, but newer sources show Trump is current president
+
+Current date: ${dateInfo.formatted}
+${temporalContext.requiresRecentSources ? `⚠️ This claim requires ${dateInfo.year} or ${dateInfo.year - 1} sources for verification.` : ''}
+
+STEP 5 - OUTPUT BEHAVIOR:
+
+IF CONTRADICTION SCORE IS HIGH (sources disagree on same target/time):
+- Verdict = UNCERTAIN (or FALSE if authoritative sources clearly contradict claim)
+- Reduce confidence to LOW or MEDIUM
+- Apply score cap: 55 max for conflicting sources, 40 max for official contradiction
+- Include in summary: what conflicts, which sources support each side, whether time explains it
+
+IF CONSENSUS IS STRONG (authoritative sources agree):
+- Verdict = TRUE or FALSE with HIGH confidence
+- No score cap from contradiction logic
+
+IF TEMPORAL SHIFT DETECTED:
+- Prefer the most recent source
+- Note in summary that the situation has changed over time
+- If claim uses "current/now" language but only old sources support it → Verdict = UNCERTAIN or FALSE
+`;
+};
+
 // Build enhanced context for PRO prompt based on pre-analysis
 interface EnhancedVerificationContext {
   criticalFactCheck: CriticalFactCheckResult;
   temporalContext: TemporalContext;
   enhancedModeActive: boolean;
   additionalInstructions: string;
+  contradictionInstructions: string;
 }
 
 const buildEnhancedContext = (claimText: string): EnhancedVerificationContext => {
@@ -396,6 +588,9 @@ const buildEnhancedContext = (claimText: string): EnhancedVerificationContext =>
   const enhancedModeActive = criticalFactCheck.requiresEnhancedVerification || 
     temporalContext.isTimesSensitive ||
     criticalFactCheck.hasConflict;
+  
+  // Build contradiction detection instructions
+  const contradictionInstructions = buildContradictionDetectorInstructions(temporalContext);
   
   let additionalInstructions = '';
   
@@ -439,7 +634,8 @@ const buildEnhancedContext = (claimText: string): EnhancedVerificationContext =>
     criticalFactCheck,
     temporalContext,
     enhancedModeActive,
-    additionalInstructions
+    additionalInstructions,
+    contradictionInstructions
   };
 };
 
@@ -781,6 +977,7 @@ QUALITY OVER QUANTITY - Accuracy and precision are mandatory.
   "result": {
     "score": <number 5-98>,
     "riskLevel": "<low|medium|high>",
+    "verdict": "<TRUE|MOSTLY TRUE|MIXED|UNCERTAIN|MOSTLY FALSE|FALSE>",
     "summary": "<PRO-depth summary following 3-sentence framework with factual anchors>",
     "confidence": <number 0.00-1.00>,
     "bestLinks": [
@@ -793,13 +990,20 @@ QUALITY OVER QUANTITY - Accuracy and precision are mandatory.
         "whyItMatters": "<${isFr ? 'Explication précise de la pertinence' : 'Precise explanation of relevance'}>"
       }
     ],
-    "sources": [<up to 10 sources with same structure>]
+    "sources": [<up to 10 sources with same structure>],
+    "conflictAnalysis": {
+      "hasConflict": <boolean>,
+      "conflictType": "<hard|temporal_shift|scope_difference|none>",
+      "conflictDescription": "<${isFr ? 'Description du conflit détecté entre les sources' : 'Description of detected conflict between sources'}>",
+      "resolution": "<${isFr ? 'Comment le conflit a été résolu ou pourquoi il reste incertain' : 'How the conflict was resolved or why it remains uncertain'}>"
+    }
   },
   "analysisType": "pro",
   "articleSummary": "<factual summary of what the text claims>",
   "corroboration": {
-    "outcome": "<corroborated|neutral|constrained|refuted>",
-    "sourcesConsulted": <number 1-10>
+    "outcome": "<corroborated|neutral|constrained|refuted|conflicting>",
+    "sourcesConsulted": <number 1-10>,
+    "verificationStrength": "<strong|moderate|limited|insufficient|conflicting>"
   },
   "proDisclaimer": "${isFr ? "Cette évaluation reflète la plausibilité selon les informations disponibles, pas une vérité absolue." : 'This assessment reflects plausibility based on available information, not absolute truth.'}"
 }
@@ -812,6 +1016,8 @@ QUALITY OVER QUANTITY - Accuracy and precision are mandatory.
 - Diversity of publishers preferred.
 
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.
+
+${enhancedContext?.contradictionInstructions || ''}
 
 ${enhancedInstructions ? `===== ENHANCED VERIFICATION CONTEXT (PRE-PROCESSED) =====\n${enhancedInstructions}` : ''}`;
 };
