@@ -981,6 +981,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         <ProWebEvidence 
           sources={normalizedIA11.sources}
           webProofCard={normalizedIA11.webProofCard}
+          webEvidenceState={normalizedIA11.webEvidenceState}
           language={language}
         />
       )}

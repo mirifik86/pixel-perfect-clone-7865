@@ -19,8 +19,11 @@ interface SourcesBuckets {
   corroborate: SourceItem[];
   contradict: SourceItem[];
   neutral: SourceItem[];
+  fallback: SourceItem[];
   total: number;
 }
+
+type WebEvidenceState = 'buckets' | 'neutral' | 'unavailable';
 
 interface WebProofCard {
   title: string;
@@ -32,12 +35,15 @@ interface ProWebEvidenceProps {
   sources: SourcesBuckets;
   /** Pre-computed web proof card text from the normalization layer */
   webProofCard: WebProofCard;
+  /** Web evidence display state */
+  webEvidenceState: WebEvidenceState;
   language: 'en' | 'fr';
 }
 
 const translations = {
   en: {
     title: 'Web Evidence',
+    neutralTitle: 'Web evidence found (neutral)',
     confirmed: 'Confirmed',
     contradicted: 'Contradicted',
     neutral: 'Neutral',
@@ -48,6 +54,7 @@ const translations = {
   },
   fr: {
     title: 'Preuves web',
+    neutralTitle: 'Preuves web trouvées (neutres)',
     confirmed: 'Confirmé',
     contradicted: 'Contredit',
     neutral: 'Neutre',
@@ -184,13 +191,79 @@ const BucketSection = ({
   );
 };
 
-export const ProWebEvidence = ({ sources, webProofCard, language }: ProWebEvidenceProps) => {
+/** Neutral sources display - shows fallback sources when buckets are empty */
+const NeutralSourcesSection = ({ 
+  sources, 
+  language 
+}: { 
+  sources: SourceItem[];
+  language: 'en' | 'fr';
+}) => {
+  const t = translations[language];
+  const [expanded, setExpanded] = useState(false);
+  
+  const visibleSources = expanded ? sources.slice(0, 6) : sources.slice(0, 3);
+  const hasMore = sources.length > 3;
+
+  return (
+    <div 
+      className="rounded-xl border p-4"
+      style={{
+        background: 'hsl(220 15% 97%)',
+        borderColor: 'hsl(220 15% 88%)',
+      }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <HelpCircle className="h-4.5 w-4.5" style={{ color: 'hsl(220 15% 50%)' }} />
+        <h4 className="text-sm font-semibold text-slate-800">{t.neutral}</h4>
+        <span 
+          className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full"
+          style={{ 
+            background: 'hsl(220 15% 50% / 0.15)',
+            color: 'hsl(220 15% 50%)',
+          }}
+        >
+          {sources.length}
+        </span>
+      </div>
+      
+      <div className="space-y-2">
+        {visibleSources.map((source, idx) => (
+          <SourceCard key={idx} source={source} language={language} />
+        ))}
+        
+        {hasMore && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 transition-colors"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="h-3.5 w-3.5" />
+                {t.showLess}
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3.5 w-3.5" />
+                {t.showMore} ({sources.length - 3})
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const ProWebEvidence = ({ sources, webProofCard, webEvidenceState, language }: ProWebEvidenceProps) => {
   const t = translations[language];
   
-  const { corroborate, contradict, neutral, total } = sources;
+  const { corroborate, contradict, neutral, fallback } = sources;
   
-  // Check if any sources exist
-  const hasAnySources = total > 0;
+  // Determine what to display based on webEvidenceState
+  const showBuckets = webEvidenceState === 'buckets';
+  const showNeutral = webEvidenceState === 'neutral';
+  const showUnavailable = webEvidenceState === 'unavailable';
 
   return (
     <div 
@@ -212,11 +285,11 @@ export const ProWebEvidence = ({ sources, webProofCard, language }: ProWebEviden
           <Globe className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
         </div>
         <h3 className="font-serif text-lg font-semibold text-slate-900">
-          {hasAnySources ? t.title : webProofCard.title}
+          {showNeutral ? t.neutralTitle : (showBuckets ? t.title : webProofCard.title)}
         </h3>
       </div>
       
-      {hasAnySources ? (
+      {showBuckets && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <BucketSection
             title={t.confirmed}
@@ -246,7 +319,13 @@ export const ProWebEvidence = ({ sources, webProofCard, language }: ProWebEviden
             borderColor="hsl(220 15% 88%)"
           />
         </div>
-      ) : (
+      )}
+      
+      {showNeutral && (
+        <NeutralSourcesSection sources={fallback} language={language} />
+      )}
+      
+      {showUnavailable && (
         /* Empty state: Use pre-computed webProofCard from normalization layer */
         <div 
           className="rounded-xl border p-5 flex items-center gap-4"
