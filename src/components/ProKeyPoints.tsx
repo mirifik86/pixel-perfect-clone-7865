@@ -1,22 +1,19 @@
 import { CheckCircle, HelpCircle, XCircle, AlertCircle } from 'lucide-react';
 
+/**
+ * IA11 is the SINGLE SOURCE OF TRUTH.
+ * Lovable is a pure renderer - no inference, no fallback logic.
+ * Counters are displayed ONLY from IA11's explicit keyPoints values.
+ */
+
 interface KeyPoints {
   confirmed: number;
   uncertain: number;
   contradicted: number;
 }
 
-interface SourcesBuckets {
-  corroborate?: unknown[];
-  contradict?: unknown[];
-  neutral?: unknown[];
-}
-
-type ProStatus = 'confirmed' | 'contradicted' | 'uncertain' | 'limited';
-
 interface ProKeyPointsProps {
   keyPoints?: KeyPoints;
-  sourcesBuckets?: SourcesBuckets;
   language: 'en' | 'fr';
 }
 
@@ -26,91 +23,27 @@ const translations = {
     confirmed: 'Confirmed',
     uncertain: 'Uncertain',
     contradicted: 'Contradicted',
-    // Status-specific explanations
-    statusConfirmed: 'Claim confirmed by credible web sources.',
-    statusContradicted: 'Claim contradicted by credible web sources.',
-    statusUncertain: 'Credible sources exist with conflicting or ambiguous conclusions.',
-    statusLimited: 'Verification limited due to lack of reliable web sources.',
     limitedTitle: 'Limited Evaluation',
+    limitedMessage: 'Verification limited due to lack of reliable web sources.',
   },
   fr: {
     title: 'Points clés PRO',
     confirmed: 'Confirmé',
     uncertain: 'Incertain',
     contradicted: 'Contredit',
-    // Status-specific explanations
-    statusConfirmed: 'Affirmation confirmée par des sources web fiables.',
-    statusContradicted: 'Affirmation contredite par des sources web fiables.',
-    statusUncertain: 'Sources crédibles avec conclusions conflictuelles ou ambiguës.',
-    statusLimited: 'Vérification limitée en raison d\'un manque de sources web fiables.',
     limitedTitle: 'Évaluation limitée',
+    limitedMessage: 'Vérification limitée en raison d\'un manque de sources web fiables.',
   },
 };
 
-/**
- * Compute the official PRO status based on source buckets
- * Rules:
- * - CONFIRMÉ: at least one corroborating source
- * - CONTREDIT: at least one contradicting source (and no corroborating)
- * - INCERTAIN: both corroborating AND contradicting sources exist
- * - ÉVALUATION LIMITÉE: no strong sources found
- */
-const computeProStatus = (sourcesBuckets?: SourcesBuckets): ProStatus => {
-  if (!sourcesBuckets) return 'limited';
-  
-  const hasCorroborate = (sourcesBuckets.corroborate?.length ?? 0) > 0;
-  const hasContradict = (sourcesBuckets.contradict?.length ?? 0) > 0;
-  
-  // If both exist -> uncertain (conflicting sources)
-  if (hasCorroborate && hasContradict) return 'uncertain';
-  
-  // Only corroborating -> confirmed
-  if (hasCorroborate) return 'confirmed';
-  
-  // Only contradicting -> contradicted
-  if (hasContradict) return 'contradicted';
-  
-  // No strong sources -> limited
-  return 'limited';
-};
-
-export const ProKeyPoints = ({ keyPoints, sourcesBuckets, language }: ProKeyPointsProps) => {
+export const ProKeyPoints = ({ keyPoints, language }: ProKeyPointsProps) => {
   const t = translations[language];
   
-  // Compute the official status
-  const proStatus = computeProStatus(sourcesBuckets);
-  
-  // Use provided keyPoints or compute fallback from sourcesBuckets
-  let confirmed = keyPoints?.confirmed ?? 0;
-  let uncertain = keyPoints?.uncertain ?? 0;
-  let contradicted = keyPoints?.contradicted ?? 0;
-  
-  // Fallback logic if keyPoints is missing - based on official status rules
-  if (!keyPoints && sourcesBuckets) {
-    const hasCorroborate = (sourcesBuckets.corroborate?.length ?? 0) > 0;
-    const hasContradict = (sourcesBuckets.contradict?.length ?? 0) > 0;
-    
-    // Reset counters based on status logic
-    if (hasCorroborate && hasContradict) {
-      // Conflicting sources = uncertain
-      confirmed = 1;
-      contradicted = 1;
-      uncertain = 1;
-    } else if (hasCorroborate) {
-      confirmed = 1;
-      contradicted = 0;
-      uncertain = 0;
-    } else if (hasContradict) {
-      confirmed = 0;
-      contradicted = 1;
-      uncertain = 0;
-    } else {
-      // No strong sources - all zeros, show limited state
-      confirmed = 0;
-      contradicted = 0;
-      uncertain = 0;
-    }
-  }
+  // STRICT IA11 BINDING: Use ONLY explicit IA11 values, default to 0 if not provided
+  // NO fallback logic, NO inference from sourcesBuckets
+  const confirmed = keyPoints?.confirmed ?? 0;
+  const uncertain = keyPoints?.uncertain ?? 0;
+  const contradicted = keyPoints?.contradicted ?? 0;
   
   const counters = [
     { 
@@ -142,23 +75,7 @@ export const ProKeyPoints = ({ keyPoints, sourcesBuckets, language }: ProKeyPoin
     },
   ];
 
-  // Get explanation text based on current status
-  const getStatusExplanation = (): string => {
-    switch (proStatus) {
-      case 'confirmed':
-        return t.statusConfirmed;
-      case 'contradicted':
-        return t.statusContradicted;
-      case 'uncertain':
-        return t.statusUncertain;
-      case 'limited':
-        return t.statusLimited;
-      default:
-        return t.statusLimited;
-    }
-  };
-
-  // Check if all counters are zero (limited verification)
+  // Check if all counters are zero (limited verification from IA11)
   const isLimitedVerification = confirmed === 0 && uncertain === 0 && contradicted === 0;
 
   return (
@@ -176,7 +93,7 @@ export const ProKeyPoints = ({ keyPoints, sourcesBuckets, language }: ProKeyPoin
       
       {/* Counter grid - only show if not limited verification */}
       {!isLimitedVerification ? (
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-3">
           {counters.map(({ key, label, value, icon: Icon, activeColor, activeBg, activeBorder }) => {
             const isActive = value > 0;
             
@@ -225,9 +142,9 @@ export const ProKeyPoints = ({ keyPoints, sourcesBuckets, language }: ProKeyPoin
           })}
         </div>
       ) : (
-        /* Limited verification state - special display */
+        /* Limited verification state - IA11 returned 0/0/0 */
         <div 
-          className="rounded-xl border p-4 mb-4 flex items-center gap-3"
+          className="rounded-xl border p-4 flex items-center gap-3"
           style={{
             background: 'hsl(220 15% 97%)',
             borderColor: 'hsl(220 15% 88%)',
@@ -246,24 +163,9 @@ export const ProKeyPoints = ({ keyPoints, sourcesBuckets, language }: ProKeyPoin
               {t.limitedTitle}
             </p>
             <p className="text-xs text-slate-500">
-              {t.statusLimited}
+              {t.limitedMessage}
             </p>
           </div>
-        </div>
-      )}
-      
-      {/* Status explanation - always matches counters */}
-      {!isLimitedVerification && (
-        <div 
-          className="rounded-lg p-3 text-center"
-          style={{
-            background: 'hsl(220 15% 97%)',
-            borderColor: 'hsl(220 15% 90%)',
-          }}
-        >
-          <p className="text-sm text-slate-600">
-            {getStatusExplanation()}
-          </p>
         </div>
       )}
     </div>

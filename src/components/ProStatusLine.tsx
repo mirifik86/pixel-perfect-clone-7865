@@ -1,17 +1,21 @@
 import { Sparkles, AlertTriangle, CheckCircle2, Search, AlertCircle, XCircle } from 'lucide-react';
 
-interface SourcesBuckets {
-  corroborate?: unknown[];
-  contradict?: unknown[];
-  neutral?: unknown[];
-}
+/**
+ * IA11 is the SINGLE SOURCE OF TRUTH.
+ * Lovable is a pure renderer - no inference, no fallback logic.
+ * Status is derived ONLY from explicit IA11 keyPoints values.
+ */
 
-type ProStatus = 'confirmed' | 'contradicted' | 'uncertain' | 'limited';
+interface KeyPoints {
+  confirmed: number;
+  uncertain: number;
+  contradicted: number;
+}
 
 interface ProStatusLineProps {
   hasCorrections: boolean;
   hasVerifiedFacts: boolean;
-  sourcesBuckets?: SourcesBuckets;
+  keyPoints?: KeyPoints;
   language: 'en' | 'fr';
 }
 
@@ -37,37 +41,45 @@ const translations = {
 };
 
 /**
- * Compute the official PRO status based on source buckets
- * Rules:
- * - CONFIRMÉ: at least one corroborating source (no contradicting)
- * - CONTREDIT: at least one contradicting source (no corroborating)
- * - INCERTAIN: both corroborating AND contradicting sources exist
- * - ÉVALUATION LIMITÉE: no strong sources found
+ * Derive display status ONLY from explicit IA11 keyPoints.
+ * NO inference from sourcesBuckets or missing data.
  */
-const computeProStatus = (sourcesBuckets?: SourcesBuckets): ProStatus => {
-  if (!sourcesBuckets) return 'limited';
+type DisplayStatus = 'confirmed' | 'contradicted' | 'uncertain' | 'limited' | 'default';
+
+const deriveStatusFromKeyPoints = (keyPoints?: KeyPoints): DisplayStatus => {
+  if (!keyPoints) return 'default';
   
-  const hasCorroborate = (sourcesBuckets.corroborate?.length ?? 0) > 0;
-  const hasContradict = (sourcesBuckets.contradict?.length ?? 0) > 0;
+  const { confirmed, uncertain, contradicted } = keyPoints;
   
-  // If both exist -> uncertain (conflicting sources)
-  if (hasCorroborate && hasContradict) return 'uncertain';
+  // All zeros = limited verification
+  if (confirmed === 0 && uncertain === 0 && contradicted === 0) {
+    return 'limited';
+  }
   
-  // Only corroborating -> confirmed
-  if (hasCorroborate) return 'confirmed';
+  // IA11 explicitly says uncertain > 0
+  if (uncertain > 0) {
+    return 'uncertain';
+  }
   
-  // Only contradicting -> contradicted
-  if (hasContradict) return 'contradicted';
+  // IA11 explicitly says contradicted > 0 (and no uncertainty)
+  if (contradicted > 0 && confirmed === 0) {
+    return 'contradicted';
+  }
   
-  // No strong sources -> limited
-  return 'limited';
+  // IA11 explicitly says confirmed > 0 (and no contradiction)
+  if (confirmed > 0 && contradicted === 0) {
+    return 'confirmed';
+  }
+  
+  // Both confirmed and contradicted exist but no uncertain flag = default
+  return 'default';
 };
 
-export const ProStatusLine = ({ hasCorrections, hasVerifiedFacts, sourcesBuckets, language }: ProStatusLineProps) => {
+export const ProStatusLine = ({ hasCorrections, hasVerifiedFacts, keyPoints, language }: ProStatusLineProps) => {
   const t = translations[language];
   
-  // Compute status from source buckets
-  const proStatus = computeProStatus(sourcesBuckets);
+  // Derive status ONLY from explicit IA11 keyPoints
+  const displayStatus = deriveStatusFromKeyPoints(keyPoints);
   
   let message: string;
   let Icon: typeof Sparkles;
@@ -85,9 +97,9 @@ export const ProStatusLine = ({ hasCorrections, hasVerifiedFacts, sourcesBuckets
     borderColor = 'hsl(35 50% 85%)';
     textColor = 'hsl(35 60% 35%)';
   } 
-  // Priority 2: Show status-based message from source analysis
+  // Priority 2: Show status-based message from IA11 keyPoints
   else {
-    switch (proStatus) {
+    switch (displayStatus) {
       case 'confirmed':
         message = hasVerifiedFacts ? t.withVerifiedFacts : t.statusConfirmed;
         Icon = CheckCircle2;
@@ -116,13 +128,21 @@ export const ProStatusLine = ({ hasCorrections, hasVerifiedFacts, sourcesBuckets
         break;
         
       case 'limited':
-      default:
         message = t.statusLimited;
         Icon = Search;
         iconColor = 'hsl(220 15% 50%)';
         bgColor = 'hsl(220 15% 97%)';
         borderColor = 'hsl(220 15% 88%)';
         textColor = 'hsl(220 15% 45%)';
+        break;
+        
+      default:
+        message = t.default;
+        Icon = Sparkles;
+        iconColor = 'hsl(200 60% 50%)';
+        bgColor = 'hsl(200 40% 97%)';
+        borderColor = 'hsl(200 40% 88%)';
+        textColor = 'hsl(200 50% 35%)';
         break;
     }
   }
