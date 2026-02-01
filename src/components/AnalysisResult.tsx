@@ -10,6 +10,11 @@ import { LinguisticDisclaimer } from './LinguisticDisclaimer';
 import { ProHighlights } from './ProHighlights';
 import { IA11VerificationFooter } from './IA11VerificationFooter';
 import { VerificationCoverage } from './VerificationCoverage';
+import { ProVerifiedFacts } from './ProVerifiedFacts';
+import { ProCorrections } from './ProCorrections';
+import { ProWebEvidence } from './ProWebEvidence';
+import { ProKeyPoints } from './ProKeyPoints';
+import { ProStatusLine } from './ProStatusLine';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
   sources?: { points: number; reason: string };
@@ -105,6 +110,40 @@ interface ResultWrapper {
   reasons?: string[];
   bestLinks?: NewProSource[];
   sources?: NewProSource[];
+  // New IA11 PRO fields
+  verifiedFacts?: string[];
+  corrections?: string[];
+  sourcesBuckets?: {
+    corroborate?: Array<{
+      title?: string;
+      url: string;
+      domain?: string;
+      credibility?: number;
+      stance?: string;
+      snippet?: string;
+    }>;
+    contradict?: Array<{
+      title?: string;
+      url: string;
+      domain?: string;
+      credibility?: number;
+      stance?: string;
+      snippet?: string;
+    }>;
+    neutral?: Array<{
+      title?: string;
+      url: string;
+      domain?: string;
+      credibility?: number;
+      stance?: string;
+      snippet?: string;
+    }>;
+  };
+  keyPoints?: {
+    confirmed: number;
+    uncertain: number;
+    contradicted: number;
+  };
 }
 
 // Normalized evidence source for rendering
@@ -805,6 +844,15 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
+      {/* PRO: Status line under the badge */}
+      {isPro && (
+        <ProStatusLine 
+          hasCorrections={(data.result?.corrections?.length ?? 0) > 0}
+          hasVerifiedFacts={(data.result?.verifiedFacts?.length ?? 0) > 0}
+          language={language}
+        />
+      )}
+
       {/* STANDARD: Badge near the score gauge */}
       {!isPro && (
         <div className="mb-6 flex justify-center">
@@ -884,6 +932,39 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
             {summaryText}
           </p>
         </div>
+      )}
+
+      {/* PRO WOW: Verified Facts Section */}
+      {isPro && (
+        <ProVerifiedFacts 
+          facts={data.result?.verifiedFacts || []}
+          language={language}
+        />
+      )}
+
+      {/* PRO WOW: Corrections Section */}
+      {isPro && (
+        <ProCorrections 
+          corrections={data.result?.corrections || []}
+          language={language}
+        />
+      )}
+
+      {/* PRO WOW: Web Evidence Buckets Section */}
+      {isPro && data.result?.sourcesBuckets && (
+        <ProWebEvidence 
+          sourcesBuckets={data.result.sourcesBuckets}
+          language={language}
+        />
+      )}
+
+      {/* PRO WOW: Key Points Counters Section */}
+      {isPro && (
+        <ProKeyPoints 
+          keyPoints={data.result?.keyPoints}
+          sourcesBuckets={data.result?.sourcesBuckets}
+          language={language}
+        />
       )}
 
       {/* IA11 Key Reasons Section - displays reasons from IA11 API */}
