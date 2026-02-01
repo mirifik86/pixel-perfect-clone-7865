@@ -844,3 +844,20 @@
     box-shadow: 0 0 10px hsl(174 60% 55% / 0.5), 0 0 20px hsl(174 55% 50% / 0.25);
   }
 }
+
+/* ============================================
+   PRO WOW ANIMATIONS
+   Special effects for PRO results "wow" moments
+   ============================================ */
+
+/* PRO Corrections WOW pulse - subtle amber glow */
+@keyframes pro-wow-pulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.01);
+  }
+}
