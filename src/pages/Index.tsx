@@ -633,11 +633,7 @@ const Index = () => {
     }
   };
 
-  // QA Compare flag - dev only, logs raw IA11 response to console
-  // Set to true temporarily for QA review, then disable
-  const IA11_QA_COMPARE = false;
-
-  // PRO Analysis - EXCLUSIVELY uses IA11 engine
+  // PRO Analysis - uses the same content with analysisType: 'pro'
   // Uses unified isLoading state with loaderMode to show PRO loader in gauge center
   const handleProAnalysis = useCallback(async () => {
     if (!lastAnalyzedContent) return;
@@ -649,66 +645,20 @@ const Index = () => {
     setSummariesByLanguage({ en: null, fr: null });
     setIsLoading(true);
     setIsProLoading(true); // Track PRO mode for loader styling
-    setAnalysisError(null);
 
     try {
-      // Call IA11 edge function exclusively for PRO analysis
-      const result = await supabase.functions.invoke('analyze-ia11', {
-        body: {
-          userText: lastAnalyzedContent,
-          uiLanguage: resolvedLanguage,
-          qaCompare: IA11_QA_COMPARE,
-        },
-      });
+      const { en, fr } = await runBilingualTextAnalysis({ content: lastAnalyzedContent, analysisType: 'pro' });
 
-      if (result.error) {
-        throw new Error(result.error.message || errorAnalysis);
-      }
-
-      if (result.data?.error) {
-        // Check if it's a retry-needed error
-        if (result.data.needsRetry) {
-          const retryMessage = resolvedLanguage === 'fr' 
-            ? "L'analyse nécessite une nouvelle tentative pour une qualité maximale."
-            : "Analysis needs a retry for maximum quality.";
-          setAnalysisError({ message: retryMessage, code: result.data.code || 'QUALITY_ERROR' });
-          return;
-        }
-        throw new Error(result.data.error);
-      }
-
-      // Normalize IA11 response to existing UI format
-      const ia11Data = normalizeAnalysisData(result.data);
-      
-      // IA11 returns content in the requested uiLanguage, so we store it for the current language
-      // and use the same data for both languages (IA11 handles translation internally)
       setSummariesByLanguage({
-        en: { summary: ia11Data.summary || '', articleSummary: ia11Data.articleSummary || '' },
-        fr: { summary: ia11Data.summary || '', articleSummary: ia11Data.articleSummary || '' },
+        en: { summary: en.summary || '', articleSummary: en.articleSummary || '' },
+        fr: { summary: fr.summary || '', articleSummary: fr.articleSummary || '' },
       });
 
-      // Store IA11 response for both language slots (IA11 returns localized content)
-      setAnalysisByLanguage({ 
-        en: resolvedLanguage === 'en' ? ia11Data : ia11Data,
-        fr: resolvedLanguage === 'fr' ? ia11Data : ia11Data,
-      });
-      
+      setAnalysisByLanguage({ en, fr });
       setIsProModalOpen(false);
       toast.success(i18nT('pro.analysisComplete'));
-      
-      // Log meta info for debugging
-      if (result.data?.meta) {
-        console.log('[IA11] Analysis complete:', {
-          engine: result.data.meta.engine,
-          requestId: result.data.meta.requestId,
-          tookMs: result.data.meta.tookMs,
-        });
-      }
     } catch (err) {
-      console.error('PRO Analysis error:', err);
-      const errorMessage = err instanceof Error ? err.message : errorAnalysis;
-      const errorCode = `PRO_${Date.now().toString(36).toUpperCase()}`;
-      setAnalysisError({ message: errorMessage, code: errorCode });
+      console.error('Unexpected error:', err);
       toast.error(errorAnalysis);
     } finally {
       // Trigger exit animation before hiding loader
@@ -719,7 +669,7 @@ const Index = () => {
         setIsLoaderExiting(false);
       }, 500);
     }
-  }, [lastAnalyzedContent, resolvedLanguage, i18nT, IA11_QA_COMPARE]);
+  }, [lastAnalyzedContent, i18nT, runBilingualTextAnalysis]);
 
   // INSTANT language switch - uses global i18n system
   const handleLanguageChange = (mode: LanguageMode) => {
