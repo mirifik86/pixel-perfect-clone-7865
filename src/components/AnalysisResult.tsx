@@ -8,6 +8,7 @@ import { CommunicationSignals } from './CommunicationSignals';
 import { UpgradeBridge } from './UpgradeBridge';
 import { LinguisticDisclaimer } from './LinguisticDisclaimer';
 import { ProHighlights } from './ProHighlights';
+import { IA11VerificationFooter } from './IA11VerificationFooter';
 import { VerificationCoverage } from './VerificationCoverage';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
@@ -87,12 +88,21 @@ interface NewProSource {
   whyItMatters: string;
 }
 
-// Result wrapper from new format
+// IA11 meta information for verification
+interface IA11Meta {
+  engine?: string;
+  requestId?: string;
+  tookMs?: number;
+  version?: string;
+}
+
+// Result wrapper from new format (IA11 response structure)
 interface ResultWrapper {
   score?: number;
   riskLevel?: 'low' | 'medium' | 'high';
   summary?: string;
   confidence?: number;
+  reasons?: string[];
   bestLinks?: NewProSource[];
   sources?: NewProSource[];
 }
@@ -117,8 +127,12 @@ interface AnalysisData {
   imageSignals?: ImageSignals;
   corroboration?: Corroboration;
   proDisclaimer?: string;
-  // New format: result wrapper
+  // New format: result wrapper (IA11 response)
   result?: ResultWrapper;
+  // IA11 reasons array (3-6 bullet points)
+  reasons?: string[];
+  // IA11 meta for verification footer
+  meta?: IA11Meta;
 }
 
 interface AnalysisResultProps {
@@ -872,6 +886,41 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
+      {/* IA11 Key Reasons Section - displays reasons from IA11 API */}
+      {(() => {
+        // Get reasons from IA11 response (data.reasons or data.result.reasons)
+        const reasons = data.reasons || data.result?.reasons || [];
+        if (reasons.length === 0) return null;
+
+        const reasonsLabel = language === 'fr' ? 'Raisons clés' : 'Key Reasons';
+        
+        return (
+          <div 
+            className="analysis-card mb-6"
+            style={{
+              background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 15% 98%) 100%)',
+              border: '1px solid hsl(220 20% 88%)',
+              boxShadow: '0 4px 20px hsl(220 30% 50% / 0.06)',
+            }}
+          >
+            <h3 className="font-serif text-lg font-semibold text-slate-900 mb-4">
+              {reasonsLabel}
+            </h3>
+            <ul className="space-y-2">
+              {reasons.map((reason, idx) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <span 
+                    className="flex-shrink-0 mt-1 h-2 w-2 rounded-full"
+                    style={{ background: 'hsl(200 60% 50%)' }}
+                  />
+                  <span className="text-sm text-slate-700 leading-relaxed">{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })()}
+
       {/* PRO: PRO Highlights Section */}
       {isPro && (
         <ProHighlights language={language} sources={allProSources} />
@@ -1359,6 +1408,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
           </div>
         );
       })()}
+
+      {/* IA11 Verification Footer - proof of real API call */}
+      <IA11VerificationFooter meta={data.meta} language={language} />
     </div>
   );
 };
