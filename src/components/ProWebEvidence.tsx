@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Globe, CheckCircle, XCircle, HelpCircle, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { Globe, CheckCircle, XCircle, HelpCircle, ExternalLink, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 
 interface SourceItem {
   title?: string;
@@ -31,6 +31,8 @@ const translations = {
     showLess: 'Show less',
     noSources: 'No sources in this category',
     credibility: 'Credibility',
+    noEvidenceTitle: 'Limited Web Evidence',
+    noEvidenceMessage: 'No reliable web evidence could be identified for this analysis.',
   },
   fr: {
     title: 'Preuves web',
@@ -41,6 +43,8 @@ const translations = {
     showLess: 'Voir moins',
     noSources: 'Aucune source dans cette catégorie',
     credibility: 'Crédibilité',
+    noEvidenceTitle: 'Preuves web limitées',
+    noEvidenceMessage: 'Aucune preuve web fiable n\'a pu être identifiée pour cette analyse.',
   },
 };
 
@@ -179,7 +183,7 @@ export const ProWebEvidence = ({ sourcesBuckets, language }: ProWebEvidenceProps
   const contradict = sourcesBuckets.contradict || [];
   const neutral = sourcesBuckets.neutral || [];
   
-  // If all buckets are empty, show a minimal empty state
+  // Check if all buckets are empty
   const hasAnySources = corroborate.length > 0 || contradict.length > 0 || neutral.length > 0;
 
   return (
@@ -237,12 +241,30 @@ export const ProWebEvidence = ({ sourcesBuckets, language }: ProWebEvidenceProps
           />
         </div>
       ) : (
-        <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
-          <p className="text-sm text-slate-500 text-center">
-            {language === 'fr' 
-              ? 'Aucune source catégorisée disponible pour cette analyse.'
-              : 'No categorized sources available for this analysis.'}
-          </p>
+        /* ÉVALUATION LIMITÉE - No sources available */
+        <div 
+          className="rounded-xl border p-5 flex items-center gap-4"
+          style={{
+            background: 'hsl(220 15% 97%)',
+            borderColor: 'hsl(220 15% 88%)',
+          }}
+        >
+          <div 
+            className="flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0"
+            style={{
+              background: 'hsl(220 15% 85%)',
+            }}
+          >
+            <AlertCircle className="h-5 w-5" style={{ color: 'hsl(220 15% 50%)' }} strokeWidth={2.5} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-700 mb-1">
+              {t.noEvidenceTitle}
+            </p>
+            <p className="text-xs text-slate-500">
+              {t.noEvidenceMessage}
+            </p>
+          </div>
         </div>
       )}
     </div>
