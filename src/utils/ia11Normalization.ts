@@ -33,6 +33,11 @@ export interface IA11KeyPoints {
   contradicted: number;
 }
 
+export interface IA11WebInfo {
+  used?: boolean;
+  error?: string | null;
+}
+
 export interface IA11ResultWrapper {
   score?: number;
   riskLevel?: 'low' | 'medium' | 'high';
@@ -44,7 +49,8 @@ export interface IA11ResultWrapper {
   sourcesBuckets?: IA11SourcesBuckets;
   keyPoints?: IA11KeyPoints;
   bestLinks?: unknown[];
-  sources?: unknown[];
+  sources?: IA11SourceItem[];
+  web?: IA11WebInfo;
 }
 
 export interface IA11Meta {
@@ -68,6 +74,8 @@ export interface IA11RawResponse {
 
 export type ProDisplayStatus = 'confirmed' | 'contradicted' | 'uncertain' | 'limited';
 
+export type WebEvidenceState = 'buckets' | 'neutral' | 'unavailable';
+
 export interface NormalizedIA11Data {
   // Raw data preserved for debug
   raw: IA11RawResponse;
@@ -77,8 +85,13 @@ export interface NormalizedIA11Data {
     corroborate: IA11SourceItem[];
     contradict: IA11SourceItem[];
     neutral: IA11SourceItem[];
+    /** Fallback sources when buckets are empty */
+    fallback: IA11SourceItem[];
     total: number;
   };
+  
+  // Web evidence display state
+  webEvidenceState: WebEvidenceState;
   
   // Normalized counters (after consistency guard)
   counters: {
@@ -120,8 +133,12 @@ const FR_TRANSLATIONS = {
   },
   // Web proof card
   webProof: {
-    available: {
+    buckets: {
       title: 'Preuves web',
+      text: '',
+    },
+    neutral: {
+      title: 'Preuves web trouvées (neutres)',
       text: '',
     },
     unavailable: {
@@ -144,8 +161,12 @@ const EN_TRANSLATIONS = {
   },
   // Web proof card
   webProof: {
-    available: {
+    buckets: {
       title: 'Web Evidence',
+      text: '',
+    },
+    neutral: {
+      title: 'Web evidence found (neutral)',
       text: '',
     },
     unavailable: {
@@ -163,13 +184,46 @@ function getTranslations(language: 'en' | 'fr') {
 }
 
 /**
+ * Determine web evidence display state based on available data
+ */
+function determineWebEvidenceState(
+  buckets: IA11SourcesBuckets,
+  fallbackSources: IA11SourceItem[],
+  webInfo?: IA11WebInfo
+): WebEvidenceState {
+  const hasCorroborate = (buckets.corroborate?.length ?? 0) > 0;
+  const hasContradict = (buckets.contradict?.length ?? 0) > 0;
+  const hasFallbackSources = fallbackSources.length > 0;
+  
+  // If corroborate or contradict buckets have items, show buckets view
+  if (hasCorroborate || hasContradict) {
+    return 'buckets';
+  }
+  
+  // If buckets are empty but fallback sources exist, show neutral view
+  if (hasFallbackSources) {
+    return 'neutral';
+  }
+  
+  // Only show unavailable when sources are empty AND (web.used is false OR web.error exists)
+  const webNotUsedOrError = webInfo?.used === false || webInfo?.error != null;
+  if (fallbackSources.length === 0 && webNotUsedOrError) {
+    return 'unavailable';
+  }
+  
+  // Default to unavailable if no sources at all
+  return 'unavailable';
+}
+
+/**
  * Count total sources across all buckets
  */
-function countTotalSources(buckets: IA11SourcesBuckets): number {
+function countTotalSources(buckets: IA11SourcesBuckets, fallbackSources: IA11SourceItem[]): number {
   const corroborate = buckets.corroborate?.length ?? 0;
   const contradict = buckets.contradict?.length ?? 0;
   const neutral = buckets.neutral?.length ?? 0;
-  return corroborate + contradict + neutral;
+  const fallback = fallbackSources.length;
+  return corroborate + contradict + neutral + fallback;
 }
 
 /**
@@ -240,11 +294,22 @@ export function normalizeIA11Response(
     neutral: [],
   };
   
+  // Extract fallback sources (result.sources array)
+  const fallbackSources: IA11SourceItem[] = raw.result?.sources ?? [];
+  
+  // Determine web evidence display state
+  const webEvidenceState = determineWebEvidenceState(
+    sourcesBuckets,
+    fallbackSources,
+    raw.result?.web
+  );
+  
   const sources = {
     corroborate: sourcesBuckets.corroborate ?? [],
     contradict: sourcesBuckets.contradict ?? [],
     neutral: sourcesBuckets.neutral ?? [],
-    total: countTotalSources(sourcesBuckets),
+    fallback: fallbackSources,
+    total: countTotalSources(sourcesBuckets, fallbackSources),
   };
   
   // Extract raw counters from IA11
@@ -267,10 +332,8 @@ export function normalizeIA11Response(
   // Get badge text based on status
   const badgeText = t.badge[status];
   
-  // Get web proof card text based on sources availability
-  const webProofCard = sources.total > 0
-    ? t.webProof.available
-    : t.webProof.unavailable;
+  // Get web proof card text based on web evidence state
+  const webProofCard = t.webProof[webEvidenceState];
   
   // Extract other fields
   const verifiedFacts = raw.result?.verifiedFacts ?? [];
@@ -282,6 +345,7 @@ export function normalizeIA11Response(
   return {
     raw,
     sources,
+    webEvidenceState,
     counters,
     status,
     badgeText,
