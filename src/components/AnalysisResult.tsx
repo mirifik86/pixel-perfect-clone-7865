@@ -7,7 +7,7 @@ import { StandardAnalysisIntro } from './StandardAnalysisIntro';
 import { CommunicationSignals } from './CommunicationSignals';
 import { UpgradeBridge } from './UpgradeBridge';
 import { LinguisticDisclaimer } from './LinguisticDisclaimer';
-import { ProHighlights } from './ProHighlights';
+// ProHighlights removed - was a legacy component bypassing normalization layer
 import { IA11VerificationFooter } from './IA11VerificationFooter';
 import { VerificationCoverage } from './VerificationCoverage';
 import { ProVerifiedFacts } from './ProVerifiedFacts';
@@ -1028,10 +1028,9 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         );
       })()}
 
-      {/* PRO: PRO Highlights Section */}
-      {isPro && (
-        <ProHighlights language={language} sources={allProSources} />
-      )}
+      {/* REMOVED: ProHighlights was a legacy component that derived counters locally
+          from sources prop, bypassing the normalization layer.
+          ProKeyPoints (rendered above) is the canonical counter display using normalized data. */}
 
       {/* PRO: Verification Coverage Section */}
       {isPro && (
