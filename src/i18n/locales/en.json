@@ -311,23 +311,5 @@
       { "label": "Verifying credibility" },
       { "label": "Cross-referencing data" }
     ]
-  },
-  "proWow": {
-    "verifiedFacts": "Verified Facts",
-    "corrections": "Corrections",
-    "webEvidence": "Web Evidence",
-    "confirmed": "Confirmed",
-    "contradicted": "Contradicted",
-    "neutral": "Neutral",
-    "showMore": "Show more",
-    "showLess": "Show less",
-    "proKeyPoints": "PRO Key Points",
-    "uncertain": "Uncertain",
-    "analysisUnavailable": "Analysis unavailable",
-    "noSources": "No sources in this category",
-    "credibility": "Credibility",
-    "statusWithCorrections": "Contradictions detected + factual corrections",
-    "statusWithVerifiedFacts": "Facts verified by IA11",
-    "statusDefault": "PRO analysis with web evidence"
   }
 }

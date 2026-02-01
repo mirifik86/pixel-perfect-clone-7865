@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/i18n/useLanguage';
@@ -10,17 +9,16 @@ interface AnalysisErrorProps {
   onNewAnalysis: () => void;
 }
 
-export const AnalysisError = forwardRef<HTMLDivElement, AnalysisErrorProps>(({
+export const AnalysisError = ({
   errorMessage,
   errorCode,
   onRetry,
   onNewAnalysis,
-}, ref) => {
+}: AnalysisErrorProps) => {
   const { t } = useLanguage();
 
   return (
     <div 
-      ref={ref}
       className="container-content mx-auto animate-fade-in"
       style={{ marginTop: 'var(--space-6)' }}
     >
@@ -89,6 +87,4 @@ export const AnalysisError = forwardRef<HTMLDivElement, AnalysisErrorProps>(({
       </div>
     </div>
   );
-});
-
-AnalysisError.displayName = 'AnalysisError';
+};

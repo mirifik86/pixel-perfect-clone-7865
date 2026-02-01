@@ -143,7 +143,7 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     };
   };
 
-  // New PRO format: { status: "ok", result: { score, riskLevel, summary, confidence, reasons, bestLinks, sources }, meta: {...} }
+  // New PRO format: { status: "ok", result: { score, riskLevel, summary, confidence, bestLinks, sources } }
   if (raw.result && typeof raw.result === 'object') {
     const result = raw.result;
     const confidenceTier = confidenceToTier(result.confidence);
@@ -164,18 +164,6 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     // Attach raw.result for downstream components (bestLinks, sources, etc.)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (normalized as any).result = result;
-    
-    // Pass through IA11 meta for verification footer
-    if (raw.meta) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (normalized as any).meta = raw.meta;
-    }
-    
-    // Pass through IA11 reasons array
-    if (result.reasons && Array.isArray(result.reasons)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (normalized as any).reasons = result.reasons;
-    }
 
     return normalized;
   }
@@ -184,7 +172,7 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
   // Handle numeric confidence -> tier conversion
   const confidenceTier = confidenceToTier(raw.confidence);
   
-  const normalized = {
+  return {
     score: Number(raw.score ?? 0),
     analysisType: raw.analysisType,
     breakdown: buildBreakdown(raw.breakdown),
@@ -196,20 +184,6 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...(raw.result ? { result: raw.result } as any : {}),
   };
-  
-  // Pass through IA11 meta for verification footer
-  if (raw.meta) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (normalized as any).meta = raw.meta;
-  }
-  
-  // Pass through IA11 reasons array (top-level or in result)
-  if (raw.reasons && Array.isArray(raw.reasons)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (normalized as any).reasons = raw.reasons;
-  }
-  
-  return normalized;
 };
 
 // REMOVED: Local translations object - now using i18n system

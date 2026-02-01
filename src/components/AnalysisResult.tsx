@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { CheckCircle, AlertCircle, Image, Sparkles, Info, Shield, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { SignalMiniGauge } from './SignalMiniGauge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -7,16 +7,8 @@ import { StandardAnalysisIntro } from './StandardAnalysisIntro';
 import { CommunicationSignals } from './CommunicationSignals';
 import { UpgradeBridge } from './UpgradeBridge';
 import { LinguisticDisclaimer } from './LinguisticDisclaimer';
-// ProHighlights removed - was a legacy component bypassing normalization layer
-import { IA11VerificationFooter } from './IA11VerificationFooter';
+import { ProHighlights } from './ProHighlights';
 import { VerificationCoverage } from './VerificationCoverage';
-import { ProVerifiedFacts } from './ProVerifiedFacts';
-import { ProCorrections } from './ProCorrections';
-import { ProWebEvidence } from './ProWebEvidence';
-import { ProKeyPoints } from './ProKeyPoints';
-import { ProStatusLine } from './ProStatusLine';
-import { ProDebugViewer } from './ProDebugViewer';
-import { normalizeIA11Response, type IA11RawResponse } from '@/utils/ia11Normalization';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
   sources?: { points: number; reason: string };
@@ -95,57 +87,14 @@ interface NewProSource {
   whyItMatters: string;
 }
 
-// IA11 meta information for verification
-interface IA11Meta {
-  engine?: string;
-  requestId?: string;
-  tookMs?: number;
-  version?: string;
-}
-
-// Result wrapper from new format (IA11 response structure)
+// Result wrapper from new format
 interface ResultWrapper {
   score?: number;
   riskLevel?: 'low' | 'medium' | 'high';
   summary?: string;
   confidence?: number;
-  reasons?: string[];
   bestLinks?: NewProSource[];
   sources?: NewProSource[];
-  // New IA11 PRO fields
-  verifiedFacts?: string[];
-  corrections?: string[];
-  sourcesBuckets?: {
-    corroborate?: Array<{
-      title?: string;
-      url: string;
-      domain?: string;
-      credibility?: number;
-      stance?: string;
-      snippet?: string;
-    }>;
-    contradict?: Array<{
-      title?: string;
-      url: string;
-      domain?: string;
-      credibility?: number;
-      stance?: string;
-      snippet?: string;
-    }>;
-    neutral?: Array<{
-      title?: string;
-      url: string;
-      domain?: string;
-      credibility?: number;
-      stance?: string;
-      snippet?: string;
-    }>;
-  };
-  keyPoints?: {
-    confirmed: number;
-    uncertain: number;
-    contradicted: number;
-  };
 }
 
 // Normalized evidence source for rendering
@@ -168,12 +117,8 @@ interface AnalysisData {
   imageSignals?: ImageSignals;
   corroboration?: Corroboration;
   proDisclaimer?: string;
-  // New format: result wrapper (IA11 response)
+  // New format: result wrapper
   result?: ResultWrapper;
-  // IA11 reasons array (3-6 bullet points)
-  reasons?: string[];
-  // IA11 meta for verification footer
-  meta?: IA11Meta;
 }
 
 interface AnalysisResultProps {
@@ -683,22 +628,6 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   // Safe breakdown accessor - PRO responses may not have breakdown
   const breakdown: AnalysisBreakdown = data.breakdown ?? {};
   
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PRO CONSISTENCY GUARD: Normalize IA11 response with single point of truth
-  // ═══════════════════════════════════════════════════════════════════════════
-  const normalizedIA11 = useMemo(() => {
-    if (!isPro) return null;
-    
-    // Build raw response object for normalization
-    const rawResponse: IA11RawResponse = {
-      result: data.result,
-      meta: data.meta,
-      reasons: data.reasons,
-    };
-    
-    return normalizeIA11Response(rawResponse, language);
-  }, [isPro, data.result, data.meta, data.reasons, language]);
-  
   // Normalize evidence sources from both formats
   // bestLinks: max 4 for primary display (excludes generic homepage links)
   const evidenceSources = isPro ? normalizeEvidenceSources(data, language, 4) : [];
@@ -709,8 +638,8 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   const additionalSources = allProSources.filter(s => !evidenceDomains.has(getDomainFromUrl(s.url)));
   const hasAdditionalSources = additionalSources.length > 0;
 
-  // Get summary - prefer normalized summary for PRO, fallback for standard
-  const summaryText = normalizedIA11?.summary || data.result?.summary || articleSummary || data.summary;
+  // Get summary - prefer result.summary for new format
+  const summaryText = data.result?.summary || articleSummary || data.summary;
 
   // Confidence for standard
   const confidenceLabels = {
@@ -862,23 +791,6 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* PRO: Debug Viewer (collapsible) */}
-      {isPro && normalizedIA11 && (
-        <div className="flex justify-center mb-4">
-          <ProDebugViewer normalized={normalizedIA11} language={language} />
-        </div>
-      )}
-
-      {/* PRO: Status line under the badge - uses normalized data */}
-      {isPro && normalizedIA11 && (
-        <ProStatusLine 
-          status={normalizedIA11.status}
-          badgeText={normalizedIA11.badgeText}
-          hasCorrections={normalizedIA11.corrections.length > 0}
-          language={language}
-        />
-      )}
-
       {/* STANDARD: Badge near the score gauge */}
       {!isPro && (
         <div className="mb-6 flex justify-center">
@@ -960,78 +872,10 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* PRO WOW: Verified Facts Section - uses normalized data */}
-      {isPro && normalizedIA11 && (
-        <ProVerifiedFacts 
-          facts={normalizedIA11.verifiedFacts}
-          language={language}
-        />
+      {/* PRO: PRO Highlights Section */}
+      {isPro && (
+        <ProHighlights language={language} sources={allProSources} />
       )}
-
-      {/* PRO WOW: Corrections Section - uses normalized data */}
-      {isPro && normalizedIA11 && (
-        <ProCorrections 
-          corrections={normalizedIA11.corrections}
-          language={language}
-        />
-      )}
-
-      {/* PRO WOW: Web Evidence Buckets Section - uses normalized data */}
-      {isPro && normalizedIA11 && (
-        <ProWebEvidence 
-          sources={normalizedIA11.sources}
-          webProofCard={normalizedIA11.webProofCard}
-          webEvidenceState={normalizedIA11.webEvidenceState}
-          language={language}
-        />
-      )}
-
-      {/* PRO WOW: Key Points Counters Section - uses normalized data */}
-      {isPro && normalizedIA11 && (
-        <ProKeyPoints 
-          counters={normalizedIA11.counters}
-          language={language}
-        />
-      )}
-
-      {/* IA11 Key Reasons Section - displays reasons from IA11 API */}
-      {(() => {
-        // Get reasons from IA11 response (data.reasons or data.result.reasons)
-        const reasons = data.reasons || data.result?.reasons || [];
-        if (reasons.length === 0) return null;
-
-        const reasonsLabel = language === 'fr' ? 'Raisons clés' : 'Key Reasons';
-        
-        return (
-          <div 
-            className="analysis-card mb-6"
-            style={{
-              background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 15% 98%) 100%)',
-              border: '1px solid hsl(220 20% 88%)',
-              boxShadow: '0 4px 20px hsl(220 30% 50% / 0.06)',
-            }}
-          >
-            <h3 className="font-serif text-lg font-semibold text-slate-900 mb-4">
-              {reasonsLabel}
-            </h3>
-            <ul className="space-y-2">
-              {reasons.map((reason, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <span 
-                    className="flex-shrink-0 mt-1 h-2 w-2 rounded-full"
-                    style={{ background: 'hsl(200 60% 50%)' }}
-                  />
-                  <span className="text-sm text-slate-700 leading-relaxed">{reason}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })()}
-
-      {/* REMOVED: ProHighlights was a legacy component that derived counters locally
-          from sources prop, bypassing the normalization layer.
-          ProKeyPoints (rendered above) is the canonical counter display using normalized data. */}
 
       {/* PRO: Verification Coverage Section */}
       {isPro && (
@@ -1515,9 +1359,6 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
           </div>
         );
       })()}
-
-      {/* IA11 Verification Footer - proof of real API call */}
-      <IA11VerificationFooter meta={data.meta} language={language} />
     </div>
   );
 };
