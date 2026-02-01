@@ -232,13 +232,15 @@ serve(async (req) => {
     if (!IA11_BASE_URL || !IA11_API_KEY) {
       console.error("IA11 secrets not configured");
       return new Response(
-        JSON.stringify({ 
-          error: uiLanguage === "fr"
-            ? "Configuration IA11 manquante. Contactez le support."
-            : "IA11 configuration missing. Contact support.",
-          code: "IA11_NOT_CONFIGURED"
+        JSON.stringify({
+          status: "retry",
+          reason: "quality_gate",
+          code: "IA11_NOT_CONFIGURED",
+          message: uiLanguage === "fr"
+            ? "Service PRO temporairement indisponible. Veuillez réessayer."
+            : "PRO service temporarily unavailable. Please try again."
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -267,13 +269,15 @@ serve(async (req) => {
       console.error(`[IA11] API error: ${ia11Response.status}`, errorText);
       
       return new Response(
-        JSON.stringify({ 
-          error: uiLanguage === "fr"
-            ? "L'analyse n'a pas pu être complétée. Veuillez réessayer."
-            : "Analysis could not be completed. Please try again.",
-          code: `IA11_HTTP_${ia11Response.status}`
+        JSON.stringify({
+          status: "retry",
+          reason: "quality_gate",
+          code: `IA11_HTTP_${ia11Response.status}`,
+          message: uiLanguage === "fr"
+            ? "Analyse en cours de raffinement pour garantir une qualité PRO."
+            : "Analysis is being refined to ensure PRO quality."
         }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
