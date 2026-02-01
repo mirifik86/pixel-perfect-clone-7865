@@ -214,12 +214,14 @@ serve(async (req) => {
     
     if (!userText || userText.trim().length < 10) {
       return new Response(
-        JSON.stringify({ 
-          error: uiLanguage === "fr" 
-            ? "Le texte est trop court pour une analyse."
-            : "Text is too short for analysis." 
+        JSON.stringify({
+          status: "retry",
+          reason: "quality_gate",
+          message: uiLanguage === "fr"
+            ? "Le texte est trop court pour une analyse PRO fiable."
+            : "The text is too short for a reliable PRO analysis."
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -294,13 +296,14 @@ serve(async (req) => {
       
       return new Response(
         JSON.stringify({
-          error: uiLanguage === "fr"
-            ? "L'analyse nécessite une nouvelle tentative pour une qualité maximale."
-            : "Analysis needs a retry for maximum quality.",
+          status: "retry",
+          reason: "quality_gate",
           code: `QUALITY_${qualityCheck.reason?.toUpperCase()}`,
-          needsRetry: true,
+          message: uiLanguage === "fr"
+            ? "L'analyse nécessite une nouvelle tentative pour une qualité maximale."
+            : "Analysis needs a retry for maximum quality."
         }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
