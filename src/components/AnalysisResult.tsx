@@ -955,6 +955,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
       {isPro && data.result?.sourcesBuckets && (
         <ProWebEvidence 
           sourcesBuckets={data.result.sourcesBuckets}
+          keyPoints={data.result?.keyPoints}
           language={language}
         />
       )}

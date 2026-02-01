@@ -41,38 +41,22 @@ const translations = {
 };
 
 /**
- * Derive display status ONLY from explicit IA11 keyPoints.
- * NO inference from sourcesBuckets or missing data.
+ * Derive badge text ONLY from IA11 counters.
+ * HARD RULES:
+ * - Missing keyPoints => treat as 0/0/0
+ * - Priority: contradicted > confirmed > uncertain > limited
  */
-type DisplayStatus = 'confirmed' | 'contradicted' | 'uncertain' | 'limited' | 'default';
+type DisplayStatus = 'confirmed' | 'contradicted' | 'uncertain' | 'limited';
 
 const deriveStatusFromKeyPoints = (keyPoints?: KeyPoints): DisplayStatus => {
-  if (!keyPoints) return 'default';
-  
-  const { confirmed, uncertain, contradicted } = keyPoints;
-  
-  // All zeros = limited verification
-  if (confirmed === 0 && uncertain === 0 && contradicted === 0) {
-    return 'limited';
-  }
-  
-  // IA11 explicitly says uncertain > 0
-  if (uncertain > 0) {
-    return 'uncertain';
-  }
-  
-  // IA11 explicitly says contradicted > 0 (and no uncertainty)
-  if (contradicted > 0 && confirmed === 0) {
-    return 'contradicted';
-  }
-  
-  // IA11 explicitly says confirmed > 0 (and no contradiction)
-  if (confirmed > 0 && contradicted === 0) {
-    return 'confirmed';
-  }
-  
-  // Both confirmed and contradicted exist but no uncertain flag = default
-  return 'default';
+  const confirmed = keyPoints?.confirmed ?? 0;
+  const uncertain = keyPoints?.uncertain ?? 0;
+  const contradicted = keyPoints?.contradicted ?? 0;
+
+  if (contradicted > 0) return 'contradicted';
+  if (confirmed > 0) return 'confirmed';
+  if (uncertain > 0) return 'uncertain';
+  return 'limited';
 };
 
 export const ProStatusLine = ({ hasCorrections, hasVerifiedFacts, keyPoints, language }: ProStatusLineProps) => {
@@ -128,21 +112,13 @@ export const ProStatusLine = ({ hasCorrections, hasVerifiedFacts, keyPoints, lan
         break;
         
       case 'limited':
+      default:
         message = t.statusLimited;
         Icon = Search;
         iconColor = 'hsl(220 15% 50%)';
         bgColor = 'hsl(220 15% 97%)';
         borderColor = 'hsl(220 15% 88%)';
         textColor = 'hsl(220 15% 45%)';
-        break;
-        
-      default:
-        message = t.default;
-        Icon = Sparkles;
-        iconColor = 'hsl(200 60% 50%)';
-        bgColor = 'hsl(200 40% 97%)';
-        borderColor = 'hsl(200 40% 88%)';
-        textColor = 'hsl(200 50% 35%)';
         break;
     }
   }
