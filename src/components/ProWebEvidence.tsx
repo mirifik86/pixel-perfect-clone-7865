@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { Globe, CheckCircle, XCircle, HelpCircle, ExternalLink, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 
+/**
+ * IA11 is the SINGLE SOURCE OF TRUTH.
+ * This component receives pre-normalized data from the normalization layer.
+ */
+
 interface SourceItem {
   title?: string;
   url: string;
@@ -11,20 +16,22 @@ interface SourceItem {
 }
 
 interface SourcesBuckets {
-  corroborate?: SourceItem[];
-  contradict?: SourceItem[];
-  neutral?: SourceItem[];
+  corroborate: SourceItem[];
+  contradict: SourceItem[];
+  neutral: SourceItem[];
+  total: number;
 }
 
-interface KeyPoints {
-  confirmed: number;
-  uncertain: number;
-  contradicted: number;
+interface WebProofCard {
+  title: string;
+  text: string;
 }
 
 interface ProWebEvidenceProps {
-  sourcesBuckets?: SourcesBuckets;
-  keyPoints?: KeyPoints;
+  /** Pre-normalized source buckets from the normalization layer */
+  sources: SourcesBuckets;
+  /** Pre-computed web proof card text from the normalization layer */
+  webProofCard: WebProofCard;
   language: 'en' | 'fr';
 }
 
@@ -38,10 +45,6 @@ const translations = {
     showLess: 'Show less',
     noSources: 'No sources in this category',
     credibility: 'Credibility',
-    noEvidenceTitle: 'Limited Web Evidence',
-    noEvidenceMessage: 'No reliable web evidence could be identified for this analysis.',
-    unavailableTitle: 'Web Evidence Unavailable',
-    unavailableMessage: 'Web evidence was not provided for this analysis.',
   },
   fr: {
     title: 'Preuves web',
@@ -52,10 +55,6 @@ const translations = {
     showLess: 'Voir moins',
     noSources: 'Aucune source dans cette catégorie',
     credibility: 'Crédibilité',
-    noEvidenceTitle: 'Preuves web limitées',
-    noEvidenceMessage: 'Aucune preuve web fiable n\'a pu être identifiée pour cette analyse.',
-    unavailableTitle: 'Preuves web indisponibles',
-    unavailableMessage: 'Les preuves web n\'ont pas été fournies pour cette analyse.',
   },
 };
 
@@ -185,23 +184,13 @@ const BucketSection = ({
   );
 };
 
-export const ProWebEvidence = ({ sourcesBuckets, keyPoints, language }: ProWebEvidenceProps) => {
+export const ProWebEvidence = ({ sources, webProofCard, language }: ProWebEvidenceProps) => {
   const t = translations[language];
   
-  if (!sourcesBuckets) return null;
+  const { corroborate, contradict, neutral, total } = sources;
   
-  const corroborate = sourcesBuckets.corroborate || [];
-  const contradict = sourcesBuckets.contradict || [];
-  const neutral = sourcesBuckets.neutral || [];
-  
-  // Check if all buckets are empty
-  const hasAnySources = corroborate.length > 0 || contradict.length > 0 || neutral.length > 0;
-
-  // STRICT IA11 BINDING: decide which empty-state to show only from IA11 counters
-  const confirmedCount = keyPoints?.confirmed ?? 0;
-  const uncertainCount = keyPoints?.uncertain ?? 0;
-  const contradictedCount = keyPoints?.contradicted ?? 0;
-  const isLimitedFromIA11 = confirmedCount === 0 && uncertainCount === 0 && contradictedCount === 0;
+  // Check if any sources exist
+  const hasAnySources = total > 0;
 
   return (
     <div 
@@ -223,7 +212,7 @@ export const ProWebEvidence = ({ sourcesBuckets, keyPoints, language }: ProWebEv
           <Globe className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
         </div>
         <h3 className="font-serif text-lg font-semibold text-slate-900">
-          {t.title}
+          {hasAnySources ? t.title : webProofCard.title}
         </h3>
       </div>
       
@@ -258,7 +247,7 @@ export const ProWebEvidence = ({ sourcesBuckets, keyPoints, language }: ProWebEv
           />
         </div>
       ) : (
-        /* Empty buckets: distinguish LIMITED (0/0/0) vs UNAVAILABLE (non-zero counters but no sources provided) */
+        /* Empty state: Use pre-computed webProofCard from normalization layer */
         <div 
           className="rounded-xl border p-5 flex items-center gap-4"
           style={{
@@ -276,10 +265,10 @@ export const ProWebEvidence = ({ sourcesBuckets, keyPoints, language }: ProWebEv
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-700 mb-1">
-              {isLimitedFromIA11 ? t.noEvidenceTitle : t.unavailableTitle}
+              {webProofCard.title}
             </p>
             <p className="text-xs text-slate-500">
-              {isLimitedFromIA11 ? t.noEvidenceMessage : t.unavailableMessage}
+              {webProofCard.text}
             </p>
           </div>
         </div>

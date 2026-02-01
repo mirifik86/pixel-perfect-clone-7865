@@ -3,17 +3,18 @@ import { CheckCircle, HelpCircle, XCircle, AlertCircle } from 'lucide-react';
 /**
  * IA11 is the SINGLE SOURCE OF TRUTH.
  * Lovable is a pure renderer - no inference, no fallback logic.
- * Counters are displayed ONLY from IA11's explicit keyPoints values.
+ * Counters are displayed ONLY from the normalization layer.
  */
 
-interface KeyPoints {
+interface Counters {
   confirmed: number;
   uncertain: number;
   contradicted: number;
 }
 
 interface ProKeyPointsProps {
-  keyPoints?: KeyPoints;
+  /** Pre-normalized counters from the normalization layer */
+  counters: Counters;
   language: 'en' | 'fr';
 }
 
@@ -36,16 +37,13 @@ const translations = {
   },
 };
 
-export const ProKeyPoints = ({ keyPoints, language }: ProKeyPointsProps) => {
+export const ProKeyPoints = ({ counters, language }: ProKeyPointsProps) => {
   const t = translations[language];
   
-  // STRICT IA11 BINDING: Use ONLY explicit IA11 values, default to 0 if not provided
-  // NO fallback logic, NO inference from sourcesBuckets
-  const confirmed = keyPoints?.confirmed ?? 0;
-  const uncertain = keyPoints?.uncertain ?? 0;
-  const contradicted = keyPoints?.contradicted ?? 0;
+  // Use pre-normalized counters directly - no inference
+  const { confirmed, uncertain, contradicted } = counters;
   
-  const counters = [
+  const counterItems = [
     { 
       key: 'confirmed', 
       label: t.confirmed, 
@@ -75,7 +73,7 @@ export const ProKeyPoints = ({ keyPoints, language }: ProKeyPointsProps) => {
     },
   ];
 
-  // Check if all counters are zero (limited verification from IA11)
+  // Check if all counters are zero (limited verification)
   const isLimitedVerification = confirmed === 0 && uncertain === 0 && contradicted === 0;
 
   return (
@@ -94,7 +92,7 @@ export const ProKeyPoints = ({ keyPoints, language }: ProKeyPointsProps) => {
       {/* Counter grid - only show if not limited verification */}
       {!isLimitedVerification ? (
         <div className="grid grid-cols-3 gap-3">
-          {counters.map(({ key, label, value, icon: Icon, activeColor, activeBg, activeBorder }) => {
+          {counterItems.map(({ key, label, value, icon: Icon, activeColor, activeBg, activeBorder }) => {
             const isActive = value > 0;
             
             return (
@@ -142,7 +140,7 @@ export const ProKeyPoints = ({ keyPoints, language }: ProKeyPointsProps) => {
           })}
         </div>
       ) : (
-        /* Limited verification state - IA11 returned 0/0/0 */
+        /* Limited verification state */
         <div 
           className="rounded-xl border p-4 flex items-center gap-3"
           style={{

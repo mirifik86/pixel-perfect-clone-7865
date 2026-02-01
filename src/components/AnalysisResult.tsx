@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CheckCircle, AlertCircle, Image, Sparkles, Info, Shield, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { SignalMiniGauge } from './SignalMiniGauge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -15,6 +15,8 @@ import { ProCorrections } from './ProCorrections';
 import { ProWebEvidence } from './ProWebEvidence';
 import { ProKeyPoints } from './ProKeyPoints';
 import { ProStatusLine } from './ProStatusLine';
+import { ProDebugViewer } from './ProDebugViewer';
+import { normalizeIA11Response, type IA11RawResponse } from '@/utils/ia11Normalization';
 interface AnalysisBreakdown {
   // Core criteria (Standard)
   sources?: { points: number; reason: string };
@@ -681,6 +683,22 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   // Safe breakdown accessor - PRO responses may not have breakdown
   const breakdown: AnalysisBreakdown = data.breakdown ?? {};
   
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRO CONSISTENCY GUARD: Normalize IA11 response with single point of truth
+  // ═══════════════════════════════════════════════════════════════════════════
+  const normalizedIA11 = useMemo(() => {
+    if (!isPro) return null;
+    
+    // Build raw response object for normalization
+    const rawResponse: IA11RawResponse = {
+      result: data.result,
+      meta: data.meta,
+      reasons: data.reasons,
+    };
+    
+    return normalizeIA11Response(rawResponse, language);
+  }, [isPro, data.result, data.meta, data.reasons, language]);
+  
   // Normalize evidence sources from both formats
   // bestLinks: max 4 for primary display (excludes generic homepage links)
   const evidenceSources = isPro ? normalizeEvidenceSources(data, language, 4) : [];
@@ -691,8 +709,8 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
   const additionalSources = allProSources.filter(s => !evidenceDomains.has(getDomainFromUrl(s.url)));
   const hasAdditionalSources = additionalSources.length > 0;
 
-  // Get summary - prefer result.summary for new format
-  const summaryText = data.result?.summary || articleSummary || data.summary;
+  // Get summary - prefer normalized summary for PRO, fallback for standard
+  const summaryText = normalizedIA11?.summary || data.result?.summary || articleSummary || data.summary;
 
   // Confidence for standard
   const confidenceLabels = {
@@ -844,12 +862,19 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* PRO: Status line under the badge */}
-      {isPro && (
+      {/* PRO: Debug Viewer (collapsible) */}
+      {isPro && normalizedIA11 && (
+        <div className="flex justify-center mb-4">
+          <ProDebugViewer normalized={normalizedIA11} language={language} />
+        </div>
+      )}
+
+      {/* PRO: Status line under the badge - uses normalized data */}
+      {isPro && normalizedIA11 && (
         <ProStatusLine 
-          hasCorrections={(data.result?.corrections?.length ?? 0) > 0}
-          hasVerifiedFacts={(data.result?.verifiedFacts?.length ?? 0) > 0}
-          keyPoints={data.result?.keyPoints}
+          status={normalizedIA11.status}
+          badgeText={normalizedIA11.badgeText}
+          hasCorrections={normalizedIA11.corrections.length > 0}
           language={language}
         />
       )}
@@ -935,35 +960,35 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         </div>
       )}
 
-      {/* PRO WOW: Verified Facts Section */}
-      {isPro && (
+      {/* PRO WOW: Verified Facts Section - uses normalized data */}
+      {isPro && normalizedIA11 && (
         <ProVerifiedFacts 
-          facts={data.result?.verifiedFacts || []}
+          facts={normalizedIA11.verifiedFacts}
           language={language}
         />
       )}
 
-      {/* PRO WOW: Corrections Section */}
-      {isPro && (
+      {/* PRO WOW: Corrections Section - uses normalized data */}
+      {isPro && normalizedIA11 && (
         <ProCorrections 
-          corrections={data.result?.corrections || []}
+          corrections={normalizedIA11.corrections}
           language={language}
         />
       )}
 
-      {/* PRO WOW: Web Evidence Buckets Section */}
-      {isPro && data.result?.sourcesBuckets && (
+      {/* PRO WOW: Web Evidence Buckets Section - uses normalized data */}
+      {isPro && normalizedIA11 && (
         <ProWebEvidence 
-          sourcesBuckets={data.result.sourcesBuckets}
-          keyPoints={data.result?.keyPoints}
+          sources={normalizedIA11.sources}
+          webProofCard={normalizedIA11.webProofCard}
           language={language}
         />
       )}
 
-      {/* PRO WOW: Key Points Counters Section */}
-      {isPro && (
+      {/* PRO WOW: Key Points Counters Section - uses normalized data */}
+      {isPro && normalizedIA11 && (
         <ProKeyPoints 
-          keyPoints={data.result?.keyPoints}
+          counters={normalizedIA11.counters}
           language={language}
         />
       )}
