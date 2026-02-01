@@ -849,6 +849,7 @@ export const AnalysisResult = ({ data, language, articleSummary, hasImage = fals
         <ProStatusLine 
           hasCorrections={(data.result?.corrections?.length ?? 0) > 0}
           hasVerifiedFacts={(data.result?.verifiedFacts?.length ?? 0) > 0}
+          sourcesBuckets={data.result?.sourcesBuckets}
           language={language}
         />
       )}
