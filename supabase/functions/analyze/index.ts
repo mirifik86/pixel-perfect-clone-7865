@@ -134,10 +134,18 @@ serve(async (req) => {
         );
       }
 
-      // Generic IA11 error
+      // Generic IA11 error - try to extract structured error info
       let errorText = "";
+      let errorDetail = "";
       try {
         errorText = await ia11Response.text();
+        // Try to parse as JSON to extract more specific error info
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.result?.reasons?.[0]) {
+          errorDetail = errorJson.result.reasons[0];
+        } else if (errorJson.error) {
+          errorDetail = errorJson.error;
+        }
       } catch {
         errorText = "Unknown error";
       }
@@ -149,6 +157,7 @@ serve(async (req) => {
             ? "IA11 est temporairement inaccessible. Veuillez réessayer."
             : "IA11 is temporarily unreachable. Try again.",
           errorCode: "IA11_ERROR",
+          errorDetail: errorDetail || undefined,
           requestId,
         }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
