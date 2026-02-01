@@ -16,8 +16,15 @@ interface SourcesBuckets {
   neutral?: SourceItem[];
 }
 
+interface KeyPoints {
+  confirmed: number;
+  uncertain: number;
+  contradicted: number;
+}
+
 interface ProWebEvidenceProps {
   sourcesBuckets?: SourcesBuckets;
+  keyPoints?: KeyPoints;
   language: 'en' | 'fr';
 }
 
@@ -33,6 +40,8 @@ const translations = {
     credibility: 'Credibility',
     noEvidenceTitle: 'Limited Web Evidence',
     noEvidenceMessage: 'No reliable web evidence could be identified for this analysis.',
+    unavailableTitle: 'Web Evidence Unavailable',
+    unavailableMessage: 'Web evidence was not provided for this analysis.',
   },
   fr: {
     title: 'Preuves web',
@@ -45,6 +54,8 @@ const translations = {
     credibility: 'Crédibilité',
     noEvidenceTitle: 'Preuves web limitées',
     noEvidenceMessage: 'Aucune preuve web fiable n\'a pu être identifiée pour cette analyse.',
+    unavailableTitle: 'Preuves web indisponibles',
+    unavailableMessage: 'Les preuves web n\'ont pas été fournies pour cette analyse.',
   },
 };
 
@@ -174,7 +185,7 @@ const BucketSection = ({
   );
 };
 
-export const ProWebEvidence = ({ sourcesBuckets, language }: ProWebEvidenceProps) => {
+export const ProWebEvidence = ({ sourcesBuckets, keyPoints, language }: ProWebEvidenceProps) => {
   const t = translations[language];
   
   if (!sourcesBuckets) return null;
@@ -185,6 +196,12 @@ export const ProWebEvidence = ({ sourcesBuckets, language }: ProWebEvidenceProps
   
   // Check if all buckets are empty
   const hasAnySources = corroborate.length > 0 || contradict.length > 0 || neutral.length > 0;
+
+  // STRICT IA11 BINDING: decide which empty-state to show only from IA11 counters
+  const confirmedCount = keyPoints?.confirmed ?? 0;
+  const uncertainCount = keyPoints?.uncertain ?? 0;
+  const contradictedCount = keyPoints?.contradicted ?? 0;
+  const isLimitedFromIA11 = confirmedCount === 0 && uncertainCount === 0 && contradictedCount === 0;
 
   return (
     <div 
@@ -241,7 +258,7 @@ export const ProWebEvidence = ({ sourcesBuckets, language }: ProWebEvidenceProps
           />
         </div>
       ) : (
-        /* ÉVALUATION LIMITÉE - No sources available */
+        /* Empty buckets: distinguish LIMITED (0/0/0) vs UNAVAILABLE (non-zero counters but no sources provided) */
         <div 
           className="rounded-xl border p-5 flex items-center gap-4"
           style={{
@@ -259,10 +276,10 @@ export const ProWebEvidence = ({ sourcesBuckets, language }: ProWebEvidenceProps
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-700 mb-1">
-              {t.noEvidenceTitle}
+              {isLimitedFromIA11 ? t.noEvidenceTitle : t.unavailableTitle}
             </p>
             <p className="text-xs text-slate-500">
-              {t.noEvidenceMessage}
+              {isLimitedFromIA11 ? t.noEvidenceMessage : t.unavailableMessage}
             </p>
           </div>
         </div>
