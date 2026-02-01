@@ -26,17 +26,33 @@ export const StarfieldBackground = memo(() => {
       className="fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* ========== LAYER 1: Earth from space with sunrise ========== */}
+      {/* ========== LAYER 1: Earth from space with sunrise - shifted for sun visibility ========== */}
       <div 
         className="absolute inset-0"
         style={{
           backgroundImage: `url(${earthSunriseBg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
+          // Shift right to reveal more of the sunrise/sun glow on the left side
+          backgroundPosition: '35% 45%',
           backgroundRepeat: 'no-repeat',
-          // 20% darker for premium tech focus
-          filter: 'blur(0px) brightness(0.52) contrast(0.92) saturate(0.8)',
-          transform: 'scale(1.02)',
+          // Slightly brighter to enhance sunrise warmth
+          filter: 'blur(0px) brightness(0.58) contrast(0.95) saturate(0.85)',
+          transform: 'scale(1.05)',
+        }}
+      />
+      
+      {/* ========== SUNRISE GLOW ACCENT - Left side warmth ========== */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse 50% 80% at 15% 55%, 
+              hsl(35 70% 50% / 0.12) 0%,
+              hsl(30 60% 45% / 0.08) 30%,
+              hsl(25 50% 40% / 0.04) 50%,
+              transparent 70%
+            )
+          `,
         }}
       />
       
