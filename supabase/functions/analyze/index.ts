@@ -16,6 +16,433 @@ const getCurrentDateInfo = () => {
   };
 };
 
+// ============================================================================
+// FEATURE 1: CRITICAL FACT LIBRARY
+// Protected internal layer of verified, time-sensitive facts
+// ============================================================================
+
+interface CriticalFact {
+  subject: string;
+  role: string;
+  entity: string;
+  validFrom?: string; // ISO date
+  validUntil?: string; // ISO date or "present"
+  source: string;
+}
+
+// Critical Facts Library - Current as of 2026
+// This is checked BEFORE web verification to detect potential conflicts
+const CRITICAL_FACTS_LIBRARY: CriticalFact[] = [
+  // Current Heads of State & Government (as of Feb 2026)
+  { subject: "Emmanuel Macron", role: "President", entity: "France", validFrom: "2017-05-14", validUntil: "present", source: "Official" },
+  { subject: "François Bayrou", role: "Prime Minister", entity: "France", validFrom: "2024-12-13", validUntil: "present", source: "Official" },
+  { subject: "Joe Biden", role: "President", entity: "United States", validFrom: "2021-01-20", validUntil: "2025-01-20", source: "Official" },
+  { subject: "Donald Trump", role: "President", entity: "United States", validFrom: "2025-01-20", validUntil: "present", source: "Official" },
+  { subject: "Keir Starmer", role: "Prime Minister", entity: "United Kingdom", validFrom: "2024-07-05", validUntil: "present", source: "Official" },
+  { subject: "King Charles III", role: "Monarch", entity: "United Kingdom", validFrom: "2022-09-08", validUntil: "present", source: "Official" },
+  { subject: "Olaf Scholz", role: "Chancellor", entity: "Germany", validFrom: "2021-12-08", validUntil: "present", source: "Official" },
+  { subject: "Giorgia Meloni", role: "Prime Minister", entity: "Italy", validFrom: "2022-10-22", validUntil: "present", source: "Official" },
+  { subject: "Justin Trudeau", role: "Prime Minister", entity: "Canada", validFrom: "2015-11-04", validUntil: "present", source: "Official" },
+  { subject: "Xi Jinping", role: "President", entity: "China", validFrom: "2013-03-14", validUntil: "present", source: "Official" },
+  { subject: "Vladimir Putin", role: "President", entity: "Russia", validFrom: "2012-05-07", validUntil: "present", source: "Official" },
+  { subject: "Volodymyr Zelenskyy", role: "President", entity: "Ukraine", validFrom: "2019-05-20", validUntil: "present", source: "Official" },
+  { subject: "Narendra Modi", role: "Prime Minister", entity: "India", validFrom: "2014-05-26", validUntil: "present", source: "Official" },
+  { subject: "Luiz Inácio Lula da Silva", role: "President", entity: "Brazil", validFrom: "2023-01-01", validUntil: "present", source: "Official" },
+  { subject: "Fumio Kishida", role: "Prime Minister", entity: "Japan", validFrom: "2021-10-04", validUntil: "2024-10-01", source: "Official" },
+  { subject: "Shigeru Ishiba", role: "Prime Minister", entity: "Japan", validFrom: "2024-10-01", validUntil: "present", source: "Official" },
+  { subject: "Pope Francis", role: "Pope", entity: "Vatican", validFrom: "2013-03-13", validUntil: "present", source: "Official" },
+  
+  // International Organization Leaders
+  { subject: "António Guterres", role: "Secretary-General", entity: "United Nations", validFrom: "2017-01-01", validUntil: "present", source: "Official" },
+  { subject: "Tedros Adhanom Ghebreyesus", role: "Director-General", entity: "WHO", validFrom: "2017-07-01", validUntil: "present", source: "Official" },
+  { subject: "Ursula von der Leyen", role: "President", entity: "European Commission", validFrom: "2019-12-01", validUntil: "present", source: "Official" },
+  { subject: "Christine Lagarde", role: "President", entity: "European Central Bank", validFrom: "2019-11-01", validUntil: "present", source: "Official" },
+  { subject: "Mark Rutte", role: "Secretary General", entity: "NATO", validFrom: "2024-10-01", validUntil: "present", source: "Official" },
+  { subject: "Kristalina Georgieva", role: "Managing Director", entity: "IMF", validFrom: "2019-10-01", validUntil: "present", source: "Official" },
+];
+
+interface CriticalFactCheckResult {
+  hasConflict: boolean;
+  conflictDetails: string | null;
+  matchedFacts: CriticalFact[];
+  requiresEnhancedVerification: boolean;
+}
+
+// Check claim against Critical Facts Library
+const checkCriticalFacts = (claimText: string): CriticalFactCheckResult => {
+  const lowerClaim = claimText.toLowerCase();
+  const matchedFacts: CriticalFact[] = [];
+  let hasConflict = false;
+  let conflictDetails: string | null = null;
+  
+  for (const fact of CRITICAL_FACTS_LIBRARY) {
+    const subjectLower = fact.subject.toLowerCase();
+    const roleLower = fact.role.toLowerCase();
+    const entityLower = fact.entity.toLowerCase();
+    
+    // Check if claim mentions this subject
+    if (lowerClaim.includes(subjectLower)) {
+      matchedFacts.push(fact);
+      
+      // Check for role conflicts
+      // e.g., "Biden is president" when Trump is current president
+      const rolePatterns = [
+        `${subjectLower} is ${roleLower}`,
+        `${subjectLower} is the ${roleLower}`,
+        `${subjectLower}, ${roleLower}`,
+        `${roleLower} ${subjectLower}`,
+      ];
+      
+      const mentionsRole = rolePatterns.some(p => lowerClaim.includes(p)) ||
+        (lowerClaim.includes(subjectLower) && lowerClaim.includes(roleLower));
+      
+      if (mentionsRole) {
+        // Check if the claim is about a past period or current
+        const isPastTense = lowerClaim.includes('was ') || lowerClaim.includes('were ') ||
+          lowerClaim.includes('former ') || lowerClaim.includes('ex-') ||
+          lowerClaim.includes('previously ') || lowerClaim.includes('until ');
+        
+        // If current tense claim but validUntil is not "present", it's a conflict
+        if (!isPastTense && fact.validUntil !== "present") {
+          hasConflict = true;
+          conflictDetails = `Claim suggests ${fact.subject} is currently ${fact.role} of ${fact.entity}, but this role ended on ${fact.validUntil}`;
+        }
+      }
+    }
+    
+    // Check for conflicting role claims (someone else claimed as current holder)
+    // e.g., "Jean Castex is Prime Minister of France"
+    if (lowerClaim.includes(entityLower) && lowerClaim.includes(roleLower)) {
+      // Check if a different person is being claimed for this role
+      const otherNames = CRITICAL_FACTS_LIBRARY
+        .filter(f => f.entity === fact.entity && f.role === fact.role && f.validUntil === "present")
+        .map(f => f.subject.toLowerCase());
+      
+      const claimsCurrentRole = !lowerClaim.includes('was ') && !lowerClaim.includes('former ') &&
+        (lowerClaim.includes('is ') || lowerClaim.includes('current '));
+      
+      if (claimsCurrentRole && !otherNames.some(name => lowerClaim.includes(name))) {
+        // Someone other than the actual current holder might be claimed
+        matchedFacts.push(fact);
+      }
+    }
+  }
+  
+  return {
+    hasConflict,
+    conflictDetails,
+    matchedFacts,
+    requiresEnhancedVerification: matchedFacts.length > 0 || hasConflict
+  };
+};
+
+// ============================================================================
+// FEATURE 2: DYNAMIC CONFIDENCE SCORING
+// Evidence-weighted scoring that adjusts based on source quality
+// ============================================================================
+
+interface ConfidenceFactors {
+  officialSources: number; // Count of official/institutional sources
+  majorNewsSources: number; // Count of major news sources
+  totalSources: number;
+  sourceAgreement: 'strong' | 'partial' | 'conflicting' | 'none';
+  hasRecentConfirmation: boolean; // Sources from current year
+  hasContradictions: boolean;
+  onlyWeakSources: boolean;
+}
+
+interface DynamicConfidenceResult {
+  score: number; // 0.00 to 1.00
+  level: 'high' | 'medium' | 'low';
+  adjustments: string[];
+  scoreCap: number | null; // If evidence is weak, cap the trust score
+}
+
+const calculateDynamicConfidence = (factors: ConfidenceFactors): DynamicConfidenceResult => {
+  let confidence = 0.5; // Base confidence
+  const adjustments: string[] = [];
+  let scoreCap: number | null = null;
+  
+  // POSITIVE ADJUSTMENTS
+  if (factors.officialSources >= 2) {
+    confidence += 0.25;
+    adjustments.push("+0.25: Multiple official sources confirm");
+  } else if (factors.officialSources >= 1) {
+    confidence += 0.15;
+    adjustments.push("+0.15: Official source confirms");
+  }
+  
+  if (factors.majorNewsSources >= 2) {
+    confidence += 0.15;
+    adjustments.push("+0.15: Multiple major news sources confirm");
+  } else if (factors.majorNewsSources >= 1) {
+    confidence += 0.08;
+    adjustments.push("+0.08: Major news source confirms");
+  }
+  
+  if (factors.sourceAgreement === 'strong' && factors.totalSources >= 3) {
+    confidence += 0.12;
+    adjustments.push("+0.12: Strong source agreement");
+  }
+  
+  if (factors.hasRecentConfirmation) {
+    confidence += 0.08;
+    adjustments.push("+0.08: Recent (current year) confirmation");
+  }
+  
+  // NEGATIVE ADJUSTMENTS
+  if (factors.hasContradictions) {
+    confidence -= 0.25;
+    adjustments.push("-0.25: Sources contradict each other");
+    scoreCap = 55;
+  }
+  
+  if (factors.sourceAgreement === 'conflicting') {
+    confidence -= 0.20;
+    adjustments.push("-0.20: Conflicting evidence");
+    scoreCap = Math.min(scoreCap ?? 100, 50);
+  }
+  
+  if (factors.onlyWeakSources && factors.totalSources > 0) {
+    confidence -= 0.15;
+    adjustments.push("-0.15: Only weak/indirect sources");
+    scoreCap = Math.min(scoreCap ?? 100, 60);
+  }
+  
+  if (factors.totalSources === 0) {
+    confidence = 0.15;
+    adjustments.push("=0.15: No reliable sources found");
+    scoreCap = 40;
+  } else if (factors.totalSources === 1) {
+    confidence -= 0.10;
+    adjustments.push("-0.10: Single source only");
+    scoreCap = Math.min(scoreCap ?? 100, 70);
+  }
+  
+  if (!factors.hasRecentConfirmation && factors.totalSources > 0) {
+    confidence -= 0.12;
+    adjustments.push("-0.12: No recent confirmation for time-sensitive claim");
+  }
+  
+  // Clamp to valid range
+  confidence = Math.max(0.05, Math.min(0.98, confidence));
+  
+  // Determine level
+  let level: 'high' | 'medium' | 'low';
+  if (confidence >= 0.75) {
+    level = 'high';
+  } else if (confidence >= 0.45) {
+    level = 'medium';
+  } else {
+    level = 'low';
+  }
+  
+  return { score: confidence, level, adjustments, scoreCap };
+};
+
+// ============================================================================
+// FEATURE 3: INTELLIGENT DATE INTERPRETATION
+// Detect and normalize temporal references in claims
+// ============================================================================
+
+interface TemporalContext {
+  hasTemporalReference: boolean;
+  detectedReferences: string[];
+  referenceType: 'current' | 'past' | 'future' | 'specific_year' | 'relative' | 'none';
+  targetYear: number | null;
+  isTimesSensitive: boolean;
+  requiresRecentSources: boolean;
+}
+
+const interpretTemporalContext = (claimText: string): TemporalContext => {
+  const dateInfo = getCurrentDateInfo();
+  const currentYear = dateInfo.year;
+  const lowerClaim = claimText.toLowerCase();
+  
+  const detectedReferences: string[] = [];
+  let referenceType: TemporalContext['referenceType'] = 'none';
+  let targetYear: number | null = null;
+  let isTimeSensitive = false;
+  let requiresRecentSources = false;
+  
+  // Current time references
+  const currentPatterns = [
+    'currently', 'current', 'today', 'right now', 'at present', 'presently',
+    'as of now', 'nowadays', 'these days', 'at this time', 'now'
+  ];
+  
+  for (const pattern of currentPatterns) {
+    if (lowerClaim.includes(pattern)) {
+      detectedReferences.push(pattern);
+      referenceType = 'current';
+      targetYear = currentYear;
+      isTimeSensitive = true;
+      requiresRecentSources = true;
+    }
+  }
+  
+  // Past references
+  const pastPatterns = [
+    'was', 'were', 'used to', 'formerly', 'previously', 'in the past',
+    'last year', 'last month', 'ago', 'back in', 'before', 'former'
+  ];
+  
+  for (const pattern of pastPatterns) {
+    if (lowerClaim.includes(pattern)) {
+      detectedReferences.push(pattern);
+      if (referenceType === 'none') {
+        referenceType = 'past';
+      }
+    }
+  }
+  
+  // Future references
+  const futurePatterns = [
+    'will be', 'will become', 'next year', 'upcoming', 'soon',
+    'in the future', 'expected to', 'scheduled to', 'planned to'
+  ];
+  
+  for (const pattern of futurePatterns) {
+    if (lowerClaim.includes(pattern)) {
+      detectedReferences.push(pattern);
+      if (referenceType === 'none') {
+        referenceType = 'future';
+      }
+    }
+  }
+  
+  // Specific year detection
+  const yearMatch = lowerClaim.match(/\b(19\d{2}|20\d{2})\b/g);
+  if (yearMatch) {
+    const years = yearMatch.map(y => parseInt(y));
+    detectedReferences.push(...yearMatch);
+    
+    // Use the most recent year mentioned
+    targetYear = Math.max(...years);
+    
+    if (targetYear === currentYear || targetYear === currentYear - 1) {
+      referenceType = 'current';
+      requiresRecentSources = true;
+    } else if (targetYear > currentYear) {
+      referenceType = 'future';
+    } else {
+      referenceType = 'specific_year';
+    }
+    
+    isTimeSensitive = true;
+  }
+  
+  // Relative time references
+  const relativePatterns = [
+    { pattern: 'this year', offset: 0 },
+    { pattern: 'last year', offset: -1 },
+    { pattern: 'next year', offset: 1 },
+    { pattern: 'this month', offset: 0 },
+    { pattern: 'last month', offset: 0 },
+  ];
+  
+  for (const { pattern, offset } of relativePatterns) {
+    if (lowerClaim.includes(pattern)) {
+      detectedReferences.push(pattern);
+      targetYear = currentYear + offset;
+      referenceType = 'relative';
+      isTimeSensitive = true;
+      if (offset >= 0) {
+        requiresRecentSources = true;
+      }
+    }
+  }
+  
+  // Check for time-sensitive topics that ALWAYS require recent sources
+  const timeSensitiveTopics = [
+    'president', 'prime minister', 'chancellor', 'leader', 'ceo', 'director',
+    'minister', 'secretary', 'chairman', 'monarch', 'king', 'queen',
+    'election', 'vote', 'referendum', 'war', 'conflict', 'crisis',
+    'pandemic', 'outbreak', 'price', 'rate', 'gdp', 'inflation'
+  ];
+  
+  for (const topic of timeSensitiveTopics) {
+    if (lowerClaim.includes(topic)) {
+      isTimeSensitive = true;
+      if (referenceType === 'none' || referenceType === 'current') {
+        requiresRecentSources = true;
+      }
+      break;
+    }
+  }
+  
+  return {
+    hasTemporalReference: detectedReferences.length > 0 || isTimeSensitive,
+    detectedReferences,
+    referenceType,
+    targetYear,
+    isTimesSensitive: isTimeSensitive,
+    requiresRecentSources
+  };
+};
+
+// Build enhanced context for PRO prompt based on pre-analysis
+interface EnhancedVerificationContext {
+  criticalFactCheck: CriticalFactCheckResult;
+  temporalContext: TemporalContext;
+  enhancedModeActive: boolean;
+  additionalInstructions: string;
+}
+
+const buildEnhancedContext = (claimText: string): EnhancedVerificationContext => {
+  const criticalFactCheck = checkCriticalFacts(claimText);
+  const temporalContext = interpretTemporalContext(claimText);
+  
+  const enhancedModeActive = criticalFactCheck.requiresEnhancedVerification || 
+    temporalContext.isTimesSensitive ||
+    criticalFactCheck.hasConflict;
+  
+  let additionalInstructions = '';
+  
+  if (criticalFactCheck.hasConflict) {
+    additionalInstructions += `\n\n⚠️ CRITICAL FACT CONFLICT DETECTED:\n${criticalFactCheck.conflictDetails}\n`;
+    additionalInstructions += `This claim may contradict verified institutional facts. Apply maximum scrutiny.\n`;
+    additionalInstructions += `If conflict is confirmed after web verification, verdict MUST be UNCERTAIN or FALSE, score CAPPED at 25.\n`;
+  }
+  
+  if (criticalFactCheck.matchedFacts.length > 0 && !criticalFactCheck.hasConflict) {
+    additionalInstructions += `\n\nℹ️ CRITICAL FACTS CONTEXT:\n`;
+    for (const fact of criticalFactCheck.matchedFacts) {
+      additionalInstructions += `- ${fact.subject} is ${fact.role} of ${fact.entity} (since ${fact.validFrom}, status: ${fact.validUntil})\n`;
+    }
+    additionalInstructions += `Verify claim against these known facts. Any discrepancy requires UNCERTAIN verdict.\n`;
+  }
+  
+  if (temporalContext.hasTemporalReference) {
+    additionalInstructions += `\n\n📅 TEMPORAL CONTEXT DETECTED:\n`;
+    additionalInstructions += `- Reference type: ${temporalContext.referenceType}\n`;
+    if (temporalContext.targetYear) {
+      additionalInstructions += `- Target year: ${temporalContext.targetYear}\n`;
+    }
+    if (temporalContext.detectedReferences.length > 0) {
+      additionalInstructions += `- Time markers found: "${temporalContext.detectedReferences.join('", "')}"\n`;
+    }
+    if (temporalContext.requiresRecentSources) {
+      additionalInstructions += `REQUIRE sources from ${getCurrentDateInfo().year} or ${getCurrentDateInfo().year - 1}. Reject older sources for verification.\n`;
+    }
+    if (temporalContext.referenceType === 'current' && temporalContext.isTimesSensitive) {
+      additionalInstructions += `This is a CURRENT STATUS claim. If no recent sources confirm, reduce confidence to LOW.\n`;
+    }
+  }
+  
+  if (enhancedModeActive) {
+    additionalInstructions += `\n\n🔒 ENHANCED VERIFICATION MODE ACTIVE\n`;
+    additionalInstructions += `Apply stricter source requirements and confidence scoring.\n`;
+  }
+  
+  return {
+    criticalFactCheck,
+    temporalContext,
+    enhancedModeActive,
+    additionalInstructions
+  };
+};
+
 // Standard Analysis Engine – LeenScore Standard Scan
 // Linguistic credibility diagnostic - answers the question WITHOUT proving it
 const getSystemPrompt = (language: string) => {
@@ -164,13 +591,18 @@ Standard is intentionally limited to drive PRO value.
 ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
 };
 
-// PRO ANALYSIS PROMPT - Credibility Intelligence Engine with Web Corroboration
-// PRO PROVES the answer with evidence and detailed reasoning
-const getProSystemPrompt = (language: string) => {
+// PRO ANALYSIS PROMPT - Advanced Credibility Intelligence Mode
+// PRO PROVES the answer with verified evidence and expert reasoning
+// Integrates: Critical Fact Library, Dynamic Confidence, Intelligent Date Interpretation
+const getProSystemPrompt = (language: string, enhancedContext?: EnhancedVerificationContext) => {
   const isFr = language === 'fr';
   const dateInfo = getCurrentDateInfo();
   
-  return `You are LeenScore PRO - an advanced credibility intelligence engine with web corroboration.
+  // Build enhanced instructions if context is provided
+  const enhancedInstructions = enhancedContext?.additionalInstructions || '';
+  const isEnhancedMode = enhancedContext?.enhancedModeActive || false;
+  
+  return `You are LeenScore PRO - an advanced credibility intelligence engine operating in ${isEnhancedMode ? 'ENHANCED' : 'STANDARD'} VERIFICATION MODE.
 
 ===== CRITICAL ROLE DEFINITION =====
 
@@ -379,7 +811,9 @@ QUALITY OVER QUANTITY - Accuracy and precision are mandatory.
 - bestLinks must be subset of sources.
 - Diversity of publishers preferred.
 
-ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.`;
+ALL text in ${isFr ? 'FRENCH' : 'ENGLISH'}.
+
+${enhancedInstructions ? `===== ENHANCED VERIFICATION CONTEXT (PRE-PROCESSED) =====\n${enhancedInstructions}` : ''}`;
 };
 
 // Deep clone utility to ensure original data is never mutated
@@ -1018,9 +1452,29 @@ serve(async (req) => {
 
     const isPro = analysisType === 'pro';
     
+    // ===== ADVANCED CREDIBILITY INTELLIGENCE PRE-PROCESSING =====
+    // Run 3 feature systems BEFORE generating PRO analysis
+    let enhancedContext: EnhancedVerificationContext | undefined;
+    
+    if (isPro) {
+      console.log("Running Advanced Credibility Intelligence pre-processing...");
+      enhancedContext = buildEnhancedContext(content);
+      
+      if (enhancedContext.criticalFactCheck.hasConflict) {
+        console.log("⚠️ CRITICAL FACT CONFLICT DETECTED:", enhancedContext.criticalFactCheck.conflictDetails);
+      }
+      if (enhancedContext.temporalContext.hasTemporalReference) {
+        console.log("📅 Temporal context:", enhancedContext.temporalContext.referenceType, 
+          "Target year:", enhancedContext.temporalContext.targetYear);
+      }
+      if (enhancedContext.enhancedModeActive) {
+        console.log("🔒 Enhanced Verification Mode ACTIVE");
+      }
+    }
+    
     // CRITICAL: Always use English prompts for consistent web corroboration
     // Then translate output to user's language
-    const systemPrompt = isPro ? getProSystemPrompt('en') : getSystemPrompt('en');
+    const systemPrompt = isPro ? getProSystemPrompt('en', enhancedContext) : getSystemPrompt('en');
     
     // User prompt always in English for consistency
     const userPrompt = `Analyze this content and calculate the Trust Score${isPro ? ' with full Pro analysis' : ''}:\n\n${content}`;
