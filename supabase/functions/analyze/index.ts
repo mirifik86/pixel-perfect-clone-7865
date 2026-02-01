@@ -190,67 +190,20 @@ IMPORTANT: Respond entirely in ${isFr ? 'FRENCH' : 'ENGLISH'}.
 
 CURRENT DATE: ${dateInfo.formatted} (${dateInfo.year})
 
-===== ENHANCED FACT-CHECK MODE (GEOPOLITICAL / LEADERSHIP CLAIMS) =====
+===== ENHANCED TEMPORAL VERIFICATION FOR PUBLIC ROLES =====
 
-MANDATORY ACTIVATION: When the analyzed content mentions ANY of the following, you MUST activate ENHANCED FACT-CHECK MODE:
-- A known political figure (head of state, minister, elected official)
-- A country + leadership role (president, prime minister, king, chancellor, etc.)
-- Current or recent geopolitical situations (wars, conflicts, treaties, elections)
-- Major institutional roles (international organizations, major corporations)
-- Current events that can be verified against authoritative sources
+CRITICAL: When a claim involves a CURRENT PUBLIC ROLE, this is a TIME-SENSITIVE FACTUAL CHECK.
+Leadership positions change over time. Static background knowledge is UNRELIABLE for these claims.
 
-===== ENHANCED FACT-CHECK MODE PROTOCOL =====
-
-STEP 1 - CLAIM EXTRACTION:
-- Identify and extract the CORE FACTUAL CLAIM (e.g., "X is the current President of Y")
-- Reformulate it into a clear, verifiable search query
-- Note the temporal context: Is this about the current state or a historical fact?
-
-STEP 2 - MANDATORY AUTHORITATIVE SOURCE VERIFICATION:
-Base your reasoning ONLY on highly reliable sources. Priority order:
-   1. Official government websites (.gov, .gouv, official ministry sites)
-   2. International organization sites (un.org, who.int, imf.org, worldbank.org, nato.int)
-   3. Major international wire services: Reuters, AP, AFP
-   4. Major recognized international news: BBC, CNN, Al Jazeera, NYT, Le Monde, Der Spiegel
-   5. Well-established encyclopedic references: Wikipedia (check last update date), Britannica
-
-STEP 3 - VERIFICATION OUTCOME:
-- If multiple reliable sources CONFIRM the claim → mark as "corroborated"
-- If reliable sources CONTRADICT the claim → mark as "contradicting" or "refuted"
-- If sources are mixed or insufficient → mark as "uncertain" with explicit explanation
-- NEVER guess or rely on probability for official roles or geopolitical facts
-
-===== CRITICAL RULE: VERIFIED FACTS OVERRIDE AI REASONING =====
-
-ABSOLUTE PROHIBITION: You are NOT ALLOWED to "guess" or rely on internal probability when dealing with:
-- Official government roles and positions
-- Current world leaders and their status
-- Ongoing geopolitical events (wars, treaties, elections)
-- Institutional facts (who leads what organization)
-
-If authoritative sources clearly indicate a DIFFERENT reality than the content being analyzed:
-- You MUST explicitly state that the claim CONFLICTS with established factual information
-- Provide the CORRECT information from authoritative sources
-- Explain the discrepancy clearly
-
-===== HIGH-SENSITIVITY CLAIM CATEGORIES =====
-
-PUBLIC ROLE CATEGORIES (MANDATORY VERIFICATION):
-- Head of state: president, monarch, prime minister, chancellor, dictator
+PUBLIC ROLE CATEGORIES (HIGH-SENSITIVITY):
+- Head of state: president, monarch, prime minister, chancellor
 - Government positions: minister, secretary of state, governor, mayor
 - International organizations: UN Secretary-General, WHO Director, IMF head
 - Corporate leadership: CEO, CFO, chairman of major companies
 - Judicial positions: chief justice, attorney general
 - Military leadership: commander, general, admiral
 
-GEOPOLITICAL EVENT CATEGORIES (MANDATORY VERIFICATION):
-- Active conflicts and wars
-- International treaties and agreements
-- Sanctions and diplomatic relations
-- Election results
-- Major policy changes
-
-===== TEMPORAL VERIFICATION RULES =====
+===== MANDATORY TEMPORAL VERIFICATION RULES =====
 
 RULE 1 - CURRENT YEAR CONTEXT CHECK:
 - The current year is ${dateInfo.year}. Use this as your temporal anchor.
@@ -270,11 +223,11 @@ RULE 3 - SOURCE RECENCY REQUIREMENTS:
 - ACCEPTABLE: Sources from ${dateInfo.year - 1} if no newer source exists
 - REJECT: Sources older than 2 years for current role verification
 
-RULE 4 - CONFLICT RESOLUTION:
-   - If sources conflict, ALWAYS prefer the most recent AND institutionally authoritative
-   - Official government announcement > Major news agency > Encyclopedia > Other
-   - A ${dateInfo.year} source from official government outweighs a ${dateInfo.year - 2} source from major media
-   - When in doubt, choose recency over authority
+RULE 4 - PRIORITIZE AUTHORITATIVE SOURCES (strict order):
+   1. Official government websites (.gov, .gouv, official ministry sites)
+   2. International organization sites (un.org, who.int, imf.org, worldbank.org)
+   3. Major recognized international news: Reuters, AP, AFP, BBC, CNN, NYT, Le Monde, Der Spiegel
+   4. Recently updated reference sources: Wikipedia (check last update date), official company pages
 
 RULE 5 - HEAVILY DOWNGRADE UNRELIABLE SOURCES:
    - Undated sources: -30 credibility points (cannot verify temporal accuracy)
@@ -283,18 +236,23 @@ RULE 5 - HEAVILY DOWNGRADE UNRELIABLE SOURCES:
    - Opinion blogs or non-institutional content: -20 credibility points
    - Social media posts without official verification: -25 credibility points
 
-RULE 6 - EXPLICIT TEMPORAL MARKERS IN OUTPUT:
+RULE 6 - CONFLICT RESOLUTION:
+   - If sources conflict, ALWAYS prefer the most recent AND institutionally authoritative
+   - Official government announcement > Major news agency > Encyclopedia > Other
+   - A ${dateInfo.year} source from official government outweighs a ${dateInfo.year - 2} source from major media
+   - When in doubt, choose recency over authority
+
+RULE 7 - EXPLICIT TEMPORAL MARKERS IN OUTPUT:
    - In your summary, ALWAYS include "as of [month/year]" for role verification
    - Flag if the claim may have been accurate at a previous time but is now outdated
    - Example: "This was accurate until [date], but [new person] assumed the role on [date]."
    - If uncertain: "As of [date], [source] indicates [person] holds this role, but this should be verified."
 
-RULE 7 - SCORING IMPACT FOR GEOPOLITICAL/LEADERSHIP CLAIMS:
+RULE 8 - SCORING IMPACT FOR LEADERSHIP CLAIMS:
    - Claims verified with ${dateInfo.year} official sources: +15 to score
    - Claims verified with ${dateInfo.year - 1} sources only: +5 to score
    - Claims using outdated information (>1 year): cap score at 45
    - Claims about past roles presented as current: cap score at 35
-   - Claims that CONTRADICT verified facts: cap score at 25 maximum
    - Cannot find recent verification: cap score at 50, add uncertainty note
 
 ===== PRO-EXCLUSIVE FEATURES =====

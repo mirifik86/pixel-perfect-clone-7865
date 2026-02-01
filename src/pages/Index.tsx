@@ -17,7 +17,6 @@ import { ScreenshotEvidence } from '@/components/ScreenshotEvidence';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { StarfieldBackground } from '@/components/StarfieldBackground';
-import { IA11ErrorMessage } from '@/components/IA11ErrorMessage';
 
 interface AnalysisBreakdown {
   sources: {
@@ -45,19 +44,16 @@ interface AnalysisBreakdown {
 interface AnalysisData {
   score: number;
   analysisType?: 'standard' | 'pro';
-  riskLevel?: 'low' | 'medium' | 'high';
   breakdown: AnalysisBreakdown;
   summary: string;
   articleSummary?: string;
   confidence: 'low' | 'medium' | 'high';
-  reasons?: string[]; // IA11 engine provides detailed reasons
   corroboration?: {
     outcome: string;
     sourcesConsulted: number;
     sourceTypes: string[];
     summary: string;
   };
-  engine?: string; // Track which engine produced the analysis (IA11)
 }
 
 interface ImageSignals {
@@ -104,8 +100,7 @@ const createDefaultBreakdown = (): AnalysisBreakdown => ({
   transparency: { points: 0, reason: '' },
 });
 
-// Normalize any analysis response (IA11 engine format) to AnalysisData
-// IA11 is the SINGLE SOURCE OF TRUTH - no local scoring or fallbacks
+// Normalize any analysis response (legacy or new PRO format) to AnalysisData
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const normalizeAnalysisData = (raw: any): AnalysisData => {
   if (!raw) {
@@ -129,22 +124,14 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     return 'low';
   };
 
-  // Helper: convert riskLevel string to normalized format
-  const normalizeRiskLevel = (risk: unknown): 'low' | 'medium' | 'high' | undefined => {
-    if (risk === 'low' || risk === 'medium' || risk === 'high') {
-      return risk;
-    }
-    if (risk === 'moderate') return 'medium';
-    return undefined;
-  };
-
-  // Helper: build breakdown (IA11 may not provide detailed breakdown)
+  // Helper: build breakdown with prudence -> tone fallback
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buildBreakdown = (bd: any): AnalysisBreakdown => {
     if (!bd || typeof bd !== 'object') {
       return createDefaultBreakdown();
     }
     
+    // If tone is missing but prudence exists, map prudence -> tone
     const toneSource = bd.tone ?? bd.prudence;
     
     return {
@@ -156,31 +143,47 @@ const normalizeAnalysisData = (raw: any): AnalysisData => {
     };
   };
 
-  // IA11 engine format: { status: "ok", engine: "IA11", score, riskLevel, summary, reasons, confidence, ... }
-  // Also handles nested result object for PRO mode
-  const result = raw.result || raw;
-  const confidenceTier = confidenceToTier(result.confidence ?? raw.confidence);
-  const riskLevel = normalizeRiskLevel(result.riskLevel ?? raw.riskLevel);
-  const breakdown = buildBreakdown(result.breakdown ?? raw.breakdown);
+  // New PRO format: { status: "ok", result: { score, riskLevel, summary, confidence, bestLinks, sources } }
+  if (raw.result && typeof raw.result === 'object') {
+    const result = raw.result;
+    const confidenceTier = confidenceToTier(result.confidence);
 
-  const normalized: AnalysisData = {
-    score: Number(result.score ?? raw.score ?? 0),
-    analysisType: raw.analysisType ?? result.analysisType ?? 'standard',
-    riskLevel,
-    breakdown,
-    summary: String(result.summary ?? raw.summary ?? ''),
-    articleSummary: String(raw.articleSummary ?? result.articleSummary ?? ''),
+    // Build breakdown from result or use defaults
+    const breakdown = buildBreakdown(result.breakdown);
+
+    const normalized: AnalysisData = {
+      score: Number(result.score ?? 0),
+      analysisType: raw.analysisType ?? result.analysisType ?? 'pro',
+      breakdown,
+      summary: String(result.summary ?? raw.summary ?? ''),
+      articleSummary: String(raw.articleSummary ?? ''),
+      confidence: confidenceTier,
+      corroboration: raw.corroboration ?? result.corroboration,
+    };
+
+    // Attach raw.result for downstream components (bestLinks, sources, etc.)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (normalized as any).result = result;
+
+    return normalized;
+  }
+
+  // Legacy/Standard format: already matches AnalysisData shape
+  // Handle numeric confidence -> tier conversion
+  const confidenceTier = confidenceToTier(raw.confidence);
+  
+  return {
+    score: Number(raw.score ?? 0),
+    analysisType: raw.analysisType,
+    breakdown: buildBreakdown(raw.breakdown),
+    summary: String(raw.summary ?? ''),
+    articleSummary: String(raw.articleSummary ?? ''),
     confidence: confidenceTier,
-    reasons: Array.isArray(raw.reasons) ? raw.reasons : (Array.isArray(result.reasons) ? result.reasons : undefined),
-    corroboration: raw.corroboration ?? result.corroboration,
-    engine: raw.engine ?? 'IA11',
+    corroboration: raw.corroboration,
+    // Preserve result if it exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(raw.result ? { result: raw.result } as any : {}),
   };
-
-  // Attach raw.result for downstream components (bestLinks, sources, etc.)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (raw.result) (normalized as any).result = raw.result;
-
-  return normalized;
 };
 
 // REMOVED: Local translations object - now using i18n system
@@ -238,9 +241,6 @@ const Index = () => {
   const [inputCaptureGlow, setInputCaptureGlow] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   
-  // IA11-specific error state for premium error display
-  const [ia11Error, setIa11Error] = useState(false);
-  
   // Handle chevron cycle complete - trigger input highlight (idle state beam impact)
   const handleChevronCycleComplete = useCallback(() => {
     setInputHighlight(true);
@@ -296,8 +296,8 @@ const Index = () => {
   const currentSummaries = summariesByLanguage[language];
   const displayArticleSummary = currentSummaries?.articleSummary || null;
 
-  // IA11-ONLY: All credibility analysis is powered exclusively by the IA11 engine.
-  // NO LOCAL SCORING, NO FALLBACKS - IA11 is the single source of truth.
+  // Always run the actual analysis once (master), then translate for the other language.
+  // This guarantees identical scoring + web corroboration across the EN/FR toggle.
   const runBilingualTextAnalysis = useCallback(async ({
     content,
     analysisType,
@@ -305,22 +305,22 @@ const Index = () => {
     content: string;
     analysisType?: 'standard' | 'pro';
   }): Promise<{ en: AnalysisData; fr: AnalysisData }> => {
-    // Call IA11 engine for master analysis (English for determinism)
-    const master = await supabase.functions.invoke('analyze-ia11', {
+    // Master analysis is always in English for determinism.
+    const master = await supabase.functions.invoke('analyze', {
       body: {
         content,
         language: 'en',
-        analysisType: analysisType || 'standard',
+        ...(analysisType ? { analysisType } : {}),
       },
     });
 
     if (master.error) throw master.error;
     if (master.data?.error) throw new Error(master.data.error);
 
-    // Normalize the IA11 response to AnalysisData format
+    // Normalize the response to handle both legacy and new PRO formats
     const enData = normalizeAnalysisData(master.data);
 
-    // Translate text fields for French version (preserves IA11 scoring)
+    // Translate: pass normalized data but preserve raw result (URLs must not be translated)
     const fr = await supabase.functions.invoke('translate-analysis', {
       body: {
         analysisData: enData,
@@ -344,9 +344,8 @@ const Index = () => {
     setScreenshotData(null);
     setScreenshotLoaderStep(0);
     setIsImageAnalysis(false);
-  setAnalysisError(null);
+    setAnalysisError(null);
     setHasFormContent(false);
-    setIa11Error(false);
     lastInputRef.current = null;
   }, []);
 
@@ -363,7 +362,6 @@ const Index = () => {
     setSummariesByLanguage({ en: null, fr: null });
     setLastAnalyzedContent(input);
     setAnalysisError(null);
-    setIa11Error(false); // Clear IA11 error on new analysis
 
     try {
       const { en, fr } = await runBilingualTextAnalysis({ content: input, analysisType: 'standard' });
@@ -374,20 +372,10 @@ const Index = () => {
       });
 
       setAnalysisByLanguage({ en, fr });
-      
-      // Clear IA11 error on successful analysis
-      setIa11Error(false);
     } catch (err) {
       console.error('Unexpected error:', err);
-      // Check if this is an IA11-specific error
+      // Stay on page, show error panel instead of toast only
       const errorMessage = err instanceof Error ? err.message : errorAnalysis;
-      const isIA11Error = errorMessage.includes('IA11') || errorMessage.includes('ia11');
-      
-      if (isIA11Error) {
-        setIa11Error(true);
-      }
-      
-      // Stay on page, show error panel
       const errorCode = `ERR_${Date.now().toString(36).toUpperCase()}`;
       setAnalysisError({ message: errorMessage, code: errorCode });
       toast.error(errorAnalysis);
@@ -879,41 +867,27 @@ const Index = () => {
             />
           )}
 
-          {/* LAYOUT STABILITY: Fixed-height container for dynamic status content */}
-          {/* This prevents layout jitter from IA11 error messages or indicators */}
-          <div 
-            style={{ 
-              height: '56px',
-              minHeight: '56px',
-              maxHeight: '56px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-            }}
-          >
-            {/* IA11 Error Message - premium halo display (has internal fixed height) */}
-            {ia11Error ? (
-              <IA11ErrorMessage 
-                visible={ia11Error && !isLoading} 
-                onFadeOut={() => setIa11Error(false)} 
+          {/* Minimal pulsing dot indicator between gauge and form - centered */}
+          {!hasAnyAnalysis && !isLoading && !analysisError && (
+            <div 
+              className="flex items-center justify-center w-full"
+              style={{ 
+                marginTop: 'var(--space-2)',
+                marginBottom: 'var(--space-2)',
+              }}
+            >
+              <div 
+                className="rounded-full"
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  background: 'hsl(174 60% 55% / 0.5)',
+                  boxShadow: '0 0 8px hsl(174 55% 55% / 0.4), 0 0 16px hsl(174 50% 50% / 0.2)',
+                  animation: 'indicator-pulse 2.5s ease-in-out infinite',
+                }}
               />
-            ) : (
-              /* Minimal pulsing dot indicator - only when no error and no analysis */
-              !hasAnyAnalysis && !isLoading && !analysisError && (
-                <div 
-                  className="rounded-full"
-                  style={{
-                    width: '5px',
-                    height: '5px',
-                    background: 'hsl(174 60% 55% / 0.5)',
-                    boxShadow: '0 0 8px hsl(174 55% 55% / 0.4), 0 0 16px hsl(174 50% 50% / 0.2)',
-                    animation: 'indicator-pulse 2.5s ease-in-out infinite',
-                  }}
-                />
-              )
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Unified Analysis Form - centered */}
           {!hasAnyAnalysis && !isLoading && !analysisError && (

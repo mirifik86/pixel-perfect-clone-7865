@@ -7,28 +7,28 @@ interface InGaugeAnalysisLoaderProps {
   mode?: 'standard' | 'pro';
 }
 
-// Standard analysis steps - IA11 Engine powered
+// Standard analysis steps with translations
 const standardSteps = {
-  en: ["Connecting to IA11 engine", "Analyzing credibility", "Processing signals", "Generating score"],
-  fr: ["Connexion au moteur IA11", "Analyse de crédibilité", "Traitement des signaux", "Génération du score"],
-  es: ["Conectando con IA11", "Analizando credibilidad", "Procesando señales", "Generando puntuación"],
-  de: ["Verbindung zu IA11", "Glaubwürdigkeit analysieren", "Signale verarbeiten", "Score generieren"],
-  pt: ["Conectando ao IA11", "Analisando credibilidade", "Processando sinais", "Gerando pontuação"],
-  it: ["Connessione a IA11", "Analisi credibilità", "Elaborazione segnali", "Generazione punteggio"],
-  ja: ["IA11エンジンに接続中", "信頼性を分析中", "信号を処理中", "スコアを生成中"],
-  ko: ["IA11 엔진 연결 중", "신뢰성 분석 중", "신호 처리 중", "점수 생성 중"]
+  en: ["Structuring input", "Evaluating credibility", "Analyzing context", "Finalizing score"],
+  fr: ["Structuration", "Évaluation crédibilité", "Analyse contextuelle", "Finalisation"],
+  es: ["Estructurando", "Evaluando credibilidad", "Analizando contexto", "Finalizando"],
+  de: ["Strukturierung", "Glaubwürdigkeit prüfen", "Kontext analysieren", "Finalisierung"],
+  pt: ["Estruturando", "Avaliando credibilidade", "Analizando contexto", "Finalizando"],
+  it: ["Strutturazione", "Valutazione credibilità", "Analisi contesto", "Finalizzazione"],
+  ja: ["構造化中", "信頼性評価", "文脈分析", "最終化"],
+  ko: ["구조화 중", "신뢰성 평가", "맥락 분석", "완료 중"]
 };
 
-// PRO analysis steps - IA11 Engine deep verification
+// PRO analysis steps - Title Case, more professional labels
 const proSteps = {
-  en: ["IA11 Deep Scan", "Source Verification", "Cross-referencing"],
-  fr: ["Scan profond IA11", "Vérification sources", "Recoupement"],
-  es: ["Escaneo profundo IA11", "Verificación fuentes", "Cotejo"],
-  de: ["IA11 Tiefenscan", "Quellenverifizierung", "Abgleich"],
-  pt: ["Varredura profunda IA11", "Verificação fontes", "Cruzamento"],
-  it: ["Scansione profonda IA11", "Verifica fonti", "Incrocio"],
-  ja: ["IA11ディープスキャン", "ソース検証", "照合中"],
-  ko: ["IA11 심층 스캔", "소스 검증", "교차 검증"]
+  en: ["Scanning Sources", "Verification", "Cross-referencing Data"],
+  fr: ["Scan des sources", "Vérification", "Recoupement des sources"],
+  es: ["Escaneando Fuentes", "Verificación", "Cotejo de Datos"],
+  de: ["Quellenprüfung", "Verifizierung", "Datenabgleich"],
+  pt: ["Escaneando Fontes", "Verificação", "Cruzamento de Dados"],
+  it: ["Scansione Fonti", "Verifica", "Incrocio Dati"],
+  ja: ["ソーススキャン", "検証中", "データ照合"],
+  ko: ["소스 스캔", "검증 중", "데이터 교차 검증"]
 };
 
 // PRO badge localization
